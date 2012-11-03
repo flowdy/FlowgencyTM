@@ -1,0 +1,208 @@
+#!perl
+use strict;
+use utf8;
+
+package Time::Span;
+use Moose;
+use Time::Point;
+use Bit::Vector;
+use Carp qw(carp croak);
+
+coerce 'Time::Point',
+    from => 'Str',
+    via => sub { Time::Point->parse_ts(shift); }
+;
+
+has atoms => ( is => 'ro', auto_deref => 1, isa => 'Bit::Vector' );
+
+has [qw| from_date until_date |] => (
+     is => 'ro',
+     isa => 'Time::Point'
+     required => 1,
+);
+
+has span => ( is => 'ro' );
+
+has next => (
+    is => 'rw',
+    isa => subtype(
+        'Time::Span' => where { !$_->is_absence }
+    ),
+);
+
+has hourdiv => ( is => 'ro', isa => 'Int' );
+
+sub from_string {
+    my ($class, $span) = @_;
+    my $orig_span = $span;
+
+    my $is_absence = $span =~ s{^!}{};
+    my ($dates, $week_pattern) = split /:/, $span, 2;
+
+    my @week_pattern = split /;/, $week_pattern;
+    my @week_multipliers;
+
+    my ($y1,$m1,$d1,$y2,$m2,$y2,$from_date,$until_date);
+    $from_date = Timer::Point->parse_ts($span);
+    ($y1, $m1, $d1) = $from_date->date_components;
+    $span = $from_date->remainder;
+
+    # 1. Handelt es sich bei $dates um ein Anfangs und Enddatum?
+    if ( $span =~ s{^\s*--?\s*}{} || $span =~ m{^\s*+} ) {
+        $until_date = Timer::Point->parse_ts($span,$from_date);
+        ($y2, $m2, $d2, $span) = $until_date->date_components;
+        croak "Bis-Datum liegt vor Von-Datum"
+            if !$from_date->fix_order($until_date);
+	$span =~ s{^:}{};
+    }
+    elsif ($span =~ s{^:}{} and @week_multipliers =
+        map { s{ (\d+) \* }{}xms ? $1 : () } @week_pattern
+    ) {
+        # Spanne ergibt sich aus Wochenmultiplikatoren
+        croak "Nicht alle Wochen haben einen Multiplikator in $span"
+            if @week_multipliers < @week_pattern;
+        my $weeks_cnt;
+        $weeks_cnt += $_ for @week_multipliers;
+        @{$until_day}{qw|year month day|}
+            = Date::Calc::Add_Delta_Days($y1, $m1, $d1, $weeks_cnt*7);
+    }
+    else {
+        # Wir haben es mit einem einzigen Tag zu tun
+        my $hours = $span =~ s{ (@ [\d,-]+) \z }{}xms ? $1 : q{};
+        @week_pattern = ("Mo-So$hours"); 
+        $until_date = $from_date;
+    }
+    
+    my %wdaynum;
+    @wdaynum{qw|So Su Mo Di Tu Mi We Do Th Fr Sa|}
+            = ( 0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6 );
+
+    my @wheel;
+    my @default_hours = [ (!1) x 24 ];
+
+    my $min_unit = gcf_minutes( map { m{ : 0* (\d+) }gxms } @week_pattern );
+    my $hourdiv = 60 / $min_unit;
+
+    for ( @week_pattern ) {
+        my @days = (undef) x 7;
+        my @hours = (undef) x 24*$hourdiv;
+        my ($wspan, $hours) = split /@/, $_;
+        
+        for ( split /,/, $wspan ) {
+            if ( m{ \A ([A-Z][a-z]) - ([A-Z][a-z]+) }ixms ) {
+                my $d1 = $wdaynum{ucfirst $1} // croak "Not a week day: $1";
+                my $d2 = $wdaynum{ucfirst $2} // croak "Not a week day: $2";
+                my $dd = $d1;
+                do { $days[$dd] = 1; $dd = ($dd+1)%7; } until $dd == $d2;
+            }
+            else {
+                my $d = $wdaynum{$_} // croak "Not a week day (Ww): $_";
+                $days[$d] = 1;
+            }
+        }
+        
+        for ( split /,/, $hours ) {
+            my $is_absence = s{^!}{};
+            if ( m{ \A 0*(\d+) (?::0*(\d+))? ([ap]m)?
+                  - 0*(\d+) (?::0*(\d+))? ([ap]m)? \z }ixms
+               )
+            {
+                # Stunden  # Minuten  - # Stunden  # Minuten
+                my ($h1,$m1,$h2,$m2) = ($1, $2||0, $4, $5||0);
+                $h1 += 12 if lc($3) eq 'pm';
+                croak "Keine Stunde (0-24): $h1" if !($h1 >= 0 && $h1 < 25);
+                croak "Keine Minute (0-59): $m1" if !($m1 >= 0 && $m1 < 60);
+                $h1 = ($h1%24)*$hourdiv+$m1/$min_unit;
+
+                $h2 += 12 if lc($6) eq 'pm';
+                croak "Keine Stunde (0-24): $h2" if !($h2 >= 0 && $h2 < 25);
+                croak "Keine Minute (0-59): $m2" if !($m2 >= 0 && $m2 < 60);
+                $h2 = ($h2%24)*$hourdiv+$m2/$hourdiv;
+                
+                my $hh = $h1;
+                do { $hours[$hh] = !$is_absence; $hh = ($hh+1)%(24*$hourdiv); }
+                    until $hh == $h2;
+            }
+            else {
+                die "Keine Stunde (0-24): $_" if !($_ >= 0 && $_ < 25);
+                my $h = ($_ % 24)*$hourdiv; 
+                splice(@hours, $h, $hourdiv, (!$is_absence) x $hourdiv);
+            }
+        }
+
+        for ( @days ) { $_ = $_ ? \@hours : \@default_hours }
+        push @wheel, @days x (@week_multipliers?shift(@week_multipliers):1);
+    }
+    
+    my $dow = Date::Calc::Day_of_Week($y1,$m1,$d1);
+    my $dd = Date::Calc::Delta_Days($y1,$m1,$d1,$y2,$m2,$d2)+1;
+    push @wheel, splice @wheel, 0, $dow-1;
+
+    my $daylen = $hourdiv * 24;
+    my $atoms = '?' x ($daylen * $dd);
+    for ( my $i = 0; $i < $dd; $i++ ) {
+        substr $atoms, $i*$daylen, $daylen, pack 'b*', @{$wheel[$i % @wheel]};
+    }
+
+    $class .= '::Hiatus' if $is_absence;
+
+    return $class->new({
+        span         => $orig_span,
+        from_date    => $from_date,
+        until_date   => $until_date,
+        atoms        => Bit::Vector->from_Bin($atoms),
+    });
+}
+
+sub gcf_minutes { # hour partitioner
+     my $x = 60;
+     while (@_) {
+         my $y = shift || 60;
+         ($x, $y) = ($y, $x % $y) while $y;
+     }
+     return $x;
+}
+
+sub dropIn {
+    my ($self, $span, $next) = @_;
+    # ...
+    return $self->{next};
+}
+
+sub _calc_slices {
+    my ($self, $cursor) = @_;
+    # Lücken zwischen den Slices ausfüllen
+
+    return $next if $cursor->run_from > $self->until_date;
+    return       if $self->from_date  > $cursor->run_until;
+
+    my $orig_slices = $cursor->slices;
+
+    my $cursor_begin = $cursor->run_from;
+
+    my $offset  = $cursor_begin - $self->begin->epoch_sec;
+    $offset = 0 if $offset < 0;
+
+    # to do
+
+    return $self->next, @slices;
+}
+
+sub calc_slices {
+    my ($self,$cursor) = @_;
+    my ($next, @slices);
+    while ( $next ) {
+        ($next, my @to_append) = $next->_calc_slices;
+        push @slices, @to_append;
+    } 
+    return @slices;
+}
+
+sub covers_ts {
+    my ($self, $ts) = @_;
+    $self->from_date < $ts && $ts < $self->until_date;
+}
+
+__PACKAGE__->meta->make_immutable;
+
+1;

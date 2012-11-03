@@ -1,0 +1,27 @@
+#todo li header > time {
+  display:block;
+  float:left;
+  width:175px;
+}
+
+#todo li header > h2 {
+  width: 700px;
+  float:left;
+}
+
+#todo .progressbar {
+  border:1px solid darkblue;
+  margin-left:875px;
+  overflow:hidden;
+  width:100px;
+  border-left-width:33px;
+}
+
+#todo .progressbar>.erledigt {
+  border-left-color:darkblue;
+  border-left-style:solid;
+}
+
+#todo form.details {
+  clear: left;
+}
