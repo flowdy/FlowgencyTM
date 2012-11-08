@@ -7,9 +7,23 @@ use Task;
 use Time::Cursor;
 
 has task_rs => (
-    is => 'rw',
+    is => 'ro',
     isa => 'DBIx::Class::ResultSet',
     required => 1,
+);
+
+has step_retriever => (
+    is => 'ro',
+    lazy => 1,
+    builder => sub {
+        my $task_rs = shift->task_rs;
+        sub {
+            my ($task,$step) = @_;
+            $task = $task_rs->find($task) // return;
+            $step //= '';
+            return $task->steps->find($step);
+        }
+    },
 );
 
 has cache => (
@@ -36,6 +50,8 @@ sub get_task {
                 run_until => $t->until_date,
             ),
             dbirow => $t,
+            step_retriever => $self->step_retriever,
+            scheme => $self->scheme,
         );
     };
 }
