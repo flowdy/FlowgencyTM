@@ -1,27 +1,69 @@
-#todo li header > time {
+body {
+   font-family: "DejaVu Sans", sans-serif;
+}
+
+#logo {
+  width:200px;
+}
+
+#leftnav {
+  clear:left;
+  float: left;
+  width:200px;
+}
+
+body > header {
+   height:160px;
+}
+
+body > header h1 {
+  float: left;
+}
+
+body > header p {
+  text-align:right;
+}
+
+#plans {
+  width:800px;
+}
+
+#plans > li {
+  border:1px dashed lightgray;
+  margin-left: 215px;
+  overflow:hidden;
+}
+
+#plans header > time {
   display:block;
   float:left;
   width:175px;
 }
 
-#todo li header > h2 {
-  width: 700px;
-  float:left;
+#plans header > h2 {
+  margin-bottom:1px;
 }
 
-#todo .progressbar {
-  border:1px solid darkblue;
-  margin-left:875px;
+#plans .progressbar {
+  height:5px;
   overflow:hidden;
-  width:100px;
-  border-left-width:33px;
+  text-align:right;
+  background-color: rgba(0,192,255,0.33);
 }
 
-#todo .progressbar>.erledigt {
-  border-left-color:darkblue;
-  border-left-style:solid;
-}
-
-#todo form.details {
+#plans .detail {
   clear: left;
+}
+
+#plans .progressbar>.erledigt {
+  display:inline-block;
+  background-color:#AA5988;
+  height:100%;
+  width:33%;
+}
+
+#plans .duetime { float: left; font-size:0.5em; font-variant:small-caps; margin-right: 5px; border:0px solid grey; border-width: 1px 0; }
+#plans .duetime .hours { line-height:100%; font-size:7em; display:block; float:left; }
+#plans .duetime .minutes { font-size:3em; }
+#plans form.details {
 }

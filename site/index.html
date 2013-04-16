@@ -13,17 +13,37 @@
 </head>
 <body>
   <header>
-    <h1>Flow-Manager</h1>
-    <p>Der Flow-Manager ist eine einfache Aufgabenverwaltung mit einem Ranking-Algorithmus, der Frist, Priorität und Fortschritt berücksichtigt. Aufgaben können mit Tags (inhaltlich, relevante Kontakte, Abhängigkeiten, Arbeitsmittel) versehen und ihrerseits in einzelne Schritte eingeteilt werden. Den Schritten wiederum kann man nach eigener Schätzung Anteile am Zeitaufwand zuweisen, entsprechend wird bei Erledigt&shy;markierung eines Schrittes der prozentuale Fortschritt neu berechnet. Tags sind frei spezifizierbar, und Aufgaben wie Schritte können bei mit weiteren Details beschrieben werden.</p>
+    <h1><img id="logo" src="logo/flowtime-logo-einfacher.png" alt="FlowTime" /></h1>
+    <p>An dieser Stelle soll irgendein, vielleicht wechselnder, schlauer Spruch hin.</p>
   </header>
-  <div id="todo">
-<ol>
+
+<nav id="leftnav">
+<ul>
+<li>Aktuell<ul>
+    <li>aktive Pläne</li>
+    <li>pausierende Pl.</li>
+</ul></li>
+<li>Zukünftiges</li>
+<li><form id="suche">
+<input placeholder="Suche">
+<label><input type="checkbox" name="why" value="done" />erledigt</label><br />
+<label><input type="checkbox" name="why" value="cancelled" />abgebrochen</label><br />
+<label><input type="checkbox" name="why" value="paused" />ausgesetzt</label><br />
+</form></li>
+</ul>
+</nav>
+<ol id="plans">
 <li>
 <header>
-<time datetime="2011-10-05 12:00">Mi 05.10.2011, 12:00</time>
+<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>
 <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
-<div class="progressbar"><span class="erledigt">33%</span></div>
+<div class="progressbar"><span class="erledigt">&nbsp;</span></div>
+<time datetime="2011-10-05 12:00">Mi 05.10.2011, 12:00</time>
 </header>
+<div class="detail description">
+<h3>Allgemeine Notizen</h3>
+Beschreibung, Hinweise, Notizen für sich selbst
+</div>
 <form class="details">
 <h3>Tags</h3>
 <ul>
@@ -37,10 +57,6 @@
 <li><input name="step" value="2" id="step-b" type="checkbox"><label for="step-b" class="editable-step">Der Benutzer kann die Aufgabe gern in mehrere einteilen.</label></li>
 <li><input name="step" value="1" id="step-c" type="checkbox"><label for="step-c" class="editable-step">warten auf [Pmaria] ...</label></li>
 </ol>
-<h3>Allgemeine Notizen</h3>
-<div class="editable-description">
-Beschreibung, Hinweise, Notizen für sich selbst
-</div>
 <h3>Relevante Kontakte</h3>
 <p class="help">Kontakte zu Personen, die mit dieser Aufgabe in Verbindung stehen. In Beschreibungsfeld der Aufgabe oder des Einzelschritts bei Bedarf referenzierbar mit "[P...]" und dem entspr. Kürzel.</p>
 <ul>
@@ -55,7 +71,8 @@ Beschreibung, Hinweise, Notizen für sich selbst
 <li class="editable-resource">Website <a class="ubm" href="http://www.ub.mannheim.de">UB Mannheim</a>: Obwohl, die brauche ich eigentlich nicht.</li>
 <li class="editable-resource">Ordner <a class="home" href="#" title="Pfad: ~fh/">Home</a>: Obwohl, dass ist ja selbstverständlich.</li>
 </ul>
-</form></div>
+</ol>
+</form>
 <aside></aside>
 </body>
 </html>
