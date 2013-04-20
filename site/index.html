@@ -10,6 +10,8 @@
 <![endif]-->
   <link rel="stylesheet" type="text/css"
      href="screen.css" media="screen,projection">
+  <script src="scripts/jquery-1.9.1.min.js"></script>
+  <script src="scripts/frontend.js"></script>
 </head>
 <body>
   <header>
@@ -35,7 +37,7 @@
 <ol id="plans">
 <li>
 <header>
-<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>
+<!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
 <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
 <div class="progressbar"><span class="erledigt">&nbsp;</span></div>
 <time datetime="2011-10-05 12:00">Mi 05.10.2011, 12:00</time>
@@ -70,7 +72,39 @@ Beschreibung, Hinweise, Notizen für sich selbst
 <li class="editable-resource">Buch <a class="conway" href="#" title="Mediennummer 123">Conway</a>: Perl Best Practices</li>
 <li class="editable-resource">Website <a class="ubm" href="http://www.ub.mannheim.de">UB Mannheim</a>: Obwohl, die brauche ich eigentlich nicht.</li>
 <li class="editable-resource">Ordner <a class="home" href="#" title="Pfad: ~fh/">Home</a>: Obwohl, dass ist ja selbstverständlich.</li>
-</ul>
+</ul></li>
+<!--                                                                            
+   elapsed:   0.833333333333333                                                 
+   done:      0.666666666666667                                                 
+   rel_state: 0.5                                                               
+-->                                                                             
+<li><header><h2>Zeitfortschritt: 5:1 / Erledigungsfortschritt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
+<li><header><h2>Zeitfortschritt: 4/6 / Erledigungsfortschritt: 2/3</h2>
+<div class="progressbar" style="background-color:rgba(0,192,255,1.000000)"><span class="erledigt" style="background-color:#00C0FF;width:67%;">&nbsp;</span></div></header></li>
+
+<!--
+   elapsed:   0.5
+   done:      0.75
+   rel_state: -0.5
+-->
+<li><header><h2>Zeitfortschritt: 1/2 / Erledigungsfortschritt: 3:1</h2>
+<div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#19DFA0;width:75%;">&nbsp;</span></div></header></li>
+
+<!--
+   elapsed:   1
+   done:      0
+   rel_state: 1
+-->
+<li><header><h2>Zeitfortschritt: 2/2 / Erledigungsfortschritt: 0:1</h2>
+<div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#FF264C;width:100%;">&nbsp;</span></div></header></li>
+
+<!--
+   elapsed:   0
+   done:      1
+   rel_state: -1
+-->
+<li><header><h2>Zeitfortschritt: 0/2 / Erledigungsfortschritt: 1:0</h2>
+<div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#33FF40;width:100%;">&nbsp;</span></div></header></li>
 </ol>
 </form>
 <aside></aside>

@@ -45,7 +45,7 @@ body > header p {
 }
 
 #plans .progressbar {
-  height:5px;
+  height:8px;
   overflow:hidden;
   text-align:right;
   background-color: rgba(0,192,255,0.33);
@@ -62,7 +62,7 @@ body > header p {
   width:33%;
 }
 
-#plans .duetime { float: left; font-size:0.5em; font-variant:small-caps; margin-right: 5px; border:0px solid grey; border-width: 1px 0; }
+#plans .duetime { float: left; font-size:0.5em; font-variant:small-caps; border:0px solid grey; border-width: 1px 0; }
 #plans .duetime .hours { line-height:100%; font-size:7em; display:block; float:left; }
 #plans .duetime .minutes { font-size:3em; }
 #plans form.details {
