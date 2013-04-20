@@ -1,0 +1,108 @@
+FlowTime - Grundlegende Fragen
+===============================
+
+1. Was ist FlowTime?
+---------------------
+
+FlowTime ist eine Software zur persönliche Aufgabenverwaltung für Büroarbeiter, mit der man vor allem folgende Dinge tun kann:
+
+   * Aufgaben über eine übersichtliche, da erst mit den Anforderungen
+     mitwachsende Benutzeroberfläche eingeben,
+
+   * diese jederzeit, wenn Sie dazu bereit sind bzw. sich bei der Refokussierung
+     unterstützen lassen möchten, in einer nach ***aktueller* Dringlichkeit**
+     absteigend geordneten Liste ausgeben,
+
+       Laut einer Studie dauert es durchschnittlich 25 min, bis man sich von
+       einer Störung erholt hat und wieder in der unterbrochenen Aufgabe drin
+       ist. Diese 25 Minuten soll FlowTime so weit wie möglich reduzieren, denn
+       sie sind schädlich, sowohl für die Wirtschaft als auch für die Zufrieden-
+       heit des Einzelnen.
+
+   * größere Vorhaben in kleinere Schritte unterteilen,
+
+       + und optional den zeitlichen Aufwand eines Schrittes im Verhältnis
+         zu anderen Schritten *schätzungsweise* angeben,
+
+       + größere Schritte wiederum in Unterschritte unterteilen,
+         - Der Hierarchietiefe sind keine technischen Grenzen gesetzt.
+
+       + bestimmte Schritte mit Zeitdaten versehen, die von der Gesamtaufgabe
+         bzw. von den Zeitdaten eines übergeordneten Schrittes abweichen.
+
+       - Pro Aufgabe wird von jeder Ebene, von innen nach außen, jeweils nur der
+         erste nicht komplett erledigte Schritt in der Liste angezeigt.
+          - ungeordnete Schritte werden immer angezeigt, solange sie nicht
+            abgehakt sind.
+
+   * Abhängigkeiten modellieren und beim Ranking berücksichtigen lassen,
+
+   * den Erledigungsfortschritt verfolgen,
+       - und zwar, bei einer Unterteilung in Schritten, den erledigten
+         respektive ausstehenden Anteilen am Gesamtaufwand entsprechend
+
+   * Aufgaben bei Bedarf unterschiedlichen Arbeitszeitrhythmen zuordnen,
+
+       - Denn nicht alle Aufgaben hängen von den gleichen Ressourcen ab,
+
+       - nicht alle nötigen Assets stehen ständig ununterbrochen zur Verfügung,
+
+       - Aufgaben können in verschiedenen Schichten in demselben Haus anfallen,
+         (Zum Beispiel Büro- und Laborarbeit)
+
+       - auf diese Art können auch mehrere Jobs / Projektkunden verwaltet
+         werden.
+
+   * mit der Zeit das dräuende Gefühl loswerden, dass Dinge in der Arbeit
+     auch in der Freizeit dringlicher werden.
+
+       - In definierten Freizeitspannen (z.B. Wochenende, Urlaub) pausieren
+         Aufträge, steigen nicht höher auf der Liste. In der Arbeitszeit erhöht
+         sich ihre Dringlichkeit entsprechend schneller.
+
+       - Bedingung: Sie sollten sich an die definierten Arbeitszeitrhythmen so
+         so eng wie möglich halten. Abweichungen sind jedoch nicht schlimm,
+         solange sie sich in Grenzen halten und ungefähr ausgleichen.
+
+FlowTime ist eine smart mitdenkende Todo-Liste und fungiert als eine Art Filter, der zwar – schön wär’s – nicht die Menge an Aufträgen reduziert, die chaotisch und unvorhersehbar auf den Arbeitnehmer einprasseln, sondern lediglich zur weiteren Bearbeitung empfiehlt, was aktuell am dringlichsten ist. Die Dringlichkeiten der Aufträge werden dabei dynamisch anhand mehrerer, konfigurierbar gewichteten Kriterien berechnet. Von diesen nur eine ist die fest vergebene Priorität, üblicherweise unterteilt in Stufen wie gelegentlich/niedrig, bald zu erledigen/mittel und dringend/hoch. Eine Beschreibung aller verfügbaren Kriterien finden Sie in Abschnitt 3.
+
+FlowTime ist vom Aufgabenmanager "taskwarrior" inspiriert, sowie teilweise von der Zeitscheibenlogik des Linuxbetriebssystems, das in modernen Versionen Prozessen mehr Systemzeit gibt, die zuvor eher zu kurz gekommen sind. Damit steht sicherlich die Frage im Raum, ob und inwiefern FlowTime zur Maschinisierung und Technokratisierung der Arbeit beiträgt. In meinen Augen ist die Verwendung von FlowTime aber an sich schon ein Hinweis darauf, dass bereits das Arbeitsumfeld technokratisch gestaltet ist. So soll FlowTime eher dazu beitragen
+
+FlowTime ist Freie Software, lizenziert unter der *General Public License, Version 3*. Programmiert wird in Perl. Damit ist FlowTime lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme). Es verwendet das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten. Wenn Ihnen diese Begriffe nichts sagen, nicht schlimm. Will damit nur Mitprogrammierer anlocken, die sich dadurch, dass ihnen diese Begriffe etwas sagen und die sich von ihnen und dem Projekt als ganzes angesprochen fühlen, als eingeladen betrachten dürfen. ;-)
+
+
+2. Was ist FlowTime nicht?
+---------------------------
+
+FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Eine entscheidende Voraussetzung, dass sich dies ändern kann, ist der wissenschaftliche, von Dritten etwa im Rahmen einer unabhängigen Studie erbrachte Nachweis, dass die Verwendung von FlowTime einem eventuell drohenden Burn-out des Nutzers keinen Vorschub leistet, sondern ihn bestenfalls verhindern hilft. Zusätzlich sind bis zur Version 1.0 die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern ausgemerzt, die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich. (Vergleich: Messer können vorne noch so abgestumpft sein, …)
+
+Mindestens solange die Software nicht so bekannt ist, dass sie das Interesse der arbeitspsychologischen Szene weckt, wird von der Benutzung durch Menschen abgeraten, die sich einer Burnout-Gefahr bewusst sind oder bereits einen Burn-out erlitten haben. Ein klärendes Gespräch mit dem betreuenden Hausarzt bzw. Psychologen ist im Zweifelsfall empfohlen.
+
+Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für Sie bewährt? Prima, FlowTime ist nämlich kein Ersatz. Nicht dass die Software schlechter wäre (vielleicht, vielleicht nicht – egal!), allein in diesen Belangen wechselfreudig zu sein ist eher kontraproduktiv. 
+
+Obwohl die Software über den Browser bedient wird, handelt es sich nicht um einen Webservice. Sie vertrauen also keine persönlichen Daten einem Drittanbieter an. Sie betreiben FlowTime lokal auf Ihrem Computer. »Hinter den Kulissen« arbeitet ein Miniwebserver, der von außerhalb ihres PCs lt. Voreinstellung nicht zugreifbar ist.
+
+
+
+3. Wie wird die »aktuelle Dringlichkeit« berechnet?
+----------------------------------------------------
+
+a) Priorität
+
+Die Benennung der Prioritätsstufen und die ihnen zugeordneten Werte aus dem Bereich natürlicher Zahlen können vom Nutzer festgelegt werden. Dabei wird umgekehrt gezählt als sonst üblich: 1 ist nicht die höchste, sondern die niedrigst mögliche Prioritätsstufe, auch genannt »gelegentlich« oder »auf Halde«.
+
+b) zeitliche Nähe zum Fristende
+
+Je näher die Frist rückt, umso dringlicher sind Aufgaben unabhängig von ihrem Erledigungsstand. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden. Aufgaben, bei denen die Frist überzogen wurde, werden nicht rot unterlegt oder abgegrenzt dargestellt vom Rest, wozu, sie stehen ja schon ganz oben und außerdem erkennt man die Überziehung am Minus bei der großen Anzeige -HH:MM neben dem Titel.
+
+c) Diskrepanz zwischen zeitlichem und Erledigungsfortschritt
+
+Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn und Fristende hinterherhinkt, als umso dringlicher gilt die Aufgabe, umso höher wird sie geordnet. In der Liste wird dieses Kriterium auch farblich dargestellt. Solange der Balken von links nach rechts dasselbe Blau des Logos hat, herrscht perfekter Ausgleich. Je kürzer die Aufgabe kommt, umso mehr läuft der Balken von rechts rot an und zieht zugleich farbliche Deckung vom linken Ende weg, von dort wird der Balken also zunehmend transparenter. Je mehr dagegen von einer Aufgabe erledigt wurde, als gemäß der fortschreitenden Zeit hätte erledigt werden müssen, um so grüner läuft der Balken von links her an und zieht Deckkraft von rechts.
+
+Die Liste besteht also oben zunehmend aus Aufgaben, deren Balken von rechts rot, unten aus Aufgaben, die von links grün anlaufen. In der Mitte sammeln sich die blauen. Die Farbverläufe könnte man horizontal und vertikal vergleichen und den Schluss ziehen, wo zwischen Burn- und Bore-out man sich bewegt. Je mehr blau, umso höher ist die Ergiebigkeit der Arbeit sowohl für den Einzelnen, als auch für die Wirtschaft. Doch Achtung, wohlgemerkt *könnte*. Solche Analysen sind ohne psychologisches Fachwissen unglaubwürdig.
+
+Die »farbliche Mitte« gibt an, wie viel von einer Aufgabe erledigt wurde. Bei einem logoblauen Balken ist sie faktisch unsichtbar. Im Flow, den dieser Zustand symbolisiert, interessiert der inhaltliche Fortschritt nicht, denn gerade diese würde die Zuversicht destabilisieren, dass man rechtzeitig fertig wird.
+
+d) wie lange eine Aufgabe schon aktiv ist
+
+e) Ausgleich der Benachteiligung, die aus der Konkurrenz von Aufgaben unterschiedlicher Arbeitszeitrhythmen herrühren können.
