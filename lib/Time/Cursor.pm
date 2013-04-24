@@ -77,4 +77,15 @@ sub update {
 
 }
 
+sub alter_coverage {
+    my ($self, $from, $until) = @_;
+    $_ = Time::Point->parse_ts($row->$_) for $from, $until;
+    if ( $from->fix_order($until) ) {
+        $cursor->run_from($from);
+        $cursor->run_until($until);
+    }
+    else {
+        $cursor->run_until($until);
+        $cursor->run_from($from);
+    }
 1;
