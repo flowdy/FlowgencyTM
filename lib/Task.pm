@@ -18,29 +18,47 @@ has cursor => (
     builder => sub {
         use Time::Cursor;
         my $dbicrow = $self->dbicrow;
-        return Time::Cursor->new({
-            timeline => $self->scheme->get($dbicrow->timeline)->timeline,
-            run_from => $dbicrow->from_date, run_until => $dbicrow->until_date,
-        });
+        my $timeline = $self->scheme->get_timeline($dbicrow->timeline);
+        my $cursor;
+        if ( $cursor = $timeline->get_cached_cursor($dbicrow->name) ) {}
+        else {
+            $cursor = Time::Cursor->new({
+                timeline => $self->scheme->get($dbicrow->timeline)->timeline,
+                run_from => $dbicrow->from_date, run_until => $dbicrow->until_date,
+            });
+            $cursor->timeline->register_cursor($dbicrow->name);
+        }
+        return $cursor;
     }
+);
+
+has id => (
+    is => 'ro',
+    isa => 'ArrayRef',
+    auto_deref => 1,
+    required => 1,
 );
 
 has dbicrow => (
     is => 'ro',
     isa => 'FlowDB::Task', # which again is a DBIx::Class::Row
-    required => 1,
     handles => [qw[
         from_date until_date timeline client
         name title description priority
         main_step steps
     ]],
+    init_arg => undef,
+    builder => sub {
+        my $self = shift;
+        $self->step_retriever->($self->id)->task;
+    },
 );
 
-has done_rate => (
+has progress => (
     is => 'ro',
     isa => 'Num',
-    clearer => '_clear_done_rate',
-    builder => sub { shift->main_step->done_rate }
+    clearer => '_clear_progress',
+    builder => sub { shift->main_step->calc_progress }
     lazy => 1,
 );
 
@@ -52,10 +70,11 @@ has step_retriever => (
 }
 
 sub update {
+
     my $self = shift;
     my $args = @_ % 2 ? shift : { @_ };
  
-    my $step = %$args == 1
+    my $root = %$args == 1
              ? do {
                    my ($k) = keys %$args;
                    ($args) = values %$args;
@@ -63,85 +82,73 @@ sub update {
                }
              : delete $args->{step};
 
-    my $row = $self->dbicrow;
-    my @TASK_COLUMNS = qw(from_date until_date timeline client priority);
     $args->{oldname} = $step;
 
-    unless ( $args->{name} ||= $step || q{} ) {
+    my $steps = $self->_update_flatten_substeps_tree($args);
 
-        for my $field (@TASK_COLUMNS) {
-            $row->$field(delete($args->{$field}) // next);
-        }
+    $self->result_source->storage->txn_do(
+        \&_update_write_to_db => $self, $steps, $root
+    );
 
-        if ( $row->in_storage and my $cursor = $self->cursor ) {
-            use Time::Point;
-            my %ts;
-            $ts{$_} = Time::Point->parse_ts($row->$_)
-               for qw(from_date until_date);
-            if ( $ts{from_date}->fix_order($ts{until_date}) ) {
-                $cursor->run_from($ts{from_date});
-                $cursor->run_until($ts{until_date});
-            }
-            else {
-                $cursor->run_until($ts{until_date});
-                $cursor->run_from($ts{from_date});
-            }
-        }
+    my @to_recalc;
 
-        else { croak 'No cursor' if !$cursor }
-
+    while ( my ($step, $args) = each %$steps ) {
+        next if !grep defined($_), @{$args}{qw{ done checks exp_oftime }};
+        push @to_recalc, $step;
     }
 
-    my $step_rs = $self->steps;
+    return {
+        tasks_to_recalc => [ $self->tasks_to_recalc(@to_recalc) ]
+    };
+}
 
-    if ( my $p = $args->{parent} ) {
-
-        if ( my $p_row = $step_rs->find($p) ) {
-
-            my $pos = $args->{pos};
-            my $siblings = $p_row->substeps;
-            my $num_siblings = $siblings->count;
-            if ( defined $pos and $num_siblings >= $pos
-              and my @later_sibs = $siblings->search({ pos=>{ '>=' => $pos } })
-               ) {
-                $_->update({ pos => $_->pos+1 })
-                    for sort { $b->pos <=> $a->pos } @later_sibs;
-            }
-            else {
-                $args->{pos} = $num_siblings + 1;
-            }
-
-        }
-        else {
-            croak "No row $p to be a child of";
-        }           
-
-    }
+sub _update_flatten_substeps_tree {
+    my ($self, $args) = @_;
 
     $args->{_level} = 0;
     my @rec_path = $args;
     my %steps;
 
+    my $is_ancestor = { _ancestor => 1 };
+
+    { my $p = $args->{parent};
+      my $n = $args->{oldname};
+
+      my $pr = $p ? $self->steps->find({ name => $p })
+                 || croak "$n: No step $p to be a child of"
+             : $self->steps->find({ name => $n })->parent_row
+             ;
+
+      while ( $pr ) {
+          $pr->name ne $n or croak "Cannot descend from myself: $n";
+          $steps{$pr->name} = $is_ancestor;
+      } continue { $pr = $pr->parent_row; }
+
+    }
+
     while ( my $current = $rec_path[-1] ) {
-        my $substeps = $current->{substeps};
-        my $substep;
 
-        for my $l ($current->{link}//()) {
-            $l &&= $self->get_noncircular_link_rowid($l, \@rec_path);
-        }
+        if ( my $attr = shift @{ $current->{substeps} // [] } ) {
 
-        if ( $substeps and $substep = shift @$substeps ) {
-
-            if ( my $seen = $steps{$substep} ) {
-                croak "$substep already subordinated to ".$seen->{parent};
+            if ( !ref($attr) ) {
+                $attr = { oldname => $attr };
             }
 
-            my $attrs = ref $substeps->[0] ? shift @$substeps : {};
-            croak "No step $substep associated to task ".$self->name
-                if !%$attrs and !$step_rs->find($substep);
-
-            $attr->{oldname} = $substep;
             $attr->{name} //= $attr->{oldname};
+            my $substep = $attr->{oldname} // $attr->{name};
+
+            if ( $substep and my $seen = $steps{$substep} ) {
+                croak $seen->{_ancestor}
+                    ? "$substep can't be ancestor and descendent at once"
+                    : "$substep already subordinated to "
+                      . ($seen->{parent} || "ROOT node")
+                    ;
+            }
+
+            $steps{$substep} = $is_ancestor;
+
+            croak "No step $substep associated to task ".$self->name
+                if $substep and !$step_rs->find($substep);
 
             if ( $attr->{pos} ) {
                 carp "{position} is determined by position in substeps array"
@@ -151,7 +158,7 @@ sub update {
             if ( $attr->{parent} ) {
                 carp "{parent} is imposed from higher level - uninfluencable";
             }
-            else { $attr->{parent} = $current->{oldname}; }
+            else { $attr->{parent} = $current->{name}; }
 
             $attr->{_level} = $current->{_level} + 1;
 
@@ -160,16 +167,18 @@ sub update {
         }
         else {
 
-            for ( @TASK_COLUMNS ) {
+            if ( my $link = delete $current->{link} ) {
+                $current->{link_row} = $self->step_retriever->($link);
+            }
+
+            for (qw( from_date until_date timeline client priority )) {
                 my ($field,$value) = ($_, delete($current->{$_}) // next);
                 $current->{subtask_row}{$field} = $value;
             }
 
-            delete $current->{_substeps_processed};
-
             for my $c ( $steps{ delete $current->{oldname} } ) {
                 croak "circularly referred to or multiple entry of $c->{name}"
-                    if defined $c;
+                    if defined($c) && $c != $is_ancestor;
                 $c = $current;
             }
 
@@ -178,15 +187,56 @@ sub update {
         }
 
     }
+
+    return \%steps;
+
+}
     
+sub _update_write_to_db {
+    my ($self, $steps_upd_data, $root_step) = @_;
+
+    my $row = $self->dbicrow;
+    my $steps_rs = $row->steps;
     my %new_parents;
+
+    my %steps2; # working copy to be rebuild on reentry
+                # (e.g. database reconnection)
+    while ( my ($step, $properties) = each %$steps_upd_data ) {
+        $steps2{$step} = { %$properties };
+    }
+
+    my $root = $steps2{$root_step};
+
+    if ( !length($root_step) ) {
+        my $str = delete $root->{subtask_row};
+        $row->update($str) if $str && %$str;
+        croak "root step cannot have a parent"
+            if $root->{parent};
+    }
+    elsif ( my $p = $root->{parent} ) {
+        my $p_row = $steps_rs->find($p);
+        my $pos = $root->{pos};
+        my $siblings = $p_row->substeps;
+        my $num_siblings = $siblings->count;
+        if ( defined($pos) && $num_siblings >= $pos ) {
+            my @later_sibs = $siblings->search({ pos=>{ '>=' => $pos } });
+            $_->update({ pos => $_->pos+1 })
+                for sort { $b->pos <=> $a->pos } @later_sibs;
+        }
+        else {
+            $root->{pos} = $num_siblings + 1;
+        }
+    }
+    else { die "No parent" }
+
+    my @NON_DB_FIELDS = qw/ substeps _ancestor _level _substeps_processed /;
 
     while ( my $step = $step_rs->next ) {
 
-        if ( my $s = delete $steps{ $step->name } ) {
+        if ( my $s = delete $steps2{ $step->name } ) {
 
             for my $p ($s->{parent}) {
-                next if $steps_rs->find($s->{parent});
+                last if $steps_rs->find($s->{parent});
 
                 # can't have a nonexisting row as a parent,
                 # so let's reset it to NULL temporarily
@@ -194,7 +244,8 @@ sub update {
                 $p = undef;
 
             }
-            delete @{$s}{'substeps', '_level'};
+
+            delete @{$s}{@NON_DB_FIELDS};
                 # If we kept emptied array-ref substeps here, DBIx::Class
                 # would think $step hasn't any and erase what has just been
                 # or is yet to be updated.
@@ -208,29 +259,23 @@ sub update {
             # Forget all substeps unmentioned in the hierarchy
             # given that DBIx::Class will delete their descendents with
             # cascade_delete => 1 set.
-
+    
             my ($ar,$ah) = ($step,undef);
             until ( $ah ) { $ar = $ar->parent_row;
-                $step->delete if ($ah = $steps{$ar->name})
+                $step->delete if ($ah = $steps2{$ar->name})
                               && $ah->{substeps}
                               ;
             }
-
+    
         }
-
+    
     }
 
     # In order to not violate foreign key constraint (task,parent/name)
     # we insert new steps one level after another.
-    for my $s ( sort { $a->{_level} <=> $b->{_level} } values %steps ) {
-
-        if ( $s->{substeps} and my @rem = @{$s->{substeps}} ) {
-            die "Eh? There are substeps left unprocessed: ", join ',', @rem;
-        }
-
-        delete @{$s}{'substeps', '_substeps_processed', '_level'};
+    for my $s ( sort { $a->{_level} <=> $b->{_level} } values %steps2 ) {
+        delete @{$s}{@NON_DB_FIELDS};
         $row->add_to_steps($s);
-
     }
 
     while ( my ($name,$substeps) = %new_parents ) {
@@ -239,56 +284,99 @@ sub update {
                 ;
     }
 
-    $self->_clear_done_rate; # to be recalculated next done_rate() call
+    is_link_valid($_) for $step_rs->search({ link => { '!=' => undef }});
 
-    return $row->update_or_create();
+    $row->main_step_row( $step_rs->find({ name => '' }) );
+
+    if ( $row->in_storage ) {
+        use Time::Point;
+        
+        my $cursor = $self->cursor->alter_coverage(
+            $row->from_date, $row->until_date
+        );
+
+        $self->_clear_progress; # to be recalculated on next progress() call
+        return $row->update;
+    }
+    elsif ( $self->cursor ) {
+        return $row->insert;
+    }
+    else { die }
+
 }
 
-sub get_noncircular_link_rowid {
-    my ($self, $link, $path) = @_;
- 
-    my ($ftask, $fstep) = m{ \A (\w+) (?:\W (\w+))? \z }xms;
+sub tasks_to_recalc {
+     my $self = shift;
+     my @links = @_;
 
-    my $req_step = $self->step_retriever->($ftask, $fstep);
+     my $get_step = $self->step_retriever;
+     my (%depending, $task, $step, $link, $p, $str);
+
+     while ( $link = shift @links ) {
+         ($task,$step) = @$link;
+         next if $depending{$task}{$step}++;
+
+         $link = $get_step->($task, $step);
+
+         if ( $p = $link->parent_row ) {
+             push @links, [ $p->task, $p->name ];
+             if ( $str = $link->subtask_row ) {
+                 $depending{$str->name}++;
+             }
+         }
+
+         push @links, map {[ $_->task, $_->name ]}
+                      $link->linked_by->all;
+
+     }
+
+     return keys %depending;
+
+}
+
+sub is_link_valid {
+    my ($self) = @_;
+
+    my $req_step = $self->link_row // return;
+
+    croak "Steps may not be subtasks and links at the same time"
+        if $self->subtask_row;
 
     croak "Can't have multiple levels of indirection/linkage"
         if $req_step->link;
 
     my %is_successor;
-    $is_successor{ $_ } = 1 for map {
-        my $c = $_->{substeps};
-        $c ? map { $_->{oldname} // () } @$c : ();
-    } reverse @$path;
-
-    if ( my $p = $path->[0]->{parent} ) {
-        $p = $step_rs->find($p)
-            // die "Parent not found (should've been checked for)";
-        $is_successor{ $_->name } = 1
-            for map { $_->and_below() } $p->substeps->search(
-                { link => undef, pos => { '>' => $path->[0]->{pos} } }
-            )
-        ;
-    }
+    $is_successor{ $_->name }++ for grep !$_->link, $self->and_below;
+    my ($p,$ch) = ($self, $self);
+    while ( $p = $p->parent_row ) {
+        $is_successor{ $_->name }++ for $p->substeps->search({
+            link => undef,
+            pos => { '>=' => $ch->pos }
+        }, { columns => ['name'] });
+    } continue { $ch = $p; }
 
     my @conflicts = grep $is_successor{$_}, $req_step->prior_deps($task->name);
     if ( @conflicts )
-        croak "Refuse to build circular dependency in ",
+        croak "Circular or dead-locking dependency in ",
             $self->dbicrow->name, " from ", $req_step->name, " to ",
             join ",", @conflicts;
     }
 
-    return $req_step->ROWID;         
+    return;         
 }
 
 sub calc_urgency {
     use POSIX qw(LONG_MAX);
     my ($self,$time) = @_;
 
-    # Dunno why Euler's number, after all it is fascinating:
-    # used as a base in the urgency scaler algorithm below
     my $E = 2.71828182845904523536028747135266249775724709;
+        # Dunno why Euler's number, after all it is fascinating:
+        # used as a base in the urgency scaler algorithm below
+        # The higher the value you choose instead, the more tension and/or
+        # the less remaining time lower prioritized tasks must have in order
+        # to be ranked over those of higher priority.  
 
-    my $done = $self->done_rate;
+    my $done = $self->progress;
     my $prio = $self->priority;
 
     my %time_pos = $self->cursor->update($time//time);
@@ -311,7 +399,7 @@ sub calc_urgency {
         done => $done,
         remaining_time => sprintf('%d:%02d:%02d', $hours, $minutes, $seconds),
         tension => $tension,
-        urgency => $elapsed == 1 ? $LONG_MAX - $done / $pri
+        urgency => $elapsed == 1 ? LONG_MAX - $done / $pri
                  : $E ** ($prio + $tension * $prio) / (1-$elapsed)
         
     };
