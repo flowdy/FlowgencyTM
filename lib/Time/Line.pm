@@ -35,12 +35,44 @@ has fillIn => (
     required => 1,
 );
 
+around BUILDARGS => sub {
+    my ($orig, $class) = @_;
+
+    if ( @_ == 1 ? !ref $_[0] : @_ == 2 ? ref($_[1]) eq 'HASH' : !1 ) {
+        my $day_of_month = (localtime)[3];
+        my $fillIn = Time::Span->new(
+            week_pattern => shift,
+            from_date => $day_of_month,   # do really no matter; both time points
+            until_date => $day_of_month,  # are adjusted dynamically
+        );
+        return $class->$orig( ssn => $_[0] );
+    }
+ 
+    else {
+        return $class->$orig(@_);
+    }
+
+};
+
 sub calc_slices {
     my ($self, $cursor) = @_;
-    my $span = $self->start;
     my $ts0 = $cursor->run_from;
-    $span = $span->next until $span->covers_ts($ts0);
+    my $span = _find_span_covering($self->start, $ts0);
     return $span->calc_slices($cursor);
+}
+
+sub _find_span_covering {
+    my ($span,$ts) = @_;
+    my $prior;
+    until ( $span->covers_ts($ts) ) {
+        $prior = $span;
+        $span = $span->next || return;
+        if ( $span->from_date > $ts ) {
+            $span = undef;
+            last;
+        }
+    }
+    return $prior, $span;
 }
 
 sub respect {
@@ -48,46 +80,34 @@ sub respect {
 
     my ($start,$last) = ($self->start, $self->end);
 
-    my $find_span_covering = sub {
-       my ($span,$ts) = @_;
-       my $prior;
-       until ( $span->covers_ts($ts) ) {
-           $prior = $span;
-           $span = $span->next || return;
-           if ( $span->from_date > $ts ) {
-               $span = undef;
-               last;
-           }
-       }
-       return $prior, $span;
-    };
-    
+    my $lspan = $span; $lspan = $_ while $_ = $lspan->next;
+
     my $span_from_date = $span->from_date;
     if ( $span_from_date < $start->from_date->epoch_sec ) {
-        if ( $start->from_date > $span->until_date ) {
+        if ( $start->from_date > $lspan->until_date ) {
             # we need a gap or bridge, at any rate a defaultRhythm span
             my $gap = $self->fillIn->new_shared_rhythm(
-                Time::Point->from_epoch($span->until_date->last_sec+1),
+                Time::Point->from_epoch($lspan->until_date->last_sec+1),
                 Time::Point->from_epoch($start->from_date->epoch_sec-1),
             );
             $gap->next($start);
-            $span->next($gap);
+            $lspan->next($gap);
         }
         else {
-            my $ts = $span->until_date->successor;
-            my ($prior, $span2) = $find_span_covering->($start, $ts);
+            my $ts = $lspan->until_date->successor;
+            my ($prior, $span2) = _find_span_covering($start, $ts);
             if ( $span2 ) {
                 $span2->from_date($ts);
-                $span->next($span2);
+                $lspan->next($span2);
             }
             elsif ( $ts >= $last->until_date ) {
                 $last->next($span);
-                $self->_set_end($span);
+                $self->_set_end($lspan);
             }
             elsif ( $prior ) {
                 my $next = $prior->next();
-                $prior->next($span);
-                $span->next($next);
+                $prior->next($lspan);
+                $lspan->next($next);
             }
             else { die }
         }
@@ -104,11 +124,11 @@ sub respect {
     }
     elsif (
         my ($prior,$trunc_right_span)
-            = $find_span_covering->($start, $span_from_date)
+            = _find_span_covering($start, $span_from_date)
       ) {
 
-        my $successor = $span->until_date->successor;
-        my $trunc_left_span = $find_span_covering->(
+        my $successor = $lspan->until_date->successor;
+        my $trunc_left_span = _find_span_covering(
             $trunc_right_span, $successor
         );
 
@@ -133,7 +153,7 @@ sub respect {
                 else { $self->_set_end($trunc_left_span); }
             }
             else { $trunc_left_span->from_date($successor); }
-            $span->next($trunc_left_span);
+            $lspan->next($trunc_left_span);
         }
         else { $self->_set_end($span); } 
 
@@ -143,6 +163,33 @@ sub respect {
     #apply_all_roles($span, 'Time::Span::SubHiatus') unless $span->is_absence;
     $self->version($self->version+1);
     return;
+}
+
+sub get_section {
+    my ($self, $from, $until) = @_;
+
+    my $from_span = _find_span_covering($self->start, $from);
+    my $until_span = _find_span_covering($from_span, $until);
+
+    if ( $from_span == $until_span ) {
+        return $from_span->new_shared_rhythm($from, $until);
+    }
+
+    my $start_span = $from_span->new_shared_rhythm($from, undef);
+
+    my ($last_span, $cur_span) = ($start_span, $from_span->next);
+    until ( $cur_span && $cur_span == $until_span ) {
+        $last_span->next( $cur_span );
+        $last_span = $cur_span;
+        $cur_span = $cur_span->next;
+    }
+    
+    if ( $cur_span ) {
+        $last_span->next( $cur_span->new_shared_rhythm(undef, $until) );
+    }
+
+    return $start_span;
+
 }
 
 sub reset {
