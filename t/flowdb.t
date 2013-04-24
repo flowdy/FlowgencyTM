@@ -17,7 +17,7 @@ my $default_scheme = $db->resultset('FlowDB::TimeScheme')->create({
 ok $default_scheme->isa('FlowDB::TimeScheme'), 'FlowDB::TimeScheme row object created';
 
 use Time::Scheme;
-use Tasks;
+use User::Tasks;
 
 $default_scheme = Time::Scheme->new( dbirow => $default_scheme );
 
