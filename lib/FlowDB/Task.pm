@@ -8,7 +8,7 @@ extends 'DBIx::Class::Core';
 __PACKAGE__->table('task');
 __PACKAGE__->add_columns(
     qw/ ROWID user main_step from_date until_date priority
-        hide hidden_ts hidden_because
+        archived archival_ts archived_because
         repeat_from repeat_until frequency
         timeline client
       /
@@ -43,7 +43,7 @@ sub sqlt_deploy_hook {
    );
    $sqlt_table->add_index(
         name => 'task_mainstep',
-        fields => ['user', 'main_step'],
+        fields => ['main_step'],
         type => 'unique'
    );
 
@@ -57,10 +57,10 @@ around copy => sub {
     my $msr = $self->main_step_row;
     my $c = $self->$orig($args);
     if ( $msr->task eq $name ) {
-        $c->update({ main_step => $c->steps->find({ name => q{} }) });
+        $c->update({ main_step_row => $c->steps->find({ name => q{} }) });
     }
     else {
-        $_->copy({ task => $c->ROWID }) for $msr->and_below;
+        $_->copy({ task => $c->name }) for $msr->and_below;
     }
 
     return $c;
