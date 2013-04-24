@@ -10,7 +10,7 @@ bar	  1     20431/39549 8:15
 baz3	  3     25524/32093 14:3
 baz	  3     27524/32093 4:15
 baz2	  1     27524/32093 1:15
-alpha     2	3/4	2:2
+alpha     2	4/4	2:2
 beta	  2	9/10	8:2
 gamma     2     29/30     2:1
 TASKS
@@ -35,7 +35,7 @@ for ( split /\n/, $tasks ) {
     my $rel_state = $elapsed - $done;
     $rel_state /= 1 - min($elapsed, $done);
     #my $res = $prio * 10**$rel_state / (1-$elapsed);
-    my $res = 10**($prio+$rel_state*$prio) / (1-$elapsed);
+    #my $res = 10**($prio+$rel_state*$prio) / (1-$elapsed);
     my ($left_yellow2green,$right_yellow2red) = (255,255);
     if ( $done < $elapsed ) {
         $right_yellow2red -= int($rel_state * 255);
@@ -58,7 +58,7 @@ for ( split /\n/, $tasks ) {
         sprintf('%.2f%%', $done * 100),
         $right_color,
         sprintf('(%+.2f%%)', -$rel_state * 100),
-        $res,
+        $rel_state,
     ];
 }
 
