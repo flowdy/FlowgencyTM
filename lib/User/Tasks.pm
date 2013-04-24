@@ -63,13 +63,13 @@ sub new_task {
     my $row = $id ? do {
         my ($r,$r_base);
 
-        do { $r = $task_rs->find($id); }
-          while $r && ($r_base ||= $r)
+        do { $r = $task_rs->find($id); } while $r
+            && ($r_base ||= $r)
             && $id =~ s{ (?<!\d) (\d*) \z }{ $1+1 }exms;
 
         $r_base && $copy_flag ? $r_base->copy({ name => $id })
                  : $copy_flag ? croak "No task found to copy: $id"
-                              : $task_rs->new({ name => $id)
+                              : $task_rs->new({ name => $id })
                               ;
 
     } : $task_rs->new();
