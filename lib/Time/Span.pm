@@ -157,11 +157,13 @@ sub new_shared_rhythm {
         if !$from->fix_order($until);
 
     my $desc = $self->description;
-    my $new = Time::Span->new(
+    my $line = $self->line;
+    my $new = __PACKAGE__->new(
         week_pattern => $self->_rhythm,
         from_date    => $self->from_date, # initial only, reset in an instant
         until_date   => $self->until_date, # initial only, reset in an instant
         defined($desc) ? (description  => $desc) : (),
+        defined($line) ? (line => $line) : (),
         #is_absence   => $self->is_absence,
     );
 
