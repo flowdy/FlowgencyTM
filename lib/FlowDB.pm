@@ -15,6 +15,7 @@ sub import {
     "DBI:SQLite:$filename", '', '',
         {
            sqlite_unicode => 1
+           use_foreign_keys => 1,
         }
     );
 
