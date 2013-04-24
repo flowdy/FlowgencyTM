@@ -17,11 +17,15 @@ body > header {
 }
 
 body > header h1 {
+  margin-top:0;
   float: left;
 }
 
 body > header p {
   text-align:right;
+  padding-left:220px;
+  border-bottom: 2px solid darkgrey;
+  min-height:120px;
 }
 
 #plans {
