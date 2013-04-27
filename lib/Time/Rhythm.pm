@@ -13,6 +13,8 @@ my %WDAYNUM; @WDAYNUM{
 
 has [qw|_prefix_i _suffix_i|] => ( is => 'rw', isa => 'Int' );
 
+has description => ( is => 'ro', isa => 'Str' );
+
 has pattern => (
     is => 'ro',
     isa => 'ArrayRef',

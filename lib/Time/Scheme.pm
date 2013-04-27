@@ -14,18 +14,13 @@ has _time_profiles => (
     handles => { time_profile => 'get' },
 );
 
-sub add_timeline {
-    my $self = shift;
-    my $args = ref $_[0] ? $_[0] : @_;
-}
-
 sub from_json {
 
     use Util::GraphChecker;
     use JSON qw(from_json);
 
     my $scheme = from_json;
-    my (%tlines,$next_round_promise);
+    my (%tprofiles,$next_round_promise);
 
     my $grch = GraphChecker->new( axes => {
         parents => sub {
@@ -44,8 +39,8 @@ sub from_json {
 
         my $parent = $props->{parent};
         if ( defined($parent) && !ref($parent) ) {
-            if ( defined $tlines{$parent} ) {
-                $props->{parent} = $tlines{$parent};
+            if ( defined $tprofiles{$parent} ) {
+                $props->{parent} = $tprofiles{$parent};
                 $next_round_promise++;
             }
             else {
@@ -55,7 +50,28 @@ sub from_json {
             }
         }
 
-        my %explicitly_varied_by;
+        my ($to_suggest, $to_impose);
+        if ( $parent ) {
+	my %expl_var = map { $_->{ref} =>
+            ($to_suggest, $to_impose) = $parent->inherit_variations(
+                 $props->{variations}
+            );
+        }
+    
+        if ( my $mode = $props->{inherited_variations_all} ) {
+            if ( $mode eq 'optional' ) {
+                (@$to_suggest, @$to_impose) = ();
+            }
+            elsif ( $mode eq 'suggest' ) {
+                # append @to_impose to @to_suggest & empty the former
+                (@$to_suggest, @$to_impose) = (@$to_suggest, @$to_impose);
+            }
+            elsif ( $mode eq 'impose' ) {
+                # prepend @to_suggest to @to_impose & empty the former
+                (@$to_impose, @$to_suggest) = (@$to_suggest, @$to_impose);
+            }
+            else { die "unsupported inherited_variations_all mode: $mode!" }
+        }
 
         foreach my $v ( @{ $props->{variations} } ) {
 
@@ -63,17 +79,11 @@ sub from_json {
                 $v->{$alias} = $_ if $_ = delete $v->{$key};
             }
 
-            if ( blessed($v) ) {}
-            elsif ( $parent and my $var = $parent->get_variation($v->{ref}) ) {
-                $v = Time::Span->new( base_variation => $var, %$var, %$v );
-            }
-            elsif ( defined(my $tl = $tlines{$v->{ref}}) ) { 
-                next if $v->{ignore};
+            if ( $v->{reuse} || $v->{week_pattern} ) {}
+            elsif ( defined(my $tp = $tprofiles{$v->{ref}}) ) { 
+                next if $v->{ignore} || !$v->{apply};
                 $next_round_promise++;
-                $v = $tl->get_section( $v->{from}, $v->{until} );
-            }
-            elsif ( $v->{week_pattern} ) {
-                $v = Time::Span->new(%$v, variation => $v);
+                $v = $tp->get_section( $v->{from_date}, $v->{until_date} );
             }
             else {
                 # dies if circular dependencies are detected
@@ -81,48 +91,21 @@ sub from_json {
                 next PROP;
             }
 
-            $explicitly_varied_by{ refaddr $v->line // $v->base_variation } = 1; 
         }
         
         delete $scheme->{$key};
     
-        my (@to_suggest, @to_impose);
-        if ( $parent ) {
-            @to_suggest = $parent->variations_to_suggest(\%explicitly_varied_by);
-            @to_impose  = $parent->variations_to_impose(\%explicitly_varied_by);
-        }
-    
-        if ( my $mode = $props->{inherited_variations_mode} ) {
-            if ( $mode eq 'optional' ) {
-                (@to_suggest, @to_impose) = ();
-            }
-            elsif ( $mode eq 'suggest' ) {
-                # append @to_impose to @to_suggest & empty the former
-                (@to_suggest, @to_impose) = (@to_suggest, @to_impose);
-            }
-            elsif ( $mode eq 'impose' ) {
-                # prepend @to_suggest to @to_impose & empty the former
-                (@to_impose, @to_suggest) = (@to_suggest, @to_impose);
-            }
-            else { die "unsupported inherited_variations_all mode: $mode!" }
-        }
-
-        my $tline = Time::Profile->new(
-            fillIn => Time::Span->new(
-                week_pattern => $props->{pattern},
-                from => 1, until => 1,
-                     # 1 = first of current month
-                     # (doesn't matter, dynamically adjusted anyway)
-            ),
+        my $tprof = Time::Profile->new(
+            $props->{pattern} // $parent->fillIn->description
         );
 
+        $tprofiles{ $key } = $tline;
+
         for my $v ( @to_suggest, @{$props->{variations}}, @to_impose ) {
-            next if !blessed($v);
-            $tline->respect($v);
+            next if !(blessed($v) || $v->{reuse} || $v->{week_pattern});
+            $tprof->respect($v);
         }
                        
-        $tlines{ $key } = $tline;
-
     }
     
     if ( %$scheme ) {
@@ -131,12 +114,12 @@ sub from_json {
             goto PROP;
         }
         else {
-            die "Timeline definitions with irresoluble dependencies: ",
+            die "Time profile definitions with irresoluble dependencies: ",
                join ", ", keys $scheme;
         }
     }
 
-    return $class->new( _timelines => \%tlines );
+    return $class->new( _time_profiles => \%tprofiles );
 
 }
 

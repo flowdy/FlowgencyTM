@@ -35,6 +35,21 @@ has fillIn => (
     required => 1,
 );
 
+has _parent => (
+    is => 'ro',
+    isa => 'Time::Profile',
+    init_arg => 'parent',
+);
+
+has _variations => (
+    is => 'ro',
+    isa => 'ArrayRef[HashRef]',
+    init_arg => undef,
+    default => sub { [] },
+    traits => [ 'Array' ],
+    handles => { _add_variation => 'push' },
+}
+
 around BUILDARGS => sub {
     my ($orig, $class) = @_;
 
@@ -78,6 +93,15 @@ sub _find_span_covering {
 sub respect {
     my ($self,$span) = @_;
 
+    if ( ref $span eq 'HASH' ) {
+        my $tspan = $span;
+        if ( my $base = $tspan->{reuse} ) {
+            $span = $base->new_shared_rhythm(
+                @{$tspan}{'from_date', 'until_date'}
+            );
+        }
+        $self->_add_variation($tspan);
+    }
     my ($start,$last) = ($self->start, $self->end);
 
     my $lspan = $span; $lspan = $_ while $_ = $lspan->next;
@@ -179,8 +203,8 @@ sub get_section {
 
     my ($last_span, $cur_span) = ($start_span, $from_span->next);
     until ( $cur_span && $cur_span == $until_span ) {
-        $last_span->next( $cur_span );
-        $last_span = $cur_span;
+        my $next_span = $cur_span->new_shared_rhythm();
+        $last_span->next( $next_span );
         $cur_span = $cur_span->next;
     }
     
@@ -258,53 +282,24 @@ sub detect_circular {
     }
     continue { $span = $next }
 }
-__PACKAGE__->meta->make_immutable;
 
-__END__
+sub inherit_variations {
+    my ($self, $expl_var) = @_;
 
-package Time::Line::Presence;
-use Moose;
-extends 'Time::Line';
+    my ( @to_suggest, @to_impose );
+    if ( my $p = $self->parent ) {
+        my ($inner_suggest, $inner_impose) = $p->inherit_variations($expl_var);
+        @to_suggest = @$inner_suggest;
+        @to_impose = @$inner_impose;    
+    }
 
-has absence => (
-    is => 'ro',
-    isa => 'Time::Line::Absence',
-    required => 1,
-);
+    for my $v ( @{$self->_variations} ) {
+        
+    }
 
-sub BUILD {
-    my ($self, $args) = @_;
-    $self->absence->presence($self);
+    else { return 
 }
 
-around respect => sub {
-    my ($self, $orig, $span) = @_;
-
-    $self->$orig($span);
-
-    $self->absence->mustnt_start_later($span->from_date);
-    $self->absence->mustnt_end_sooner($span->until_date);
-};
-
 __PACKAGE__->meta->make_immutable;
-
-package Time::Line::Absence;
-use Moose;
-extends 'Time::Line';
-
-has presence => (
-    is => 'ro',
-    isa => 'Time::Line::Presence',
-    weak_ref => 1,
-);
-
-around respect => sub {
-    my ($self, $orig, $span) = @_;
-
-    $self->$orig($span);
-
-    $self->presence->mustnt_start_later($span->start);
-    $self->presence->mustnt_end_sooner($span->until_date);
-};
 
 1;
