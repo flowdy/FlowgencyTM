@@ -7,7 +7,7 @@ use Test::More tests => 50;
 use lib qw(../lib/);
 use Time::Slice;
 use Time::Cursor;
-use Time::Line;
+use Time::Profile;
 use Scalar::Util qw(weaken);
 
 
@@ -37,7 +37,7 @@ is($tspan2->_rhythm->hourdiv, 2, 'another tspan with end of business day 17:30')
 is(length($tspan2->_rhythm->atoms->to_Bin), length($tspan_bin)*2, 'double-sized rhythm');
 like($tspan2->_rhythm->atoms->to_Bin, qr{ 0 1{17} 0{18} \z }xms, 'additional half an hour respected at atom level');
 
-my $curline = Time::Line->new(
+my $curprof = Time::Profile->new(
     fillIn => Time::Span->new(
         description => 'reguläre Bürozeiten',
         from_date => '3.10.',
@@ -46,7 +46,7 @@ my $curline = Time::Line->new(
     ),
 );
 my $cursor = Time::Cursor->new(
-    timeline => $curline,
+    timeprofile => $curprof,
     run_from => Time::Point->parse_ts('27.6.'),
     run_until => Time::Point->parse_ts('15.7.'),
 );
@@ -71,7 +71,7 @@ my $ts2 = Time::Point->parse_ts('2012-05-21 17:00:00');
 $cursor->run_from(Time::Point->parse_ts('12.5.'));
 $cursor->update($ts);
 my %pos = $cursor->update($ts2);
-$curline->respect($tspan);
+$curprof->respect($tspan);
 %pos2 = $cursor->update($ts2->epoch_sec+3601);
 
 is $pos{elapsed_pres}, $pos2{elapsed_pres}, 'Unterschied nach Integration einer variierten Zeitspanne';
@@ -79,56 +79,56 @@ is $pos2{old}{elapsed_pres} - $pos2{elapsed_pres}, 3600, "Subhash 'old' beim ers
 
 my $defaultRhythm = Time::Span->new(week_pattern => 'Mo-Fr@9-17:30', from_date => '30.9.12', until_date => '30.9.12', description => 'Lückenfüller' );
 
-my $tl = Time::Line->new( name => 'test1', fillIn => $defaultRhythm );
+my $tp = Time::Profile->new( name => 'test1', fillIn => $defaultRhythm );
 
-ok $tl->isa('Time::Line'), "Zeitlinie erstellt";
+ok $tp->isa('Time::Profile'), "Zeitlinie erstellt";
 
 my $span1 = Time::Span->new(from_date => '23.9.12', until_date => '3.10.', week_pattern => 'Mo-Do@10-14:30,15:15-19', description => 'nur Montags bis Donnerstags');
 
-$tl->respect($span1); # [ 2012-09-23 nur Montags bis Donnerstags 2012-10-03 ]
+$tp->respect($span1); # [ 2012-09-23 nur Montags bis Donnerstags 2012-10-03 ]
 
-is $tl->start, $span1, 'Span 1 integriert: start-Zeiger zeigt darauf';
-is $tl->end, $span1, 'Span 1 integriert: end-Zeiger zeigt darauf';
+is $tp->start, $span1, 'Span 1 integriert: start-Zeiger zeigt darauf';
+is $tp->end, $span1, 'Span 1 integriert: end-Zeiger zeigt darauf';
 
 my $span2 = Time::Span->new(from_date => '17.10.12', until_date => '30.10.',
    week_pattern => 'Mo-Mi@7:30-13:00,Do-Sa@13-18:30', description => 'Für verschiedene Tage der Woche verschiedene Arbeitszeiten');
 
-$tl->respect($span2); # | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 [ 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 ]
+$tp->respect($span2); # | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 [ 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 ]
 
-is $tl->start, $span1, 'Span1 bleibt auf Start, während';
-is $tl->end, $span2, 'Span2 nun den Schluss markiert';
-my $fillIn1 = $tl->start->next;
+is $tp->start, $span1, 'Span1 bleibt auf Start, während';
+is $tp->end, $span2, 'Span2 nun den Schluss markiert';
+my $fillIn1 = $tp->start->next;
 ok $fillIn1->pattern == $defaultRhythm->pattern,
    "Dazwischen ist eine Brücke mit dem Standardrhythmus";
  
 my $span3 = Time::Span->new( from_date => '27.8.12', until_date => '15.9.12', week_pattern => 'Mo-So@!', description => 'Urlaub' );
 
-$tl->detect_circular;
-$tl->respect($span3); # [ 2012-08-27 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 ] 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
-$tl->detect_circular;
+$tp->detect_circular;
+$tp->respect($span3); # [ 2012-08-27 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 ] 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
+$tp->detect_circular;
 
-is $span3, $tl->start, 'Weitere Span3 an den Anfang'; 
+is $span3, $tp->start, 'Weitere Span3 an den Anfang'; 
 ok $span3->next->pattern == $fillIn1->pattern, 'Zur Span1 eine weitere Brücke';
 isnt $span3->next, $fillIn1, 'Es handelt sich aber nicht um die zwischen Span2 und Span3';
 
 my $span4 = Time::Span->new(description => 'Urlaubsteilzeit', from_date => '20.8.12', until_date => '31.8.', week_pattern => 'Mo-Fr@7:30-11;Mo-Do@7-10:30');
 
-$tl->respect($span4); # [ 2012-08-20 Urlaubsteilzeit 2012-08-31 ] 2012-09-01 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
+$tp->respect($span4); # [ 2012-08-20 Urlaubsteilzeit 2012-08-31 ] 2012-09-01 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
 
-is $span4, $tl->start, 'Urlaubsteilzeit';
+is $span4, $tp->start, 'Urlaubsteilzeit';
 is $span4->next, $span3, 'Übergang zu Urlaub';
 is $span3->from_date->get_qm_timestamp, '2012-09-01', 'Span3: Beginn später';
 
 my $span5 = Time::Span->new(from_date => '7.9.12', until_date => '8.9.', week_pattern => 'Mo-So@10-10', description => 'Urlaubspause');
 
-$tl->respect($span5); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 [ 2012-09-07 Urlaubspause 2012-09-08 ] 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
+$tp->respect($span5); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 [ 2012-09-07 Urlaubspause 2012-09-08 ] 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
 
 is $span5, $span4->next->next, 'Urlaubspause integriert';
 is $span4->next->pattern, $span5->next->pattern, 'Vorspanne und Nachspanne waren mal identisch';
 
 my $span6 = Time::Span->new(from_date => '22.', until_date => '24.9.12', week_pattern => 'Mo-So@17-17', description => 'Mal kurz eingesprungen übers Wochenende');
 
-$tl->respect($span6); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 | 2012-09-07 Urlaubspause 2012-09-08 | 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-21 23:59:59 [ 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 ] 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
+$tp->respect($span6); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 | 2012-09-07 Urlaubspause 2012-09-08 | 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-21 23:59:59 [ 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 ] 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
 
 is $span6, $span5->next->next->next, 'Span6 integriert';
 is $span5->next->next->until_date->get_qm_timestamp, '2012-09-21', 'Anpassung des Enddatums der Defaultspanne davor';
@@ -137,10 +137,10 @@ ok $span3->next->pattern != $span6->next->pattern, 'Spannen davor und danach imm
 
 my $span7 = Time::Span->new(description => '1 Nachtschicht für die nette Kollegin', from_date => '30.10.', until_date => '31.10.', week_pattern => 'Mo-Fr@21:30-22,0-4:30');
 
-$tl->respect($span7); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 | 2012-09-07 Urlaubspause 2012-09-08 | 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-21 23:59:59 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 [ 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 ]
+$tp->respect($span7); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 | 2012-09-07 Urlaubspause 2012-09-08 | 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-21 23:59:59 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 [ 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 ]
 
 is $span7, $span2->next, 'Nachtschicht integriert';
-is $span7, $tl->end, 'Nachtschicht am Schluss';
+is $span7, $tp->end, 'Nachtschicht am Schluss';
 
 # TODO: Deckungsgleiche Abgrenzungen
 # TODO: Wenn neue Spannen mehrere bestehende Spannen überdecken, müssen diese im Speicher freigegeben werden.
@@ -152,27 +152,27 @@ weaken($_) for $span3, $span4, $span5, $s5next;
 
 my $span8 = Time::Span->new(description => 'Überschreiben', week_pattern => 'Mo-So@!0-23', from_date => '20.8.', until_date => '19.9.12');
 
-$tl->respect($span8); # [ 2012-08-20 Überschreiben 2012-09-19 ] 2012-09-20 00:00:00 Lückenfüller 2012-09-21 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 [ 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 ]
+$tp->respect($span8); # [ 2012-08-20 Überschreiben 2012-09-19 ] 2012-09-20 00:00:00 Lückenfüller 2012-09-21 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 [ 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 ]
 
 is $span3, undef, 'Span8 hat Span3 überschrieben, also gelöscht';
 is $span4, undef, '... und Span4';
 is $span5, undef, '... und Span5';
 is $s5next, undef, '... und den zweiten Teil von Span3';
-is $span8, $tl->start, 'Span8 steht am Anfang';
+is $span8, $tp->start, 'Span8 steht am Anfang';
 
 my $s8next = $span8->next;
 weaken($s8next); # [ 2012-08-20 Überschreiben 2012-09-19 ] 2012-09-20 00:00:00 Lückenfüller 2012-09-21 23:59:59 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 | 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 |
 my $span9 = Time::Span->new( description => 'Überschreiben II', from_date => '20.9.', until_date => '2012-09-21', week_pattern => 'Mo-Fr@13' );
 
-$tl->respect($span9); # | 2012-08-20 Überschreiben 2012-09-19 [ 2012-09-20 Überschreiben II 2012-09-21 ] 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 | 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 |
+$tp->respect($span9); # | 2012-08-20 Überschreiben 2012-09-19 [ 2012-09-20 Überschreiben II 2012-09-21 ] 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 | 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 |
 
 is $span8->next, $span9, 'Span9 ersetzt Lückenfüller';
 is $span9->next, $span6, 'passgenau';
 is $s8next, undef, 'Lückenfüller überschrieben, also gelöscht';
 
-my @spans; my $next = $tl->start;
-$tl->detect_circular;
+my @spans; my $next = $tp->start;
+$tp->detect_circular;
 do { push @spans, weaken($next) } while $next = $next->next; 
-$tl->reset;
+$tp->reset;
 my $num =()= grep !defined, @spans;
 ok $num <= 1, 'timeline reset';

@@ -1,7 +1,7 @@
 #!perl
 use strict;
 
-package Time::Line;
+package Time::Profile;
 use Moose;
 use Time::Span;
 use Carp qw(carp croak);

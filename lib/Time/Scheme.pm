@@ -5,13 +5,13 @@ package Time::Scheme;
 use Moose;
 use Carp qw(carp croak);
 use Date::Calc;
-use Time::Line;
+use Time::Profile;
 
-has _timelines => (
+has _time_profiles => (
     is => 'ro',
-    isa => 'HashRef[Time::Line]',
+    isa => 'HashRef[Time::Profile]',
     default => sub { {} },
-    handles => [ 'get' ],
+    handles => { time_profile => 'get' },
 );
 
 sub add_timeline {
@@ -107,7 +107,7 @@ sub from_json {
             else { die "unsupported inherited_variations_all mode: $mode!" }
         }
 
-        my $tline = Time::Line->new(
+        my $tline = Time::Profile->new(
             fillIn => Time::Span->new(
                 week_pattern => $props->{pattern},
                 from => 1, until => 1,

@@ -19,9 +19,9 @@ has version => (
     init_arg => undef,
 );
 
-has timeline => (
+has timeprofile => (
     is => 'ro',
-    isa => 'Time::Line',
+    isa => 'Time::Profile',
     required => 1,
 );
 
@@ -43,13 +43,13 @@ sub BUILD {
 
 sub ensure_capacity {
     my ($self) = @_;
-    my $timeline = $self->timeline;
+    my $timeprofile = $self->timeprofile;
     my $from = $self->run_from;
     my $to = $self->run_until;
     croak "Cannot run backwards in time"
        if !$from->fix_order($to);
-    $timeline->mustnt_start_later($from);
-    $timeline->mustnt_end_sooner($to);
+    $timeprofile->mustnt_start_later($from);
+    $timeprofile->mustnt_end_sooner($to);
     $self->slices([]);
 }
             
@@ -57,11 +57,11 @@ sub update {
     my ($self, $time ) = @_;
 
     my $old = {};
-    my $ref_version = $self->timeline->version;
+    my $ref_version = $self->timeprofile->version;
     if ( !@{$self->slices} or my $outdated = $self->version < $ref_version ) {
         for ( $self->slices ) { $old = $_->calc_pos_data($time); }
         $self->ensure_capacity if $outdated;
-        $self->slices($self->timeline->calc_slices($self));
+        $self->slices($self->timeprofile->calc_slices($self));
         $self->version($ref_version);
     }
 

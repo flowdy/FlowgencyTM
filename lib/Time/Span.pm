@@ -14,7 +14,7 @@ coerce 'Time::Point' => from 'Str' => via { Time::Point->parse_ts(shift) };
 
 has description => ( is => 'rw', isa => 'Str' );
 
-has line => ( is => 'rw', isa => 'Time::Line', weak_ref => 1 );
+has line => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
 
 has _rhythm => ( is => 'ro', isa => 'Time::Rhythm', required => 1, handles => ['pattern'] );
 
