@@ -6,14 +6,14 @@ use Test::More tests => 50;
 
 use lib qw(../lib/);
 use Time::Slice;
-use Time::Cursor;
 use Time::Profile;
+use Time::Cursor;
 use Scalar::Util qw(weaken);
 
 
 my $tspan;
 
-$tspan = Time::Span->from_string('21.5.--5.8.:Mo-Fr@9-16');
+$tspan = Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
 is($tspan->_rhythm->atoms->to_Enum, '9-16,33-40,57-64,81-88,105-112,177-184,201-208,225-232,249-256,273-280,345-352,369-376,393-400,417-424,441-448,513-520,537-544,561-568,585-592,609-616,681-688,705-712,729-736,753-760,777-784,849-856,873-880,897-904,921-928,945-952,1017-1024,1041-1048,1065-1072,1089-1096,1113-1120,1185-1192,1209-1216,1233-1240,1257-1264,1281-1288,1353-1360,1377-1384,1401-1408,1425-1432,1449-1456,1521-1528,1545-1552,1569-1576,1593-1600,1617-1624,1689-1696,1713-1720,1737-1744,1761-1768,1785-1792', 'Time span 21.5.--5.8.:Mo-Fr@9-16: rhythm');
 my $tspan_bin = $tspan->_rhythm->atoms->to_Bin;
 $tspan->until_date('10.8. 11');
@@ -40,19 +40,19 @@ like($tspan2->_rhythm->atoms->to_Bin, qr{ 0 1{17} 0{18} \z }xms, 'additional hal
 my $curprof = Time::Profile->new(
     fillIn => Time::Span->new(
         description => 'reguläre Bürozeiten',
-        from_date => '3.10.',
+        from_date => '3.10.2012',
         until_date => '3.10.',
         week_pattern => 'Mo-Fr@9-17',
     ),
 );
 my $cursor = Time::Cursor->new(
     timeprofile => $curprof,
-    run_from => Time::Point->parse_ts('27.6.'),
+    run_from => Time::Point->parse_ts('27.6.2012'),
     run_until => Time::Point->parse_ts('15.7.'),
 );
 
 $cursor->slices($tspan->calc_slices($cursor));
-my $ts = Time::Point->parse_ts('7.7.')->fill_in_assumptions;
+my $ts = Time::Point->parse_ts('7.7.2012');
 my $pos = $cursor->update($ts->epoch_sec);
 $ts = Time::Point->from_epoch($ts->epoch_sec+43200);
 my $pos2 = $cursor->update($ts->epoch_sec);
@@ -63,7 +63,7 @@ is( $pos, $pos2{current_pos}, 'it does neither at '.$ts);
 $pos2 = $cursor->update($ts->epoch_sec+1);
 cmp_ok( $pos, '<', $pos2, 'but just a second later, at 9:00:01am, it grows');
 1;
-$tspan2 = $tspan->new_shared_rhythm( '8.' => '21.8.' );
+$tspan2 = $tspan->new_shared_rhythm( '8.' => '21.8.2012' );
 is($tspan2->_rhythm->atoms->bit_test(83), 0, 'copied and moved tspan, test 1');
 is($tspan2->_rhythm->atoms->bit_test(63), 1, 'copied and moved tspan, test 2');
 
@@ -135,7 +135,7 @@ is $span5->next->next->until_date->get_qm_timestamp, '2012-09-21', 'Anpassung de
 is $span6->next->from_date->get_qm_timestamp, '2012-09-25', 'Anpassung des Anfangsdatums der Spanne danach';
 ok $span3->next->pattern != $span6->next->pattern, 'Spannen davor und danach immer verschieden gewesen';
 
-my $span7 = Time::Span->new(description => '1 Nachtschicht für die nette Kollegin', from_date => '30.10.', until_date => '31.10.', week_pattern => 'Mo-Fr@21:30-22,0-4:30');
+my $span7 = Time::Span->new(description => '1 Nachtschicht für die nette Kollegin', from_date => '30.10.', until_date => '31.10.2012', week_pattern => 'Mo-Fr@21:30-22,0-4:30');
 
 $tp->respect($span7); # 2012-08-20 Urlaubsteilzeit 2012-08-31 | 2012-09-01 Urlaub 2012-09-06 | 2012-09-07 Urlaubspause 2012-09-08 | 2012-09-09 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-21 23:59:59 | 2012-09-22 Mal kurz eingesprungen übers Wochenende 2012-09-24 | 2012-09-25 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-29 [ 2012-10-30 1 Nachtschicht für die nette Kollegin 2012-10-31 ]
 

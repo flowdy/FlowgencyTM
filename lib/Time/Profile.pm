@@ -48,7 +48,7 @@ has _variations => (
     default => sub { [] },
     traits => [ 'Array' ],
     handles => { _add_variation => 'push' },
-}
+);
 
 around BUILDARGS => sub {
     my ($orig, $class) = @_;
@@ -297,7 +297,6 @@ sub inherit_variations {
         
     }
 
-    else { return 
 }
 
 __PACKAGE__->meta->make_immutable;
