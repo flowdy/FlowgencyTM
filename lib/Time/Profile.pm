@@ -51,16 +51,16 @@ has _variations => (
 );
 
 around BUILDARGS => sub {
-    my ($orig, $class) = @_;
+    my ($orig, $class) = (shift, shift);
 
     if ( @_ == 1 ? !ref $_[0] : @_ == 2 ? ref($_[1]) eq 'HASH' : !1 ) {
         my $day_of_month = (localtime)[3];
         my $fillIn = Time::Span->new(
             week_pattern => shift,
-            from_date => $day_of_month,   # do really no matter; both time points
-            until_date => $day_of_month,  # are adjusted dynamically
+            from_date => $day_of_month,  # do really no matter; both time points
+            until_date => $day_of_month, # are adjusted dynamically
         );
-        return $class->$orig( ssn => $_[0] );
+        return $class->$orig({ fillIn => $fillIn });
     }
  
     else {
@@ -79,6 +79,7 @@ sub calc_slices {
 sub _find_span_covering {
     my ($span,$ts) = @_;
     my $prior;
+
     until ( $span->covers_ts($ts) ) {
         $prior = $span;
         $span = $span->next || return;
@@ -191,6 +192,14 @@ sub respect {
 
 sub get_section {
     my ($self, $from, $until) = @_;
+
+    $DB::single=1;
+
+    ref $_ or $_ = Time::Point->parse_ts($_) for $from, $until;
+    $from->fix_order($until) or croak 'from and until arguments in wrong order';
+
+    $self->mustnt_start_later($from);
+    $self->mustnt_end_sooner($until);
 
     my $from_span = _find_span_covering($self->start, $from);
     my $until_span = _find_span_covering($from_span, $until);

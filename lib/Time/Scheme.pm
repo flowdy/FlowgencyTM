@@ -10,19 +10,24 @@ use Time::Profile;
 has _time_profiles => (
     is => 'ro',
     isa => 'HashRef[Time::Profile]',
+    traits => [ 'Hash' ],
     default => sub { {} },
     handles => { time_profile => 'get' },
 );
 
 sub from_json {
-
     use Util::GraphChecker;
-    use JSON qw(from_json);
+    use JSON ();
 
-    my $scheme = from_json;
+    my $class = shift;
+
+    my $scheme = JSON::from_json(shift, {
+        map { $_ => 1 } qw/relaxed allow_barekey allow_singlequote/
+    });
+
     my (%tprofiles,$next_round_promise);
 
-    my $grch = GraphChecker->new( axes => {
+    my $grch = Util::GraphChecker->new( axes => {
         parents => sub {
             my ($parent, $child) = @_;
             push @{$parent->{children}}, $child;
@@ -52,7 +57,6 @@ sub from_json {
 
         my ($to_suggest, $to_impose);
         if ( $parent ) {
-	my %expl_var = map { $_->{ref} =>
             ($to_suggest, $to_impose) = $parent->inherit_variations(
                  $props->{variations}
             );
@@ -95,13 +99,14 @@ sub from_json {
         
         delete $scheme->{$key};
     
+        $DB::single=1;
         my $tprof = Time::Profile->new(
             $props->{pattern} // $parent->fillIn->description
         );
 
-        $tprofiles{ $key } = $tline;
+        $tprofiles{ $key } = $tprof;
 
-        for my $v ( @to_suggest, @{$props->{variations}}, @to_impose ) {
+        for my $v ( @$to_suggest, @{$props->{variations}}, @$to_impose ) {
             next if !(blessed($v) || $v->{reuse} || $v->{week_pattern});
             $tprof->respect($v);
         }
