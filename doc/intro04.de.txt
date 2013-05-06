@@ -1,0 +1,36 @@
+Einführung und Grundlagen von FlowTime
+======================================
+
+1. Was ist FlowTime?
+---------------------
+
+FlowTime ist ein kleines Programm zur persönlichen Verwaltung von Aufgaben. Es funktioniert dem Prinzip nach wie eine Erledigungsliste, die sich selbst ordnet, absteigend nach Dringlichkeit. Die Berechnung der Dringlichkeit ist an die eigenen Bedürfnisse anpassbar, indem du den verschiedenen Größen beliebig gewichtest. Neben dem obligatorischen Prioritätsgrad, den du jeder Aufgabe zuweist, gibt es – zum Beispiel – die Differenz zwischen Zeit- und Erledigungsfortschritt, ein für mich so wichtiges Kriterium, dass es nicht nur beim Ranking berücksichtigt wird, sondern sogar mit einem Farbverlaufsbalken pro Aufgabe visualisiert wird.
+
+So ein dynamisches Dringlichkeitskonzept finde ich im Übrigen »humaner« als eine Erinnerungsfunktion. Anstatt dass die Maschine den Menschen mit einer Erinnerung aus dem aktuellen Arbeits- oder Gedankengang reißt und diese Störung (denn nichts anderes ist es fürs Unterbewusstsein) für Stress und ein subversives Gefühl von Getriebenheit, bekommt der Mensch, wannimmer er eine Anfrage 
+
+### Zeitfortschritt?
+
+Oder genauer: Arbeitszeitfortschritt. Wer will schon ständig daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der  am besten da bleibt, wo es herkommt: im Job. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus der Freizeit in die Arbeitszeit. Betroffene Aufgaben sind also in ersterer wie eingefroren, während sie in letzterer entsprechend schneller dringlich werden. Was nicht schlimm sein sollte, solange die eingestellte Frist nicht mit dem Chef vereinbart ist, kann man sie ja verschieben.
+
+Damit das funktioniert, musst du natürlich dem Programm sagen, wie dein typischer durchschnittlicher Arbeitstag aussieht. Abweichungen davon sind unvermeidbar und auch nicht schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art kannst du mit minimalem Eingabeaufwand in Form eines Zeitprofils definieren, bei Bedarf von mehreren verschiedenen, mit denen du dann Aufgaben verknüpfst.
+
+Je enger du dich an die definierte Zeiteinteilung hältst / halten kannst, umso weniger unterscheiden sich die Zustände der Liste zu Beginn der Frei- und der darauffolgenden Arbeitszeit. So wirkt FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegen, die zusammen mit anderen Faktoren Burn-out begünstigt.
+
+### Erledigungsfortschritt?
+
+Kleine Aufgaben bekommen einfach ein Erledigungshäkchen und verschwinden ins Archiv. Größere Vorhaben, auf jeden Fall Projekte, an denen auch Kollegen mitarbeiten, sollten in Schritten und ggf. Unterschritten/-aufgaben gegliedert werden. Einzelne Schritte können sogar mit mehreren Kästchen zum Anhaken versehen werden, wenn sie mehrmals in Folge abgearbeitet werden müssen.
+
+Schritte auf allen Ebenen können in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, zu denen sie in einer Elter/Kind- oder Geschwisterbeziehung stehen.
+
+Auf diese Weise kannst du justieren, wie viel Anteil am Gesamtfortschritt das einzelne Erledigungshäkchen hat. Das könnte man natürlich auch einfacher haben, man könnte einfach eingeben, wieviel Prozent von der gesamten Aufgabe man erledigt hat. Diese Lösung würde allerdings sehr stark zum Selbstbetrug verführen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, würde die erneute sorgfältig austarierte Nachjustierung anderer Schritte notwendig machen. 
+
+
+2. Was ist FlowTime nicht?
+---------------------------
+
+
+
+3. Nach welchen Kriterien wird die Dringlichkeit berechnet?
+-----------------------------------------------------------
+
+
