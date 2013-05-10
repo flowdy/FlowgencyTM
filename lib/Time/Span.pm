@@ -261,6 +261,56 @@ sub covers_ts {
     $self->from_date <= $ts && $ts <= $self->until_date;
 }
 
+sub alter_coverage {
+    my ($self, $from_date, $until_date, $fillIn) = @_;
+
+    $fillIn //= $self;
+    $_ = Time::Point->parse_ts($_)
+        for grep { defined && !ref } $from_date, $until_date;
+    if ( $from_date && $until_date ) {
+        $from_date->fix_order($until_date)
+            or croak 'Time::Span::alter_coverage(): dates in wrong order';
+    }
+
+    my ( $from_span, $until_span );
+
+    if ( $from_date ) {
+        if ( $self->pattern == $fillIn->pattern
+          || $from_date     >  $self->from_date
+        ) {
+            $self->from_date($from_date);
+            $from_span = $self;
+        }
+        else {
+            my $gap = $fillIn->new_shared_rhythm(
+               $from_date, $self->from_date->predecessor
+            );
+            $gap->next($self);
+            $from_span = $gap;
+        }
+        return $from_span if !defined $until_date;
+    }
+
+    if ( $until_date ) {
+        if ( $self->pattern == $fillIn->pattern
+          || $until_date    <  $self->until_date
+        ) {
+            $self->until_date($until_date);
+            $until_span = $self;
+        }
+        else {
+            my $gap = $fillIn->new_shared_rhythm(
+               $self->until_date->successor, $until_date
+            );
+            $self->next($gap);
+            $until_span = $gap;
+        }
+        return $until_span if !defined $from_date;
+    }
+    
+    return $from_span, $until_span;
+
+}
 __PACKAGE__->meta->make_immutable;
 
 1;

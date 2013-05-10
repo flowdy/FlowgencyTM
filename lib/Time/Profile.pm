@@ -96,13 +96,18 @@ sub respect {
 
     if ( ref $span eq 'HASH' ) {
         my $tspan = $span;
-        if ( my $base = $tspan->{reuse} ) {
+        if ( my $base = $tspan->{obj} ) {
             $span = $base->new_shared_rhythm(
                 @{$tspan}{'from_date', 'until_date'}
             );
         }
+        else {
+            $span = Time::Span->new($tspan);
+            $tspan->{obj} = $span;
+        }
         $self->_add_variation($tspan);
     }
+
     my ($start,$last) = ($self->start, $self->end);
 
     my $lspan = $span; $lspan = $_ while $_ = $lspan->next;
@@ -111,12 +116,10 @@ sub respect {
     if ( $span_from_date < $start->from_date->epoch_sec ) {
         if ( $start->from_date > $lspan->until_date ) {
             # we need a gap or bridge, at any rate a defaultRhythm span
-            my $gap = $self->fillIn->new_shared_rhythm(
-                Time::Point->from_epoch($lspan->until_date->last_sec+1),
-                Time::Point->from_epoch($start->from_date->epoch_sec-1),
+            my $start = $start->alter_coverage(
+                $lspan->until_date->successor, undef, $self->fillIn
             );
-            $gap->next($start);
-            $lspan->next($gap);
+            $lspan->next($start);
         }
         else {
             my $ts = $lspan->until_date->successor;
@@ -138,13 +141,11 @@ sub respect {
         }
         $self->_set_start($span);
     }
-    elsif ( $span_from_date > $last->until_date->last_sec ) {
-        my $gap = $self->fillIn->new_shared_rhythm(
-            Time::Point->from_epoch($last->until_date->last_sec+1),
-            Time::Point->from_epoch($span_from_date->epoch_sec-1),
+    elsif ( $span_from_date > $last->until_date ) {
+        my $last = $last->alter_coverage(
+            undef, $span_from_date->predecessor => $self->fillIn
         );
-        $gap->next($span);
-        $last->next($gap);
+        $last->next($span);
         $self->_set_end($span);
     }
     elsif (
@@ -193,8 +194,6 @@ sub respect {
 sub get_section {
     my ($self, $from, $until) = @_;
 
-    $DB::single=1;
-
     ref $_ or $_ = Time::Point->parse_ts($_) for $from, $until;
     $from->fix_order($until) or croak 'from and until arguments in wrong order';
 
@@ -240,16 +239,20 @@ sub mustnt_start_later {
 
     return if $start->from_date <= $tp;
 
-    if ( $start->pattern == $self->fillIn->pattern ) {
-        $start->from_date($tp);
-    }
-    else {
-        my $gap = $self->fillIn->new_shared_rhythm(
-           $tp, $start->epoch_sec-1
-        );
-        $gap->next($start);
-        $self->set_start($gap);
-    }
+    $start = $start->alter_coverage($tp, undef, $self->fillIn);
+
+    #if ( $start->pattern == $self->fillIn->pattern ) {
+        #$start->from_date($tp);
+    #}
+    #else {
+        #my $gap = $self->fillIn->new_shared_rhythm(
+           #$tp, $start->epoch_sec-1
+        #);
+        #$gap->next($start);
+        #$self->set_start($gap);
+    #}
+
+    $self->_set_start($start);
 
 }
 
@@ -260,17 +263,24 @@ sub mustnt_end_sooner {
 
     return if $tp <= $end->until_date;
 
-    if ( $end->pattern == $self->fillIn->pattern ) {
-        $end->until_date($tp);
-    }
-    else {
-        my $gap = $self->fillIn->new_shared_rhythm(
-           $end->last_sec+1, $tp
-        );
-        $end->next($gap);
-        $self->set_end($gap);
-    }
+    $end = $end->alter_coverage( undef, $tp, $self->fillIn );
+
+    #if ( $end->pattern == $self->fillIn->pattern ) {
+        #$end->until_date($tp);
+    #}
+    #else {
+        #my $gap = $self->fillIn->new_shared_rhythm(
+           #$end->last_sec+1, $tp
+        #);
+        #$end->next($gap);
+        #$self->set_end($gap);
+    #}
+
+    $self->_set_end($end);
+
+    return;
 }
+
 
 sub detect_circular {
     use Data::Dumper;
