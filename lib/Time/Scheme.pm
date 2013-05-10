@@ -83,11 +83,12 @@ sub from_json {
                 $v->{$alias} = $_ if $_ = delete $v->{$key};
             }
 
-            if ( $v->{reuse} || $v->{week_pattern} ) {}
+            if ( $v->{obj} || $v->{week_pattern} ) {}
             elsif ( defined(my $tp = $tprofiles{$v->{ref}}) ) { 
                 next if $v->{ignore} || !$v->{apply};
                 $next_round_promise++;
                 $v = $tp->get_section( $v->{from_date}, $v->{until_date} );
+                1;
             }
             else {
                 # dies if circular dependencies are detected
@@ -99,7 +100,6 @@ sub from_json {
         
         delete $scheme->{$key};
     
-        $DB::single=1;
         my $tprof = Time::Profile->new(
             $props->{pattern} // $parent->fillIn->description
         );
