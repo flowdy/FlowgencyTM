@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Florian Heß" />
+  <title>Über FlowTime</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+  body { margin: 2em 10em; }
+  
+  p, li {font-family: sans-serif; line-height:130%; }
+  </style>
+</head>
+<body>
+<div id="header">
+<h1 class="title">Über FlowTime</h1>
+<h2 class="author">Florian Heß</h2>
+<h3 class="date">27.05.2013</h3>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#was-ist-flowtime">Was ist FlowTime?</a><ul>
+<li><a href="#technische-merkmale-des-systems">Technische Merkmale des Systems:</a></li>
+</ul></li>
+<li><a href="#was-ist-flowtime-nicht">Was ist FlowTime nicht?</a></li>
+<li><a href="#kriterien">Nach welchen Kriterien wird die Dringlichkeit berechnet?</a><ul>
+<li><a href="#a-prioritätsgrad">a) Prioritätsgrad</a></li>
+<li><a href="#b-zeitliche-nähe-zum-fristende">b) zeitliche Nähe zum Fristende</a></li>
+<li><a href="#c-diskrepanz-zwischen-zeitlichem-und-erledigungsfortschritt">c) Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a></li>
+<li><a href="#d-wie-lange-eine-aufgabe-schon-offen-ist">d) wie lange eine Aufgabe schon offen ist</a></li>
+<li><a href="#e-verzögerungspotential">e) Verzögerungspotential</a></li>
+</ul></li>
+<li><a href="#was-verbirgt-sich-hinter-dem-zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></li>
+<li><a href="#wie-wird-der-erledigungsfortschritt-berechnet">Wie wird der Erledigungsfortschritt berechnet?</a></li>
+<li><a href="#weitere-funktionen">Weitere Funktionen</a></li>
+<li><a href="#kritische-und-andere-bemerkungen">Kritische und andere Bemerkungen</a></li>
+</ul>
+</div>
+<h2 id="was-ist-flowtime"><a href="#was-ist-flowtime">Was ist FlowTime?</a></h2>
+<p>FlowTime ist ein kleines Programm zur persönlichen Aufgabenplanung und -verwaltung. Es funktioniert im Prinzip wie eine Erledigungsliste, die sich selbst ordnet, und zwar absteigend nach zeitdynamischer Dringlichkeit. Das automatische Ranking stoßen Sie mit einem souveränen Klick auf das FlowTime-Logo manuell an, zum Beispiel nach einer Störung, einer Unterbrechung oder wenn Sie Erledigt-Häkchen gesetzt haben.</p>
+<p>FlowTime respektiert bei der Dringlichkeitsberechnung Ihre Freizeit, die Sie zwischen Arbeitszeiten in einem Zeitprofil definieren. Während der Freizeitphasen sind die Aufgaben quasi eingefroren, das heißt, sie werden nicht dringlicher, steigen nicht auf in der Liste. Aufgaben lassen sich bei Bedarf verschiedenen Zeitprofilen zuordnen.</p>
+<p>Größere Aufgaben lassen sich in Einzelschritte unterteilen. Deren jeweilige Anteile am Gesamtzeitaufwand bzw. am Aufwand des übergeordneten Schrittes können Sie schätzen, damit der Erledigungsfortschritt realistischer berechnet werden kann.</p>
+<p>Der Erledigungsfortschritt wird mit dem Arbeitszeitfortschritt verglichen. Die Diskrepanz signalisiert sanft ein Grün/Logoblau/Rot-Farbverlaufsbalken zu jeder Aufgabe. Das Gewicht dieser und <a href="#kriterien">einiger anderer Größen</a>, mit dem sie das Ranking beeinflussen, ist beliebig konfigurierbar.</p>
+<p>FlowTime ist vom Aufgabenmanager &quot;taskwarrior&quot; inspiriert. Im Gegensatz zu diesem Kommandozeilenwerkzeug läuft FlowTime im Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Bestimmte Groupwarefunktionen, wie die Delegation und die geteilte Arbeit an Aufgaben, sind dann nicht möglich, nur eingeschränkt oder weniger komfortabel.</p>
+<p>FlowTime ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist.</p>
+<h3 id="technische-merkmale-des-systems"><a href="#technische-merkmale-des-systems">Technische Merkmale des Systems:</a></h3>
+<ul>
+<li>FlowTime ist Freie Software, lizenziert unter der <em>General Public License, Version 3</em>.</li>
+<li>Als Programmiersprache wird Perl verwendet.</li>
+<li>Damit ist FlowTime lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme).</li>
+<li>Es verwendet clientseitig HTML5-Technologien,</li>
+<li>serverseitig das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten.</li>
+</ul>
+<h2 id="was-ist-flowtime-nicht"><a href="#was-ist-flowtime-nicht">Was ist FlowTime nicht?</a></h2>
+<p>FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Eine entscheidende Voraussetzung einer Version ab 1.0 ist der wissenschaftliche, von Dritten etwa im Rahmen einer unabhängigen Studie erbrachte Nachweis, dass die Verwendung von FlowTime und ggf. ähnlicher Programme einem eventuell drohenden Burn-out des Nutzers keinen Vorschub leistet, sondern ihn bestenfalls verhindern hilft. Zusätzlich sind bis zur Version 1.0 die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern ausgemerzt. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.</p>
+<p>Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für Sie bewährt? Prima – nutzen Sie es frohgemut weiter, FlowTime ist kein Ersatz. Denn egal ob ein Tool besser ist als ein anderes: In diesen Belangen wechselfreudig zu sein ist eher kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.</p>
+<p>Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Sie müssen also keine persönlichen Daten einem Drittanbieter anvertrauen. FlowTime kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« arbeitet ein Miniwebserver, der von außerhalb ihres PCs lt. Voreinstellung nicht zugreifbar ist.</p>
+<h2 id="kriterien"><a href="#kriterien">Nach welchen Kriterien wird die Dringlichkeit berechnet?</a></h2>
+<h3 id="a-prioritätsgrad"><a href="#a-prioritätsgrad">a) Prioritätsgrad</a></h3>
+<p>Die Benennung der Prioritätsstufen und die ihnen zugeordneten Werte aus dem Bereich natürlicher Zahlen können vom Nutzer festgelegt werden. Dabei wird umgekehrt gezählt als sonst üblich: 1 ist nicht die höchste, sondern die niedrigst mögliche Prioritätsstufe, auch genannt »gelegentlich« oder »auf Halde«.</p>
+<h3 id="b-zeitliche-nähe-zum-fristende"><a href="#b-zeitliche-nähe-zum-fristende">b) zeitliche Nähe zum Fristende</a></h3>
+<p>Je näher die Frist rückt, umso dringlicher sind Aufgaben unabhängig von ihrem Erledigungsstand. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden.</p>
+<h3 id="c-diskrepanz-zwischen-zeitlichem-und-erledigungsfortschritt"><a href="#c-diskrepanz-zwischen-zeitlichem-und-erledigungsfortschritt">c) Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a></h3>
+<p>Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn und Fristende hinterherhinkt, als umso dringlicher gilt die Aufgabe.</p>
+<p>In der Liste wird dieses Kriterium auch farblich dargestellt.</p>
+<ul>
+<li>Solange der Balken von links nach rechts dasselbe Blau des Logos hat, herrscht perfekter Ausgleich.</li>
+<li>Je kürzer die Aufgabe kommt, umso mehr läuft der Balken von rechts rot an.</li>
+<li>Je mehr dagegen von einer Aufgabe erledigt wurde, als gemäß der fortschreitenden Zeit hätte erledigt werden müssen, um so grüner läuft der Balken von links her an.</li>
+</ul>
+<p>Die Liste besteht also oben zunehmend aus Aufgaben, deren Balken von rechts rot, unten aus Aufgaben, die von links grün anlaufen. In der Mitte sammeln sich die blauen, ausgeglichenen. Je mehr es von diesen gibt im Verhältnis zu den roten oben und den grünen unten gibt, umso besser, denn ihr Anteil stellt tatsächlich den Korridor zwischen Über- und Unterforderung dar.</p>
+<p>Die »farbliche Mitte« gibt an, wie viel von einer Aufgabe erledigt wurde. Bei einem logoblauen Balken ist sie faktisch unsichtbar. Im Flow, den dieser Zustand symbolisiert, interessiert der inhaltliche Fortschritt nicht, denn gerade diese würde die Zuversicht destabilisieren, dass man rechtzeitig fertig wird.</p>
+<h3 id="d-wie-lange-eine-aufgabe-schon-offen-ist"><a href="#d-wie-lange-eine-aufgabe-schon-offen-ist">d) wie lange eine Aufgabe schon offen ist</a></h3>
+<p>Werden die Details einer Aufgabe eingeblendet, gilt sie als offen, bis sie erledigt ist oder wieder geschlossen wird. Offene Aufgaben, sowie gemäß der anderen Größen dringlichere geschlossene Aufgaben werden auf der »Schreibtisch«-Ansicht gelistet, der Rest in den Ansichten »Ablage« bzw. die begonnene, aber pausierenden Aufgaben in »Schublade«.</p>
+<p>Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen.</p>
+<h3 id="e-verzögerungspotential"><a href="#e-verzögerungspotential">e) Verzögerungspotential</a></h3>
+<p>Diese Größe gibt an, wie weit sich der Abschluss einer Aufgabe nach hinten verschöbe, würden Sie bis zum Ende ihrer Frist gar nicht mehr an ihr arbeiten. Sie hängt im Wesentlichen davon ab, wie Arbeits- und Freizeiten vor und nach dem Fristende verteilt sind. Hierdurch werden zum Beispiel Aufgaben, deren Fristende direkt vor einem längeren Urlaub liegt, als dringender bewertet.</p>
+<h2 id="was-verbirgt-sich-hinter-dem-zeitfortschritt"><a href="#was-verbirgt-sich-hinter-dem-zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></h2>
+<p>Oder genauer: Arbeitszeitfortschritt. Wer will schon ständig daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo es herkommt: im Job. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus der Freizeit in die Arbeitszeit. Betroffene Aufgaben sind also in ersterer wie eingefroren, während sie in letzterer entsprechend schneller dringlich werden. Was nicht schlimm sein sollte, solange die eingestellte Frist nicht mit dem Chef vereinbart ist, kann man sie ja verschieben.</p>
+<p>Damit das funktioniert, sagen Sie dem Programm, wie ihr typischer durchschnittlicher Arbeitstag aussieht. Abweichungen davon sind realiter unvermeidbar und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art definieren Sie mit minimalem Eingabeaufwand in Form eines Zeitprofils, bei Bedarf von mehrerer, mit denen Sie dann verschiedene Aufgaben verknüpfen.</p>
+<p>Je enger Sie sich an die definierte Zeiteinteilung halten (können), umso weniger rutschen die Aufgaben während Ihrer Freizeit ins Rote. So wirkt FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegen, die zusammen mit anderen Faktoren Burn-out begünstigen kann. Wenn Sie wünschen, können Sie natürlich auch während Freizeitphasen an den betroffenen Aufgaben arbeiten, verhindert wird das nicht.</p>
+<h2 id="wie-wird-der-erledigungsfortschritt-berechnet"><a href="#wie-wird-der-erledigungsfortschritt-berechnet">Wie wird der Erledigungsfortschritt berechnet?</a></h2>
+<p>Kleine Aufgaben bekommen einfach ein Erledigungshäkchen und verschwinden ins Archiv.</p>
+<p>Größere Vorhaben, auf jeden Fall Projekte, an denen auch Kollegen mitarbeiten, sollten in Schritten und ggf. Unterschritten/-aufgaben gegliedert werden. Einzelne Schritte kannst du sogar mit mehreren Kästchen zum Abhaken versehen, etwa wenn sie mehrmals in Folge abgearbeitet werden müssen, oder wenn sie dem Wesen nach in Phasen eingeteilt sind, die selbstverständlich sind und keiner expliziten Beschreibung bedürfen.</p>
+<p>Schritte auf allen Ebenen können in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, zu denen sie in einer Elter/Kind- oder Geschwisterbeziehung stehen.</p>
+<p>Anhand dieser Schätzungen berechnet FlowTime, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt treibt.</p>
+<p>Das könnte man natürlich auch einfacher haben. Man könnte einfach eingeben, wieviel Prozent von der gesamten Aufgabe man erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen. Dadurch besteht jedoch die Gefahr, dass man über kurz oder lang anfängt sich selbst zu belügen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen.</p>
+<h2 id="weitere-funktionen"><a href="#weitere-funktionen">Weitere Funktionen</a></h2>
+<ul>
+<li>einzelne Schritte samt untergeordneten können nachträglich in eine (Unter-)Aufgabe mit eigener Priorität, Von/Bis-Datierung und Zeitprofil überführt werden</li>
+<li>Abhängigkeiten zwischen Aufgaben und Einzelschritten</li>
+<li>sich wiederholende Aufgaben</li>
+<li>Sie können vor Feierabend voraussehen, wie die Dringlichkeiten am nächsten Morgen sein werden.</li>
+<li>Aufgaben delegieren</li>
+</ul>
+<h2 id="kritische-und-andere-bemerkungen"><a href="#kritische-und-andere-bemerkungen">Kritische und andere Bemerkungen</a></h2>
+<p>Gegen Ansinnen aus der Chefetage, die Software unternehmensweit einzuführen, sollten Betriebsräte Sturm laufen. FlowTime ist für Einzelne gedacht, nicht für alle. Unter dem Zwang, es zu benutzen, kann es seine Vorteile nicht ausspielen, nur bei freiwilliger, idealerweise eigeninitiativer Verwendung. Vom Wesen her ist es eine Art Vermittler zwischen dem technokratischen, Störungstoleranz und Multitasking gleichzeitig fordernden Arbeitsumfeld und dem »Arbeitnehmer«, dessen – vorzugsweise tiefe – Konzentration darin förmlich pulverisiert wird. In diesem Sinne kann man FlowTime zumindest insoweit als »Prothese« bezeichnen wie eine Atemmaske.</p>
+<p>Es ist bei niedrigpriorisierten Aufgaben vollkommen in Ordnung, Fristen eigenmächtig nach hinten zu verschieben, um sie wieder ins logoblaue Gleichgewicht zu bringen. Bei Aufgaben mittlerer Priorität ist es in Ordnung, dies dem Auftraggeber mitzuteilen. Fristen von Aufgaben hoher Priorität können ebenfalls verschoben werden, aber bewusst nur im Bearbeitungsmodus.</p>
+</body>
+</html>
