@@ -22,7 +22,12 @@ has absence => (
     is => 'ro', writer => '_set_absence', isa => 'Int', init_arg => undef,
 );
 
-has span => ( is => 'ro', isa => 'Time::Span', required => 1 );
+has span => (
+    is => 'ro',
+    isa => 'Time::Span',
+    required => 1,
+    weak_ref => 1,
+);
 
 has slicing => (
     is => 'rw', isa => 'ArrayRef[Int]', required => 1, auto_deref => 1,
