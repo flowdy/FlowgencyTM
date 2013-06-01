@@ -11,17 +11,23 @@ my %WDAYNUM; @WDAYNUM{
   qw|So Su Mo Di Tu Mi We Do Th Fr Sa |}
   = (0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6   );
 
-has [qw|_prefix_i _suffix_i|] => ( is => 'rw', isa => 'Int' );
+has [qw|_prefix_i _suffix_i|] => (
+    is => 'ro',
+    isa => 'Time::CalWeekCnt',
+    lazy => 1,
+    default => sub {
+         croak "I, Rhythm, am uninitialized";
+    },
+);
+
+has '+_prefix_i' => ( handles => { 'from_week_day' => 'stringify' } );
+has '+_suffix_i' => ( handles => { 'until_week_day' => 'stringify' } );
 
 has description => ( is => 'ro', isa => 'Str' );
 
 has pattern => (
     is => 'ro',
-    isa => 'ArrayRef',
-    traits => ['Array'],
-    handles => {
-        loop_size => 'count',
-    },
+    isa => 'CodeRef',
 );
 
 has atoms => (
@@ -34,24 +40,28 @@ has atoms => (
 has hourdiv => ( is => 'ro', isa => 'Int', required => 1 );
 
 sub from_string {
-    my ($class, $week_pattern) = @_;
+    my ($class, $week_pattern, $args) = @_;
     
-    my @week_pattern = split /;/, $week_pattern;
-    my @week_multipliers
-        = map { s{ (\d+) \* }{}xms ? $1 : 1 } @week_pattern;
-    # Spanne ergibt sich aus Wochenmultiplikatoren
+    my %week_patterns;
+    ($week_patterns{''}, my @week_patterns) = split /;/, $week_pattern;
+    for ( @week_patterns ) {
+        my ($sel, $pattern) = m{ \A 0*(\d+n.*?) : (.+) \z }xms
+            or croak "odd succeeding pattern segment: $_";
+        $week_patterns{$sel} = $pattern;
+    }
 
-    my $min_unit = gcf_minutes( map { m{ : 0* (\d+) }gxms } @week_pattern );
+    my $min_unit = gcf_minutes(
+        map { m{ : 0*(\d+) }gxms } values %week_patterns
+    );
     my $hourdiv = 60 / $min_unit;
     my $daylength = $hourdiv * 24;
     my $default_hours = Bit::Vector->new($daylength);
     
-    my @pattern;
-
-    WEEK: for ( @week_pattern ) {
+    WEEK: for my $wp ( values %week_patterns ) {
         my @days = (undef) x 7;
         
-        PART_OF_THE_WEEK: for my $wspan ( split /(?<=\d),(?=[A-Za-z])/ ) {
+        PART_OF_THE_WEEK:
+        for my $wspan ( split /(?<=\d),(?=[A-Za-z])/, $wp ) {
 
             my $hours_bits = Bit::Vector->new($daylength);
             my ($days, $hours) = split /@/, $wspan;
@@ -134,19 +144,36 @@ sub from_string {
         }
 
         $_ ||= $default_hours for @days;
-        push @pattern, (@days) x shift @week_multipliers;
+        $wp = \@days;
 
     }
     
-    return $class->new({
-        hourdiv => $hourdiv,
-        pattern => \@pattern,
-        description => $week_pattern,
-    });
+    my $last = do {
+        my $fp = delete $week_patterns{''}; sub { $fp };
+    };
+    for my $sel ( sort { $a cmp $b } keys %week_patterns ) {
+        my ($factor, $add) = $sel =~ m{ (\d+) n ([+-]\d+)? }xms;
+        croak "week pattern selector malformed: $sel" if !$factor;
+        $add //= 0;
+        my $wp = $week_patterns{$sel};
+        my $next = $last;
+        my $func = sub {
+            my $divisible = $_[0] - $add;
+            goto $next if $divisible < 0
+                       || $divisible % $factor;
+            return $wp;
+        };
+        $last = $func;
+    }
+
+    @{$args}{qw/hourdiv pattern description/}
+        = ($hourdiv, $last, $week_pattern);
+
+    return $class->new($args);
 
 }
 
-sub gcf_minutes { # hour partitioner
+sub gcf_minutes { # hour partitioner (greatest common factor)
      my $x = 60;
      while (@_) {
          my $y = shift || 60;
@@ -155,15 +182,26 @@ sub gcf_minutes { # hour partitioner
      return $x;
 }
 
+sub BUILD {
+    use Time::CalWeekCnt;
+    my ($self, $args) = @_;
+    my @date = @{ $args->{init_day} // croak 'Missing array ref init_day' };
+    $_ = Time::CalWeekCnt->new(@date, selector => $self->pattern)
+        for @{$self}{'_prefix_i', '_suffix_i'};
+    $self->_suffix_i->move_by_days(-1);
+    $self->move_end(1);
+    return $self;
+}
+
 sub move_start {
     my ($self, $days) = @_;
-    my $s = $self->_prefix_i // 0;
+    my $s = $self->_prefix_i;
     my $atoms = $self->atoms;
     my $daylength = $self->hourdiv * 24;
     if ( $days > 0 ) { # start later
-       ($s += $days) %= $self->loop_size;
+       $s->move_by_days($days);
        my $new = Bit::Vector->new(0);
-       my $a_size = $atoms->Size;
+       my $a_size = $atoms->Size / $daylength;
        $days = $a_size if $days > $a_size;
        $new->Interval_Substitute(
            $self->atoms, 0, 0, map { $_*$daylength } $days, $a_size
@@ -171,26 +209,20 @@ sub move_start {
        $self->atoms($new);
     }
     elsif ( $days < 0 ) { # start earlier
-       my $pattern = $self->pattern;
-       my @days_vec;
-       for ( my $i = 0; $i > $days; $i-- ) {
-            push @days_vec, $pattern->[ ($s+$i) % @$pattern ];
-       }
-       $self->atoms($atoms->Concat_List(@days_vec));
-       ($s += $days) %= @$pattern;
+       $self->atoms(
+           $atoms->Concat_List($s->move_by_days($days))
+       );
     }
-    $self->_prefix_i($s);
-    $self->_suffix_i( ++$s % $daylength ) if !$self->atoms->Size;
     return;
 }
 
 sub move_end {
     my ($self, $days) = @_;
-    my $e = $self->_suffix_i // 0;
+    my $e = $self->_suffix_i;
     my $atoms = $self->atoms;
     my $daylength = $self->hourdiv * 24;
     if ( $days < 0 ) { # end earlier
-       ($e += $days) %= $self->loop_size;
+       $e->move_by_days($days);
        my $new = Bit::Vector->new(0);
        my $len = $atoms->Size - $daylength * -$days;
        $new->Interval_Substitute(
@@ -199,33 +231,34 @@ sub move_end {
        $self->atoms($new);
     }
     elsif ( $days > 0 ) { # end later
-       my $pattern = $self->pattern;
-       my @days_vec;
-       for ( my $i = 0; $i < $days; $i++ ) {
-           unshift @days_vec, $pattern->[ ($e+$i) % @$pattern ];
-       }
-       $self->atoms(Bit::Vector->Concat_List(@days_vec,$atoms));
-       ($e += $days) %= @$pattern;
+       $self->atoms(Bit::Vector->Concat_List(
+           reverse( $e->move_by_days($days) ), $atoms
+         )
+       );
     }
-    else { return }
-    $self->_suffix_i($e);
-    $self->_prefix_i( --$e % $daylength ) if !$self->atoms->Size;
     return;
 }
 
-sub slice {
-   my ($self, $start, $end) = @_;
+sub sliced {
+    my ($self, $ts_start, $ts_end) = @_;
+
+    my $hourdiv_sec = 3600 / $self->hourdiv;
+
+    for my $ts ($ts_start, $ts_end) {
+        $ts = $ts->epoch_sec if ref $ts;
+        my $index = int( $ts / $hourdiv_sec );
+        my $rest = $ts % $hourdiv_sec;
+        $ts = [ $index, $hourdiv_sec - $rest, $rest ]; 
+    }
+    
+    my ($last_bit, @slices, $v);
+    my $test = do {
+        my $atoms = $self->atoms;
+        my $test = $atoms->can('bit_test'); # cache resolved method
+        sub { $test->($atoms, shift) }
+    };
  
-   my $test = do {
-      my $atoms = $self->atoms;
-      my $test = $atoms->can('bit_test'); # cache resolved method
-      my $size = $atoms->Size;
-      sub { $test->($atoms, shift) }
-   };
- 
-   my ($last_bit, @slices, $v);
-   my $hourdiv_sec = 3600 / $self->hourdiv;
-   for my $i ( $start .. $end ) {
+    for my $i ( $ts_start->[0] .. $ts_end->[0] ) {
        $v = $test->($i);
        if ( $v xor $last_bit // !$v ) {
            push @slices, $v ? $hourdiv_sec : -$hourdiv_sec;
@@ -233,11 +266,13 @@ sub slice {
        else {
            $slices[-1] += $last_bit ? $hourdiv_sec : -$hourdiv_sec;
        }
-   }
-   continue { $last_bit = $v; }
+    }
+    continue { $last_bit = $v; }
 
-   return @slices;
+    for ($slices[ 0] ) { $_ -= $_/abs($_) * $ts_start->[-1] }
+    for ($slices[-1]) { $_ -= $_/abs($_)  * $ts_end->[ 1] }
 
+    return \@slices;
 }
 
 __PACKAGE__->meta->make_immutable;
