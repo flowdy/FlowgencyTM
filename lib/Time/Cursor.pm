@@ -7,8 +7,6 @@ use Carp qw(croak carp);
 use Scalar::Util qw(weaken);
 use Moose;
 
-my $Config =;
-
 has _runner => (
     is => 'rw',
     isa => 'CodeRef',
@@ -58,55 +56,40 @@ sub ensure_capacity {
 }
             
 sub update {
-    my $self = shift;
+    my ($self, $time) = @_;
 
     my $old = {};
     my $ref_version = $self->timeprofile->version;
     if ( $self->version < $ref_version ) {
-        if ( $self->runner_initialized ) {
-            $old = eval { $self->runner->($time,0); } // { error => $@ };
+        if ( $self->_has_runner ) {
+            $old = $self->_runner->($time,0);
         }
         $self->ensure_capacity;
         $self->version($ref_version);
     }
 
-    my $data = $self->runner->(@_);
-    $data{old} = $old if $old;
+    my $data = $self->_runner->($time);
+    $data->{old} = $old if $old;
 
-    return $data;
+    my $current_pos = $data->{elapsed_pres} /
+        ( $data->{elapsed_pres} + $data->{remaining_pres} )
+                          ;
+
+    return %$data, current_pos => $current_pos;
 }
 
-sub _build_runner {
-    my ($self, $block_size, $count) = @_;
+sub _build__runner {
+    my ($self) = @_;
 
-    my $slices = $self->timeprofile->calc_slices($self);
-
-    # Schwäche Rückreferenzen, an Anfang und Ende aber nur dann, wenn es sich
-    # um die von den jeweiligen Zeitspannen referenzierten Arrays handelt.
-    # (Dazwischen gehen wir davon aus, wir wollen ja Speicher sparen.)
-    weaken($_) for @{$slices}[ 1 .. @$slices-2 ],
-                   grep { defined && $_ == $_->span->cached_slice }
-                        @{$slices}[ 0,  -1 ]
-               ;
-
-    $block_size //= $config{block_size};
-    my ($lcnt, $rcnt) = @{ $count // [
-        $config{count_left}  // $config{count_both},
-        $config{count_right} // $config{count_both},
-    ]};
+    my @slices = $self->timeprofile->calc_slices($self);
 
     return sub {
         my ($time) = @_;
 
         my %ret = map { $_ => 0 } qw(elapsed_pres remaining_pres
                                      elapsed_abs  elapsed_abs);
-        $ret{old} = $old if $old;
 
-        $_->calc_pos_data($time,\%ret) for $slices;
-
-        $ret{current_pos} = $ret{elapsed_pres}
-            / ( $ret{elapsed_pres} + $ret{remaining_pres} )
-                          ;
+        $_->calc_pos_data($time,\%ret) for @slices;
 
         return \%ret;
     }
