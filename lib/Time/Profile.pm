@@ -5,7 +5,7 @@ package Time::Profile;
 use Moose;
 use Time::Span;
 use Carp qw(carp croak);
-#use Moose::Util qw(apply_all_roles);
+use Scalar::Util qw(refaddr);
 
 has version => (
     is => 'rw',
@@ -222,6 +222,40 @@ sub get_section {
 
     return $start_span;
 
+}
+
+sub dump {
+    my ($self,$index,$length) = @_;
+    my $span = $self->start;
+    if ( defined $index ) {
+        croak 'negative indices not supported' if $index < 0;
+        $length //= 1;
+    }
+    else {
+        $length //= -1;
+    }
+    1 while $index-- and $span = $span->next;
+    my @dumps;
+    while ( $length-- && $span ) {
+        my $rhythm = $span->_rhythm;
+        push @dumps, {
+            description => $span->description,
+            from_date   => $span->from_date.q{},
+            until_date  => $span->until_date.q{},
+            rhythm      => {
+                 patternId => refaddr($rhythm->pattern),
+                 description => $rhythm->description,
+                 from_week_day => $rhythm->from_week_day,
+                 until_week_day => $rhythm->until_week_day,
+                 mins_per_unit => 60 / $rhythm->hourdiv,
+                 atomic_enum => $rhythm->atoms->to_Enum,
+            },
+        };
+    }
+    continue {
+        $span = $span->next;
+    }
+    return @dumps;
 }
 
 sub reset {
