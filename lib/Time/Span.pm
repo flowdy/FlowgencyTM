@@ -7,16 +7,17 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use Time::Point;
 use Time::Rhythm;
-use Date::Calc qw(Day_of_Week Delta_Days Add_Delta_Days);
+use Date::Calc qw(Delta_Days Add_Delta_Days);
 use Carp qw(carp croak);
+use List::Util qw(min max);
 
 coerce 'Time::Point' => from 'Str' => via { Time::Point->parse_ts(shift) };
 
 has description => ( is => 'rw', isa => 'Str' );
 
-has line => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
+has profile => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
 
-has _rhythm => ( is => 'ro', isa => 'Time::Rhythm', required => 1, handles => ['pattern'] );
+has _rhythm => ( is => 'ro', isa => 'Time::Rhythm', handles => ['pattern'], init_arg => undef, );
 
 has from_date => (
      is => 'rw',
@@ -29,6 +30,7 @@ has from_date => (
             if !$date->fix_order($self->until_date);
         my $dd = Delta_Days( $old->date_components, $date->date_components );
         $self->_rhythm->move_start($dd) if $dd;
+        delete($self->{_slice});
      },
      coerce => 1,
 );
@@ -44,11 +46,18 @@ has until_date => (
             if !$self->from_date->fix_order($date);
         my $dd = Delta_Days($old->date_components, $date->date_components);
         $self->_rhythm->move_end($dd) if $dd;
+        delete($self->{_slice});
      },
      coerce => 1,
 );
 
 has span => ( is => 'ro' );
+
+has _slice => (
+    is => 'ro',
+    isa => 'Time::Slice',
+    init_arg => undef,
+);
 
 has next => (
     is => 'rw',
@@ -56,46 +65,32 @@ has next => (
     clearer => 'nonext'
 );
 
-#has is_absence => ( is => 'rw', isa => 'Bool', required => 1 );
-
-around BUILDARGS => sub {
-    my ($orig,$class) = (shift,shift);
-    my $args = ref $_[0] && @_==1 ? shift : { @_ };
-
-    if ( my $w = delete $args->{week_pattern} ) {
-        if ( ref $w ) {
-            $w = Time::Rhythm->new(
-                pattern => $w->pattern,
-                hourdiv => $w->hourdiv,
-            );
-        }
-        else {
-            $w = Time::Rhythm->from_string($w);
-        }
-        $args->{_rhythm} = $w;
-    }
-
-    $class->$orig($args);
-};
-
 sub BUILD {
-    my $self = shift;
-
+    my ($self, $args) = @_;
     my $from_date = $self->from_date;
     my $until_date = $self->until_date;
 
     croak "Dates in wrong temporal order"
         if !$from_date->fix_order($until_date);
 
-    my $rhythm = $self->_rhythm;
-
     my @from_dcomp = $from_date->date_components;
-    $rhythm->move_start(Day_of_Week(@from_dcomp)-1);
 
-    my $dd = Date::Calc::Delta_Days(
+    my $w = delete $args->{week_pattern}
+        or croak 'Missing week_pattern argument';
+
+    my $rhythm = $self->{_rhythm} = ref($w)
+        ? Time::Rhythm->new(
+            map({ $_ => $w->$_() } qw(pattern hourdiv description)),
+            init_day => \@from_dcomp,
+          )
+        : Time::Rhythm->from_string(
+            $w, { init_day => \@from_dcomp, }
+          )
+        ;
+
+    $rhythm->move_end(Date::Calc::Delta_Days(
         @from_dcomp, $until_date->date_components
-    );
-    $rhythm->move_end($dd+1);
+    ));
 }
 
 sub from_string {
@@ -117,17 +112,6 @@ sub from_string {
             if !$from_date->fix_order($until_date);
 	($rhythm = $until_date->remainder) =~ s{^(:|=>)}{};
     }
-    elsif ($span =~ s{^(:|=>)}{} ) {
-        $rhythm = Time::Rhythm->from_string($span);
-        my $length = $rhythm->loop_size;
-        $until_date = Time::Point->parse_ts(sprintf(
-            '%4d-%02d-%02d',
-            Add_Delta_Days(
-                $from_date->fill_in_assumptions->date_components,
-                $length - 1
-            )
-        ));
-    }
     else {
         # Wir haben es mit einem einzigen Tag zu tun
         my $hours = $span =~ s{ (@ [\d:,-]+) \z }{}xms ? $1 : q{};
@@ -139,9 +123,7 @@ sub from_string {
         span         => $orig_span,
         from_date    => $from_date,
         until_date   => $until_date,
-        (ref $rhythm ? '_rhythm' : 'week_pattern' )
-                     => $rhythm,
-        is_absence   => $is_absence,
+        week_pattern => $rhythm,
     });
 }
 
@@ -157,13 +139,13 @@ sub new_shared_rhythm {
         if !$from->fix_order($until);
 
     my $desc = $self->description;
-    my $line = $self->line;
+    my $profile = $self->profile;
     my $new = __PACKAGE__->new(
         week_pattern => $self->_rhythm,
         from_date    => $self->from_date, # initial only, reset in an instant
         until_date   => $self->until_date, # initial only, reset in an instant
         defined($desc) ? (description  => $desc) : (),
-        defined($line) ? (line => $line) : (),
+        defined($profile) ? (profile => $profile) : (),
         #is_absence   => $self->is_absence,
     );
 
@@ -179,81 +161,47 @@ sub new_shared_rhythm {
     return $new;
 }
 
-sub _calc_slices {
+sub _calc_slice {
     my ($self, $cursor) = @_;
-    # Lücken zwischen den Slices ausfüllen
 
     return $self->next if $cursor->run_from > $self->until_date;
     return             if $self->from_date  > $cursor->run_until;
 
-    my $orig_slices = []; # $cursor->slices; # need that?
-
-    my ($ts_null, $ssm_offset) = $self->from_date->split_seconds_since_midnight;
-    my $stm_offset = $self->until_date->last_sec;
+    my $span_start = $self->from_date->epoch_sec;
+    my $span_end = $self->until_date->last_sec;
+    my $cursor_start = $cursor->run_from->epoch_sec;
+    my $cursor_end = $cursor->run_until->last_sec;
+    my ($ts_null) = $self->from_date->split_seconds_since_midnight;
+    $_ -= $ts_null for $span_start, $span_end, $cursor_start, $cursor_end;
     my $rhythm = $self->_rhythm;
-    my $hourdiv = 3600 / $rhythm->hourdiv;
 
-    my $get_pos = sub {
-        my ($ts) = @_;
-        $ts = $ts->epoch_sec if ref $ts;
-        $ts -= $ts_null;
-        my $index = int( $ts / $hourdiv );
-        my $rest = $ts % $hourdiv;
-        return [ $index, $hourdiv - $rest, $rest ]; 
-    };
-    
-    my $get_slice = sub {
-        my ($ts1, $ts2) = @_;
-        $_ = $get_pos->($_) for $ts1, $ts2;
-        my @slice = $rhythm->slice( $ts1->[0], $ts2->[0] );
-        for ($slice[0] ) { $_ -= $_/abs($_) * $ts1->[-1] }
-        for ($slice[-1]) { $_ -= $_/abs($_) * $ts2->[ 1] }
-        return Time::Slice->new(
-           span => $self,
-           position => ( ref $_[0] ? $_[0]->epoch_sec : $_[0] ),
-           slicing => \@slice,
-        );
-    };
-
-    use List::Util qw(min max);
-
-    my $posit = max($self->from_date->epoch_sec, $cursor->run_from->epoch_sec);
-    my $end = min($stm_offset, $cursor->run_until->last_sec);
-    
-    my @slices;
-
-    SLICE: while ( my $orig_slice = $orig_slices->[0] ) {
-        my $pos = $orig_slice->position;
-        last if $pos > $end;
-        if ( $pos <= $posit ) {
-            push @slices, $orig_slice;
-            $posit = $pos + $orig_slice->length + 1;
-            next SLICE;
-        }
-        else {
-            my $slice = $get_slice->($posit, $pos-1);
-            $posit = $pos;
-            push @slices, $slice;
-            redo SLICE;
-        }
+    my ($start, $slice);
+    if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {
+        $start = $span_start;
+        $slice = $self->{_slice} //= $rhythm->sliced($start, $span_end);
     }
-    continue { shift @$orig_slices; }
-
-    if ( $posit < $end ) {
-        push @slices, $get_slice->($posit, $end);
+    else {
+        $start = max($span_start, $cursor_start);
+        $slice = $rhythm->sliced($start, min($span_end, $cursor_end));
     }
 
-    return $self->next, @slices;
+    return $cursor_end > $span_end ? $self->next : undef,
+           Time::Slice->new(
+               span => $self,
+               position => $self->from_date->epoch_sec,
+               slicing => $slice,
+           )
+        ;
 }
 
 sub calc_slices {
     my ($self,$cursor) = @_;
     my ($next, @slices) = $self;
     while ( $next ) {
-        ($next, my @to_append) = $next->_calc_slices($cursor);
-        push @slices, @to_append;
+        ($next, my $slice) = $next->_calc_slice($cursor);
+        push @slices, $slice;
     } 
-    return \@slices;
+    return @slices;
 }
 
 sub covers_ts {
