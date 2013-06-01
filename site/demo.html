@@ -16,22 +16,23 @@
 <body>
   <header>
     <h1><img id="logo" src="logo/flowtime-logo-einfacher.png" alt="FlowTime" /></h1>
-    <p>Wenn du mit einer Aufgabe fertig sein, kannst du einfach mit der nächstgelisteten Aufgabe fortfahren. Besser noch, klicke auf das <em>FlowTime</em>-Logo, so dass die Aufgaben neu nach Dringlichkeit geordnet werden, dies geschieht bewusst nur, wenn Du dazu bereit bist. Auch nach etwaigen Störungen oder um Änderungen an Plänen bzw. neue Pläne zu speichern: Klicke es und die Refokussierung fällt kinderleicht.</p>
+    <p></p>
   </header>
 
 <nav id="leftnav">
 <ul>
-<li>Aktuell<ul>
-    <li>aktive Pläne</li>
-    <li>pausierende Pl.</li>
+<li>Neuer Plan …</li>
+<li>Schreibtisch<ul>
+    <li>Ablage</li>
+    <li>Schublade</li>
 </ul></li>
 <li>Zukünftiges</li>
 <li><form id="suche">
-<input placeholder="Suche">
-<label><input type="checkbox" name="why" value="done" />erledigt</label><br />
-<label><input type="checkbox" name="why" value="cancelled" />abgebrochen</label><br />
-<label><input type="checkbox" name="why" value="paused" />ausgesetzt</label><br />
-</form></li>
+<input placeholder="Suche (inkl. Archiv)">
+</form><ul>
+<li>Erledigt</li>
+<li>Papierkorb</li>
+</ul></li>
 </ul>
 </nav>
 <ol id="plans">
@@ -40,46 +41,30 @@
 <!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
 <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
 <div class="progressbar"><span class="erledigt">&nbsp;</span></div>
-<time datetime="2011-10-05 12:00">Mi 05.10.2011, 12:00</time>
+<time datetime="2011-10-05 12:00">Frist: Mi 05.10.2011, 12:00 (eff. noch 68:51h, nächste Pause in 4:12h)</time>
 </header>
 <div class="detail description">
-<h3>Allgemeine Notizen</h3>
 Beschreibung, Hinweise, Notizen für sich selbst
 </div>
 <form class="details">
-<h3>Tags</h3>
-<ul>
-<li class="editable-tag">Dies ist <a class="tag1" href="#">tag1</a></li>
-<li class="editable-tag">Und noch ein <a class="anderes" href="#">anderes</a>, dass man mit weiterem spezifizierendem Text umgeben kann.</li>
-<li><a class="tag drei" href="#">Drei</a>: Steht kein "|"-Zeichen in der Beschreibung, wird der Text mit einem Doppelpunkt einfach angehängt]</li>
+<ul class="editable-tags">
+<li><a class="tag-tag1" href="#">tag1</a></li>
+<li><a class="tag-anderes" href="#">anderes</a></li>
+<li><a class="tag-drei" href="#">Drei</a></li>
 </ul>
-<h3>Schritte</h3>
 <ol>
-<li><input name="step" value="5" id="step-a" type="checkbox"><label for="step-a" class="editable-step">Erster, wenn einziger nur interner Schritt.</li></li>
+<li><input name="step" value="5" id="step-a" type="checkbox"><label for="step-a" class="editable-step">Erster, wenn einziger nur interner Schritt.</li>
 <li><input name="step" value="2" id="step-b" type="checkbox"><label for="step-b" class="editable-step">Der Benutzer kann die Aufgabe gern in mehrere einteilen.</label></li>
 <li><input name="step" value="1" id="step-c" type="checkbox"><label for="step-c" class="editable-step">warten auf [Pmaria] ...</label></li>
 </ol>
-<h3>Relevante Kontakte</h3>
-<p class="help">Kontakte zu Personen, die mit dieser Aufgabe in Verbindung stehen. In Beschreibungsfeld der Aufgabe oder des Einzelschritts bei Bedarf referenzierbar mit "[P...]" und dem entspr. Kürzel.</p>
-<ul>
-<li class="editable-contact">Wunsch von <a class="leo" href="#">Leo</a></li>
-<li class="editable-contact"><a class="maria" href="#">Maria</a> ist auch damit einverstanden, bittet aber abzuwarten, sagt bescheid</li>
-</ul>
-<h3>Arbeitsmittel</h3>
-<p class="help">Ressourcen, die für diese Aufgabe notwendig sind:<br>
-(referenzierbar per "[R...]")</p>
-<ul>
-<li class="editable-resource">Buch <a class="conway" href="#" title="Mediennummer 123">Conway</a>: Perl Best Practices</li>
-<li class="editable-resource">Website <a class="ubm" href="http://www.ub.mannheim.de">UB Mannheim</a>: Obwohl, die brauche ich eigentlich nicht.</li>
-<li class="editable-resource">Ordner <a class="home" href="#" title="Pfad: ~fh/">Home</a>: Obwohl, dass ist ja selbstverständlich.</li>
-</ul></li>
+</li>
 <!--                                                                            
    elapsed:   0.833333333333333                                                 
    done:      0.666666666666667                                                 
    rel_state: 0.5                                                               
 -->                                                                             
-<li><header><h2>Zeitfortschritt: 5:1 / Erledigungsfortschritt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
-<li><header><h2>Zeitfortschritt: 4/6 / Erledigungsfortschritt: 2/3</h2>
+<li><header><h2>Zeitfortschritt: 5:1 / Erledigt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
+<li><header><h2>Zeitfortschritt: 4/6 / Erledigt: 2/3</h2>
 <div class="progressbar" style="background-color:rgba(0,192,255,1.000000)"><span class="erledigt" style="background-color:#00C0FF;width:67%;">&nbsp;</span></div></header></li>
 
 <!--
@@ -87,7 +72,7 @@ Beschreibung, Hinweise, Notizen für sich selbst
    done:      0.75
    rel_state: -0.5
 -->
-<li><header><h2>Zeitfortschritt: 1/2 / Erledigungsfortschritt: 3:1</h2>
+<li><header><h2>Zeitfortschritt: 1/2 / Erledigt: 3:1</h2>
 <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#19DFA0;width:75%;">&nbsp;</span></div></header></li>
 
 <!--
@@ -95,7 +80,7 @@ Beschreibung, Hinweise, Notizen für sich selbst
    done:      0
    rel_state: 1
 -->
-<li><header><h2>Zeitfortschritt: 2/2 / Erledigungsfortschritt: 0:1</h2>
+<li><header><h2>Zeitfortschritt: 2/2 / Erledigt: 0:1</h2>
 <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#FF264C;width:100%;">&nbsp;</span></div></header></li>
 
 <!--
@@ -103,7 +88,7 @@ Beschreibung, Hinweise, Notizen für sich selbst
    done:      1
    rel_state: -1
 -->
-<li><header><h2>Zeitfortschritt: 0/2 / Erledigungsfortschritt: 1:0</h2>
+<li><header><h2>Zeitfortschritt: 0/2 / Erledigt: 1:0</h2>
 <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#33FF40;width:100%;">&nbsp;</span></div></header></li>
 </ol>
 </form>

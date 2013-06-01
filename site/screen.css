@@ -38,12 +38,6 @@ body > header p {
   overflow:hidden;
 }
 
-#plans header > time {
-  display:block;
-  float:left;
-  width:175px;
-}
-
 #plans header > h2 {
   margin-bottom:1px;
 }
@@ -53,6 +47,12 @@ body > header p {
   overflow:hidden;
   text-align:right;
   background-color: rgba(0,192,255,0.33);
+}
+
+#plans time {
+  display: block;
+  text-align:right;
+  font-size:small;
 }
 
 #plans .detail {
