@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 50;
+use Test::More tests => 52;
 
 use lib qw(../lib/);
 use Time::Slice;
@@ -51,12 +51,12 @@ my $cursor = Time::Cursor->new(
     run_until => Time::Point->parse_ts('15.7.'),
 );
 
-$cursor->slices($tspan->calc_slices($cursor));
+#$cursor->slices($tspan->calc_slices($cursor));
 my $ts = Time::Point->parse_ts('7.7.2012');
 my $pos = $cursor->update($ts->epoch_sec);
 $ts = Time::Point->from_epoch($ts->epoch_sec+43200);
 my $pos2 = $cursor->update($ts->epoch_sec);
-is( $pos, $pos2, 'elapsed presence time should not until '.$ts);
+is( $pos, $pos2, 'elapsed presence time should not increase until '.$ts);
 $ts = Time::Point->from_epoch($ts->epoch_sec+162000);
 my %pos2 = $cursor->update($ts->epoch_sec);
 is( $pos, $pos2{current_pos}, 'it does neither at '.$ts);
@@ -111,7 +111,7 @@ is $span3, $tp->start, 'Weitere Span3 an den Anfang';
 ok $span3->next->pattern == $fillIn1->pattern, 'Zur Span1 eine weitere Brücke';
 isnt $span3->next, $fillIn1, 'Es handelt sich aber nicht um die zwischen Span2 und Span3';
 
-my $span4 = Time::Span->new(description => 'Urlaubsteilzeit', from_date => '20.8.12', until_date => '31.8.', week_pattern => 'Mo-Fr@7:30-11;Mo-Do@7-10:30');
+my $span4 = Time::Span->new(description => 'Urlaubsteilzeit', from_date => '20.8.12', until_date => '31.8.', week_pattern => 'Mo-Fr@7:30-11;2n:Mo-Do@7-10:30');
 
 $tp->respect($span4); # [ 2012-08-20 Urlaubsteilzeit 2012-08-31 ] 2012-09-01 Urlaub 2012-09-15 | 2012-09-16 00:00:00 Lückenfüller 2012-09-22 23:59:59 | 2012-09-23 nur Montags bis Donnerstags 2012-10-03 | 2012-10-04 00:00:00 Lückenfüller 2012-10-16 23:59:59 | 2012-10-17 Für verschiedene Tage der Woche verschiedene Arbeitszeiten 2012-10-30 |
 
@@ -170,9 +170,115 @@ is $span8->next, $span9, 'Span9 ersetzt Lückenfüller';
 is $span9->next, $span6, 'passgenau';
 is $s8next, undef, 'Lückenfüller überschrieben, also gelöscht';
 
+my @expected_state = (
+ {
+   'description' => 'Überschreiben',
+   'from_date' => '2012-08-20',
+   'rhythm' => {
+      'atomic_enum' => '',
+      'description' => 'Mo-So@!0-23',
+      'from_week_day' => '34/12, Mo',
+      'mins_per_unit' => 60,
+      #'patternId' => 189380856,
+      'until_week_day' => '38/12, We',
+   },
+   'until_date' => '2012-09-19',
+ },{
+   'description' => 'Überschreiben II',
+   'from_date' => '2012-09-20',
+   'rhythm' => {
+      'atomic_enum' => '13,37',
+      'description' => 'Mo-Fr@13',
+      'from_week_day' => '38/12, Th',
+      'mins_per_unit' => 60,
+      #'patternId' => 189336500,
+      'until_week_day' => '38/12, Fr',
+   },
+   'until_date' => '2012-09-21',
+ },{
+   'description' => 'Mal kurz eingesprungen übers Wochenende',
+   'from_date' => '2012-09-22',
+   'rhythm' => {
+      'atomic_enum' => '17,41,65',
+      'description' => 'Mo-So@17-17',
+      'from_week_day' => '38/12, Sa',
+      'mins_per_unit' => 60,
+      #'patternId' => 189397092,
+      'until_week_day' => '39/12, Mo',
+   },
+   'until_date' => '2012-09-24',
+ },{
+   'description' => 'nur Montags bis Donnerstags',
+   'from_date' => '2012-09-25',
+   'rhythm' => {
+      'atomic_enum' => '40-57,61-79,136-153,157-175,232-249,253-271,616-633,637-655,712-729,733-751,808-825,829-847',
+      'description' => 'Mo-Do@10-14:30,15:15-19',
+      'from_week_day' => '38/12, Tu',
+      'mins_per_unit' => 15,
+      #'patternId' => 189382776,
+      'until_week_day' => '39/12, We',
+   },
+   'until_date' => '2012-10-03',
+ },{
+   'description' => 'Lückenfüller',
+   'from_date' => '2012-10-04',
+   'rhythm' => {
+      'atomic_enum' => '18-34,66-82,210-226,258-274,306-322,354-370,402-418,546-562,594-610',
+      'description' => 'Mo-Fr@9-17:30',
+      'from_week_day' => '39/12, Th',
+      'mins_per_unit' => 30,
+      #'patternId' => 189383304,
+      'until_week_day' => '41/12, Tu',
+   },
+   'until_date' => '2012-10-16',
+ },{
+   'description' => 'Für verschiedene Tage der Woche verschiedene Arbeitszeiten',
+   'from_date' => '2012-10-17',
+   'rhythm' => {
+      'atomic_enum' => '15-25,74-84,122-132,170-180,255-265,303-313,351-361,410-420,458-468,506-516,591-601',
+      'description' => 'Mo-Mi@7:30-13:00,Do-Sa@13-18:30',
+      'from_week_day' => '42/12, We',
+      'mins_per_unit' => 30,
+      #'patternId' => 189383984,
+      'until_week_day' => '44/12, Mo',
+   },
+   'until_date' => '2012-10-29',
+ },{
+   'description' => '1 Nachtschicht für die nette Kollegin',
+   'from_date' => '2012-10-30',
+   'rhythm' => {
+      'atomic_enum' => '0-8,43-45,48-56,91-93',
+      'description' => 'Mo-Fr@21:30-22,0-4:30',
+      'from_week_day' => '44/12, Tu',
+      'mins_per_unit' => 30,
+      #'patternId' => 189383924,
+      'until_week_day' => '44/12, We',
+   },
+   'until_date' => '2012-10-31',
+ }
+);
 my @spans; my $next = $tp->start;
 $tp->detect_circular;
+is_deeply [grep { delete $_->{rhythm}{patternId} } $tp->dump], \@expected_state, "Gesamtzustand nach allen respects";
 do { push @spans, weaken($next) } while $next = $next->next; 
 $tp->reset;
 my $num =()= grep !defined, @spans;
 ok $num <= 1, 'timeline reset';
+
+$tspan = Time::Span->new( from_date => '1.1.13', until_date => '31.3.', week_pattern => 'Mo-So@!;2n:Mo-Mi@9-17;2n+1:Mi-Fr@9-17;3n-2:Mo-Di,Do-Fr@7-15' );
+is $tspan->_rhythm->atoms->to_Enum,
+     q{7-15,55-63,79-87,}                        #  1. KW,    Di    Do Fr
+    .q{153-161,177-185,201-209,}                 #  2. KW, Mo Di Mi
+    .q{369-377,393-401,417-425,}                 #  3. KW,       Mi Do Fr 
+    .q{487-495,511-519,559-567,583-591,}         #  4. KW, Mo Di    Do Fr
+    .q{705-713,729-737,753-761,}                 #  5. KW,       Mi Do Fr
+    .q{825-833,849-857,873-881,}                 #  6. KW, Mo Di Mi
+    .q{991-999,1015-1023,1063-1071,1087-1095,}   #  7. KW, Mo Di    Do Fr
+    .q{1161-1169,1185-1193,1209-1217,}           #  8. KW, Mo Di Mi
+    .q{1377-1385,1401-1409,1425-1433,}           #  9. KW,       Mi Do Fr
+    .q{1495-1503,1519-1527,1567-1575,1591-1599,} # 10. KW, Mo Di    Do Fr
+    .q{1713-1721,1737-1745,1761-1769,}           # 11. KW,       Mi Do Fr
+    .q{1833-1841,1857-1865,1881-1889,}           # 12. KW, Mo Di Mi
+    .q{1999-2007,2023-2031,2071-2079,2095-2103}, # 13. KW, Mo Di    Do Fr
+    "verschiedene Wochenmuster je nach Nummer der Kalenderwoche"
+;
