@@ -52,32 +52,32 @@ Further documentation in DESCRIPTION etc. after __END__ of this file.
 
 =cut
 
-use POSIX qw(floor);
 use Scalar::Util qw(blessed);
 use Carp qw(croak);
 use overload q{""} => 'stringify';
 
 has _dow => (            
-    reader => 'day_of_week', writer => '_set_dow',
+    is => 'rw',
     isa => subtype { 'Int' => where { $_ >= 0 && $_ <= 6 } },
 );
 
 has _week_num => (
-    reader => 'week_num', writer => '_set_week_num',
+    is => 'rw',
     isa => subtype { 'Int' => where { $_ > 0 && $_ <= 53 } },
 );
 
-has _year => (               
-    reader => 'year_of_thursday', writer => '_set_year',
+has _year => (
+    is => 'rw',
     isa => subtype { 'Int' => where { length == 4 } },
 );
 
+sub day_of_week { _dow(shift) }
+sub year_of_thursday { _year(shift) }
+sub week_num { _week_num(shift) }
+
 sub _dow_week_year {
     my $self = shift;
-    return @_ ? map { $self->$_(shift//()) }
-                    qw/_set_dow _set_week_num _set_year/
-              :     @{$self}{qw/_dow _week_num _year/}
-              ;
+    return map { $self->$_(shift//()) } qw/_dow _week_num _year/ ;
 }
 
 sub _move_by_days {
@@ -89,13 +89,14 @@ sub _move_by_days {
         ($dow, $week_num, $year) = $maybe_self->_dow_week_year;
     }
 
+    # arrange so that if ($days<0) Mo=-6 ... So=0 or ($days>0) Mo=1 ... So=7
     ($dow, my $pos) = $days>0 ? ($dow || 7, 1)
                    :  $dow    ? ($dow  - 7, 0)
                    :            (        0, 0)
                    ;
     $dow += $days;
 
-    $week_num += floor( ($dow-$pos) / 7 );
+    $week_num += int( ($dow-$pos) / 7 );
 
     until ( $week_num < 53 ) {
         $week_num = $week_num - Weeks_in_Year($year) || last;
@@ -152,7 +153,7 @@ sub BUILD {
 sub stringify {
     my $self = shift;
     my ($week, $year, $day) = map { $self->$_ }
-                              qw/week_num year_of_thursday day_of_week/; 
+                              qw/_week_num _year _dow/; 
     return sprintf '%d/%d, %s',
         $week, substr($year, 2, 2), [qw|Su Mo Tu We Th Fr Sa|]->[$day]
     ;
@@ -161,7 +162,7 @@ sub stringify {
 sub day_obj {
     my ($self) = shift;
     my ($sel, $week_num, $dow)
-        = map { $self->$_ } qw/_selector week_num day_of_week/;
+        = map { $self->$_ } qw/_selector week_num _dow/;
     my $obj = $sel->($week_num)->[$dow];
     my ($cb, $hr, $shift);
     return $cb->($obj, $hr, $shift) if $cb = $self->dst_handler
@@ -201,10 +202,10 @@ sub move_by_days {
 sub another_moved_by_days {
     my $self = shift;
     my ($dow, $week_num, $year) = _move_by_days(
-        @{$self}{qw/dow week_num year/}, shift
+        $self->_dow_week_year, shift
     );
     return (blessed $self)->new(
-        dow => $dow, week_num => $week_num, year => $year,
+        _dow => $dow, _week_num => $week_num, _year => $year,
         selector => $self->_selector->()
     );
 }
@@ -262,7 +263,7 @@ $cw->move_by_days(-1233);
 is_deeply [$cw->_dow_week_year], [3,53,2009],
     'going back to a week no. 53';
 $cw->move_by_days(4);
-is $cw->day_of_week, 6, 'day method says we have Sunday (which is in 2010)';
+is $cw->day_of_week, 0, 'day method says we have Sunday (which is in 2010)';
 is $cw->year_of_thursday, 2009, 'but year() outputs the year covering the Thursday of the week in question';
 $cw = Time::CalendarWeekCycle->new(2013,5,25)->move_by_days(953);
 is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [0,53,2015],
