@@ -6,12 +6,12 @@ package Time::CalendarWeekCycle;
 use Moose;
 use Moose::Util::TypeConstraints;
 use Date::Calc qw/Week_of_Year Weeks_in_Year Day_of_Week
-                  Localtime Monday_of_Week Add_Delta_Days/;
+                  Mktime Monday_of_Week Add_Delta_Days/;
 
 =head1 NAME
 
 Time::CalendarWeekCycle - To infer from a date the calendar week and day in it
-                          (in compliance to ISO 8601)
+                          (in compliance to ISO 8601, relying on Date::Calc)
 
 =head1 VERSION
 
@@ -30,9 +30,9 @@ Time::CalendarWeekCycle - To infer from a date the calendar week and day in it
  );
 
  my ($year, $month, $day) = $cycle->date;
- my $day_of_week = $cycle->day_of_week;      # 0: Sun-, 1: Mon- ... 6: Saturday
+ my $day_of_week = $cycle->day_of_week;      # 1=Mo to 7=
  my $week_num    = $cycle->week_num;         # 1 .. 52±1
- my $year_th     = $cycle->year_of_thursday; # may differ from ($cycle->date)[0]
+ my $year_th     = $cycle->year_of_thursday; # may differ from $year
 
  # scalar context call: returns $cycle in case you like to chain methods
  $cycle->move_by_days(+3); 
@@ -71,7 +71,7 @@ has _year => (
     isa => subtype { 'Int' => where { length == 4 } },
 );
 
-sub day_of_week { _dow(shift) }
+sub day_of_week { _dow(shift)||7 }
 sub year_of_thursday { _year(shift) }
 sub week_num { _week_num(shift) }
 
@@ -80,7 +80,14 @@ sub _dow_week_year {
     return map { $self->$_(shift//()) } qw/_dow _week_num _year/ ;
 }
 
+=for Internal
+
+TODO: Consider making day, month and year members of the instance, hence we could use simply Date::Calc::Week_of_Year to calculate the week number on demand instead of going the other way round. (Which way is more performant?)
+
+=cut
+
 sub _move_by_days {
+
     my ($dow, $week_num, $year, $days) = @_;
     my $maybe_self;
 
@@ -136,7 +143,7 @@ around BUILDARGS => sub {
 sub BUILD {
     my ($self, $args) = @_;
 
-    my ($sel, $week, @pattern) = ($args->{selector} // return, 0);
+    my ($sel, $week, @pattern) = ($args->{selector} // return, 0, ());
 
     my $sunday = $args->{sunday_at_index} // 0;
 
@@ -146,6 +153,7 @@ sub BUILD {
         return @pattern if $week == $week_num;
         @pattern = $sel->($week = $week_num);
         push @pattern, splice @pattern, 0, $sunday;
+        return \@pattern;
     };
 
 }
@@ -165,9 +173,10 @@ sub day_obj {
         = map { $self->$_ } qw/_selector week_num _dow/;
     my $obj = $sel->($week_num)->[$dow];
     my ($cb, $hr, $shift);
-    return $cb->($obj, $hr, $shift) if $cb = $self->dst_handler
-                                   and ($hr, $shift) = $self->dst_adjustment
-                                    ;
+    return $cb->($obj, $hr, $shift) # we rely on having $obj cloned
+        if $cb = $self->dst_handler # before modification!
+       and ($hr, $shift) = detect_dst_clockface_sector($self->date)
+        ;
     return $obj;
     
         
@@ -218,19 +227,27 @@ sub date {
     );
 }
 
-sub dst_adjustment {
-    my $self = shift;
-    my @date = &date;
-    my $t1 = Localtime(@date, 0, 0, 0);
-    my $t2 = Localtime(Add_Delta_Days(@date, 1), 0, 0, 0);
+sub detect_dst_clockface_sector {
+
+    my $t1 = Mktime(@_, 0, 0, 0);
+    my $t2 = Mktime(Add_Delta_Days(@_, 1), 0, 0, 0);
     my $shift = 24 - ($t2 - $t1) / 3600;
     return if !$shift;
-    my $i;
-    for $i ( 0 .. 23 ) {
-        last if localtime($t1 + ($i-$shift) * 3600)
-             eq localtime($t1 +  $i         * 3600);
+
+    my ($i, $it1, $it2) = 0;
+    while ( $i < 24 ) {
+        $it2 = $t1 + $i * 3600;
+        $it1 = $it2 - 1;
+        $_ = (localtime($_))[2] for $it1, $it2;
+        last if $it2 == ($it1+$shift+1) % 24;
     }
-    return $i, $shift;
+    continue { $i++; }
+    if ( $i < 24 ) {
+        return $i, $shift;
+    }
+    else {
+        die "Couldn't figure out position of $shift dst-affected hours";
+    }
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -239,17 +256,23 @@ return 1 if caller;
 
 package main;
 
+# TODO: out-source this into a .t-file
+
 use Test::More;
 
-my @initial_date = (2013, 5, 25);
-my $cw = Time::CalendarWeekCycle->new(
-    @initial_date,
+my %callbacks = (
     selector => sub { qw(Mo Di Mi Do Fr Sa So) },
     dst_handler => sub {
         my ($wd, $hr, $shift) = @_;
         "$wd\[$hr, $shift\]"
     },
     sunday_at_index => 6,
+);
+
+my @initial_date = (2013, 5, 25);
+my $cw = Time::CalendarWeekCycle->new(
+    @initial_date,
+    %callbacks,
 );
 is_deeply [$cw->date], \@initial_date, "round-trip check";
 is $cw->week_num, 21, 'day of the week, initial check';
@@ -263,11 +286,15 @@ $cw->move_by_days(-1233);
 is_deeply [$cw->_dow_week_year], [3,53,2009],
     'going back to a week no. 53';
 $cw->move_by_days(4);
-is $cw->day_of_week, 0, 'day method says we have Sunday (which is in 2010)';
+is $cw->day_of_week, 7, 'day method says we have Sunday (which is in 2010)';
 is $cw->year_of_thursday, 2009, 'but year() outputs the year covering the Thursday of the week in question';
-$cw = Time::CalendarWeekCycle->new(2013,5,25)->move_by_days(953);
-is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [0,53,2015],
+$cw = Time::CalendarWeekCycle->new(@initial_date, %callbacks)->move_by_days(953);
+is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [7,53,2015],
     'going forward to a week no. 53';
+$cw->move_by_days(-70);
+is $cw->day_obj, "So[3, -1]", "daylight saving time adjustment in Fall";
+$cw->move_by_days(-210);
+is $cw->day_obj, "So[2, 1]", "daylight saving time adjustment in Spring";
 
 done_testing;
 
@@ -293,13 +320,17 @@ Note, however: To associate which weeks to which patterns of duty/non-duty or
 whatever times is beyond the scope of this class. You simply pass a callback
 that gets the respective calender week number. Its return value is expected to be an array ref containing the objects for the days of that week (you define the class and constructions of these objects), with the Sunday expected at index 0. The references to the objects are cached and returned "as is" by move_by_days() method. Also note that for the DST affected days they are passed "as is" to your DST handler which is responsible for cloning the object prior to any modification. Otherwise, these modifications would affect the same day in other weeks as well.
 
+=cut
+
+Die folgenden Absätze sollen nur in der Dokumentation des FlowTime-Tools erscheinen, nicht jedoch im CPAN-Modul. Ich führe sie hier nur auf im Posting, in der Hoffnung, dass ihr den ursprünglichen Sinn und Zweck des Moduls versteht. 
+
 =for FlowTimeDoc
 
 =head1 THIS CLASS IN RELATION TO OTHER FlowTime::Time CLASSES
 
-Time::Span, class of each link of the Time::Profile chain specifying when the user plans to work and when not (thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar) serves the purpose of telling apart work and leisure for every portion of every day between the timestamps delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. Time::Rhythm is what defines the interior of Time::Span. It is basically simply a pair of Time::CalendarWeekCycle instances accessing the same week pattern selector.
+By a Time::Profile users can specify when they plan to work and when not, thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar. It is merely a chain of Time::Span instances that serve the purpose of telling apart work and leisure for every portion of every day between two Time::Point's delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. Time::Rhythm is what really defines the interior of Time::Span. It is basically simply a pair of Time::CalendarWeekCycle instances bound to the same week pattern selector. These instances have to be kept in sync with the Time::Point instances. While moving through the calendar, they have to deliver for every day the right object that is twice in a year modified because of daylight saving time adjustment (the first covers 23 hours, the second 25).
 
-The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the Time::Rhythm instance, serving as cache from which Time::Slice instances are generated to map those portions of a day back to clusters of net or leisure seconds. These slices are then scanned when calculating the net working time progress of a task, which is needed again to figure out how near the deadline effectively is, or how much and in which direction it diverge from the substantive progress. For both it is very important to ignore the leisure phases of the time between start and deadline, so FlowTime can help reducing disposition to ponder about work stuff during leasure.
+The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the Time::Rhythm instance, serving as cache from which Time::Slice instances are generated to map those portions of a day again to clusters of net or leisure seconds. These slices are then scanned by Time::Cursor objects associated with a Task object, in order to calculate its net working time progress, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the task's substantive progress. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowTime can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
 
 =head1 DEPENDENCIES
 
