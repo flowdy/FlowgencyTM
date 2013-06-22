@@ -35,7 +35,7 @@ has slicing => (
 
 sub upd_lengths {
     my ($self) = @_;
-    my ($presence,$absence);
+    my ($presence,$absence) = (0,0);
     my $simply_add = sub {
         my $s = shift;
         $presence += $s->presence;
@@ -50,7 +50,7 @@ sub upd_lengths {
     $self->_set_length($presence + $absence);
 }
 
-sub BUILD; *BUILD = \&upd_lengths;
+*BUILD = \&upd_lengths;
 
 sub calc_slicing {
     my ($self, $opts) = @_;
