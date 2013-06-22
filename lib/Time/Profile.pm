@@ -352,6 +352,42 @@ sub inherit_variations {
 
 }
 
+sub seek_timestamp_after_net_seconds {
+    my ($self, $ts, $net_seconds) = @_;
+    
+    my $span = $self->start;
+    my $pos = { remaining_pres => -$net_seconds };
+    my $lspan;
+    while ( $span && $pos->{remaining_pres} < 0 ) {
+        $span->slice->calc_pos_data($ts->epoch_sec,$pos);
+    }
+    continue { ($lspan, $span) = ($span,$span->next); }
+
+    my $rem_abs = $pos->{remaining_abs};
+    my $rem_pres = $pos->{remaining_pres};
+    if ( $span && $rem_pres ) {
+        my $sl = $lspan->slice->slicing;
+        my ($val, $pres, $abs) = (undef, 0, 0);
+        for ( my $i = -1; $pres < $rem_pres; $i-- ) {
+            $val = $sl->[$i];
+            ($val > 0 ? $pres : $abs) += abs $val;
+        }
+        $rem_abs -= $abs;
+        return Time::Point->from_epoch(
+            $ts->epoch_sec + $net_seconds + $rem_abs
+        );
+    }
+    elsif ( $rem_pres < 0 ) {
+        return $self->fillIn->seek_timestamp_after_net_seconds(
+            $ts->successor, abs $rem_pres
+        );
+    }
+    else {
+        croak "timestamp not found";
+    }
+
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;
