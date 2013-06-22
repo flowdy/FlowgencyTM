@@ -17,7 +17,12 @@ has description => ( is => 'rw', isa => 'Str' );
 
 has profile => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
 
-has _rhythm => ( is => 'ro', isa => 'Time::Rhythm', handles => ['pattern'], init_arg => undef, );
+has _rhythm => (
+    is => 'ro',
+    isa => 'Time::Rhythm',
+    handles => ['pattern', 'seek_timestamp_after_net_seconds'],
+    init_arg => undef,
+);
 
 has from_date => (
      is => 'rw',
@@ -53,8 +58,10 @@ has until_date => (
 
 has span => ( is => 'ro' );
 
-has _slice => (
+has slice => (
     is => 'ro',
+    lazy => 1,
+    builder => '_calc_slice',
     isa => 'Time::Slice',
     init_arg => undef,
 );
@@ -162,15 +169,21 @@ sub new_shared_rhythm {
 }
 
 sub _calc_slice {
-    my ($self, $cursor) = @_;
+    my ($self, $from, $until) = @_;
 
-    return $self->next if $cursor->run_from > $self->until_date;
-    return             if $self->from_date  > $cursor->run_until;
+    if ( @_ > 1 ) {
+        return $self->next if $from > $self->until_date;
+        return             if $self->from_date > $until;
+    }
+    else {
+        $from = $self->from_date;
+        $until = $self->until_date;
+    }
 
     my $span_start = $self->from_date->epoch_sec;
     my $span_end = $self->until_date->last_sec;
-    my $cursor_start = $cursor->run_from->epoch_sec;
-    my $cursor_end = $cursor->run_until->last_sec;
+    my $cursor_start = $from->epoch_sec;
+    my $cursor_end = $until->last_sec;
     my ($ts_null) = $self->from_date->split_seconds_since_midnight;
     $_ -= $ts_null for $span_start, $span_end, $cursor_start, $cursor_end;
     my $rhythm = $self->_rhythm;
@@ -178,7 +191,7 @@ sub _calc_slice {
     my ($start, $slice);
     if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {
         $start = $span_start;
-        $slice = $self->{_slice} //= $rhythm->sliced($start, $span_end);
+        $slice = $self->{slice} //= $rhythm->sliced($start, $span_end);
     }
     else {
         $start = max($span_start, $cursor_start);
@@ -198,7 +211,10 @@ sub calc_slices {
     my ($self,$cursor) = @_;
     my ($next, @slices) = $self;
     while ( $next ) {
-        ($next, my $slice) = $next->_calc_slice($cursor);
+        ($next, my $slice) = $next->_calc_slice(
+             $cursor->run_from,
+             $cursor->run_until,
+        );
         push @slices, $slice;
     } 
     return @slices;
