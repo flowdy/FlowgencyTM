@@ -5,6 +5,7 @@ use utf8;
 package Time::Rhythm;
 use Moose;
 use Bit::Vector;
+use Time::CalendarWeekCycle;
 use Carp qw(carp croak);
 
 my %WDAYNUM; @WDAYNUM{
@@ -13,7 +14,7 @@ my %WDAYNUM; @WDAYNUM{
 
 has [qw|_prefix_i _suffix_i|] => (
     is => 'ro',
-    isa => 'Time::CalWeekCnt',
+    isa => 'Time::CalendarWeekCycle',
     lazy => 1,
     default => sub {
          croak "I, Rhythm, am uninitialized";
@@ -148,27 +149,24 @@ sub from_string {
 
     }
     
-    my $last = do {
-        my $fp = delete $week_patterns{''}; sub { $fp };
-    };
+    @week_patterns = ([1, 0, delete $week_patterns{''} ]);
     for my $sel ( sort { $a cmp $b } keys %week_patterns ) {
         my ($factor, $add) = $sel =~ m{ (\d+) n ([+-]\d+)? }xms;
         croak "week pattern selector malformed: $sel" if !$factor;
         $add //= 0;
         my $wp = $week_patterns{$sel};
-        my $next = $last;
-        my $func = sub {
-            my $divisible = $_[0] - $add;
-            goto $next if $divisible < 0
-                       || $divisible % $factor;
-            return $wp;
-        };
-        $last = $func;
+        unshift @week_patterns, [$factor, $add, $wp];
     }
 
-    @{$args}{qw/hourdiv pattern description/}
-        = ($hourdiv, $last, $week_pattern);
+    my $sel = sub { for my $wp ( @week_patterns ) {
+        my $divisible = $_[0] - $wp->[1];
+        next if $divisible < 0
+             || $divisible % $wp->[0];
+        return @{$wp->[2]};
+    }};
 
+    @{$args}{qw/hourdiv pattern description/}
+        = ($hourdiv, $sel, $week_pattern);
     return $class->new($args);
 
 }
@@ -183,11 +181,12 @@ sub gcf_minutes { # hour partitioner (greatest common factor)
 }
 
 sub BUILD {
-    use Time::CalWeekCnt;
     my ($self, $args) = @_;
-    my @date = @{ $args->{init_day} // croak 'Missing array ref init_day' };
-    $_ = Time::CalWeekCnt->new(@date, selector => $self->pattern)
-        for @{$self}{'_prefix_i', '_suffix_i'};
+    my $dst_handler = $self->_get_dst_handler;
+    $_ = Time::CalendarWeekCycle->new(
+        @{ $args->{init_day} // croak 'Missing array ref init_day' },
+        selector => $self->pattern, dst_handler => $dst_handler
+    ) for @{$self}{'_prefix_i', '_suffix_i'};
     $self->_suffix_i->move_by_days(-1);
     $self->move_end(1);
     return $self;
@@ -273,6 +272,53 @@ sub sliced {
     for ($slices[-1]) { $_ -= $_/abs($_)  * $ts_end->[ 1] }
 
     return \@slices;
+}
+
+sub _get_dst_handler { my $self = shift; sub {
+    my ($bv, $h, $s) = @_;
+    $bv = $bv->Clone;
+    my $hourdiv = $self->hourdiv;
+    my @subst_args = $s < 0 ? ($h,  0, $h+$s, abs $s)
+                   : $s > 0 ? ($h, $s,     0,      0)
+                   : die '$s is zero'
+                   ;
+    $_ *= $hourdiv for @subst_args;
+    $bv->Interval_Substitute($bv, @subst_args);
+    return $bv;
+}}
+
+sub seek_timestamp_after_net_seconds {
+    my ($self, $ts, $net_seconds) = @_;
+
+    my $cursor = Time::CalendarWeekCycle->new(
+        $ts->date_components,
+        selector => $self->pattern,
+        dst_handler => $self->_get_dst_handler
+    );
+
+    my $hdiv = $self->hourdiv;
+    my $day = $cursor->day_obj;
+    my $start = $day->Size - 1
+              - int $ts->split_seconds_since_midnight * $hdiv / 3600;
+
+    my ($pres, $abs, $old_min, $min, $max) = (0,0,$start+1); 
+
+    while ( $net_seconds > $pres * 3600/$hdiv  ) {
+
+        if ( my @limits = $day->Interval_Scan_dec($start) ) {
+            ($max, $min) = @limits;
+            $pres += $max - $min + 1;
+        }
+        else { ($min,$max) = (0,-1); }
+
+        $start = $min - 1;
+        $abs += $old_min - $max - 1;
+        unless ( $start<0 ) { $old_min = $min; next }
+        ($day) = $cursor->move_by_days(1);
+        $start = $day->Size - 1;
+        $old_min = $start + 1;
+    }
+
 }
 
 __PACKAGE__->meta->make_immutable;

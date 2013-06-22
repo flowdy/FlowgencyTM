@@ -1,17 +1,21 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use utf8;
 
 package Time::CalendarWeekCycle;
 use Moose;
 use Moose::Util::TypeConstraints;
+use Scalar::Util qw(blessed);
+use Carp qw(croak);
+use overload q{""} => 'stringify';
 use Date::Calc qw/Week_of_Year Weeks_in_Year Day_of_Week
                   Mktime Monday_of_Week Add_Delta_Days/;
 
 =head1 NAME
 
-Time::CalendarWeekCycle - To infer from a date the calendar week and day in it
-                          (in compliance to ISO 8601, relying on Date::Calc)
+Time::CalendarWeekCycle - To infer from a date the week and the day
+                          (complies to ISO 8601, relying on Date::Calc)
 
 =head1 VERSION
 
@@ -26,19 +30,19 @@ Time::CalendarWeekCycle - To infer from a date the calendar week and day in it
                               # returns $day properties obj.
      dst_handler => $dst_sub, # gets ($at_hour, $plus_minus_hours)
                               # returns cloned and adjusted $day
-     sunday_at_index => 0     # 0 is the default, hence omittable
+     monday_at_index => 0     # 0 is the default, hence omittable
  );
 
  my ($year, $month, $day) = $cycle->date;
  my $day_of_week = $cycle->day_of_week;      # 1=Mo to 7=
- my $week_num    = $cycle->week_num;         # 1 .. 52±1
+ my $week_num    = $cycle->week_num;         # 1 .. 52+/-1
  my $year_th     = $cycle->year_of_thursday; # may differ from $year
 
- # scalar context call: returns $cycle in case you like to chain methods
+ # Scalar context: returns $cycle in case you like to chain methods
  $cycle->move_by_days(+3); 
  my $cycle2 = $cycle->another_moved_by_days(1);
 
- # List context call: No matter if you pass a positive or negative number,
+ # List context: No matter if you pass a positive or negative number,
  # first list element is the nearest day, last element is the farthest!
  my @days_obj = $cycle->move_by_days(10);
  my @same_obj = reverse $cycle->move_by_days(-10);
@@ -46,15 +50,10 @@ Time::CalendarWeekCycle - To infer from a date the calendar week and day in it
  print $cycle;                # prints e.g. "CWNo./YY, Wd" (Wd = english abbr.)
  my $pos = $cycle->stringify; # stores same string to $pos
 
-=for Internal
-
+=for comment
 Further documentation in DESCRIPTION etc. after __END__ of this file.
 
 =cut
-
-use Scalar::Util qw(blessed);
-use Carp qw(croak);
-use overload q{""} => 'stringify';
 
 has _dow => (            
     is => 'rw',
@@ -71,7 +70,7 @@ has _year => (
     isa => subtype { 'Int' => where { length == 4 } },
 );
 
-sub day_of_week { _dow(shift)||7 }
+sub day_of_week { _dow(shift)+1 }
 sub year_of_thursday { _year(shift) }
 sub week_num { _week_num(shift) }
 
@@ -80,9 +79,8 @@ sub _dow_week_year {
     return map { $self->$_(shift//()) } qw/_dow _week_num _year/ ;
 }
 
-=for Internal
-
-TODO: Consider making day, month and year members of the instance, hence we could use simply Date::Calc::Week_of_Year to calculate the week number on demand instead of going the other way round. (Which way is more performant?)
+=for comment
+TODO: Consider making day, month and year members of the instance, hence we could use simply Date::Calc::Week_of_Year to calculate the week number on demand instead of going the other way round. That could impose a performance penalty, though, whereas how it is, this is only the case if DST checking is done.  
 
 =cut
 
@@ -96,22 +94,19 @@ sub _move_by_days {
         ($dow, $week_num, $year) = $maybe_self->_dow_week_year;
     }
 
-    # arrange so that if ($days<0) Mo=-6 ... So=0 or ($days>0) Mo=1 ... So=7
-    ($dow, my $pos) = $days>0 ? ($dow || 7, 1)
-                   :  $dow    ? ($dow  - 7, 0)
-                   :            (        0, 0)
-                   ;
+    # For $days being negative (going back in the calendar), we have to make
+    # precautions: Monday be then -6, Tuesday -5, ..., Sunday still being 0. 
+    $dow = $dow - 7 if $days<0;
     $dow += $days;
 
-    $week_num += int( ($dow-$pos) / 7 );
+    $week_num += int( $dow / 7 );
+    $dow %= 7;
 
     until ( $week_num < 53 ) {
         $week_num = $week_num - Weeks_in_Year($year) || last;
         $year++;
     }
     until ( $week_num > 0 ) { $week_num += Weeks_in_Year(--$year); }
-
-    $dow %= 7;
 
     if ( $maybe_self ) {
         my @v = $maybe_self->_dow_week_year($dow, $week_num, $year);
@@ -131,7 +126,7 @@ around BUILDARGS => sub {
         my @date = splice @args, 0, 3;
         my ($week_num, $year) = Week_of_Year(@date);
         push @args, (
-            _dow => Day_of_Week(@date)%7,
+            _dow => Day_of_Week(@date)-1,
             _week_num => $week_num,
             _year => $year,
         );
@@ -145,14 +140,14 @@ sub BUILD {
 
     my ($sel, $week, @pattern) = ($args->{selector} // return, 0, ());
 
-    my $sunday = $args->{sunday_at_index} // 0;
+    my $monday = $args->{monday_at_index} // 0;
 
     $self->{_selector} = sub {
         my ($week_num) = @_;
         return $sel     if !@_;
         return @pattern if $week == $week_num;
         @pattern = $sel->($week = $week_num);
-        push @pattern, splice @pattern, 0, $sunday;
+        push @pattern, splice @pattern, 0, $monday;
         return \@pattern;
     };
 
@@ -163,7 +158,7 @@ sub stringify {
     my ($week, $year, $day) = map { $self->$_ }
                               qw/_week_num _year _dow/; 
     return sprintf '%d/%d, %s',
-        $week, substr($year, 2, 2), [qw|Su Mo Tu We Th Fr Sa|]->[$day]
+        $week, substr($year, 2, 2), [qw|Mo Tu We Th Fr Sa Su|]->[$day]
     ;
 }
 
@@ -173,7 +168,7 @@ sub day_obj {
         = map { $self->$_ } qw/_selector week_num _dow/;
     my $obj = $sel->($week_num)->[$dow];
     my ($cb, $hr, $shift);
-    return $cb->($obj, $hr, $shift) # we rely on having $obj cloned
+    return $cb->($obj, $hr, $shift) # we rely on $obj being cloned
         if $cb = $self->dst_handler # before modification!
        and ($hr, $shift) = detect_dst_clockface_sector($self->date)
         ;
@@ -223,7 +218,7 @@ sub date {
     my ($self) = @_;
     return Add_Delta_Days(
         Monday_of_Week($self->week_num, $self->year_of_thursday),
-        ($self->day_of_week||7)-1
+        $self->day_of_week - 1
     );
 }
 
@@ -252,52 +247,6 @@ sub detect_dst_clockface_sector {
 
 __PACKAGE__->meta->make_immutable;
 
-return 1 if caller;
-
-package main;
-
-# TODO: out-source this into a .t-file
-
-use Test::More;
-
-my %callbacks = (
-    selector => sub { qw(Mo Di Mi Do Fr Sa So) },
-    dst_handler => sub {
-        my ($wd, $hr, $shift) = @_;
-        "$wd\[$hr, $shift\]"
-    },
-    sunday_at_index => 6,
-);
-
-my @initial_date = (2013, 5, 25);
-my $cw = Time::CalendarWeekCycle->new(
-    @initial_date,
-    %callbacks,
-);
-is_deeply [$cw->date], \@initial_date, "round-trip check";
-is $cw->week_num, 21, 'day of the week, initial check';
-$cw->move_by_days(-9);
-is $cw->week_num, 20, 'move into previous week';
-is $cw->day_of_week, 4, 'day of the week is Thursday (num. 4)';
-my $cw2 = $cw->another_moved_by_days(9);
-is $cw2->day_of_week, 6, 'return safe: copy has day of week Saturday (6)';
-is $cw2->week_num, 21, 'return safe: copy has orig. week number';
-$cw->move_by_days(-1233);
-is_deeply [$cw->_dow_week_year], [3,53,2009],
-    'going back to a week no. 53';
-$cw->move_by_days(4);
-is $cw->day_of_week, 7, 'day method says we have Sunday (which is in 2010)';
-is $cw->year_of_thursday, 2009, 'but year() outputs the year covering the Thursday of the week in question';
-$cw = Time::CalendarWeekCycle->new(@initial_date, %callbacks)->move_by_days(953);
-is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [7,53,2015],
-    'going forward to a week no. 53';
-$cw->move_by_days(-70);
-is $cw->day_obj, "So[3, -1]", "daylight saving time adjustment in Fall";
-$cw->move_by_days(-210);
-is $cw->day_obj, "So[2, 1]", "daylight saving time adjustment in Spring";
-
-done_testing;
-
 __END__
 
 =head1 DESCRIPTION
@@ -307,14 +256,13 @@ a staff roster of whatever kind. For instance, such a roster might
 define that one is on duty Mondays of I<even> weeks 9 to 13 o'clock.
 To map this to the raw number of seconds yielded by the system clock
 is not trivial at all. Think of the leap year: February has
-one more day. Note also that not all years cover 52 weeks, but some ±1
-according to the calendar. When using this module, the time manager
+one more day. Note also that not all years cover 52 weeks, but some have one more or less according to the calendar. When using this module, the time manager
 probably is bound to local time vs. Greenwich Mean Time, meaning you
 must keep track of daylight save time shift. Thus, one day in spring has
-effectively 23, one day in fall 25 hours. As the cost of calculating
+effectively 23 hours, one day in fall 25. As the cost of calculating
 hour and direction of DST shift is small in this module, you can use it to have
-a callback triggered with day object, hour 0-23 and shift length(±)
-parameters, so you can take special actions for those days.
+a callback triggered with day object, hour 0-23 and positive or negative
+shift width parameters, so you can take special actions for those days.
 
 Note, however: To associate which weeks to which patterns of duty/non-duty or
 whatever times is beyond the scope of this class. You simply pass a callback
@@ -324,13 +272,15 @@ that gets the respective calender week number. Its return value is expected to b
 
 Die folgenden Absätze sollen nur in der Dokumentation des FlowTime-Tools erscheinen, nicht jedoch im CPAN-Modul. Ich führe sie hier nur auf im Posting, in der Hoffnung, dass ihr den ursprünglichen Sinn und Zweck des Moduls versteht. 
 
-=for FlowTimeDoc
+=begin comment
 
 =head1 THIS CLASS IN RELATION TO OTHER FlowTime::Time CLASSES
 
 By a Time::Profile users can specify when they plan to work and when not, thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar. It is merely a chain of Time::Span instances that serve the purpose of telling apart work and leisure for every portion of every day between two Time::Point's delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. Time::Rhythm is what really defines the interior of Time::Span. It is basically simply a pair of Time::CalendarWeekCycle instances bound to the same week pattern selector. These instances have to be kept in sync with the Time::Point instances. While moving through the calendar, they have to deliver for every day the right object that is twice in a year modified because of daylight saving time adjustment (the first covers 23 hours, the second 25).
 
 The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the Time::Rhythm instance, serving as cache from which Time::Slice instances are generated to map those portions of a day again to clusters of net or leisure seconds. These slices are then scanned by Time::Cursor objects associated with a Task object, in order to calculate its net working time progress, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the task's substantive progress. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowTime can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
+
+=end comment
 
 =head1 DEPENDENCIES
 
@@ -339,3 +289,30 @@ The day patterns are realized with Bit::Vector, where each bit denotes work (1) 
 =item Date::Calc
 
 =item localtime() system-call with DST sensitivity 
+
+=item up-to-date time-zone information
+
+=head1 AUTHOR
+
+Florian Hess <flories at arcor dot de>
+       
+=head1 COPYRIGHT
+       Copyright (c) 2012 - 2013 by Florian Hess. All rights reserved.
+
+=head1 LICENSE
+This package is free software; you can use, modify and redistribute it
+under the same terms as Perl itself, i.e., at your option, under the
+terms either of the "Artistic License" or the "GNU General Public
+License".
+
+The C library at the core of the module "Date::Calc::XS" can, at your
+discretion, also be used, modified and redistributed under the terms of
+the "GNU Library General Public License".
+
+Please refer to the files "Artistic.txt", "GNU_GPL.txt" and
+"GNU_LGPL.txt" in the "license" subdirectory of this distribution for
+any details!
+
+=head1 DISCLAIMER
+
+
