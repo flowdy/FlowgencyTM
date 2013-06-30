@@ -96,10 +96,11 @@ sub _move_by_days {
 
     # For $days being negative (going back in the calendar), we have to make
     # precautions: Monday be then -6, Tuesday -5, ..., Sunday still being 0. 
-    $dow = $dow - 7 if $days<0;
+    my $plus1 = 0;
+    if ( $days < 0 ) { ($dow,$plus1) = ($dow - 7, 1); }
     $dow += $days;
 
-    $week_num += int( $dow / 7 );
+    $week_num += int( ($dow+$plus1) / 7 );
     $dow %= 7;
 
     until ( $week_num < 53 ) {
@@ -145,7 +146,7 @@ sub BUILD {
     $self->{_selector} = sub {
         my ($week_num) = @_;
         return $sel     if !@_;
-        return @pattern if $week == $week_num;
+        return \@pattern if $week == $week_num;
         @pattern = $sel->($week = $week_num);
         push @pattern, splice @pattern, 0, $monday;
         return \@pattern;

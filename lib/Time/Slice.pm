@@ -36,18 +36,11 @@ has slicing => (
 sub upd_lengths {
     my ($self) = @_;
     my ($presence,$absence) = (0,0);
-    my $simply_add = sub {
-        my $s = shift;
-        $presence += $s->presence;
-        $absence += $s->absence;
-        return;
-    };
-    for ( map { ref($_) ? $simply_add->($_) : $_ } $self->slicing ) {
-        ($_ > 0 ? $presence : $absence) += abs $_;
-    }
-    $self->_set_presence($presence);
-    $self->_set_absence($absence);
-    $self->_set_length($presence + $absence);
+    my $sl = $self->slicing;
+    ($_ > 0 ? $presence : $absence) += abs $_ for @$sl;
+    $self->_set_presence( $presence );
+    $self->_set_absence(  $absence );
+    $self->_set_length($presence + $absence );
 }
 
 *BUILD = \&upd_lengths;
@@ -76,21 +69,16 @@ sub calc_pos_data {
     my $last_sec = $first_sec + $self->length;
 
     if ( $time < $first_sec ) {
-        $store->{ remaining_pres } = $self->presence;
-        $store->{ remaining_abs  } = $self->absence;
+        $store->{ remaining_pres } += $self->presence;
+        $store->{ remaining_abs  } += $self->absence;
     }
     elsif ( $time > $last_sec ) {
-        $store->{ elapsed_pres } = $self->presence;
-        $store->{ elapsed_abs  } = $self->absence;
+        $store->{ elapsed_pres } += $self->presence;
+        $store->{ elapsed_abs  } += $self->absence;
     }
     else {
 
-        my @s = map { ref($_)
-                    ? $_->calc_pos_data($time,$store)
-                        && { skip => $_->length }
-                    : $_
-                } $self->calc_slicing({ traverse => 0 })
-              ;
+        my @s = $self->slicing;
         my $cursec = $first_sec;
         my ($orig,$lenh,$s);
 
@@ -103,11 +91,6 @@ sub calc_pos_data {
         PART: while ( my ($pres,$abs,$len) = splice @loop, 0, 3 ) {
             while ( @s ) {
                 $s = \$s[0];
-                if ( ref $$s ) {
-                    ($orig, $lenh) = @{$$s};
-                    $$s = undef;
-                    next;
-                }
                 my $sec = min( abs($$s), $len );
                 $_   += $sec for $cursec, $$s < 0 ? $$abs : $$pres;  
                 $len -= $sec;
@@ -120,7 +103,7 @@ sub calc_pos_data {
             last if !@loop; # so block is run only once between iter. 1 + 2
             $store->{span} = $lenh && $$s < 0 ? $orig : $self->span;
             $store->{changed} = $cursec + $$s + 1;
-            $store->{state} = ($$s || (ref $s[0] ? $s[1] : $s[0])) > 0;
+            $store->{state} = ($$s || (ref $s[0] ? $s[1] : $s[0])) > 0 || 0;
         } 
     }
 

@@ -237,7 +237,7 @@ sub dump {
     1 while $index-- and $span = $span->next;
     my @dumps;
     while ( $length-- && $span ) {
-        my $rhythm = $span->_rhythm;
+        my $rhythm = $span->rhythm;
         push @dumps, {
             description => $span->description,
             from_date   => $span->from_date.q{},
@@ -352,7 +352,7 @@ sub inherit_variations {
 
 }
 
-sub seek_timestamp_after_net_seconds {
+sub seek_last_net_second_timestamp {
     my ($self, $ts, $net_seconds) = @_;
     
     my $span = $self->start;
@@ -360,12 +360,12 @@ sub seek_timestamp_after_net_seconds {
     my $lspan;
     while ( $span && $pos->{remaining_pres} < 0 ) {
         $span->slice->calc_pos_data($ts->epoch_sec,$pos);
+        ($lspan, $span) = ($span,$span->next);
     }
-    continue { ($lspan, $span) = ($span,$span->next); }
 
     my $rem_abs = $pos->{remaining_abs};
     my $rem_pres = $pos->{remaining_pres};
-    if ( $span && $rem_pres ) {
+    if ( $rem_pres >= 0 ) {
         my $sl = $lspan->slice->slicing;
         my ($val, $pres, $abs) = (undef, 0, 0);
         for ( my $i = -1; $pres < $rem_pres; $i-- ) {
@@ -373,19 +373,20 @@ sub seek_timestamp_after_net_seconds {
             ($val > 0 ? $pres : $abs) += abs $val;
         }
         $rem_abs -= $abs;
-        return Time::Point->from_epoch(
-            $ts->epoch_sec + $net_seconds + $rem_abs
-        );
     }
     elsif ( $rem_pres < 0 ) {
-        return $self->fillIn->seek_timestamp_after_net_seconds(
-            $ts->successor, abs $rem_pres
+        $rem_abs += $self->fillIn->rhythm->count_absence_between_net_seconds(
+            $lspan->until_date->successor, abs $rem_pres
         );
     }
     else {
         croak "timestamp not found";
     }
 
+    return Time::Point->from_epoch(
+        $ts->epoch_sec + $net_seconds + $rem_abs - 1,
+        ($ts->get_precision) x 2,
+    );
 }
 
 __PACKAGE__->meta->make_immutable;

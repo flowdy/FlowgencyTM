@@ -2,9 +2,10 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More tests => 72;
+use FindBin qw($Bin);
 
-use lib qw(../lib/);
+use lib "$Bin/../lib/";
 use Time::Slice;
 use Time::Profile;
 use Time::Cursor;
@@ -12,32 +13,11 @@ use Scalar::Util qw(weaken);
 
 exit run_tests(@ARGV);
 
-sub run_tests {
-    my @args  = @_;
-
-    if (@args) {
-        for my $name (@args) {
-            die "No test method test_$name\n"
-                unless my $func = __PACKAGE__->can( 'test_' . $name );
-            $func->();
-        }
-
-        done_testing;
-        return 0;
-    }
-
-    no strict 'refs';
-    &$_() for grep /^test_/, keys %{main::};
-         
-    done_testing;
-    return 0;
-}
-
 sub test_week_pattern {
     my $tspan;
 
     $tspan = Time::Span->new( from_date => '1.1.13', until_date => '31.3.', week_pattern => 'Mo-So@!;2n:Mo-Mi@9-17;2n+1:Mi-Fr@9-17;3n-2:Mo-Di,Do-Fr@7-15' );
-    is $tspan->_rhythm->atoms->to_Enum,
+    is $tspan->rhythm->atoms->to_Enum,
          q{7-15,55-63,79-87,}                        #  1. KW,    Di    Do Fr
         .q{153-161,177-185,201-209,}                 #  2. KW, Mo Di Mi
         .q{369-377,393-401,417-425,}                 #  3. KW,       Mi Do Fr 
@@ -57,7 +37,7 @@ sub test_week_pattern {
 
 sub test_atoms {
     my $tspan = Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
-    is $tspan->_rhythm->atoms->to_Enum, '9-16,33-40,57-64,81-88,105-112,'
+    is $tspan->rhythm->atoms->to_Enum, '9-16,33-40,57-64,81-88,105-112,'
       .'177-184,201-208,225-232,249-256,273-280,345-352,369-376,393-400,'
       .'417-424,441-448,513-520,537-544,561-568,585-592,609-616,681-688,'
       .'705-712,729-736,753-760,777-784,849-856,873-880,897-904,921-928,'
@@ -66,34 +46,34 @@ sub test_atoms {
       .'1425-1432,1449-1456,1521-1528,1545-1552,1569-1576,1593-1600,1617-1624,'
       .'1689-1696,1713-1720,1737-1744,1761-1768,1785-1792'
       ,'Time span 21.5.--5.8.:Mo-Fr@9-16: rhythm';
-    my $tspan_bin = $tspan->_rhythm->atoms->to_Bin;
+    my $tspan_bin = $tspan->rhythm->atoms->to_Bin;
     $tspan->until_date('10.8. 11');
-    like $tspan->_rhythm->atoms->to_Bin, qr{ \A ( 0{7}1{8}0{9} ){5} 0{24} }xms,
+    like $tspan->rhythm->atoms->to_Bin, qr{ \A ( 0{7}1{8}0{9} ){5} 0{24} }xms,
         'tspan expanded by 5 days at the end';
     $tspan->until_date('5.8.');
-    is $tspan->_rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
+    is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
     $tspan->until_date('3.8.');
-    like $tspan->_rhythm->atoms->to_Bin, qr{ \A 0{7} 1 }xms,
+    like $tspan->rhythm->atoms->to_Bin, qr{ \A 0{7} 1 }xms,
         'tspan truncated by 2 days at the end'
     ;
     $tspan->until_date('5.8.');
-    is $tspan->_rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
+    is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
     $tspan->from_date('19.5.');
-    like $tspan->_rhythm->atoms->to_Bin, qr{ 1 0{57} \z }xms,
+    like $tspan->rhythm->atoms->to_Bin, qr{ 1 0{57} \z }xms,
         'tspan expand by -2 days at the beginning';
     $tspan->from_date('21.5.');
-    is $tspan->_rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
+    is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
     $tspan->from_date('26.5.');
-    like $tspan->_rhythm->atoms->to_Bin, qr{ 1 0{57} \z }xms,
+    like $tspan->rhythm->atoms->to_Bin, qr{ 1 0{57} \z }xms,
         'tspan expand by +5 days at the beginning';
     $tspan->from_date('21.5.');
-    is $tspan->_rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
+    is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
     my $tspan2 = Time::Span->from_string('21.5.--5.8.:Mo-Fr@9-17:30');
-    is $tspan2->_rhythm->hourdiv, 2,
+    is $tspan2->rhythm->hourdiv, 2,
        'another tspan with end of business day 17:30';
-    is length($tspan2->_rhythm->atoms->to_Bin), length($tspan_bin)*2,
+    is length($tspan2->rhythm->atoms->to_Bin), length($tspan_bin)*2,
        'double-sized rhythm';
-    like $tspan2->_rhythm->atoms->to_Bin, qr{ 0 1{17} 0{18} \z }xms,
+    like $tspan2->rhythm->atoms->to_Bin, qr{ 0 1{17} 0{18} \z }xms,
        'additional half an hour respected at atom level';
 }
 
@@ -125,9 +105,9 @@ sub test_progressing_cursor {
 
     my $tspan = Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
     my $tspan2 = $tspan->new_shared_rhythm( '8.' => '21.8.2012' );
-    is $tspan2->_rhythm->atoms->bit_test(83), 0,
+    is $tspan2->rhythm->atoms->bit_test(83), 0,
        'copied and moved tspan, test 1';
-    is $tspan2->_rhythm->atoms->bit_test(63), 1,
+    is $tspan2->rhythm->atoms->bit_test(63), 1,
        'copied and moved tspan, test 2';
 
     my $ts2 = Time::Point->parse_ts('2012-05-21 17:00:00');
@@ -285,10 +265,10 @@ sub test_profile_respect_tspan {
        'rhythm' => {
           'atomic_enum' => '40-57,61-79,136-153,157-175,232-249,253-271,616-633,637-655,712-729,733-751,808-825,829-847',
           'description' => 'Mo-Do@10-14:30,15:15-19',
-          'from_week_day' => '38/12, Tu',
+          'from_week_day' => '39/12, Tu',
           'mins_per_unit' => 15,
           #'patternId' => 189382776,
-          'until_week_day' => '39/12, We',
+          'until_week_day' => '40/12, We',
        },
        'until_date' => '2012-10-03',
      },{
@@ -297,17 +277,17 @@ sub test_profile_respect_tspan {
        'rhythm' => {
           'atomic_enum' => '18-34,66-82,210-226,258-274,306-322,354-370,402-418,546-562,594-610',
           'description' => 'Mo-Fr@9-17:30',
-          'from_week_day' => '39/12, Th',
+          'from_week_day' => '40/12, Th',
           'mins_per_unit' => 30,
           #'patternId' => 189383304,
-          'until_week_day' => '41/12, Tu',
+          'until_week_day' => '42/12, Tu',
        },
        'until_date' => '2012-10-16',
      },{
        'description' => 'Für verschiedene Tage der Woche verschiedene Arbeitszeiten',
        'from_date' => '2012-10-17',
        'rhythm' => {
-          'atomic_enum' => '15-25,74-84,122-132,170-180,255-265,303-313,351-361,410-420,458-468,506-516,591-601',
+          'atomic_enum' => '15-25,74-84,122-132,170-180,255-265,303-313,351-361,410-420,458-468,506-516,593-603', # last enum: shifted +2x30min. DST adj.
           'description' => 'Mo-Mi@7:30-13:00,Do-Sa@13-18:30',
           'from_week_day' => '42/12, We',
           'mins_per_unit' => 30,
@@ -335,15 +315,26 @@ sub test_profile_respect_tspan {
         \@expected_state,
         "Gesamtzustand nach allen respects";
 
-    TODO: {
-        local $TODO = '$tprof->timestamp_after_net_seconds($from_ts, $net_seconds)'
-                     .'noch nicht implementiert.';
-        my $ts0 = Time::Point->parse_ts('25.10.12 12:00');
-        is $tp->seek_timestamp_after_net_seconds($ts0, 90_000), '30.10.12 2:59:59',
-            'End-Zeitstempel landet in Slice';
-        is $tp->seek_timestamp_after_net_seconds($ts0, 130_000), '1.11.12 11:06:39',
-            '... bzw. im Fill-in';
-    }
+    my $ts0 = Time::Point->parse_ts('25.10.12 12:00:00');
+    is eval { "".$tp->seek_last_net_second_timestamp($ts0, 90_000) } // $@,
+       '2012-10-30 02:59:59', 'End-Zeitstempel landet in Slice';
+    
+    my $tspan90 = Time::Span->from_string('25.:Mo-So@15');
+    my $ts1 = Time::Point->parse_ts("14:00")->fill_in_assumptions;
+    is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 1), 3600,
+       "count absence before one net seconds";
+    is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3600), 3600,
+       "count absence among net seconds over an hour";
+    is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3601), 86400,
+       "count absence among net seconds over a day";
+    is eval { "".$tp->seek_last_net_second_timestamp($ts0, 130_000) } // $@,
+       '2012-11-01 11:06:39', '... bzw. im Fill-in';
+    my $tspan91 =  Time::Span->from_string('25.:Mo-So@23-0');
+    my $ts2 = Time::Point->parse_ts("23:15")->fill_in_assumptions;
+    is $tspan91->rhythm->count_absence_between_net_seconds($ts2, 6300), 0,
+       "net seconds transition from one day to the other";
+    is $tspan91->rhythm->count_absence_between_net_seconds($ts2, 6301), 79200,
+       " ... plus one net second again in the night";
 
     TODO: {
         local $TODO = 'Time::Profile->lock(), unlock(), demand_protect() und release_protection() noch zu entwickeln';
@@ -400,5 +391,26 @@ sub test_time_calendarweekcycle {
     is $cw->day_obj, "So[3, -1]", "daylight saving time adjustment in Fall";
     $cw->move_by_days(-210);
     is $cw->day_obj, "So[2, 1]", "daylight saving time adjustment in Spring";
+}
+
+sub run_tests {
+    my @args  = @_;
+
+    if (@args) {
+        for my $name (@args) {
+            die "No test method test_$name\n"
+                unless my $func = __PACKAGE__->can( 'test_' . $name );
+            $func->();
+        }
+
+        done_testing;
+        return 0;
+    }
+
+    no strict 'refs';
+    &$_() for grep /^test_/, keys %{main::};
+         
+    done_testing;
+    return 0;
 }
 

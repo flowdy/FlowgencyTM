@@ -17,10 +17,10 @@ has description => ( is => 'rw', isa => 'Str' );
 
 has profile => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
 
-has _rhythm => (
+has rhythm => (
     is => 'ro',
     isa => 'Time::Rhythm',
-    handles => ['pattern', 'seek_timestamp_after_net_seconds'],
+    handles => ['pattern'],
     init_arg => undef,
 );
 
@@ -34,7 +34,7 @@ has from_date => (
         croak "from_date must be earlier than or equal to until_date"
             if !$date->fix_order($self->until_date);
         my $dd = Delta_Days( $old->date_components, $date->date_components );
-        $self->_rhythm->move_start($dd) if $dd;
+        $self->rhythm->move_start($dd) if $dd;
         delete($self->{_slice});
      },
      coerce => 1,
@@ -50,7 +50,7 @@ has until_date => (
         croak "until_date must be later than or equal to from_date"
             if !$self->from_date->fix_order($date);
         my $dd = Delta_Days($old->date_components, $date->date_components);
-        $self->_rhythm->move_end($dd) if $dd;
+        $self->rhythm->move_end($dd) if $dd;
         delete($self->{_slice});
      },
      coerce => 1,
@@ -85,7 +85,7 @@ sub BUILD {
     my $w = delete $args->{week_pattern}
         or croak 'Missing week_pattern argument';
 
-    my $rhythm = $self->{_rhythm} = ref($w)
+    my $rhythm = $self->{rhythm} = ref($w)
         ? Time::Rhythm->new(
             map({ $_ => $w->$_() } qw(pattern hourdiv description)),
             init_day => \@from_dcomp,
@@ -113,7 +113,7 @@ sub from_string {
     my $rhythm;
 
     # 1. Handelt es sich bei $dates um ein Anfangs und Enddatum?
-    if ( $span =~ s{^\s*--?\s*}{} || $span =~ m{^\s*+} ) {
+    if ( $span =~ s{^\s*--?\s*}{} || $span =~ m{^\s*\+} ) {
         $until_date = Time::Point->parse_ts($span,$from_date);
         croak "Bis-Datum liegt vor Von-Datum"
             if !$from_date->fix_order($until_date);
@@ -148,7 +148,7 @@ sub new_shared_rhythm {
     my $desc = $self->description;
     my $profile = $self->profile;
     my $new = __PACKAGE__->new(
-        week_pattern => $self->_rhythm,
+        week_pattern => $self->rhythm,
         from_date    => $self->from_date, # initial only, reset in an instant
         until_date   => $self->until_date, # initial only, reset in an instant
         defined($desc) ? (description  => $desc) : (),
@@ -181,12 +181,12 @@ sub _calc_slice {
     }
 
     my $span_start = $self->from_date->epoch_sec;
-    my $span_end = $self->until_date->last_sec;
     my $cursor_start = $from->epoch_sec;
-    my $cursor_end = $until->last_sec;
+    my $span_end = $self->until_date->last_sec + 1;
+    my $cursor_end = $until->last_sec + 1;
     my ($ts_null) = $self->from_date->split_seconds_since_midnight;
     $_ -= $ts_null for $span_start, $span_end, $cursor_start, $cursor_end;
-    my $rhythm = $self->_rhythm;
+    my $rhythm = $self->rhythm;
 
     my ($start, $slice);
     if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {

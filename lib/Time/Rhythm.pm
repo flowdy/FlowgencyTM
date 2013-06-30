@@ -182,14 +182,30 @@ sub gcf_minutes { # hour partitioner (greatest common factor)
 
 sub BUILD {
     my ($self, $args) = @_;
-    my $dst_handler = $self->_get_dst_handler;
-    $_ = Time::CalendarWeekCycle->new(
-        @{ $args->{init_day} // croak 'Missing array ref init_day' },
-        selector => $self->pattern, dst_handler => $dst_handler
-    ) for @{$self}{'_prefix_i', '_suffix_i'};
-    $self->_suffix_i->move_by_days(-1);
-    $self->move_end(1);
-    return $self;
+    my @date = @{ $args->{init_day} // croak 'Missing array ref init_day' };
+    $_ = $self->_get_week_cycler(@date) for @{$self}{'_prefix_i', '_suffix_i'};
+    $self->_suffix_i->move_by_days(-1); $self->move_end(1);
+}
+
+sub _get_week_cycler {
+    my ($self, @date) = @_;
+    my $hourdiv = $self->hourdiv;
+    return Time::CalendarWeekCycle->new(
+        @date,
+        selector => $self->pattern,
+        monday_at_index => 1,
+        dst_handler => sub {
+            my ($bv, $h, $s) = @_;
+            $bv = $bv->Clone;
+            my @subst_args = $s < 0 ? ($h,  0, $h+$s, abs $s)
+                           : $s > 0 ? ($h, $s,     0,      0)
+                           : die '$s is zero'
+                           ;
+            $_ *= $hourdiv for @subst_args;
+            $bv->Interval_Substitute($bv, @subst_args);
+            return $bv;
+        },
+    );
 }
 
 sub move_start {
@@ -247,9 +263,14 @@ sub sliced {
         $ts = $ts->epoch_sec if ref $ts;
         my $index = int( $ts / $hourdiv_sec );
         my $rest = $ts % $hourdiv_sec;
-        $ts = [ $index, $hourdiv_sec - $rest, $rest ]; 
+        $ts = [ $index, $rest, $hourdiv_sec - $rest ]; 
     }
     
+    if ( !$ts_end->[1] ) {
+        my ($i, $left,   $right) = \(@$ts_end);
+        $$i--; ($$right, $$left) = (0, $hourdiv_sec);
+    }
+
     my ($last_bit, @slices, $v);
     my $test = do {
         my $atoms = $self->atoms;
@@ -268,57 +289,47 @@ sub sliced {
     }
     continue { $last_bit = $v; }
 
-    for ($slices[ 0] ) { $_ -= $_/abs($_) * $ts_start->[-1] }
-    for ($slices[-1]) { $_ -= $_/abs($_)  * $ts_end->[ 1] }
+    for ($slices[ 0] ) { $_ -= $_/abs($_) * $ts_start->[1] }
+    for ($slices[-1]) { $_ -= $_/abs($_)  * $ts_end->[-1] }
 
     return \@slices;
 }
 
-sub _get_dst_handler { my $self = shift; sub {
-    my ($bv, $h, $s) = @_;
-    $bv = $bv->Clone;
-    my $hourdiv = $self->hourdiv;
-    my @subst_args = $s < 0 ? ($h,  0, $h+$s, abs $s)
-                   : $s > 0 ? ($h, $s,     0,      0)
-                   : die '$s is zero'
-                   ;
-    $_ *= $hourdiv for @subst_args;
-    $bv->Interval_Substitute($bv, @subst_args);
-    return $bv;
-}}
-
-sub seek_timestamp_after_net_seconds {
+sub count_absence_between_net_seconds {
     my ($self, $ts, $net_seconds) = @_;
 
-    my $cursor = Time::CalendarWeekCycle->new(
-        $ts->date_components,
-        selector => $self->pattern,
-        dst_handler => $self->_get_dst_handler
-    );
-
-    my $hdiv = $self->hourdiv;
+    my $cursor = $self->_get_week_cycler( $ts->date_components );
+    my $unit = 3600 / $self->hourdiv;
     my $day = $cursor->day_obj;
-    my $start = $day->Size - 1
-              - int $ts->split_seconds_since_midnight * $hdiv / 3600;
+    my $ssmn = $ts->split_seconds_since_midnight;
+    my $start = int $ssmn / $unit;
+    my $pres = $day->bit_test($start) ? -$ssmn + $start*$unit : 0;
+    my $len = $day->Size;
+    my ($abs, $old_max, $min, $max) = (0,$start); 
 
-    my ($pres, $abs, $old_min, $min, $max) = (0,0,$start+1); 
+    while ( $net_seconds > $pres  ) {
 
-    while ( $net_seconds > $pres * 3600/$hdiv  ) {
-
-        if ( my @limits = $day->Interval_Scan_dec($start) ) {
-            ($max, $min) = @limits;
-            $pres += $max - $min + 1;
+        if ( my @limits = $day->Interval_Scan_inc($start) ) {
+            ($min, $max) = @limits;
+            $pres += ($max - $min + 1) * $unit;
         }
-        else { ($min,$max) = (0,-1); }
+        else { ($min,$max) = ($len) x 2; }
 
-        $start = $min - 1;
-        $abs += $old_min - $max - 1;
-        unless ( $start<0 ) { $old_min = $min; next }
-        ($day) = $cursor->move_by_days(1);
-        $start = $day->Size - 1;
-        $old_min = $start + 1;
+        $start = $max + 1;
+        $abs += $min - $old_max;
+
+        if ( $start < $len ) {
+            $old_max = $max+1;
+        }
+        else {
+            ($day) = $cursor->move_by_days(1);
+            ($start, $len) = (0, $day->Size);
+            $old_max = $start;
+        }
+
     }
 
+    return $abs * $unit;
 }
 
 __PACKAGE__->meta->make_immutable;
