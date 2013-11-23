@@ -29,6 +29,17 @@ has end => (
     init_arg => 'fillIn',
 );
 
+has ['from_earliest', 'until_latest'] => (
+    is => 'rw',
+    isa => 'Time::Point',
+    coerce => 1,
+);
+
+has successor => (
+    is => 'ro',
+    isa => 'Time::Profile',
+);
+
 has fillIn => (
     is => 'ro',
     isa => 'Time::Span',
@@ -273,6 +284,9 @@ sub mustnt_start_later {
 
     return if $start->from_date <= $tp;
 
+    croak "Can't start before minimal from date"
+        if $self->from_earliest && $tp < $self->from_earliest;
+
     $start = $start->alter_coverage($tp, undef, $self->fillIn);
 
     #if ( $start->pattern == $self->fillIn->pattern ) {
@@ -296,6 +310,9 @@ sub mustnt_end_sooner {
     my $end = $self->end;
 
     return if $tp <= $end->until_date;
+
+    croak "Can't end after maximal until date"
+        if $self->until_latest && $self->until_latest > $tp;
 
     $end = $end->alter_coverage( undef, $tp, $self->fillIn );
 
