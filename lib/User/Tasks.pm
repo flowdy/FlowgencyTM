@@ -15,7 +15,8 @@ has task_rs => (
 has step_retriever => (
     is => 'ro',
     lazy => 1,
-    builder => sub {
+    init_arg => undef,
+    default => sub {
         my $task_rs = shift->task_rs;
         sub {
             my ($task,$step) = @_;
@@ -51,6 +52,7 @@ sub get_task {
             ),
             dbirow => $t,
             step_retriever => $self->step_retriever,
+            id => $id,
             scheme => $self->scheme,
         );
     };
@@ -75,7 +77,9 @@ sub new_task {
     } : $task_rs->new();
 
     return $self->cache->{$row->name} = Task->new(
-        scheme => $self->scheme, dbirow => $row
+        scheme => $self->scheme, dbirow => $row,
+        step_retriever => $self->step_retriever,
+        id => $id,
     );
 
 }
