@@ -6,30 +6,16 @@ use Carp qw(carp croak);
 
 has scheme => (
     is => 'ro',
-    isa => 'Time::Scheme'
+    isa => 'Time::Scheme',
     required => 1,
-}
+);
     
 has cursor => (
     is => 'ro',
     isa => 'Time::Cursor',
     required => 1,
     lazy => 1,
-    builder => sub {
-        use Time::Cursor;
-        my $dbicrow = $self->dbicrow;
-        my $timeline = $self->scheme->get_timeline($dbicrow->timeline);
-        my $cursor;
-        if ( $cursor = $timeline->get_cached_cursor($dbicrow->name) ) {}
-        else {
-            $cursor = Time::Cursor->new({
-                timeline => $self->scheme->get($dbicrow->timeline)->timeline,
-                run_from => $dbicrow->from_date, run_until => $dbicrow->until_date,
-            });
-            $cursor->timeline->register_cursor($dbicrow->name);
-        }
-        return $cursor;
-    }
+    builder => '_build_cursor',
 );
 
 has id => (
@@ -58,7 +44,7 @@ has progress => (
     is => 'ro',
     isa => 'Num',
     clearer => '_clear_progress',
-    builder => sub { shift->main_step->calc_progress }
+    builder => sub { shift->main_step->calc_progress },
     lazy => 1,
 );
 
@@ -67,7 +53,7 @@ has step_retriever => (
     is => 'ro',
     isa => 'CodeRef',
     required => 1,
-}
+);
 
 sub update {
 
@@ -82,7 +68,7 @@ sub update {
                }
              : delete $args->{step};
 
-    $args->{oldname} = $step;
+    $args->{oldname} = $root;
 
     my $steps = $self->_update_flatten_substeps_tree($args);
 
@@ -108,15 +94,15 @@ sub _update_flatten_substeps_tree {
     $args->{_level} = 0;
     my @rec_path = $args;
     my %steps;
-
+    my $steps_rs = $self->steps;
     my $is_ancestor = { _ancestor => 1 };
 
     { my $p = $args->{parent};
       my $n = $args->{oldname};
 
-      my $pr = $p ? $self->steps->find({ name => $p })
+      my $pr = $p ? $steps_rs->find({ name => $p })
                  || croak "$n: No step $p to be a child of"
-             : $self->steps->find({ name => $n })->parent_row
+             : $steps_rs->find({ name => $n })->parent_row
              ;
 
       while ( $pr ) {
@@ -148,7 +134,7 @@ sub _update_flatten_substeps_tree {
             $steps{$substep} = $is_ancestor;
 
             croak "No step $substep associated to task ".$self->name
-                if $substep and !$step_rs->find($substep);
+                if $substep and !$steps_rs->find($substep);
 
             if ( $attr->{pos} ) {
                 carp "{position} is determined by position in substeps array"
@@ -231,7 +217,7 @@ sub _update_write_to_db {
 
     my @NON_DB_FIELDS = qw/ substeps _ancestor _level _substeps_processed /;
 
-    while ( my $step = $step_rs->next ) {
+    while ( my $step = $steps_rs->next ) {
 
         if ( my $s = delete $steps2{ $step->name } ) {
 
@@ -279,14 +265,14 @@ sub _update_write_to_db {
     }
 
     while ( my ($name,$substeps) = %new_parents ) {
-        $step_rs->search({ name => { in => $substeps } })
+        $steps_rs->search({ name => { in => $substeps } })
                 ->update({ parent => $name })
                 ;
     }
 
-    is_link_valid($_) for $step_rs->search({ link => { '!=' => undef }});
+    is_link_valid($_) for $steps_rs->search({ link => { '!=' => undef }});
 
-    $row->main_step_row( $step_rs->find({ name => '' }) );
+    $row->main_step_row( $steps_rs->find({ name => '' }) );
 
     if ( $row->in_storage ) {
         use Time::Point;
@@ -355,8 +341,8 @@ sub is_link_valid {
         }, { columns => ['name'] });
     } continue { $ch = $p; }
 
-    my @conflicts = grep $is_successor{$_}, $req_step->prior_deps($task->name);
-    if ( @conflicts )
+    my @conflicts = grep $is_successor{$_}, $req_step->prior_deps($self->name);
+    if ( @conflicts ) {
         croak "Circular or dead-locking dependency in ",
             $self->dbicrow->name, " from ", $req_step->name, " to ",
             join ",", @conflicts;
@@ -365,7 +351,7 @@ sub is_link_valid {
     return;         
 }
 
-sub calc_urgency {
+sub __deprecated_calc_urgency { # DEPRECATED!
     use POSIX qw(LONG_MAX);
     my ($self,$time) = @_;
 
@@ -399,11 +385,94 @@ sub calc_urgency {
         done => $done,
         remaining_time => sprintf('%d:%02d:%02d', $hours, $minutes, $seconds),
         tension => $tension,
-        urgency => $elapsed == 1 ? LONG_MAX - $done / $pri
+        urgency => $elapsed == 1 ? LONG_MAX - $done / $prio
                  : $E ** ($prio + $tension * $prio) / (1-$elapsed)
         
     };
 }
 
+sub from_string {
+    my ($self, $string, $num) = @_;
+    my ($head, @substeps) = do {
+        my $num = $num + 1;
+        split /\s*\|$num\|\s*/, $string;
+    };
+    my ($ti, @md) = split /\s*\|\|\s*/, $head;
+    my %md = from_string_parse_head($ti);
+    for my $md ( @md ) {
+        my $key = $md =~ s{ \A (\w+) : \s+ }{}xms ? $1
+                : croak "Missing key in line \"$md\"";
+        croak "Value for key $key already defined: $md{$key} at \"$md\""
+            if defined $md{$key};
+        $md =~ s{\\(\S+)}{"\"\\$1\""}eeg;
+        my @multi = split / (?<!\d) \s* \| \s* (?!\d) /xms, $md; 
+        $md{$key} = @multi == 1 ? $multi[0] : \@multi;
+    }
+    $md{substeps} = [ map { from_string($self, $_, $num+1) } @substeps ];
+    return $num ? \%md : $self->update(%md);
+}
 
+sub from_string_parse_head {
+    my ($head) = @_;
+
+    my %data;
+
+    # Recognize id string for the task
+    if ( $head =~ s{ \s* = (\w+) }{}xms ) {
+        $data{name} = $1;
+    }
+
+    # Recognize tags 
+    if ( $head =~ s{ \s* \B # (\p{Alpha}\w+) }{}xms ) {
+        push @{$data{tags}}, $1;
+    }
+
+    # Recognize from-date, time profile (or contiguous pairs of both) and the
+    # deadline after all.
+    my $date_rx = qr{\d[.\-\d]{,8}[\d.]\b};
+    if ( $head =~
+           s{ ( [a-z] \w+                   # id string of a time profile (tp)
+              | $date_rx                    # date to be parsed by Time::Point
+              | (?:,?(?:$date_rx:[^,\s]+))+ # ","-sep. pairs of from-date and tp
+              )? --? ($date_rx)             # deadline date
+            }{}xms
+    ) {
+
+        my @components = split /,/, $1//q{};
+        if ( @components > 1 ) {
+            for ( split /,/, $1 ) {
+                my ($date, $tplabel) = split /:/, $_;
+                $data{timeprofile_from}{$date} = $tplabel;
+            }
+        }
+        elsif ( my $single = shift @components ) {
+            if ( $single =~ /^\d/ ) {
+                $data{timeprofile_from}{$single} = "DEFAULT";
+            }
+            else {
+                $data{timeprofile} = $single;
+            }
+        }
+    }
+    
+    $data{title} = $head;
+    return %data;
+
+}
+
+sub _build_cursor {
+    use Time::Cursor;
+    my ($self) = @_;
+    my $dbicrow = $self->dbicrow;
+    my $timeline = $self->scheme->get($dbicrow->timeline);
+    my $cursor = $timeline->get_cached_cursor($dbicrow->name);
+    if ( !$cursor ) {
+        $cursor = Time::Cursor->new({
+            timeline => $timeline,
+            run_from => $dbicrow->from_date, run_until => $dbicrow->until_date,
+        });
+        $cursor->timeline->register_cursor($dbicrow->name, $cursor);
+    }
+    return $cursor;
+}
 1;
