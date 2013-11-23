@@ -8,9 +8,9 @@ extends 'DBIx::Class::Core';
 __PACKAGE__->table('task');
 __PACKAGE__->add_columns(
     qw/ ROWID user main_step from_date until_date priority
-        archived archival_ts archived_because
+        archived_ts archived_because
         repeat_from repeat_until frequency
-        timeline client
+        time_profile client
       /
 );
 
