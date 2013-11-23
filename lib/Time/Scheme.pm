@@ -21,9 +21,7 @@ sub from_json {
 
     my $class = shift;
 
-    my $scheme = JSON::from_json(shift, {
-        map { $_ => 1 } qw/relaxed allow_barekey allow_singlequote/
-    });
+    my $scheme = JSON::from_json(shift, { relaxed => 1 });
 
     my (%tprofiles,$next_round_promise);
 
