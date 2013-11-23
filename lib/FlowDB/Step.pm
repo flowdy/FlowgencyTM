@@ -15,6 +15,7 @@ __PACKAGE__->add_columns(
     link => { is_nullable => 1 },
     pos => { data_type => 'INTEGER' },
     done => { data_type => 'INTEGER' },
+    checks => { data_type => 'INTEGER' },
     expoftime_share => { data_type => 'INTEGER', is_nullable => 0, }
 ); 
 
@@ -93,13 +94,14 @@ has priority => (
     is => 'ro',
     isa => 'Int',
     lazy => 1,
-    builder => sub {
+    init_arg => undef,
+    default => sub {
         my $self = shift;
         if ( my $str = $self->subtask_row ) { return $str->priority }
         elsif ( my $p = $self->parent_row ) { return $p->priority }
         else { die "Can't find out priority" }
     },
-),
+);
 
 sub calc_progress {
     my ($self, $LEVEL) = @_;
