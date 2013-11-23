@@ -5,6 +5,8 @@ use utf8;
 package Time::Cursor;
 use Carp qw(croak carp);
 use Scalar::Util qw(weaken);
+use FlowTime::Types;
+use Time::Point;
 use Moose;
 
 has _runner => (
