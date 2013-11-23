@@ -4,14 +4,12 @@ use utf8;
 
 package Time::Span;
 use Moose;
-use Moose::Util::TypeConstraints;
+use FlowTime::Types;
 use Time::Point;
 use Time::Rhythm;
 use Date::Calc qw(Delta_Days Add_Delta_Days);
 use Carp qw(carp croak);
 use List::Util qw(min max);
-
-coerce 'Time::Point' => from 'Str' => via { Time::Point->parse_ts(shift) };
 
 has description => ( is => 'rw', isa => 'Str' );
 
