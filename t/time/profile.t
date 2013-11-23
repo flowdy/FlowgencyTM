@@ -5,7 +5,6 @@ use warnings;
 use Test::More tests => 72;
 use FindBin qw($Bin);
 
-use lib "$Bin/../lib/";
 use Time::Slice;
 use Time::Profile;
 use Time::Cursor;

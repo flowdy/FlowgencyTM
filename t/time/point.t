@@ -2,7 +2,6 @@
 use strict;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/";
 use Test::More tests => 68;
 
 use Time::Point;

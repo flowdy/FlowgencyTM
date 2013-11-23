@@ -2,25 +2,24 @@
 use strict;
 
 use FindBin qw($Bin);
-use lib "$Bin/../lib";
 use Test::More;
 use Time::Scheme;
 use Time::Cursor;
 
 my $scheme = Time::Scheme->from_json(<<'JSON');
 {
-   work: {
-       label: 'UB Informationstechnik',
-       pattern: "Mo-Fr@9-17:30",
-       variations: [
-           { ref: 'urlaub', apply: true, from: '10.5.', until: '7.6.13' },
-           { week_pattern: "Mi@13-17", from: "21.5.13", until: "31.",
-             description: 'Ehrenamtliche Arbeit'
+   "work": {
+       "label": "UB Informationstechnik",
+       "pattern": "Mo-Fr@9-17:30",
+       "variations": [
+           { "ref":"urlaub", "apply":true, "from":"10.5.", "until":"7.6.13" },
+           { "week_pattern": "Mi@13-17", "from": "21.5.13", "until": "31.",
+             "description": "Ehrenamtliche Arbeit"
            }
        ],
    },
 
-   urlaub: { pattern: 'Mo-So@!0-23' }
+   "urlaub": { "pattern": "Mo-So@!0-23" }
 
 }
 JSON
