@@ -14,7 +14,7 @@ sub import {
     $$dbh_ref = FlowDB->connect(
     "DBI:SQLite:$filename", '', '',
         {
-           sqlite_unicode => 1
+           sqlite_unicode => 1,
            use_foreign_keys => 1,
         }
     );
