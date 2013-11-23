@@ -3,25 +3,9 @@ use strict;
 
 package LinearNum2ColourMapper;
 use Moose;
-use Moose::Util::TypeConstraints;
+use FlowTime::Types;
 use Scalar::Util qw(looks_like_number);
 use Carp qw(croak);
-
-subtype 'RgbColour',
-    as 'ArrayRef',
-    where { @$_ == 3 && @$_ == (() = grep {
-        $_ eq abs(int($_)) && $_ >= 0 && $_ < 256
-      } @$_)
-    },
-    message { 'expecting array ref of three 8-bit positive ints '
-            . 'for red, green, blue colour components'
-    };
-;
-
-coerce 'RgbColour',
-    from 'Str',
-    via {[ map { hex($_) } m{ \A \# (?: ([0-9a-f][0-9a-f]) ){3} \z }xms ]}
-    ;
 
 has thresholds => (
     is => 'ro',
