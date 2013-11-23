@@ -1,29 +1,20 @@
 #!/usr/bin/perl
 use strict;
 
-use lib '../lib';
+use FindBin '$Bin';
 use Test::More tests => 3;
 
 my $db;
 use FlowDB \$db;
 
-my $default_scheme = $db->resultset('FlowDB::TimeScheme')->create({
-    name => 'DEFAULT',
-    title => 'Default Time-scheme',
-    pattern => 'Mo-Fr@9-17',
-    propagate => 0,
-});
-
-ok $default_scheme->isa('FlowDB::TimeScheme'), 'FlowDB::TimeScheme row object created';
-
 use Time::Scheme;
 use User::Tasks;
 
-$default_scheme = Time::Scheme->new( dbirow => $default_scheme );
-
+my $default_scheme = Time::Scheme->from_json(...);
+ 
 ok $default_scheme->isa('Time::Scheme'), 'wrap default scheme in a moose class with tree/node functionality';
 
-my $tasks = Tasks->new(
+my $tasks = User::Tasks->new(
     task_rs => $db->resultset('FlowDB::Task'),
     scheme => $default_scheme,
 );
