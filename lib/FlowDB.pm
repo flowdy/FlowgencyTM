@@ -3,7 +3,7 @@ use strict;
 package FlowDB;
 use base qw/DBIx::Class::Schema/;
 
-__PACKAGE__->load_classes(qw|Task Step TimeScheme TimeVariation|);
+__PACKAGE__->load_classes(qw|Task Step TimeLine|);
 
 sub import {
     my ($class, $dbh_ref, $filename) = @_;

@@ -26,9 +26,9 @@ __PACKAGE__->belongs_to( main_step_row => 'FlowDB::Step',
     { proxy => [qw(title description done checks expoftime_share substeps)] },
 );
 
-__PACKAGE__->belongs_to(
-    timeline_row => 'FlowDB::TimeScheme',
-    { 'foreign.name' => 'self.timeline' }
+__PACKAGE__->has_many(
+    timeline_row => 'FlowDB::TimeLine',
+    { 'foreign.task_id' => 'self.ROWID' }
 );
 
 __PACKAGE__->set_primary_key( 'ROWID' );
