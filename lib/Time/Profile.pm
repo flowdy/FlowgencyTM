@@ -7,43 +7,48 @@ use Time::Span;
 use Carp qw(carp croak);
 use Scalar::Util qw(refaddr);
 
+has fillIn => (
+    is => 'ro',
+    isa => 'Time::Span',
+    required => 1,
+);
+
+with 'Time::Structure::Chain';
+
 has version => (
     is => 'rw',
     isa => 'Int',
-    default => 0,
+    default => sub { time - $^T },
+    lazy => 1,
+    clearer => '_update_version',
 );
 
-has start => (
-    is => 'ro',
-    isa => 'Time::Span',
-    required => 1,
-    writer => '_set_start',
-    init_arg => 'fillIn',
-);
-
-has end => (
-    is => 'ro',
-    isa => 'Time::Span',
-    required => 1,
-    writer => '_set_end',
-    init_arg => 'fillIn',
+has ['+start', '+end'] => (
+    init_arg => 'fillIn'
 );
 
 has ['from_earliest', 'until_latest'] => (
     is => 'rw',
     isa => 'Time::Point',
     coerce => 1,
+    trigger => sub {
+        my $self = shift;
+        my $span = $self->_find_span_covering(shift);
+        if ( $span ) {
+            croak "Time profile borders can be extended, not narrowed";
+        }
+        $self->_update_version;
+    }
 );
 
 has successor => (
     is => 'ro',
     isa => 'Time::Profile',
-);
-
-has fillIn => (
-    is => 'ro',
-    isa => 'Time::Span',
-    required => 1,
+    trigger => sub {
+        my ($self, $succ) = shift;
+        $succ->mustnt_start_later($self->end->until_date->successor);
+        $self->_update_version;
+    }
 );
 
 has _parent => (
@@ -81,30 +86,16 @@ around BUILDARGS => sub {
 };
 
 sub calc_slices {
-    my ($self, $cursor) = @_;
-    my $ts0 = $cursor->run_from;
-    my $span = _find_span_covering($self->start, $ts0);
-    return $span->calc_slices($cursor);
+    my ($self, $from, $until) = @_;
+    $from = $from->run_from if $from->isa("Time::Cursor");
+
+    return $self->_find_span_covering($self->start, $from)
+               ->calc_slices($from, $until);
 }
 
-sub _find_span_covering {
-    my ($span,$ts) = @_;
-    my $prior;
-
-    until ( $span->covers_ts($ts) ) {
-        $prior = $span;
-        $span = $span->next || return;
-        if ( $span->from_date > $ts ) {
-            $span = undef;
-            last;
-        }
-    }
-    return $prior, $span;
-}
-
-sub respect {
-    my ($self,$span) = @_;
-
+around respect => sub {
+    my ($wrapped, $self, $span) = @_;
+    
     if ( ref $span eq 'HASH' ) {
         my $tspan = $span;
         if ( my $base = $tspan->{obj} ) {
@@ -119,88 +110,13 @@ sub respect {
         $self->_add_variation($tspan);
     }
 
-    my ($start,$last) = ($self->start, $self->end);
+    $self->$wrapped($span);
 
-    my $lspan = $span; $lspan = $_ while $_ = $lspan->next;
-
-    my $span_from_date = $span->from_date;
-    if ( $span_from_date < $start->from_date->epoch_sec ) {
-        if ( $start->from_date > $lspan->until_date ) {
-            # we need a gap or bridge, at any rate a defaultRhythm span
-            my $start = $start->alter_coverage(
-                $lspan->until_date->successor, undef, $self->fillIn
-            );
-            $lspan->next($start);
-        }
-        else {
-            my $ts = $lspan->until_date->successor;
-            my ($prior, $span2) = _find_span_covering($start, $ts);
-            if ( $span2 ) {
-                $span2->from_date($ts);
-                $lspan->next($span2);
-            }
-            elsif ( $ts >= $last->until_date ) {
-                $last->next($span);
-                $self->_set_end($lspan);
-            }
-            elsif ( $prior ) {
-                my $next = $prior->next();
-                $prior->next($lspan);
-                $lspan->next($next);
-            }
-            else { die }
-        }
-        $self->_set_start($span);
-    }
-    elsif ( $span_from_date > $last->until_date ) {
-        my $last = $last->alter_coverage(
-            undef, $span_from_date->predecessor => $self->fillIn
-        );
-        $last->next($span);
-        $self->_set_end($span);
-    }
-    elsif (
-        my ($prior,$trunc_right_span)
-            = _find_span_covering($start, $span_from_date)
-      ) {
-
-        my $successor = $lspan->until_date->successor;
-        my $trunc_left_span = _find_span_covering(
-            $trunc_right_span, $successor
-        );
-
-        my $former_ud = $trunc_right_span->until_date;
-        my $former_next = $trunc_right_span->next;
-        if ( $trunc_right_span->from_date < $span_from_date ) {
-            $trunc_right_span->until_date($span->from_date->predecessor);
-            $trunc_right_span->next($span);
-        }
-        elsif ( $prior ) {
-            $prior->next($span);
-        }
-        else { $self->_set_start($span); }
-
-        if ( $trunc_left_span ) {
-            if ( $trunc_left_span == $trunc_right_span ) {
-                $trunc_left_span =
-                    $trunc_right_span->new_shared_rhythm(
-                        $successor, $former_ud
-                    );
-                if ( $former_next ) { $trunc_left_span->next($former_next); }
-                else { $self->_set_end($trunc_left_span); }
-            }
-            else { $trunc_left_span->from_date($successor); }
-            $lspan->next($trunc_left_span);
-        }
-        else { $self->_set_end($span); } 
-
-    }
-    else { die }
-       
     #apply_all_roles($span, 'Time::Span::SubHiatus') unless $span->is_absence;
-    $self->version($self->version+1);
+    $self->_update_version;
     return;
-}
+
+};
 
 sub get_section {
     my ($self, $from, $until) = @_;
@@ -211,8 +127,8 @@ sub get_section {
     $self->mustnt_start_later($from);
     $self->mustnt_end_sooner($until);
 
-    my $from_span = _find_span_covering($self->start, $from);
-    my $until_span = _find_span_covering($from_span, $until);
+    my $from_span = $self->_find_span_covering($from);
+    my $until_span = $self->_find_span_covering($from_span, $until);
 
     if ( $from_span == $until_span ) {
         return $from_span->new_shared_rhythm($from, $until);
@@ -284,74 +200,51 @@ sub mustnt_start_later {
 
     return if $start->from_date <= $tp;
 
-    croak "Can't start before minimal from date"
+    croak "Can't start before minimal from_date"
         if $self->from_earliest && $tp < $self->from_earliest;
 
     $start = $start->alter_coverage($tp, undef, $self->fillIn);
-
-    #if ( $start->pattern == $self->fillIn->pattern ) {
-        #$start->from_date($tp);
-    #}
-    #else {
-        #my $gap = $self->fillIn->new_shared_rhythm(
-           #$tp, $start->epoch_sec-1
-        #);
-        #$gap->next($start);
-        #$self->set_start($gap);
-    #}
 
     $self->_set_start($start);
 
 }
 
-sub mustnt_end_sooner {
-    my ($self, $tp) = @_;
+sub mustnt_end_sooner { # recursive on successor if any
+    my ($self, $tp, $extender) = @_;
 
     my $end = $self->end;
 
     return if $tp <= $end->until_date;
 
-    croak "Can't end after maximal until date"
-        if $self->until_latest && $self->until_latest > $tp;
+    my $successor = $self->successor;
+    my $until_latest = $self->until_latest // do {
+        if ( $successor ) {
+            my $from_earliest = $successor->from_earliest
+                // croak "Cannot succeed at unknown point in time";
+            $from_earliest->predecessor;
+        }
+        else { undef }
+    };
 
-    $end = $end->alter_coverage( undef, $tp, $self->fillIn );
+    my $tp1 = $tp;
+    if ( $until_latest && $tp > $until_latest ) {
+        croak "Can't end after maximal until_date"
+            if !$extender;
+        $extender->($until_latest, $successor);
+        $tp1 = $until_latest;
+    }
+    
+    if ( $successor ) {
+        $successor->mustnt_end_sooner($tp, $extender);
+    }
 
-    #if ( $end->pattern == $self->fillIn->pattern ) {
-        #$end->until_date($tp);
-    #}
-    #else {
-        #my $gap = $self->fillIn->new_shared_rhythm(
-           #$end->last_sec+1, $tp
-        #);
-        #$end->next($gap);
-        #$self->set_end($gap);
-    #}
+    $end = $end->alter_coverage( undef, $tp1, $self->fillIn );
 
     $self->_set_end($end);
 
     return;
 }
 
-
-sub detect_circular {
-    use Data::Dumper;
-    local $Data::Dumper::Maxdepth=3;
-    my $self = shift;
-    my $span = $self->start;
-    my %priors = (); my $next;
-    while ( $span ) {
-        $next = $span->next || return;
-        if ( my $p = $priors{$next} ) {
-            die 'Zirkularer Bezug: '.Dumper({
-                former => [ $p, $p->description ],
-                rival => [ $span, $span->description ],
-                span => [ $next, $next->description ]
-            });
-        }
-        $priors{$next} = $span;
-    }
-    continue { $span = $next }
-}
 
 sub inherit_variations {
     my ($self, $expl_var) = @_;

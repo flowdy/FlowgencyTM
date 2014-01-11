@@ -11,6 +11,8 @@ use Date::Calc qw(Delta_Days Add_Delta_Days);
 use Carp qw(carp croak);
 use List::Util qw(min max);
 
+with "Time::Structure::Link";
+
 has description => ( is => 'rw', isa => 'Str' );
 
 has profile => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
@@ -20,38 +22,6 @@ has rhythm => (
     isa => 'Time::Rhythm',
     handles => ['pattern'],
     init_arg => undef,
-);
-
-has from_date => (
-     is => 'rw',
-     isa => 'Time::Point',
-     required => 1,
-     trigger => sub {
-        my ($self, $date, $old) = @_;
-        return if !$old; # do nothing on construction
-        croak "from_date must be earlier than or equal to until_date"
-            if !$date->fix_order($self->until_date);
-        my $dd = Delta_Days( $old->date_components, $date->date_components );
-        $self->rhythm->move_start($dd) if $dd;
-        delete($self->{_slice});
-     },
-     coerce => 1,
-);
-
-has until_date => (
-     is => 'rw',
-     isa => 'Time::Point',
-     required => 1,
-     trigger => sub {
-        my ($self, $date, $old) = @_;
-        return if !$old; # do nothing on construction
-        croak "until_date must be later than or equal to from_date"
-            if !$self->from_date->fix_order($date);
-        my $dd = Delta_Days($old->date_components, $date->date_components);
-        $self->rhythm->move_end($dd) if $dd;
-        delete($self->{_slice});
-     },
-     coerce => 1,
 );
 
 has span => ( is => 'ro' );
@@ -64,21 +34,10 @@ has slice => (
     init_arg => undef,
 );
 
-has next => (
-    is => 'rw',
-    isa => 'Time::Span',
-    clearer => 'nonext'
-);
-
 sub BUILD {
-    my ($self, $args) = @_;
-    my $from_date = $self->from_date;
-    my $until_date = $self->until_date;
+    my ($self,$args) = @_;
 
-    croak "Dates in wrong temporal order"
-        if !$from_date->fix_order($until_date);
-
-    my @from_dcomp = $from_date->date_components;
+    my @from_dcomp = $self->from_date->date_components;
 
     my $w = delete $args->{week_pattern}
         or croak 'Missing week_pattern argument';
@@ -94,8 +53,22 @@ sub BUILD {
         ;
 
     $rhythm->move_end(Date::Calc::Delta_Days(
-        @from_dcomp, $until_date->date_components
+        @from_dcomp, $self->until_date->date_components
     ));
+}
+
+sub _onchange_until {
+    my ($self, $date, $old) = @_;
+    my $dd = Delta_Days($old->date_components, $date->date_components);
+    $self->rhythm->move_end($dd) if $dd;
+    delete $self->{_slice};
+}
+
+sub _onchange_from {
+    my ($self, $date, $old) = @_;
+    my $dd = Delta_Days($old->date_components, $date->date_components);
+    $self->rhythm->move_start($dd) if $dd;
+    delete $self->{_slice};
 }
 
 sub from_string {
@@ -132,38 +105,24 @@ sub from_string {
     });
 }
 
+sub new_alike {
+    my ($self, $args) = @_;
+
+    for my $arg (qw/description profile/) {
+        next if exists $args->{$arg};
+        $args->{$arg} = $_ if defined($_ = $self->$arg());
+    }
+
+    $args->{week_pattern} = $self->rhythm;
+    return __PACKAGE__->new($args);
+
+}
+
 sub new_shared_rhythm {
-    my ($self, $from, $until) = @_;
-
-    $_ = ref $_ ? $_ : Time::Point->parse_ts($_)
-        for grep defined, $from, $until;
-    $from //= $self->from_date;
-    $until //= $self->until_date;
-
-    croak 'from date is later than until date'
-        if !$from->fix_order($until);
-
-    my $desc = $self->description;
-    my $profile = $self->profile;
-    my $new = __PACKAGE__->new(
-        week_pattern => $self->rhythm,
-        from_date    => $self->from_date, # initial only, reset in an instant
-        until_date   => $self->until_date, # initial only, reset in an instant
-        defined($desc) ? (description  => $desc) : (),
-        defined($profile) ? (profile => $profile) : (),
-        #is_absence   => $self->is_absence,
-    );
-
-    if ( $from > $self->until_date ) {
-        $new->until_date($until);
-        $new->from_date($from);
-    }
-    else {
-        $new->from_date($from);
-        $new->until_date($until);
-    }
-
-    return $new;
+    shift->new_alike({
+        map { my $arg = shift; defined($arg) ? ($_ => $arg) : () }
+            qw/from_date until_date/
+    });
 }
 
 sub _calc_slice {
@@ -206,73 +165,20 @@ sub _calc_slice {
 }
 
 sub calc_slices {
-    my ($self,$cursor) = @_;
-    my ($next, @slices) = $self;
+    my ($self, $from, $until) = @_;
+    my ($next, @slices) = ($self);
     while ( $next ) {
-        ($next, my $slice) = $next->_calc_slice(
-             $cursor->run_from,
-             $cursor->run_until,
-        );
+        ($next, my $slice) = $next->_calc_slice( $from, $until );
         push @slices, $slice;
     } 
     return @slices;
 }
 
-sub covers_ts {
-    my ($self, $ts) = @_;
-    $self->from_date <= $ts && $ts <= $self->until_date;
+sub like {
+    my ($self, $fillIn) = @_;
+    $self->pattern == $fillIn->pattern;
 }
 
-sub alter_coverage {
-    my ($self, $from_date, $until_date, $fillIn) = @_;
-
-    $fillIn //= $self;
-    $_ = Time::Point->parse_ts($_)
-        for grep { defined && !ref } $from_date, $until_date;
-    if ( $from_date && $until_date ) {
-        $from_date->fix_order($until_date)
-            or croak 'Time::Span::alter_coverage(): dates in wrong order';
-    }
-
-    my ( $from_span, $until_span );
-
-    if ( $from_date ) {
-        if ( $self->pattern == $fillIn->pattern
-          || $from_date     >  $self->from_date
-        ) {
-            $self->from_date($from_date);
-            $from_span = $self;
-        }
-        else {
-            my $gap = $fillIn->new_shared_rhythm(
-               $from_date, $self->from_date->predecessor
-            );
-            $gap->next($self);
-            $from_span = $gap;
-        }
-        return $from_span if !defined $until_date;
-    }
-
-    if ( $until_date ) {
-        if ( $self->pattern == $fillIn->pattern
-          || $until_date    <  $self->until_date
-        ) {
-            $self->until_date($until_date);
-            $until_span = $self;
-        }
-        else {
-            my $gap = $fillIn->new_shared_rhythm(
-               $self->until_date->successor, $until_date
-            );
-            $self->next($gap);
-            $until_span = $gap;
-        }
-        return $until_span if !defined $from_date;
-    }
-    
-    return $from_span, $until_span;
-
-}
 __PACKAGE__->meta->make_immutable;
 
 1;

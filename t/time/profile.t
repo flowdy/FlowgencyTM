@@ -86,9 +86,10 @@ sub test_progressing_cursor {
         ),
     );
     my $cursor = Time::Cursor->new(
-        timeprofile => $curprof,
+        #timeprofile => $curprof,
         run_from => Time::Point->parse_ts('27.6.2012'),
-        run_until => Time::Point->parse_ts('15.7.'),
+        #run_until => Time::Point->parse_ts('15.7.'),
+        timeprofiles => [{ profile => $curprof, until => '15.7.' }]
     );
 
     my $ts = Time::Point->parse_ts('7.7.2012');
