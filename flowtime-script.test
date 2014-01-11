@@ -1,0 +1,46 @@
+#BLOCK[
+Dies ist irgendein Inhalt.
+"BLOCK" ist hier ein Platzhalter für eine Direktive (s. unten)
+Die weiteren Direktiven sind ebenfalls freibenannte Platzhalter,
+außer die am Schluss.
+#]
+##( Rückschaltung zur Direktive, die davor seit ihrer Einführung durch
+## "PRIOR:" galt. Keine Verschachtelung möglich.)
+
+#BLA Block auf einer Zeile
+
+#DIR:
+Gilt bis nächste :-Direktive, außer für #KLAMMER[]-Blöcke und #EINZEILER.
+
+## Marker, der dem Parser sagt: Hier weiterlesen
+## Zähler (#nn) muss zum vorigen Zähler um 1 erhöht sein
+#ABC: #42
+Wir sind jetzt im Modus der Direktive ABC
+
+## Das folgende sind echte Anweisungen
+## -----------------------------------
+
+#TIMES:
+[main: UB/IT klassisch]
+pattern Mo-Fr@9-17:30,!12-12:30
+  .urlaub 16.6.-30.7.:Mo-So@! inherit oppose
+
+#TASKS:
+Aufgabe 1 =one
+
+Aufgabe 2 =two ;1mit einem Unterschritt ;description mit erweiterter Beschreibung. ;done 3 ;checks 5
+
+Aufgabe 3 =three
+1=sub mit Unterschritt auf eigener Zeile 
+
+#TEST:
+print "Hallo, ich bin eine ganz normale ge'eval'te Perl-Anweisung";
+
+
+#DISPLAY:
+Wer reitet so spät in Nacht und Wind
+Es ist der Vater mit seinem Kind
+
+#NOW 10.6. 12:45
+
+#USER fh
