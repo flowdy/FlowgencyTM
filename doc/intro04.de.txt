@@ -5,24 +5,31 @@
 Was ist FlowTime?
 ---------------------
 
-FlowTime ist ein Programm zum persönlichen Aufgaben- und Zeitmanagement. Es funktioniert im Prinzip wie eine Erledigungsliste, die sich selbst ordnet. Die Kriterien, aus denen sich die Anordnung ergibt, spiegeln verschiedene Arten von Dringlichkeit wider und lassen sich in beliebigen Verhältnissen zueinander gewichten. Das automatische Ranking stoßen Sie mit einem souveränen Klick auf das FlowTime-Logo manuell an, zum Beispiel nach einer Störung oder einer Unterbrechung; auch, wenn Sie Erledigt-Häkchen gesetzt oder Fristen geändert haben – ein Klick und Sie wissen, welche Aufgabe »jetzt« am ehesten der Weiterbearbeitung bedarf, um alle Fristen zu wahren.
+FlowTime ist ein Programm zum persönlichen Aufgaben- und Zeitmanagement.
 
-Der überwiegende Teil der Größen, die bei der Dringlichkeitsberechnung herangezogen werden, ist zeitdynamisch, das heißt: Sie erhöhen sich mit der fortschreitenden Zeit. Jedoch ist damit nur die Arbeitszeit gemeint, die Sie in einem Zeitprofil definieren. Während der dazwischen liegenden Pausen (Freizeitphasen) sind die Aufgaben quasi eingefroren, das heißt, sie steigen nicht auf in der Liste. Aufgaben lassen sich bei Bedarf verschiedenen Zeitprofilen zuordnen, zum Beispiel wenn Sie mehrere Jobs bei verschiedenen Unternehmen oder Abteilungen desselben Unternehmens haben. 
+Es funktioniert im Prinzip wie eine Erledigungsliste, die sich selbst so ordnet, dass die dringlichsten Aufgaben oben stehen. Die Kriterien spiegeln verschiedene Arten von Dringlichkeit wider und lassen sich in beliebigen Verhältnissen zueinander gewichten.
 
-Größere Aufgaben können Sie in Einzelschritte unterteilen und diese wiederum in Unterschritte, was wahrscheinlich nur bei Projekten notwendig ist. Deren jeweilige Anteile am Gesamtzeitaufwand bzw. am Aufwand des übergeordneten Schrittes können Sie schätzen, so dass FlowTime den aktuellen Erledigungsfortschritt einer Aufgabe realistischer berechnen kann.
+Das automatische Ranking stoßen Sie mit einem souveränen Klick auf das FlowTime-Logo an, zum Beispiel nach einer Störung oder einer Unterbrechung; auch, wenn Sie Erledigt-Häkchen gesetzt oder Fristen geändert haben – ein Klick und Sie wissen, welche Aufgabe »jetzt« am ehesten der Weiterbearbeitung bedarf, um am Ende alle Fristen bestmöglich zu wahren.
 
-Dies ist eine der Größen der Dringlichkeit: die Diskrepanz zwischen Erledigungs- und Arbeitszeitfortschritt. So wichtig ist diese Größe nach Meinung des Hauptentwicklers, dass sie sanft durch einen Farbverlaufsbalken zu jeder Aufgabe visualisiert wird. Er geht von Grün über Logoblau (beide Fortschritte halten sich die Waage) nach rot. Wie stark diese und [einige andere Größen](#kriterien) das Ranking prägen sollen, definieren Sie. 
+Der überwiegende Teil der Größen, die bei der Dringlichkeitsberechnung herangezogen werden, ist zeitdynamisch, das heißt: Sie erhöhen sich mit der fortschreitenden Zeit. Jedoch ist damit nur die Arbeitszeit gemeint. Sie definieren sie in einem Zeitprofil. In den dazwischen liegenden Pausen (Freizeitphasen) sind die Aufgaben quasi eingefroren, das heißt, sie steigen nicht auf in der Liste.
 
-FlowTime bedienen Sie über den Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Die unabhängige Nutzung ohne Groupwarefunktionalität steht bei der Kernentwicklung sowie überhaupt bei der Philosophie von FlowTime im Vordergrund, da sie weniger arbeitspsychologische und datenschutztechnische Probleme macht. Die Anbindung in betriebsseitig bereits vorhandene Groupware und Workflowmanagementsysteme kann nur über eine flexible Plugin-Architektur erfolgen, die in der aktuellen »Roadmap« der FlowTime-Entwicklung jedoch bewusst nicht an erster Stelle steht; vielmehr tut dies ein Proof-of-Concept.
+Aufgaben lassen sich bei Bedarf verschiedenen Zeitprofilen zuordnen, zum Beispiel wenn Sie mehrere Jobs bei verschiedenen Unternehmen oder Abteilungen desselben Unternehmens haben. Welchem Zeitprofil einer Aufgabe zugeordnet ist, können Sie auch im Nachhinein noch ändern, allerdings nicht rückwirkend.
 
-FlowTime ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist. Die Hauptzielgruppe favorisiert anlagebedingt die stabile, tiefe Konzentration; Personen, die dagegen lieber auf dem Level der agilen, flexiblen, dafür entsprechend flachen Konzentration arbeiten, werden von FlowTime eher wenig profitieren. In der heutigen Arbeitswelt im Multitaskingwahn, die zugleich Störungstoleranz fordert, kann sich eine tiefenorientierte Konzentration kaum entfalten. FlowTime schützt und unterstützt sie, indem das Programm die Refokussierung erleichtert, und bei der Entscheidung assistiert, an welcher Aufgabe Sie jetzt am besten weiterarbeiten, um alle harten und weichen Fristen zu wahren.
+Größere Aufgaben können Sie in Einzelschritte unterteilen und, bei größeren Projekten, diese selbst wiederum in Unterschritte. Den Anteil eines Schrittes am Gesamtzeitaufwand bzw. am Aufwand des jeweils übergeordneten Schrittes sind Sie zu schätzen angehalten, so dass FlowTime den aktuellen Erledigungsfortschritt einer Aufgabe realistischer berechnen kann.
 
-### Technische Merkmale des Systems:
- * FlowTime ist Freie Software, lizenziert unter der *General Public License, Version 3*.
- * Als Programmiersprache wird Perl verwendet.
- * Damit ist FlowTime lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme).
- * Es verwendet clientseitig HTML5-Technologien, ist also auf einen modernen Browser angewiesen,
- * serverseitig das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten.
+Eine der Größen der Dringlichkeit ist, wie weit Erledigungs- und Arbeitszeitfortschritt auseinanderliegen. So wichtig ist diese Größe nach Meinung des Hauptentwicklers, dass sie durch einen Farbverlaufsbalken zu jeder Aufgabe visualisiert wird. Er geht von grün über blau nach rot. Wie stark diese und [einige andere Größen](#kriterien) jeweils das Ranking prägen sollen, bestimmen Sie. 
+
+FlowTime ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist. Die Hauptzielgruppe favorisiert anlagebedingt die stabile, tiefe Konzentration. In der heutigen Arbeitswelt im Multitaskingwahn, die zugleich Störungstoleranz fordert, kann sich eine tiefenorientierte Konzentration kaum entfalten. FlowTime schützt und unterstützt sie, indem das Programm die Refokussierung erleichtert und bei der Entscheidung assistiert, an welcher Aufgabe Sie »jetzt« am besten weiterarbeiten.
+
+### Technische Merkmale des Systems
+
+FlowTime bedienen Sie über den Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Die unabhängige Nutzung ohne Groupwarefunktionalität steht im Vordergrund, da sie weniger arbeitspsychologische und datenschutztechnische Probleme macht. Die Anbindung in betriebsseitig bereits vorhandene Groupware und Workflowmanagementsysteme kann nur über eine flexible Plugin-Architektur erfolgen, die in der aktuellen »Roadmap« der FlowTime-Entwicklung jedoch bewusst nicht an erster Stelle steht. Die Entwicklung eines Prototypen, eines »proof of concept« mit den Grundfunktionen hat Vorrang.
+
+FlowTime ist Freie Software, lizenziert unter der General Public License, Version 3.
+
+Als Programmiersprache wird Perl verwendet. Damit ist FlowTime lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme).
+
+Es verwendet clientseitig HTML5-Technologien, ist also auf einen modernen Browser angewiesen, serverseitig das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten.
 
 
 Was ist FlowTime nicht?
@@ -36,17 +43,15 @@ Obwohl die Software über den Browser bedient wird, ist es nicht per se einen We
 
 
 Welche Größen der Dringlichkeit kennt FlowTime? {#kriterien}
------------------------------------------------------------
+-----------------------------------------------
 
 ### a) Prioritätsgrad
 
 Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« dienen in FlowTime lediglich der verbalen Information. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und Sie weisen einer weiteren Aufgabe B Priorität 3000 zu, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. 
 
-Sie können nicht nur die Prioritätsbezeichnungen festlegen, die in Abhängigkeit dieser Zahl zusammen mit der Frist in der Aufgabe angezeigt wird. Sie können auch definieren, ab welcher Priorität die Frist nicht mehr in der Liste geändert werden kann, so direkt wie auch Erledigungshäkchen setzbar sind, sondern nur noch im Bearbeitungsformular der Aufgabe.
+### b) Zeitliche Nähe zum Fristende
 
-### b) zeitliche Nähe zum Fristende
-
-Je näher die Frist rückt, umso dringlicher sind Aufgaben unabhängig von ihrem Erledigungsstand. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden.
+Je näher die Frist rückt, umso dringlicher sind Aufgaben. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden.
 
 ### c) Diskrepanz zwischen zeitlichem und Erledigungsfortschritt
 
@@ -54,8 +59,9 @@ Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn 
 
 In der Liste wird dieses Kriterium auch farblich dargestellt.
 
-   * Solange der Balken von links nach rechts dasselbe Blau des Logos hat,
-     herrscht perfekter Ausgleich.
+   * Solange der Balken von links nach rechts dasselbe Blau hat,
+     herrscht perfekter Ausgleich. Diesen Zustand anstreben zu helfen,
+     ist der Sinn von FlowTime.
    * Je kürzer die Aufgabe kommt, umso mehr läuft der Balken von rechts rot an.
    * Je mehr dagegen von einer Aufgabe erledigt wurde, als gemäß der
      fortschreitenden Zeit hätte erledigt werden müssen, um so grüner
