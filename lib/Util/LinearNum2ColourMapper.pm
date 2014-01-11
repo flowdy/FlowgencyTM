@@ -1,7 +1,7 @@
 #!/usr/perl
 use strict;
 
-package LinearNum2ColourMapper;
+package Util::LinearNum2ColourMapper;
 use Moose;
 use FlowTime::Types;
 use Scalar::Util qw(looks_like_number);
