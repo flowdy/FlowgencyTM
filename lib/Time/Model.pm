@@ -1,7 +1,7 @@
 #!perl
 use strict;
 
-package Time::Scheme;
+package Time::Model;
 use Moose;
 use Carp qw(carp croak);
 use Date::Calc;
@@ -21,7 +21,7 @@ sub from_json {
 
     my $class = shift;
 
-    my $scheme = JSON::from_json(shift, { relaxed => 1 });
+    my $model = JSON::from_json(shift, { relaxed => 1 });
 
     my (%tprofiles,$next_round_promise);
 
@@ -38,7 +38,7 @@ sub from_json {
 
     my %alias = ( from => 'from_date', until => 'until_date' );
 
-    PROP: while ( my ($key, $props) = each %$scheme ) {
+    PROP: while ( my ($key, $props) = each %$model ) {
 
         my $parent = $props->{parent};
         if ( defined($parent) && !ref($parent) ) {
@@ -96,7 +96,7 @@ sub from_json {
 
         }
         
-        delete $scheme->{$key};
+        delete $model->{$key};
     
         my $tprof = Time::Profile->new(
             $props->{pattern} // $parent->fillIn->description
@@ -111,14 +111,14 @@ sub from_json {
                        
     }
     
-    if ( %$scheme ) {
+    if ( %$model ) {
         if ( $next_round_promise ) {
             $next_round_promise=0;
             goto PROP;
         }
         else {
             die "Time profile definitions with irresoluble dependencies: ",
-               join ", ", keys $scheme;
+               join ", ", keys $model;
         }
     }
 

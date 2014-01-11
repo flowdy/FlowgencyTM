@@ -4,9 +4,9 @@ package Task;
 use Moose;
 use Carp qw(carp croak);
 
-has scheme => (
+has model => (
     is => 'ro',
-    isa => 'Time::Scheme',
+    isa => 'Time::Model',
     required => 1,
 );
     
@@ -61,12 +61,12 @@ sub _build_cursor {
     use Time::Cursor;
     my $self = shift;
     my $dbicrow = $self->dbicrow;
-    my $timeline = $self->scheme->get_timeline($dbicrow->timeline);
+    my $timeline = $self->model->get_timeline($dbicrow->timeline);
     my $cursor;
     if ( $cursor = $timeline->get_cached_cursor($dbicrow->name) ) {}
     else {
         $cursor = Time::Cursor->new({
-            timeline => $self->scheme->get($dbicrow->timeline)->timeline,
+            timeline => $self->model->get($dbicrow->timeline)->timeline,
             run_from => $dbicrow->from_date,
             run_until => $dbicrow->until_date,
         });

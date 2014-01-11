@@ -7,16 +7,16 @@ use Test::More tests => 3;
 my $db;
 use FlowDB \$db;
 
-use Time::Scheme;
+use Time::Model;
 use User::Tasks;
 
-my $default_scheme = Time::Scheme->from_json(...);
+my $default_model = Time::Model->from_json(...);
  
-ok $default_scheme->isa('Time::Scheme'), 'wrap default scheme in a moose class with tree/node functionality';
+ok $default_model->isa('Time::Model'), 'wrap default model in a moose class with tree/node functionality';
 
 my $tasks = User::Tasks->new(
     task_rs => $db->resultset('FlowDB::Task'),
-    scheme => $default_scheme,
+    model => $default_model,
 );
 
 my $t = $tasks->new_task({

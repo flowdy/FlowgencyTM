@@ -7,7 +7,7 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('user');
 __PACKAGE__->add_columns(qw/
-    id username password time_scheme
+    id username password time_model
     weights priorities
 /);
 

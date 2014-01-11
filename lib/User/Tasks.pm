@@ -34,9 +34,9 @@ has cache => (
     default => sub {{}},
 );
 
-has scheme => (
+has model => (
     is => 'rw',
-    isa => 'Time::Scheme',
+    isa => 'Time::Model',
     required => 1,
 );
 
@@ -46,14 +46,14 @@ sub get_task {
         my $t = $self->task_rs->find($id) || return;
         Task->new(
             cursor => Time::Cursor->new(
-                timeline => $self->scheme->get($t->timeline)->timeline,
+                timeline => $self->model->get($t->timeline)->timeline,
                 run_from => $t->from_date,
                 run_until => $t->until_date,
             ),
             dbirow => $t,
             step_retriever => $self->step_retriever,
             id => $id,
-            scheme => $self->scheme,
+            model => $self->model,
         );
     };
 }
@@ -77,7 +77,7 @@ sub new_task {
     } : $task_rs->new();
 
     return $self->cache->{$row->name} = Task->new(
-        scheme => $self->scheme, dbirow => $row,
+        model => $self->model, dbirow => $row,
         step_retriever => $self->step_retriever,
         id => $id,
     );

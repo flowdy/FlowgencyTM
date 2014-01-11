@@ -3,10 +3,10 @@ use strict;
 
 use FindBin qw($Bin);
 use Test::More;
-use Time::Scheme;
+use Time::Model;
 use Time::Cursor;
 
-my $scheme = Time::Scheme->from_json(<<'JSON');
+my $model = Time::Model->from_json(<<'JSON');
 {
    "work": {
        "label": "UB Informationstechnik",
@@ -24,9 +24,9 @@ my $scheme = Time::Scheme->from_json(<<'JSON');
 }
 JSON
 
-ok($scheme->isa("Time::Scheme"), 'Zeitschema eingerichtet.');
+ok($model->isa("Time::Model"), 'Zeitschema eingerichtet.');
 
-my $work = $scheme->time_profile("work");
+my $work = $model->time_profile("work");
 my $cursor = Time::Cursor->new(
     timeprofile => $work,
     run_from => '1.5.13',
@@ -37,7 +37,7 @@ my $number_spans = 1;
 $number_spans++ while $span = $span->next;
 is $number_spans, 5 => "Zeitprofil work besteht aus fünf Abschnitten";
 is $work->start->pattern, $work->end->pattern => "Erster und letzter Abschnitt besitzen selben Rhythmus";
-is $scheme->time_profile('urlaub')->fillIn->pattern, $work->start->next->pattern => "Zweiter Abschnitt ist Urlaub";
+is $model->time_profile('urlaub')->fillIn->pattern, $work->start->next->pattern => "Zweiter Abschnitt ist Urlaub";
 is $work->start->next->next->description, "Ehrenamtliche Arbeit", "Ehrenamtstage im Urlaub";
 
 done_testing();

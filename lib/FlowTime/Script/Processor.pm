@@ -74,10 +74,10 @@ my %SUPPORTED_DIRECTIVES = (
            my ($parser) = @_;
            manager => sub {
               my ($func, @args) = @_;
-              my $scheme = $parser->current_user->time_scheme;
-              my @ret = $scheme->$func(@args);
+              my $model = $parser->current_user->time_model;
+              my @ret = $model->$func(@args);
               $parser->current_user->update(
-                  time_scheme => $scheme->serialize
+                  time_model => $model->serialize
               };
            },
        }

@@ -2,7 +2,7 @@ use strict;
 
 package User;
 use Moose;
-use Time::Scheme;
+use Time::Model;
 
 has _dbicrow => (
     is => 'ro',
@@ -11,12 +11,12 @@ has _dbicrow => (
     handles => [qw/ id username /],
 );
 
-has _time_scheme => (
+has _time_model => (
     is => 'ro',
-    isa => 'Time::Scheme',
+    isa => 'Time::Model',
     lazy => 1,
     init_arg => undef,
-    builder => '_build_time_scheme',
+    builder => '_build_time_model',
 }
 
 has weights => (
@@ -25,19 +25,19 @@ has weights => (
     build => '_build_weights',
 }
     
-sub _build_time_scheme {
+sub _build_time_model {
     my ($self) = shift;
-    Time::Scheme->from_json($self->dbirow->time_scheme);    
+    Time::Model->from_json($self->dbirow->time_model);    
 }
 
-sub time_scheme {
+sub time_model {
     my ($self, $json) = @_;
-    my $scheme = $self->_time_scheme;
+    my $model = $self->_time_model;
     if ( defined $json ) {
-        $scheme->update_from_json($json);
-        $self->_dbicrow->update({ time_scheme => $json });
+        $model->update_from_json($json);
+        $self->_dbicrow->update({ time_model => $json });
     }
-    return $scheme;
+    return $model;
 }
 
 __PACKAGE->meta->make_immutable;
