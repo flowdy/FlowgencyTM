@@ -21,9 +21,16 @@ Wir sind jetzt im Modus der Direktive ABC
 ## -----------------------------------
 
 #TIMES:
-[main: UB/IT klassisch]
+[default: UB/IT klassisch]
 pattern Mo-Fr@9-17:30,!12-12:30
-  .urlaub 16.6.-30.7.:Mo-So@! inherit oppose
+  .malediven 16.6.-30.7.:holidays inherit: oppose
+#DISPLAY[
+Bevor Aufgaben definiert werden, muss ein Zeitmodell definiert worden sein, das wiederum aus mindestens einem Zeitprofil besteht. Anhand eines Zeitprofils ermittelt das System, ob eine fragliche Sekunde X, in der Sie die Aufgabenliste aktualisieren möchten, zur Arbeitszeit oder zur Freizeit gehört und die einzelne Aufgabe entsprechend bei ungenügendem Erledigungsfortschritt im Ranking aufsteigt oder nicht.
+Jede Aufgabe muss einem solchem Zeitprofil zugeordnet werden. Je nach Bedarf auch mehreren, die zu festgelegten Zeiten ineinander übergehen.
+Den meisten Anwendern genügt ein Arbeitszeitprofil, das für festgelegte Zeiträumen Stücke aus einem zweiten, einem Ferienprofil einverleibt bekommt.
+#]
+[holidays]
+pattern Mo-So@!
 
 #TASKS:
 Aufgabe 1 =one
