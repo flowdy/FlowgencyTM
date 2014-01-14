@@ -1,19 +1,30 @@
-package FlowTime;
-use Mojo::Base 'Mojolicious';
+use strict;
 
-# This method will run once at server start
-sub startup {
-  my $self = shift;
+package FlowTime; {
+use Carp qw(croak);
+my $db;
+use FlowDB \$db => $ENV{FLOWDB_SQLITE_FILE} || "flow.db";
+use User; # No, it is rather the user who use FlowTime
 
-  # Documentation browser under "/perldoc"
-  $self->plugin('PODRenderer');
-  unshift @{$self->static->paths}, $self->home->rel_dir('site');
+my %users;
 
-  # Router
-  my $r = $self->routes;
-
-  # Normal route to controller
-  $r->get('/')->to('example#welcome');
+sub user ($;$) {
+    my ($username,$new) = @_;
+    my $retr = "find";
+    $retr .= "_or_new" if $new;
+    return $users{$username} //= User->new(
+        dbixrow => $db->resultset("User")->$retr($username)
+                // croak
+    );
 }
 
-1;
+sub new_user ($) {
+    my ($username) = @_;
+    return $users{$username} = User->new(
+        dbixrow => $db->resultset("User")->create($username)
+    );
+}
+
+sub database () { $db }
+
+} 1;

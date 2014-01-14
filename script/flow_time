@@ -8,4 +8,4 @@ use lib "$FindBin::Bin/../lib";
 
 # Start command line interface for application
 require Mojolicious::Commands;
-my $app = Mojolicious::Commands->start_app('FlowTime');
+my $app = Mojolicious::Commands->start_app('FlowTime::Server');
