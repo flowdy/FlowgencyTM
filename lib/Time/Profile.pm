@@ -285,12 +285,32 @@ sub seek_last_net_second_timestamp {
         $rem_abs -= $abs;
     }
     elsif ( $rem_pres < 0 ) {
-        $rem_abs += $self->fillIn->rhythm->count_absence_between_net_seconds(
-            $lspan->until_date->successor, abs $rem_pres
+
+        my $find_pres_sec = abs $rem_pres;
+        my $seek_from_ts = $lspan->until_date->successor;
+        my $successor = $self->successor;
+        my $rhythm = $self->fillIn->rhythm;
+        my $coverage = $successor && (
+            $self->until_latest->last_sec - $seek_from_ts->epoch_sec
         );
+
+        my $found_pres_seconds = $rhythm->net_seconds_per_week
+            ? $rhythm->count_absence_between_net_seconds(
+                $seek_from_ts, $find_pres_sec,
+                $coverage && ($coverage - $find_pres_sec)
+              )
+            : 0
+            ;
+
+        if ( my $remaining = $find_pres_sec - $found_pres_seconds ) {
+            return $successor->seek_last_net_second_timestamp(
+                $seek_from_ts, $remaining
+            );
+        }
+
     }
     else {
-        croak "timestamp not found";
+        croak "Timestamp not found - not enough time on this profile";
     }
 
     return Time::Point->from_epoch(

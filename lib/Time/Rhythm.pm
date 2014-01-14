@@ -26,6 +26,7 @@ has '+_suffix_i' => ( handles => { 'until_week_day' => 'stringify' } );
 
 has description => ( is => 'ro', isa => 'Str' );
 
+has net_seconds_per_week => ( is => 'ro', isa => 'Float' );
 has pattern => (
     is => 'ro',
     isa => 'CodeRef',
@@ -158,15 +159,25 @@ sub from_string {
         unshift @week_patterns, [$factor, $add, $wp];
     }
 
-    my $sel = sub { for my $wp ( @week_patterns ) {
-        my $divisible = $_[0] - $wp->[1];
-        next if $divisible < 0
-             || $divisible % $wp->[0];
-        return @{$wp->[2]};
-    }};
+    my $sel = sub {
+        my $week_num = shift;
+        for my $wp ( @week_patterns ) {
+            my $divisible = $week_num - $wp->[1];
+            next if $divisible < 0
+                 || $divisible % $wp->[0];
+            return @{$wp->[2]};
+        }
+    };
 
-    @{$args}{qw/hourdiv pattern description/}
-        = ($hourdiv, $sel, $week_pattern);
+    my $net_ratio;
+    for ( 1 .. 53 ) {
+        my $pat = $sel->($_);
+        $net_ratio += $pat->Norm * 3600 / ($hourdiv * $pat->Size)
+    }
+    $net_ratio /= 53;
+
+    @{$args}{qw/hourdiv pattern description net_seconds_per_week/}
+        = ($hourdiv, $sel, $week_pattern, $net_ratio);
     return $class->new($args);
 
 }
@@ -296,7 +307,7 @@ sub sliced {
 }
 
 sub count_absence_between_net_seconds {
-    my ($self, $ts, $net_seconds) = @_;
+    my ($self, $ts, $net_seconds, $max_abs_seconds) = @_;
 
     my $cursor = $self->_get_week_cycler( $ts->date_components );
     my $unit = 3600 / $self->hourdiv;
@@ -307,7 +318,9 @@ sub count_absence_between_net_seconds {
     my $len = $day->Size;
     my ($abs, $old_max, $min, $max) = (0,$start); 
 
-    while ( $net_seconds > $pres  ) {
+    my $limit_reached;
+
+    CHUNK: while ( $net_seconds > $pres  ) {
 
         if ( my @limits = $day->Interval_Scan_inc($start) ) {
             ($min, $max) = @limits;
@@ -317,6 +330,12 @@ sub count_absence_between_net_seconds {
 
         $start = $max + 1;
         $abs += $min - $old_max;
+
+        if ( ($max_abs_seconds//$abs) < $abs ) {
+            $abs = $max_abs_seconds;
+            $limit_reached++;
+            last CHUNK;
+        }
 
         if ( $start < $len ) {
             $old_max = $max+1;
@@ -329,7 +348,10 @@ sub count_absence_between_net_seconds {
 
     }
 
-    return $abs * $unit;
+    return $limit_reached ? ($pres, $max_abs_seconds)
+                          : ($net_seconds, $abs * $unit)
+                          ;
+
 }
 
 __PACKAGE__->meta->make_immutable;
