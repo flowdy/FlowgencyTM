@@ -4,12 +4,6 @@ package Task;
 use Moose;
 use Carp qw(carp croak);
 
-has model => (
-    is => 'ro',
-    isa => 'Time::Model',
-    required => 1,
-);
-    
 has cursor => (
     is => 'ro',
     isa => 'Time::Cursor',
@@ -20,7 +14,7 @@ has cursor => (
 
 has id => (
     is => 'ro',
-    isa => 'ArrayRef',
+    isa => 'Str',
     auto_deref => 1,
     required => 1,
 );
@@ -29,7 +23,7 @@ has dbicrow => (
     is => 'ro',
     isa => 'FlowDB::Task', # which again is a DBIx::Class::Row
     handles => [qw[
-        from_date until_date timeline client
+        from_date timeline client open_sec
         name title description priority
         main_step steps
     ]],
@@ -50,29 +44,21 @@ has progress => (
     clearer => '_clear_progress',
 );
 
-has step_retriever => (
-    # used to retrieve a step by task and step label from entire resultset
-    is => 'ro',
-    isa => 'CodeRef',
-    required => 1,
+has ['step_retriever', 'profile_resolver'] => (
+    is => 'ro', isa => 'CodeRef', required => 1,
 );
 
 sub _build_cursor {
     use Time::Cursor;
     my $self = shift;
     my $dbicrow = $self->dbicrow;
-    my $timeline = $self->model->get_timeline($dbicrow->timeline);
-    my $cursor;
-    if ( $cursor = $timeline->get_cached_cursor($dbicrow->name) ) {}
-    else {
-        $cursor = Time::Cursor->new({
-            timeline => $self->model->get($dbicrow->timeline)->timeline,
-            run_from => $dbicrow->from_date,
-            run_until => $dbicrow->until_date,
-        });
-        $cursor->timeline->register_cursor($dbicrow->name);
-    }
-    return $cursor;
+    # Warum noch mal cachen?
+    # return $self->cursor_cache->( $dbicrow->name, sub {
+    return Time::Cursor->new({
+        timeprofiles => $self->profile_resolver->($dbicrow->timelines),
+        run_from => $dbicrow->from_date,
+    });
+    # };
 }
 
 sub store {

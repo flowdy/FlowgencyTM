@@ -34,24 +34,29 @@ has cache => (
     default => sub {{}},
 );
 
-has model => (
-    is => 'rw',
-    isa => 'Time::Model',
-    required => 1,
+has ['time_profile_provider', 'flowrank_processor'] => (
+    is => 'rw', isa => 'CodeRef', required => 1,
 );
 
 sub get_task {
     my ($self, $id) = @_;
+
+    my $tpp = $self->time_profile_provider;
+    my $profile_resolver = sub {[ map { 
+        my $profile = $tpp->($_->profile);
+        { profile => $profile, until => $_->until };
+    } @_ ]};
+
     return $self->cache->{$id} ||= do {
         my $t = $self->task_rs->find($id) || return;
         Task->new(
             cursor => Time::Cursor->new(
-                timeline => $self->model->get($t->timeline)->timeline,
+                timeprofiles => $profile_resolver->($t->timelines),
                 run_from => $t->from_date,
-                run_until => $t->until_date,
             ),
-            dbirow => $t,
+            profile_resolver => $profile_resolver,
             step_retriever => $self->step_retriever,
+            dbicrow => $t,
             id => $id,
             model => $self->model,
         );
