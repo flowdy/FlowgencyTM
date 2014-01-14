@@ -1,27 +1,46 @@
-% Über FlowTime
-% Florian Heß
-% 15.7.2013
+Über FlowTime
+===============
 
-Was ist FlowTime?
----------------------
+Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 12.01.2014
 
-FlowTime ist ein Programm zum persönlichen Aufgaben- und Zeitmanagement.
+ 1. [Was ist FlowTime?](#was)
+    * [Zielgruppe der Software](#zielgruppe)
+    * [Technische Merkmale des Systems](#technisches)
+ 2. [Was ist FlowTime nicht?](#was-nicht)
+ 3. [Welche Größen der Dringlichkeit kennt FlowTime?](#kriterien)
+    * [Prioritätsgrad](#prio)
+    * [Zeitliche Nähe zum Fristende](#deadline)
+    * [Diskrepanz zwischen zeitlichem und Erledigungsfortschritt](#tpd)
+    * [wie lange eine Aufgabe schon offen ist](#open)
+    * [voraussichtlicher zusätzlicher Bruttozeitbedarf](#addtmneed)
+ 4. [Was verbirgt sich hinter dem Zeitfortschritt?](#zeitfortschritt)
+ 5. [Wie wird der Erledigungsfortschritt berechnet?](#erledigungsfortschritt)
+ 6. [Exklusive Zeitzuteilung](#exkl-zeitzuteilung)
+ 7. [Weitere Kernfunktionen](#weitere-kernfunktionen)
+ 8. [Kritische und andere Bemerkungen](#kritisches)
 
-Es funktioniert im Prinzip wie eine Erledigungsliste, die sich selbst so ordnet, dass die dringlichsten Aufgaben oben stehen. Die Kriterien spiegeln verschiedene Arten von Dringlichkeit wider und lassen sich in beliebigen Verhältnissen zueinander gewichten.
+<a name="was">Was ist FlowTime?</a>
+-----------------------------------
+
+FlowTime ist ein Programm zum persönlichen **Aufgaben- und Zeitmanagement**.
+
+Es funktioniert im Prinzip wie eine **Erledigungsliste**, die sich selbst so ordnet, dass die **dringlichsten Aufgaben oben** stehen. Die Kriterien spiegeln **verschiedene Arten von Dringlichkeit** wider und lassen sich in beliebigen Verhältnissen zueinander **gewichten**.
 
 Das automatische Ranking stoßen Sie mit einem souveränen Klick auf das FlowTime-Logo an, zum Beispiel nach einer Störung oder einer Unterbrechung; auch, wenn Sie Erledigt-Häkchen gesetzt oder Fristen geändert haben – ein Klick und Sie wissen, welche Aufgabe »jetzt« am ehesten der Weiterbearbeitung bedarf, um am Ende alle Fristen bestmöglich zu wahren.
 
-Der überwiegende Teil der Größen, die bei der Dringlichkeitsberechnung herangezogen werden, ist zeitdynamisch, das heißt: Sie erhöhen sich mit der fortschreitenden Zeit. Jedoch ist damit nur die Arbeitszeit gemeint. Sie definieren sie in einem Zeitprofil. In den dazwischen liegenden Pausen (Freizeitphasen) sind die Aufgaben quasi eingefroren, das heißt, sie steigen nicht auf in der Liste.
+Einige der Größen, die bei der Dringlichkeitsberechnung herangezogen werden, sind **zeitdynamisch**, das heißt, sie erhöhen sich allmählich. Jedoch ist damit nur die **Arbeitszeit** gemeint, die Sie in einem **Zeitmodell** definieren. In den dazwischen liegenden Pausen (**Freizeitphasen**) steigen die Aufgaben nicht auf in der Liste, können nur von anderen, aktiven Aufgaben überholt werden.
 
-Aufgaben lassen sich bei Bedarf verschiedenen Zeitprofilen zuordnen, zum Beispiel wenn Sie mehrere Jobs bei verschiedenen Unternehmen oder Abteilungen desselben Unternehmens haben. Welchem Zeitprofil einer Aufgabe zugeordnet ist, können Sie auch im Nachhinein noch ändern, allerdings nicht rückwirkend.
+Das Zeitmodell besteht aus mindestens einem Zeitprofil. Aufgaben lassen sich bei Bedarf **verschiedenen Zeitprofilen** zuordnen, zum Beispiel wenn Sie mehrere Jobs bei verschiedenen Unternehmen oder Abteilungen desselben Unternehmens haben. Welchem Zeitprofil eine Aufgabe zugeordnet ist, können Sie auch im Nachhinein **für die Zukunft ändern**.
 
-Größere Aufgaben können Sie in Einzelschritte unterteilen und, bei größeren Projekten, diese selbst wiederum in Unterschritte. Den Anteil eines Schrittes am Gesamtzeitaufwand bzw. am Aufwand des jeweils übergeordneten Schrittes sind Sie zu schätzen angehalten, so dass FlowTime den aktuellen Erledigungsfortschritt einer Aufgabe realistischer berechnen kann.
+Größere Aufgaben können Sie in **Einzelschritte** unterteilen und, etwa bei umfangreichen Projekten, diese selbst wiederum in **Unterschritte**. Sie haben die Möglichkeit zu **schätzen**, wieviel Anteil ein Schritt am Gesamtzeitaufwand bzw. am **Zeitaufwand** des jeweils übergeordneten Schrittes hat, so dass FlowTime den aktuellen Erledigungsfortschritt einer Aufgabe realistischer berechnen kann. Das ist **kein Muss** – von sich aus betrachtet das System die Einzelschritte in Geschwister- und Elterbeziehung als gleich aufwendig.
 
-Eine der Größen der Dringlichkeit ist, wie weit Erledigungs- und Arbeitszeitfortschritt auseinanderliegen. So wichtig ist diese Größe nach Meinung des Hauptentwicklers, dass sie durch einen Farbverlaufsbalken zu jeder Aufgabe visualisiert wird. Er geht von grün über blau nach rot. Wie stark diese und [einige andere Größen](#kriterien) jeweils das Ranking prägen sollen, bestimmen Sie. 
+Ein Aspekt von Dringlichkeit ist, wie weit Erledigungs- und Arbeitszeitfortschritt auseinanderliegen. So wichtig ist diese Größe nach Meinung des Hauptentwicklers, dass sie durch einen **Farbverlaufsbalken** zu jeder Aufgabe visualisiert wird. Er geht von grün über blau nach rot.
+
+### <a name="zielgruppe">Die Zielgruppe der Software</a>
 
 FlowTime ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist. Die Hauptzielgruppe favorisiert anlagebedingt die stabile, tiefe Konzentration. In der heutigen Arbeitswelt im Multitaskingwahn, die zugleich Störungstoleranz fordert, kann sich eine tiefenorientierte Konzentration kaum entfalten. FlowTime schützt und unterstützt sie, indem das Programm die Refokussierung erleichtert und bei der Entscheidung assistiert, an welcher Aufgabe Sie »jetzt« am besten weiterarbeiten.
 
-### Technische Merkmale des Systems
+### <a name="technisches">Technische Merkmale des Systems</a>
 
 FlowTime bedienen Sie über den Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Die unabhängige Nutzung ohne Groupwarefunktionalität steht im Vordergrund, da sie weniger arbeitspsychologische und datenschutztechnische Probleme macht. Die Anbindung in betriebsseitig bereits vorhandene Groupware und Workflowmanagementsysteme kann nur über eine flexible Plugin-Architektur erfolgen, die in der aktuellen »Roadmap« der FlowTime-Entwicklung jedoch bewusst nicht an erster Stelle steht. Die Entwicklung eines Prototypen, eines »proof of concept« mit den Grundfunktionen hat Vorrang.
 
@@ -32,28 +51,28 @@ Als Programmiersprache wird Perl verwendet. Damit ist FlowTime lauffähig auf al
 Es verwendet clientseitig HTML5-Technologien, ist also auf einen modernen Browser angewiesen, serverseitig das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten.
 
 
-Was ist FlowTime nicht?
----------------------------
+<a name="was-nicht">Was ist FlowTime nicht?</a>
+-----------------------------------------------
 
-FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Eine entscheidende Voraussetzung einer Version ab 1.0 ist der wissenschaftliche, von Dritten etwa im Rahmen einer unabhängigen Studie erbrachte Nachweis, dass die Verwendung von FlowTime und ggf. ähnlicher Programme einem eventuell drohenden Burn-out des Nutzers keinen Vorschub leistet, sondern ihn bestenfalls verhindern hilft. Zusätzlich sind bis zur Version 1.0 die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern ausgemerzt. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.
+FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Eine entscheidende Voraussetzung einer Version ab 1.0 ist der wissenschaftliche, von Dritten etwa im Rahmen einer unabhängigen Studie erbrachte Nachweis, dass die Verwendung von FlowTime und ggf. ähnlicher Programme einem eventuell drohenden Burn-out des Nutzers keinen Vorschub leistet, sondern ihn bestenfalls verhindern hilft. Zusätzlich sind bis zur Version 1.0 die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern durch Vorgesetzte ausgemerzt. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.
 
 Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für Sie bewährt? Prima – nutzen Sie es frohgemut weiter, FlowTime ist kein Ersatz. Denn egal ob ein Tool besser ist als ein anderes: In diesen Belangen wechselfreudig zu sein ist eher kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.
 
 Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Sie müssen also keine persönlichen Daten einem Drittanbieter anvertrauen. FlowTime kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« arbeitet ein Miniwebserver, der von außerhalb ihres PCs lt. Voreinstellung nicht zugreifbar ist.
 
 
-Welche Größen der Dringlichkeit kennt FlowTime? {#kriterien}
------------------------------------------------
+<a name="kriterien">Welche Größen der Dringlichkeit kennt FlowTime?</a>
+-----------------------------------------------------------------------
 
-### a) Prioritätsgrad
+### a) <a name="prio">Prioritätsgrad</a>
 
 Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« dienen in FlowTime lediglich der verbalen Information. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und Sie weisen einer weiteren Aufgabe B Priorität 3000 zu, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. 
 
-### b) Zeitliche Nähe zum Fristende
+### b) <a name="deadline">Zeitliche Nähe zum Fristende</a>
 
 Je näher die Frist rückt, umso dringlicher sind Aufgaben. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden.
 
-### c) Diskrepanz zwischen zeitlichem und Erledigungsfortschritt
+### c) <a name="tpd">Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a>
 
 Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn und Fristende hinterherhinkt, als umso dringlicher gilt die Aufgabe.
 
@@ -71,35 +90,58 @@ Die Liste besteht also oben zunehmend aus Aufgaben, deren Balken von rechts rot,
 
 Die »farbliche Mitte« gibt an, wie viel von einer Aufgabe erledigt wurde. Bei einem logoblauen Balken ist sie faktisch unsichtbar. Im Flow, den dieser Zustand symbolisiert, interessiert der inhaltliche Fortschritt nicht, denn gerade diese würde die Zuversicht destabilisieren, dass man rechtzeitig fertig wird.
 
-### d) wie lange eine Aufgabe schon offen ist
+### d) <a name="open">wie lange eine Aufgabe schon offen ist</a>
 
 Werden die Details einer Aufgabe eingeblendet, gilt sie als offen, bis sie erledigt ist oder wieder geschlossen wird. Offene Aufgaben, sowie gemäß der anderen Größen dringlichere geschlossene Aufgaben werden auf der »Schreibtisch«-Ansicht gelistet, der Rest in den Ansichten »Ablage« bzw. die begonnenen, aber pausierenden Aufgaben in »Schublade«.
 
 Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen.
 
-### e) Verzögerungspotential
+### e) <a name="addtmneed">voraussichtlicher zusätzlicher Bruttozeitbedarf</a>
 
-Diese Größe gibt an, wie weit sich der Abschluss einer Aufgabe nach hinten verschöbe, würden Sie bis zum Ende ihrer Frist gar nicht mehr an ihr arbeiten. Sie hängt im Wesentlichen davon ab, wie Arbeits- und Freizeiten vor und nach dem Fristende verteilt sind. Hierdurch werden zum Beispiel Aufgaben, deren Fristende direkt vor einem längeren Urlaub liegt, als dringender bewertet.
+Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe und danach, wie sich Arbeits- und Freizeitphasen vor und nach ihrer Frist verteilen. Bei der Ermittlung der nachfristigen Zeitstruktur wird das zugeordnete Zeitsegment bzw., falls die vorfristige Zeitstruktur aus Segmenten verschiedener Profile zusammengesetzt ist, nur das letzte soweit gerechnet, bis die Bruttozeit die noch benötigte Nettozeit umfasst.
+
+Gibt Ihr Zeitmodell nicht genügend Nettosekunden her, etwa weil das Segment mit einem Profil verknüpft ist, das nur bis zu einem festgelegten Zeitpunkt gültig ist aber kein anderes Profil als Nachfolger bestimmt, so ist dies ein Fall, zu dem Sie eine eigene Konstante bestimmen können. 
 
 
-Was verbirgt sich hinter dem Zeitfortschritt?
+<a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a>
 ----------------------------------------------
 
-Oder genauer: Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo es herkommt: im Job – und nur da sollte das Programm auch verwendet werden. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus der Freizeit in die Arbeitszeit. Betroffene Aufgaben sind also in ersterer wie eingefroren, während sie in letzterer entsprechend schneller dringlich werden.
+Kurz: effektiv allein der Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo es herkommt: im Job – und nur da sollte das Programm auch verwendet werden. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus der Freizeit in die Arbeitszeit. Betroffene Aufgaben sind also in ersterer wie eingefroren, während sie in letzterer entsprechend schneller dringlich werden.
 
-Damit das funktioniert, sagen Sie dem Programm mit einem Zeitprofil, wie Ihr typischer durchschnittlicher Arbeitstag aussieht. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art definieren Sie mit minimalem Eingabeaufwand. Bei Bedarf definieren Sie mehrere Profile und verknüpfen sie mit verschiedenen Aufgaben.
+Damit das funktioniert, hinterlegen Sie in Ihrem Nutzerdatensatz ein individuelles Zeitmodell. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art definieren Sie mit minimalem Eingabeaufwand. Bei Bedarf definieren Sie mehrere Profile und verknüpfen sie mit verschiedenen Aufgaben.
 
-Bis die Benutzerschnittstelle auch diese Einstellung intuitiv ermöglicht, muss dies in einer kompakten Syntax angegeben werden, zum Beispiel `Mo-Fr@9-12,14-17,Mo@!9-12,Do@!14,15-20:30` --> Montag bis Freitag von 9:00 bis 17:59, Mittagspause eine Stunde ab 13:00, Montag beginnt erst mittags, Donnerstag Mittagspause zwei Stunden aber zu arbeiten bis abends halb neun, oder `15.-19.7.13:Mo-So@!0-23` --> Urlaub, Teil "0-23" ist übrigens auslassbar. Bei Bedarf lassen sich selbst Kalenderwochen dienstplangetreu differenzieren: `...;2n:...;3n-1:...` --> unterschiedliche Muster für ungerade und gerade Wochen und ein drittes für die KW 2, 5, 8 usw. bis KW 51. 
+Bis die Benutzerschnittstelle das intuitiv über Formulare und ähnlichem ermöglicht, müssen die wochenbasierten Zeitmuster in einer kompakten und hoffendlich eingängigen Syntax angegeben werden, zum Beispiel:
 
-Und wer bis hierhin noch durchsieht und sich weiter verkünsteln möchte, kann Zeitprofile Normalmuster und Von/Bis-Variationen voneinander erben lassen. Versehentliche Zirkelschlüsse werden jedenfalls erkannt und verhindert. Die Vererbung von Variationen erfolgt nach einem von drei Modi, geltend für alle oder für bestimmte: suggest (überschreibbar), impose (überschreibend) und optional (explizit einzuhängen). Festgelegt werden diese Modi von einem Profil für alle von ihm erbenden. Letztere können den Modus aber selbst wiederum ändern, entweder nur für sich oder auch für alle davon wiederum erbenden Profile.
+    `Mo-Fr@9-12,14-17,Mo@!9-12,Do@!14,15-20:30` --> Montag bis Freitag von 9:00 bis sechs (genauer: 17:59!), einstündige Mittagspause um eins, Montag beginnt erst mittags, Donnerstag Mittagspause zwei Stunden aber zu arbeiten bis abends halb neun,
 
-Aber Achtung, Komplexität sorgt für alles andere als Stressreduktion. Allgemein sollte Ihr definiertes Zeitschema so einfach wie möglich sein, selbst wenn die ganze Zeitlogik von FlowTime eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.
+oder:
+
+    `15.-19.7.13:Mo-So@!0-23` --> Urlaub, Teil "0-23" ist übrigens auslassbar. Es handelt sich hierbei um eine sogenannte Variation, die auf das Normalmuster (voriges Beispiel) angewendet wird.
+
+Bei Bedarf lassen sich selbst Kalenderwochen dienstplangetreu differenzieren:
+
+    `...;2n:...;3n-1:...` --> unterschiedliche Muster für ungerade und gerade Wochen und ein drittes für die KW 2, 5, 8 usw. bis KW 51. 
+
+Und wer bis hierhin noch durchsieht und sich weiter verkünsteln möchte, kann Zeitprofile Normalmuster und Von/Bis-Variationen voneinander erben lassen. Versehentliche Zirkelschlüsse werden jedenfalls erkannt und verhindert. Die Vererbung von Variationen erfolgt nach einem von drei Modi, geltend für alle oder für bestimmte: suggest (überschreibbar), impose (überschreibend) und optional (explizit einzuhängen). Festgelegt werden diese Modi von einem Profil für alle von ihm erbenden. Letztere können den Modus aber selbst wiederum ändern, entweder nur für sich oder auch für alle davon wiederum erbenden Profile. Grundsätzlich obliegt Ihnen die Entscheidung, ob Sie entweder Zeit und Konzentration in die Pflege Ihres Zeitmodells investieren oder darin, es auch später noch zu begreifen.
+
+Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein sollten Sie bei der Definition Ihres Zeitmodells pragmatisch nach der Devise verfahren:
+
+    So fein wie nötig, aber so grob wie möglich.
+
+Selbst wenn die ganze Zeitlogik von FlowTime eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.
 
 Abweichungen von derartigen im Voraus geplanten Zeitprofilen (vergangene Zeiten zu manipulieren ist nicht möglich) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger Sie sich an die definierte Zeiteinteilung halten, umso weniger gleiten die Aufgaben während Ihrer Freizeit ins Rote.
 
-Mit nutzerdefinierten Zeitprofilen soll FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegen entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Wenn Sie wünschen, können Sie natürlich auch während Freizeitphasen an den betroffenen Aufgaben arbeiten, verhindert wird das nicht.
+Mit so konfigurierbaren Zeitmodellen soll FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Die Sache hat einen Haken: Der Maschine ist es egal, ob dem definierten Zeitmodell intrinsisch oder extrinsische Motivation zugrunde liegt. Das heißt, diktieren Sie nicht der Maschine Ihren Arbeitstakt, sondern haben Sie vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil. Vielleicht wird Ihr Chef sagen:
 
-Wie wird der Erledigungsfortschritt berechnet?
+> »Zeit ist eben Geld.«
+
+Ob Sie den Mut zusammennehmen und Folgendes erwidern können?
+
+> »Kraft ein Ackerfeld.«
+    
+
+<a name="erledigungsfortschritt">Wie wird der Erledigungsfortschritt berechnet?</a>
 ----------------------------------------------
 
 Kleine Aufgaben bekommen einfach ein Erledigungshäkchen und verschwinden ins Archiv.
@@ -112,17 +154,30 @@ Anhand dieser Schätzungen berechnet FlowTime, wie weit ein bestimmtes Erledigth
 
 Sie fragen sich vielleicht, ob das nicht auch einfacher ginge. Man könnte doch einfach eingeben, wieviel Prozent von der gesamten Aufgabe man erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen. Dadurch besteht jedoch die Gefahr, dass man über kurz oder lang anfängt sich selbst zu belügen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. 
 
-Exklusive Zeitzuteilung
-------------------------
+<a name="exkl-zeitzuteilung">Exklusive Zeitzuteilung (to do)</a>
+-------------------------------
 
-Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. FlowTime nicht, hat das Konzept weiterentwickelt, sogar noch weiter als Tools, die das »Getting things done«-Prinzip verfolgen.
+Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. Es geht bei dieser klassischen Terminsicht vor allem darum, zeitliche Konflikte zu vermeiden. FlowTime soll das Konzept weiterentwickeln und sauber in das Ganze integrieren. Hierzu habe ich schon erste Ideen.
 
 Viele Aufgaben haben die Eigenschaft, dass Sie nicht zugleich auch an anderen Aufgaben arbeiten können, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen, die Sie im Büro vorbereiten und erst zum Schluss ausschließlich mit ihnen befasst sind. So können Sie in FlowTime für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.
 
-Auch auf Zeitprofilebene sind Reservierungen möglich. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitprofile, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben desselben Zeitprofils.
+Auch auf Zeitprofilebene könnten Reservierungen möglich sein. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitprofile, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben desselben Zeitprofils.
+
+### Zwei Möglichkeiten, das nachzubilden
+
+   1. für die Aufgabe, sagen wir eine Messepräsenz, ein eigenes Zeitprofil erstellen und als Variation definieren:
+
+          { label: 'abw_messe', self: 'ignore' }
+
+      Im Wurzelprofil festlegen (setzt ein weiteres Profil mit dem Namen »abwesend« und Normalmuster 'Mo-So@!' voraus):
+
+          { label: 'abw_messe', from_date: '...', until_date: '...',
+             pattern: 'abwesend' }
+
+   2. FlowTime anweisen, den Zustand zu einem Zeitpunkt in der Zukunft zu betrachten. Welche Aufgaben stehen oben und mit welchen davon steht die Aufgabe, die Sie eintragen wollen, in Konflikt?
 
 
-Weitere Kernfunktionen
+<a name="weitere-kernfunktionen">Weitere Kernfunktionen</a>
 ----------------------
 
  * Schritte samt untergeordneten können nachträglich in eine (Unter-)Aufgabe mit eigener Priorität, Von/Bis-Datierung und Zeitprofil überführt werden.
@@ -130,13 +185,13 @@ Weitere Kernfunktionen
  * Aufgaben können sich wiederholen. Die Zwischenzeit bis zur nächsten Wiederholung kann an den Fristbeginn, an das Fristende oder an die vollständige Erledigung des aktuellen Durchlaufs gekoppelt werden.
  * Sie können vor Feierabend voraussehen, wie die Dringlichkeiten am nächsten Morgen sein werden.
 
-Kritische und andere Bemerkungen
+<a name="kritisches">Kritische und andere Bemerkungen</a>
 ------------------------------------
 
 Gegen Ansinnen aus der Chefetage, die Software unternehmensweit einzuführen, laufen Betriebsräte hoffentlich Sturm. FlowTime ist für Einzelne gedacht, nicht für alle. Unter dem Zwang, es zu benutzen, kann es seine Vorteile nicht so gut ausspielen wie bei freiwilliger, idealerweise eigeninitiativer Verwendung. Vom Wesen her ist es eine Art Vermittler zwischen dem technokratischen, Störungstoleranz, Multitasking und Fristentreue gleichzeitig fordernden Arbeitsumfeld und dem sogenannten »Arbeitnehmer«, dessen – vorzugsweise möglichst tiefe – Konzentration darin förmlich pulverisiert wird.
 
 Es wird wie zu allem Kritiker und Befürworter geben. Die Kritiker werden sagen, dass FlowTime die Technokratisierung und Beschleunigung der Arbeitswelt noch weiter befeuert, dass man sich noch mehr von der Maschine abhängig macht etc. Lassen Sie sich ihre Argumente gerne durch den Kopf gehen. FlowTime ist nicht umsonst Freie Software, es hat also keinen Markt zu durchdringen, sondern es reicht, wenn nur diejenigen es verwenden, die davon wirklich profitieren, und wenn das nur 10% der Anwender von Zeitmanagementmethoden oder -systemen überhaupt sind.
 
-FlowTime lässt sich natürlich auch privat im Haushalt verwenden. Achten Sie dann umso mehr auf Ihre Freizeiten, in denen lt. FlowTime keine Aufgaben aktiv sind. Noch besser ist es jedoch, wenn die Verwendung auf die gewerbliche Arbeit beschränkt bleibt.
+FlowTime lässt sich natürlich auch privat im Haushalt verwenden. Achten Sie dann umso mehr auf echte Freizeiten, in denen laut FlowTime keine Aufgaben aktiv sind. Besser ist es jedoch, wenn die Verwendung auf die gewerbliche Arbeit beschränkt bleibt.
 
 Es ist bei niedrigpriorisierten Aufgaben vollkommen in Ordnung, Fristen eigenmächtig nach hinten zu verschieben, um sie wieder ins logoblaue Gleichgewicht zu bringen. Bei Aufgaben mittlerer Priorität ist es ebenfalls in Ordnung, fallweise sollten Sie dies dem Auftraggeber bzw. Ihrem Vorgesetzten mitteilen. Fristen von Aufgaben hoher Priorität können ebenfalls verschoben werden, wenngleich bewusst nur im Bearbeitungsmodus.
