@@ -136,6 +136,14 @@ sub respect {
        
 }
 
+sub all {
+    my ($self) = @_; my @links;
+    my $span = $self->start; while ( $span ) {
+        push @links, $span; $span = $span->next;
+    }
+    return @links;
+}
+
 sub fillIn {
     confess "Time::Structure::Chain'ing class does not fill in gaps"
           . " - no fillIn method defined"

@@ -25,7 +25,7 @@ has version => (
 );
 
 { use Moose::TypeConstraints;
-  coerce 'Time::Cursor::ProfileChain',
+  coerce 'Time::Cursor::Profile',
     from 'HashRef|ArrayRef[HashRef]',
     via {
         my $list = shift;
@@ -34,11 +34,11 @@ has version => (
                  ;
         my $until = $last->{until_date};
         $last->{from_date} //= $until; # temporarily
-        my $inilink = Time::Cursor::ProfileChain::Link->new($last);
-        my $pc = Time::Cursor::ProfileChain->new( start => $inilink );
+        my $inilink = Time::Cursor::Profile::Segment->new($last);
+        my $pc = Time::Cursor::Profile->new( start => $inilink );
         for my $l ( @$list ) {
             $l->{from_date} //= $last->until_date->successor;
-            $l = Time::Cursor::ProfileChain::Link->new($l);
+            $l = Time::Cursor::Profile::Segment->new($l);
             $pc->respect($l);
         }
         continue { $last = $l }
@@ -48,7 +48,7 @@ has version => (
 
 has timeprofiles => (
     is => 'ro',
-    isa => 'Time::Cursor::ProfileChain',
+    isa => 'Time::Cursor::Profile',
     auto_deref => 1,
     required => 1,
     coerce => 1,
@@ -67,8 +67,10 @@ sub update {
     if ( $self->version != $version_hash ) {
         if ( $self->_has_runner ) {
             $old = $self->_runner->($time,0);
-            $_->_onchange_until($_->until_date)
-                for @timeprofiles;
+            for ( @timeprofiles ) {
+                $_->_onchange_until($_->until_date);
+                $_->_onchange_from($_->from_date);
+            }
             $self->_clear_runner;
         }
         $self->version($version_hash);
@@ -122,7 +124,7 @@ sub alter_coverage {
 
 use 5.014;
 
-package Time::Cursor::ProfileChain {
+package Time::Cursor::Profile {
 
 use Moose;
 use FlowTime::Types;
@@ -139,21 +141,9 @@ sub dump {
 
 }
 
-sub all {
-    my ($self) = @_;
-    my @links;
-    my $span = $self->start;
-    while ( $span ) {
-        push @links, $span;
-        $span = $span->next;
-    }
-    return @links;
 }
 
-
-}
-
-package Time::Cursor::ProfileChain::Link {
+package Time::Cursor::Profile::Segment {
 
 use Moose;
 use FlowTime::Types;
@@ -217,7 +207,6 @@ sub _onchange_until {
     # settings of our profile (if any).
     #
     $self->_clear_partitions if $self->partitions;
-                              # ^^^ not using predicate here!
 
     my $extender = !$self->block_partitioning && sub {
        my ($until_date, $next_profile) = @_;
@@ -229,8 +218,7 @@ sub _onchange_until {
 
        my $span = __PACKAGE__->new({
            from_date  => $from_date // $until_date,
-           until_date => $until_date,
-           profile    => $profile,
+           until_date => $until_date, profile => $profile,
            partitions => undef, # to block recursion
        });
 
@@ -251,8 +239,7 @@ sub _onchange_until {
     if ( $last_piece ) {
         $last_piece->next(__PACKAGE__->new(
             from_date  => $last_piece->until_date->successor,
-            until_date => $date,
-            profile    => $profile,
+            until_date => $date, profile => $profile,
             partitions => undef,
         ));
     }
@@ -283,18 +270,4 @@ sub add_slices ($\@) {
 
 }
 
-package main;
-
-my $l = Time::Link->new({ from_date => "6. 18:00", until_date => "20.1. 12:00", name => "foo" });
-
-my $c = Time::Chain->new({ start => $l, end => $l });
-
-my $l2 = Time::Link->new({ from_date => "2. 15:30", until_date => "7. 14:00", name => "bar" });
-
-$c->respect($l2);
-
-$c->respect(new Time::Link { from_date => "20.1. 12:01:01", until_date => "3.2. 10:00", name => "zed" });
-
-$DB::single=1;
-1;
 1;
