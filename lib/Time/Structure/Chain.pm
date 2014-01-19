@@ -22,7 +22,7 @@ has end => (
         my $span = $self->start;
         $span = $_ while $_ = $span->next;
         return $span;
-    }
+    },
     writer => '_set_end',
 );
 

@@ -24,7 +24,7 @@ has version => (
     init_arg => undef,
 );
 
-{ use Moose::TypeConstraints;
+{ use Moose::Util::TypeConstraints;
   coerce 'Time::Cursor::Profile',
     from 'HashRef|ArrayRef[HashRef]',
     via {
@@ -49,7 +49,6 @@ has version => (
 has timeprofiles => (
     is => 'ro',
     isa => 'Time::Cursor::Profile',
-    auto_deref => 1,
     required => 1,
     coerce => 1,
 );
@@ -133,9 +132,9 @@ with 'Time::Structure::Chain';
 sub dump {
     my ($self) = @_;
 
-    return [ map { join ( " ", $span->name,
-             "from", $span->from_date,
-             "until", $span->until_date,
+    return [ map { join ( " ", $_->name,
+             "from", $_->from_date,
+             "until", $_->until_date,
          );
        } $self->all ];
 
@@ -211,10 +210,10 @@ sub _onchange_until {
     my $extender = !$self->block_partitioning && sub {
        my ($until_date, $next_profile) = @_;
 
-       $from_date = $last_piece
-                  ? $last_piece->until_date->successor
-                  : $self->from_date
-                  ;
+       my $from_date = $last_piece
+           ? $last_piece->until_date->successor
+           : $self->from_date
+           ;
 
        my $span = __PACKAGE__->new({
            from_date  => $from_date // $until_date,

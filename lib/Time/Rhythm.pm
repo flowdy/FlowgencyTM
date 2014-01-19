@@ -26,7 +26,7 @@ has '+_suffix_i' => ( handles => { 'until_week_day' => 'stringify' } );
 
 has description => ( is => 'ro', isa => 'Str' );
 
-has net_seconds_per_week => ( is => 'ro', isa => 'Float' );
+has net_seconds_per_week => ( is => 'ro', isa => 'Num' );
 has pattern => (
     is => 'ro',
     isa => 'CodeRef',
@@ -70,7 +70,7 @@ sub from_string {
             my @tmp_days;
 
             DAY_HOURS_ASSOC: for ( split /,/, $days ) {
-                if ( m{ \A ([A-Z][a-z]) - ([A-Z][a-z]+) }ixms ) {
+                if ( m{ \A ([A-Z][a-z]) - ([A-Z][a-z]) \z }ixms ) {
                     my $d1 = $WDAYNUM{ucfirst $1} // croak "Not a week day: $1";
                     my $d2 = $WDAYNUM{ucfirst $2} // croak "Not a week day: $2";
                     my $dd = $d1;
@@ -170,9 +170,10 @@ sub from_string {
     };
 
     my $net_ratio;
-    for ( 1 .. 53 ) {
-        my $pat = $sel->($_);
-        $net_ratio += $pat->Norm * 3600 / ($hourdiv * $pat->Size)
+    for my $wnum ( 1 .. 53 ) {
+        for my $pat ( $sel->($wnum) ) { 
+             $net_ratio += $pat->Norm * (3600 / $hourdiv)
+        }
     }
     $net_ratio /= 53;
 
