@@ -7,14 +7,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('task');
 __PACKAGE__->add_columns(
-    qw/ ROWID user main_step from_date until_date priority
-        archived_ts archived_because
-        repeat_from repeat_until frequency
-        time_profile client
+    qw/ ROWID user name title main_step from_date priority
+        archived_because archived_ts
+        repeat_from repeat_until frequency client
       /
 );
-
-__PACKAGE__->add_column( name => { auto_increment => 1 } );
 
 __PACKAGE__->has_many(steps => 'FlowDB::Step',
     { 'foreign.task' => 'self.name' },
@@ -23,11 +20,11 @@ __PACKAGE__->has_many(steps => 'FlowDB::Step',
 
 __PACKAGE__->belongs_to( main_step_row => 'FlowDB::Step',
     { 'foreign.ROWID' => 'self.main_step'},
-    { proxy => [qw(title description done checks expoftime_share substeps)] },
+    { proxy => [qw(description done checks expoftime_share substeps)] },
 );
 
 __PACKAGE__->has_many(
-    timeline_row => 'FlowDB::TimeLine',
+    timesegment_rows => 'FlowDB::TimeSegment',
     { 'foreign.task_id' => 'self.ROWID' }
 );
 

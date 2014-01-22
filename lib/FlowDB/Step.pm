@@ -10,7 +10,6 @@ __PACKAGE__->table('step');
 __PACKAGE__->add_columns(
     task => { is_nullable => 0 },
     name => { is_nullable => 0 },
-    title => { is_nullable => 0 },
     description => { is_nullable => 1 },
     link => { is_nullable => 1 },
     pos => { data_type => 'INTEGER' },
