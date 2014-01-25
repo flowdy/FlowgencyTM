@@ -19,51 +19,73 @@ has _runner => (
 
 has version => (
     is => 'rw',
-    isa => 'Float',
-    default => 0.0,
+    isa => 'Str',
+    default => '',
     init_arg => undef,
 );
 
-{ use Moose::Util::TypeConstraints;
-  coerce 'Time::Cursor::Profile',
-    from 'HashRef|ArrayRef[HashRef]',
-    via {
-        my $list = shift;
-        my $last = ref $list eq 'HASH' ? do { my $l = $list; $list=[]; $l }
-                                       : shift @$list
-                 ;
-        my $until = $last->{until_date};
-        $last->{from_date} //= $until; # temporarily
-        my $inilink = Time::Cursor::Profile::Segment->new($last);
-        my $pc = Time::Cursor::Profile->new( start => $inilink );
-        for my $l ( @$list ) {
-            $l->{from_date} //= $last->until_date->successor;
-            $l = Time::Cursor::Profile::Segment->new($l);
-            $pc->respect($l);
-        }
-        continue { $last = $l }
-        return $pc;
-    }
-}
-
 has timeprofiles => (
-    is => 'ro',
+    is => 'rw',
     isa => 'Time::Cursor::Profile',
     required => 1,
     coerce => 1,
 );
 
+around BUILDARGS => sub {
+    my ($orig, $class, @args) = @_;
+
+    my $args = $class->$orig(@args);
+
+    $_ = $class->timeprofiles($_)
+        for $args->{timeprofiles};
+
+    return $args;
+
+};
+
 sub run_from {  shift->timeprofiles->start->from_date(@_)  }
 sub run_until { shift->timeprofiles->end->until_date(@_)   }
+
+sub reprofile {
+    my $self = shift;
+
+    my $list = @_ > 1 ? \@_ : @_ ? shift
+             : croak "Time::Cursor::reprofile() missing LIST or ARRAY-ref
+        
+    my $last = ref $list eq 'HASH'  ? do { my $l = $list; $list=[]; $l }
+             : ref $list eq 'ARRAY' ? shift @$list
+             :                        return $self->timeprofiles($list);
+             ;
+
+    my $until = $last->{until_date};
+    $last->{from_date} //= ref $self ? $self->run_from : $until; # temporarily
+
+    my $inilink = Time::Cursor::Profile::Segment->new($last);
+    my $pc = Time::Cursor::Profile->new( start => $inilink );
+    for my $l ( @$list ) {
+        $l->{from_date} //= $last->until_date->successor;
+        $l = Time::Cursor::Profile::Segment->new($l);
+        $pc->respect($l);
+    }
+    continue { $last = $l }
+
+    return $self->timeprofiles($pc);
+
+}
 
 sub update {
     my ($self, $time) = @_;
 
     my @timeprofiles = $self->timeprofiles->all;
-    my $version_hash = sum map { $_->version } @timeprofiles;
+    my @ids;
+    my $version_hash = sum map {
+        push @ids, $_->profile->id;
+        $_->version
+    } @timeprofiles;
+    $version_hash .= "::".join(",", @ids);
 
     my $old;
-    if ( $self->version != $version_hash ) {
+    if ( $self->version ne $version_hash ) {
         if ( $self->_has_runner ) {
             $old = $self->_runner->($time,0);
             for ( @timeprofiles ) {

@@ -4,34 +4,34 @@ package Task;
 use Moose;
 use Carp qw(carp croak);
 
-has cursor => (
+has _cursor => (
     is => 'ro',
     isa => 'Time::Cursor',
     required => 1,
     lazy => 1,
-    builder => '_build_cursor'
+    builder => '_build_cursor',
+    handels => { update_cursor => 'update' },
 );
 
-has id => (
+has name => (
     is => 'ro',
     isa => 'Str',
-    auto_deref => 1,
-    required => 1,
+    default => sub { shift->dbicrow->name }
+    init_arg => undef,
 );
 
 has dbicrow => (
     is => 'ro',
     isa => 'FlowDB::Task', # which again is a DBIx::Class::Row
     handles => [qw[
-        from_date timeline client open_sec
-        name title description priority
+        from_date client open_sec
+        title description priority
         main_step steps
     ]],
-    init_arg => undef,
-    lazy => 1,
+    required => 1,
     default => sub {
         my $self = shift;
-        $self->step_retriever->($self->id)->task;
+        $self->step_retriever->($self->name);
     },
     clearer => 'release_row',
 );
@@ -42,6 +42,7 @@ has progress => (
     lazy => 1,
     default => sub { shift->main_step->calc_progress },
     clearer => '_clear_progress',
+    init_arg => undef,
 );
 
 has ['step_retriever', 'profile_resolver'] => (
@@ -50,15 +51,36 @@ has ['step_retriever', 'profile_resolver'] => (
 
 sub _build_cursor {
     use Time::Cursor;
-    my $self = shift;
-    my $dbicrow = $self->dbicrow;
-    # Warum noch mal cachen?
-    # return $self->cursor_cache->( $dbicrow->name, sub {
-    return Time::Cursor->new({
-        timeprofiles => $self->profile_resolver->($dbicrow->timelines),
-        run_from => $dbicrow->from_date,
+    my $row = shift->dbicrow;
+    my $cursor = Time::Cursor->new({
+        timeprofiles => $self->profile_resolver->($row->timesegment_rows),
     });
-    # };
+    $cursor->run_from($row->from_date);
+    return $cursor;
+}
+
+sub reprofile_cursor {
+    my $self = shift;
+    my $row = $self->dbicrow;
+    my $cursor = $self->_cursor;
+
+    if ( ref $_[0] eq 'HASH' ) {
+        $cursor->timeprofiles->respect($_) for @_;
+        $row->timesegment_rows(
+            map { delete $_->{from_date}; for my $p ($_->{profile) { $p = $p->id } }
+                $cursor->timeprofiles->all
+        );
+    }
+    elsif ( !@_ or ref $_[0] eq 'ARRAY' ) {
+        my @profiles = $self->profile_resolver->(
+            $row->timesegment_rows( ($_ = shift) ? @$_ : () )
+        )
+        $profiles[0]{from_date} = ( $row->from_date );
+        $cursor->reprofile(@profiles);
+    }
+    else { die }
+
+    return wantarray ? $cursor->update : ();
 }
 
 sub store {
@@ -160,10 +182,10 @@ sub _store_flatten_substeps_tree {
         else {
 
             if ( my $link = delete $current->{link} ) {
-                $current->{link_row} = $self->step_retriever->($link);
+                $current->{link_row} = $self->step_retriever->(@$link);
             }
 
-            for (qw( from_date until_date timeline client priority )) {
+            for (qw( from_date timesegments client priority )) {
                 my ($field,$value) = ($_, delete($current->{$_}) // next);
                 $current->{subtask_row}{$field} = $value;
             }
@@ -281,11 +303,8 @@ sub _store_write_to_db {
     $row->main_step_row( $steps_rs->find({ name => '' }) );
 
     if ( $row->in_storage ) {
-        use Time::Point;
         
-        my $cursor = $self->cursor->alter_coverage(
-            $row->from_date, $row->until_date
-        );
+        $self->reprofile_cursor;
 
         $self->_clear_progress; # to be recalculated on next progress() call
         return $row->update;
