@@ -7,29 +7,32 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('step');
 
-__PACKAGE__->add_columns(
-    task => { is_nullable => 0 },
-    name => { is_nullable => 0 },
-    description => { is_nullable => 1 },
-    link => { is_nullable => 1 },
-    pos => { data_type => 'INTEGER' },
-    done => { data_type => 'INTEGER' },
-    checks => { data_type => 'INTEGER' },
-    expoftime_share => { data_type => 'INTEGER', is_nullable => 0, }
-); 
+my @INTEGER = ( data_type => 'INTEGER' );
+my @NULLABLE = ( is_nullable => 1 );
 
-__PACKAGE__->add_columns(qw/ROWID parent/);
+__PACKAGE__->add_columns(
+    ROWID => { @INTEGER },
+    task => {},
+    parent => { @NULLABLE },
+    name => { default_value => '' },
+    description => { @NULLABLE },
+    link => { @NULLABLE },
+    pos => { @NULLABLE, @INTEGER },
+    done => { @INTEGER, default_value => 0 },
+    checks => { @INTEGER, default_value => 1 },
+    expoftime_share => { @INTEGER, default_value => 1 }
+); 
+__PACKAGE__->set_primary_key("ROWID");
+
 
 __PACKAGE__->belongs_to(
     parent_row => 'FlowDB::Step',
-    { 'foreign.name' => 'self.parent',
-      'foreign.task' => 'self.task'
-    }
+    { 'foreign.ROWID' => 'self.parent' }
 );
 
 __PACKAGE__->belongs_to(
     task_row => 'FlowDB::Task',
-    { 'foreign.name' => 'self.task' }
+    { 'foreign.ROWID' => 'self.task' }
 );
 
 # Bestimmte Schritte einer Aufgabe können eine Zeitbegrenzung, Priorität etc.
@@ -37,8 +40,8 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
     subtask_row => 'FlowDB::Task',
     { 'foreign.main_step' => 'self.ROWID' },
-    { proxy => [qw/timeline from_date until_date client/],
-      # update_cascade => 1, # why?
+    { proxy => [qw/timesegments from_date client/],
+      is_foreign_key_constraint => 0,
     }
 );
 
@@ -49,16 +52,16 @@ __PACKAGE__->belongs_to(
 
 __PACKAGE__->has_many(
     substeps => 'FlowDB::Step',
-    { 'foreign.parent' => 'self.name',
+    { 'foreign.parent' => 'self.ROWID',
       'foreign.task' => 'self.task'
     },
-    { copy_cascade => 0 }
+    { cascade_copy => 0 }
 );
 
 __PACKAGE__->has_many(
     linked_by => 'FlowDB::Step',
     { 'foreign.link' => 'self.ROWID' },
-    { copy_cascade => 0 }
+    { cascade_copy => 0 }
 );
 
 sub sqlt_deploy_hook {
@@ -66,13 +69,7 @@ sub sqlt_deploy_hook {
 
    $sqlt_table->add_index(
        name => 'tree',
-       fields => ['task','parent','name'],
-       type => 'unique'
-   );
-
-   $sqlt_table->add_index(
-       name => 'tree_pos',
-       fields => ['task','parent','pos'],
+       fields => ['task','name'],
        type => 'unique'
    );
 
@@ -83,9 +80,9 @@ sub sqlt_deploy_hook {
 
 }
 
-around [qw[title description done checks]] => sub {
+around [qw[description done checks]] => sub {
     my ($orig, $self, $value) = @_;
-    if ( my $link = $self->link_row ) { $link->$orig; }
+    if ( $self->link and my $link = $self->link_row ) { $link->$orig; }
     else { $self->$orig(exists $_[2] ? $value : ()) }
 };
 

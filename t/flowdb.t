@@ -1,28 +1,30 @@
 #!/usr/bin/perl
 use strict;
 
-use FindBin '$Bin';
-use Test::More tests => 3;
+use Test::More;
 
 my $db;
-use FlowDB \$db;
+use FlowDB \$db => (@ARGV ? shift :());
 
-use Time::Model;
-use User::Tasks;
+ok $db->isa("DBIx::Class::Schema"), "database initialized";
 
-my $default_model = Time::Model->from_json(...);
- 
-ok $default_model->isa('Time::Model'), 'wrap default model in a moose class with tree/node functionality';
-
-my $tasks = User::Tasks->new(
-    task_rs => $db->resultset('FlowDB::Task'),
-    model => $default_model,
-);
-
-my $t = $tasks->new_task({
-    name => 'test1',
-    from_date => '25.10.',
-    until_date => '10.11.',
+my $task = $db->resultset("Task")->new({
+    user => 'fh',
+    name => 'test',
+    priority => 2,
+    from_date => '2014-01-20 12:30',
+    title => 'Meine erste Testaufgabe',
+    timesegments => [{ profile => 'default', until_date => '2014-02-03 9:30' }],
+    description => 'Wäre toll, wenn es funktioniert',
 });
 
-is $t && $t->name, 'test1', 'create a task';
+ok $task->isa("FlowDB::Task"), "FlowDB::Task-Objekt erstellt";
+ok $task->insert, "Task in die Datenbank geschrieben";
+is $task->description, $task->main_step_row->description, 'Beschreibung via Proxy';
+is $task->description, 'Wäre toll, wenn es funktioniert', ' ... gesetzt';
+
+my $substep = $task->main_step_row->add_to_substeps({ name => 'substep1', description => 'ein Unterschritt' });
+is $substep->task, 1, "Unterschritt erbt Task-Id vom übergeordneten Schritt";
+
+done_testing();
+

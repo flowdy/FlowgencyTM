@@ -2,12 +2,13 @@ use strict;
 
 package FlowDB;
 use base qw/DBIx::Class::Schema/;
+use Carp qw/croak/;
 
-__PACKAGE__->load_classes(qw|User Task Step TimeLine|);
+__PACKAGE__->load_classes(qw|User Task Step TimeSegment|);
 
 sub import {
     my ($class, $dbh_ref, $filename) = @_;
-    return if !defined $dbh_ref;
+    croak "use FlowDB \$your_db_handle missing" if !defined $dbh_ref;
 
     $filename ||= ':memory:';
 
@@ -15,11 +16,14 @@ sub import {
     "DBI:SQLite:$filename", '', '',
         {
            sqlite_unicode => 1,
-           use_foreign_keys => 1,
+           on_connect_call => 'use_foreign_keys',
         }
     );
 
-    if ( !$_[2] ) { $$dbh_ref->deploy }
+    if ( !($filename && -e $filename) ) {
+        print "Deploying new database in ", $filename || "memory", "\n";
+        $$dbh_ref->deploy;
+    }
 
 }
 
