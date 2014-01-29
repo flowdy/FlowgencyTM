@@ -4,6 +4,7 @@ package User;
 use Moose;
 use Time::Model;
 use User::Tasks;
+use FlowRank;
 use JSON;
 
 has _dbicrow => (
@@ -23,7 +24,7 @@ has _time_model => (
         my ($self) = shift;
         Time::Model->from_json(shift->_dbicrow->time_model);    
     }
-};
+);
 
 has tasks => (
     is => 'ro',
@@ -33,24 +34,32 @@ has tasks => (
         my $self = shift;
         User::Tasks->new(
             time_profile_provider => sub {
-                $self->_time_model->get(shift);
+                $self->_time_model->get_profile(shift);
             }, 
-            flowrank_processor => $self->flowrank_processor,
+            flowrank_processor => FlowRank->new({
+                get_weights => sub { $self->weights }
+            })->closure;
             tasks_rs => $self->_dbicrow->tasks,
         );
     },
     lazy => 1,
-};
+);
 
 has weights => (
     is => 'ro',
     isa => 'HashRef[Int]',
+    auto_deref => 1,
+    lazy => 1,
     default => sub {
         return from_json(shift->_dbicrow->weights);
     },
 };
     
-sub time_model {
+sub store_weights {
+    my ($self) = @_;
+}
+
+sub update_time_model {
     my ($self, $json) = @_;
     my $model = $self->_time_model;
     if ( defined $json ) {
@@ -60,54 +69,4 @@ sub time_model {
     return $model;
 }
 
-sub flowrank_processor {
-    my $self = shift;
-
-    my (@hrefs,%minmax,%wgh);
-    
-    $_->() for my $reset = sub {
-        %wgh = %{ $self->weights };
-        $minmax{$_} = [0,0] for keys %wgh;
-        @hrefs = ();
-    };
-
-    return sub {
-
-        my $href = shift;
-        
-        if ( $href eq "rank" ) {
-
-            $_->[1] -= $_->[0] for values %minmax;
-
-            for my $href ( @hrefs ) {
-
-                my ($rank,$wgh);
-                while ( my ($which, $value) = each %$href ) {
-                    $wgh    = $wgh{$which} // next;
-                    $value -= $minmax{$which}[0];
-                    $rank  += abs($wgh) * abs(
-                        $value / $minmax{$which}[1] - ($wgh < 0)
-                    );
-                }
-
-                $href->{"FlowRank"} = $rank;
-
-            }
-
-            $reset->();
-            return;
-        }
-        elsif ( ref $href eq "HASH" ) {
-            while ( my ($which, $value) = each %$href ) {
-                $value < $_ and $_ = $value for $minmax{$which}[0];
-                $value > $_ and $_ = $value for $minmax{$which}[1];
-            }
-            return $href;
-        }        
-        else {
-            croak "expecting a plain Hash reference";
-        }
-        
-    };
-}
 __PACKAGE->meta->make_immutable;
