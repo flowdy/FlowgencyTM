@@ -39,9 +39,10 @@ sub _set_minmax {
     return $value;
 }
     
-sub closure {
-    my $self = shift;
+sub new_closure {
 
+    my $self = shift->new(@_);
+    
     return sub {
 
          if (!@_) {
@@ -70,14 +71,14 @@ around register_task => sub {
     my %ctd = $task->update_cursor( $self->_time );
 
     my $measure = $self->register("$task" => {
-        pri => $task->priority,
-        tpd => $ctd{current_pos} - $task->progress,
-        due => $ctd{remaining_pres},
+        pri  => $task->priority,
+        tpd  => $ctd{current_pos} - $task->progress,
+        due  => $ctd{remaining_pres},
         open => $ctd{elapsed_pres} - $task->open_sec,
         eatn => $task->estimate_additional_time_need,
     });            
 
-    which ( my ($which, $value) = each %$measure ) {
+    while ( my ($which, $value) = each %$measure ) {
         $self->_set_minmax( $which => $value );
     }
 
@@ -87,41 +88,58 @@ around register_task => sub {
 
 };
 
+sub evaluate_rank {
+
+    my ($minmax_href, $wgh_href, $task_href) = @_;
+
+    $task_href = (delete $task_href->{task_obj})->current_rank($task_href);
+
+    $task_href->{eatn} //= $wgh_href->{not_enough_eatn} // $wgh_href->{eatn};
+
+    if ( $task_href->{due} < 0 and my $od = $wgh_href->{overdue} ) {
+        $task_href->{due} *= $od;
+    }
+
+    my ($rank, $wgh, $minmax);
+    while ( my ($which, $value) = each %$task_href ) {
+        $wgh   = $wgh_href->{$which} || next;
+        $minmax = $minmax_href->{$which};
+        $value -= $minmax->[0];
+        $rank  += abs($wgh) * abs(
+             $value / $minmax->[1] - ($wgh < 0)
+        );
+    }
+
+    return $task_href->{FlowRank} = $rank;
+
+}
+
 sub get_ranking {
     my $self = shift;
     my %minmax = %{ $self->_minmax };
     my $tasks = $self->tasks;
     my %weights = $self->get_weights->();
-    $_->[1] -= $_->[0] for values %minmax;
 
-    my @v; return [
-        sort { for my $rank ( @v = ($a, $b) ) {
-            $rank = $tasks->{$_};
-            ref $rank or next;
-            $rank = evaluate_rank(
-                \%minmax, \%weights, \$tasks->{$rank}
-            );
-        } $v[1] <=> $v[0] } map { $_->{task_obj} } values %tasks
-    ];
-
-}
-
-sub evaluate_rank {
-
-    my ($minmax, $wgh, $sref) = @_;
-
-    my $href = (delete $$sref->{task_obj})->current_rank($$sref);
-
-    my ($rank,$wgh);
-    while ( my ($which, $value) = each %$href ) {
-        $wgh    = $wgh->{$which} || next;
-        $value -= $minmax->{$which}[0];
-        $rank  += abs($wgh) * abs(
-             $value / $minmax{$which}[1] - ($wgh < 0)
-        );
+    for ( values %minmax ) {
+         $_       = [ @$_ ]; # copy min and max
+         $_->[1] -= $_->[0]; # reduce max by min
     }
 
-    $$sref = $href->{FlowRank} = $rank;
+    my (@v, $r);
+    my $cmp_ranks = sub {
+        for $r ( @v = ($a, $b) ) { # copy aliases
+            $r = \$tasks->{$r};
+            next if !ref($$r);
+            $$r = evaluate_rank( \%minmax, \%weights, $$r );
+        }
+        return $v[0] <=> $v[1];
+    };
+
+    return [ reverse
+             sort   $cmp_ranks
+             map    { $_->{task_obj} }
+             values %$tasks
+    ];
 
 }
 
