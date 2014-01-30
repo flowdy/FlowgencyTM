@@ -44,114 +44,128 @@ has hourdiv => ( is => 'ro', isa => 'Int', required => 1 );
 sub from_string {
     my ($class, $week_pattern, $args) = @_;
     
+    my $hour_min_rx = qr{ 0*(\d+) (?::0*(\d+))? ([ap]m)? }ixms;
+
     my %week_patterns;
-    ($week_patterns{''}, my @week_patterns) = split /;/, $week_pattern;
-    for ( @week_patterns ) {
-        my ($sel, $pattern) = m{ \A 0*(\d+n.*?) : (.+) \z }xms
-            or croak "odd succeeding pattern segment: $_";
+    my @week_patterns = split /;/, $week_pattern;
+    $week_patterns{ q[] } = shift @week_patterns;
+    for my $wp ( @week_patterns ) {
+        my ($sel, $pattern) = $wp =~ m{ \A 0*(\d+n.*?) : (.+) \z }xms
+            or croak "odd succeeding pattern segment: $wp";
         $week_patterns{$sel} = $pattern;
     }
 
-    my $min_unit = gcf_minutes(
+    # Detect in how many parts we have to divide the days (atoms)
+    # minimum 24 (hours) over 48 (half hours) upto maximum 1440 (minutes)
+    my $min_unit = _gcf_minutes(
         map { m{ : 0*(\d+) }gxms } values %week_patterns
     );
+
     my $hourdiv = 60 / $min_unit;
     my $daylength = $hourdiv * 24;
-    my $default_hours = Bit::Vector->new($daylength);
+    my $holiday = Bit::Vector->new($daylength);
     
-    WEEK: for my $wp ( values %week_patterns ) {
+    for my $wp ( values %week_patterns ) {
+
         my @days = (undef) x 7;
         
-        PART_OF_THE_WEEK:
         for my $wspan ( split /(?<=\d),(?=[A-Za-z])/, $wp ) {
 
             my $hours_bits = Bit::Vector->new($daylength);
-            my ($days, $hours) = split /@/, $wspan;
+            my ($wdays, $hours) = split /@/, $wspan;
             my @tmp_days;
 
-            DAY_HOURS_ASSOC: for ( split /,/, $days ) {
-                if ( m{ \A ([A-Z][a-z]) - ([A-Z][a-z]) \z }ixms ) {
-                    my $d1 = $WDAYNUM{ucfirst $1} // croak "Not a week day: $1";
-                    my $d2 = $WDAYNUM{ucfirst $2} // croak "Not a week day: $2";
-                    my $dd = $d1;
-                    # cf. perldoc perlop, "Range operators" in scalar context
-                    my $week = 7;
-                    while ( $dd == $d1 .. $dd == $d2 ) {
-                        $tmp_days[$dd] = 1;
-                        last if !--$week;
-                    } continue { $dd = ($dd+1)%7 }
+            # Processing chains of (ranges of) week days ...
+            for my $wdays ( split /,/, $wdays ) {
+
+                if ( $wdays =~ m{ \A ([A-Z][a-z]) - ([A-Z][a-z]) \z }ixms ) {
+
+                    my ($d1, $d2) = map { _get_number_of_wday($_) } $1, $2;
+
+                    WDAY:
+                    for (1..7) {
+                        $tmp_days[$d1] = 1;
+                        last WDAY if $d1 == $d2;
+                        $d1 = ( $d1 + 1 ) % 7; 
+                    }
+
                 }
+
                 else {
-                    my $d = $WDAYNUM{$_} // croak "Not a week day (Ww): $_";
-                    $tmp_days[$d] = 1;
+                    $tmp_days[ _get_number_of_wday($wdays) ] = 1;
                 }
+
             }
 
-            my %bv_copy_for; for ( grep $tmp_days[$_], 0 .. 6 ) {
+            # For each selected day, if it refers to an existing bitvector, we
+            # clone it so that it can modified independently from the days among
+            # which it was originally defined. Otherwise, we have it refer to
+            # $hours_bits.
+            my %bv_copy_for; 
+            WDAYNUM:
+            for ( 0 .. 6 ) {
+                $tmp_days[$_] or next WDAYNUM;
                 my $d = \$days[$_];
-                if ( ref $$d ) { $$d = $bv_copy_for{$$d} ||= $$d->Clone; }
-                else { $$d = $hours_bits; }
+                $$d = ref($$d) ? ($bv_copy_for{$$d} ||= $$d->Clone)
+                    :            $hours_bits
+                    ;
             }
 
-            my @vec = ($hours_bits, values %bv_copy_for);
-            my $bitsetter = sub {
-                my ($bit, $start, $end) = @_;
-                if ( $start == ($end//$start) ) {
-                    $_->Bit_Copy($start, $bit) for @vec;
-                }
-                elsif ( $start < $end ) {
-                    my $meth = 'Interval_'.( $bit ? 'Fill' : 'Empty' );
-                    $_->$meth( $start, $end ) for @vec;
-                }
-                else { die 'start index > end index' }
-            };
+            my $bitsetter = _get_multivec_bitsetter(
+                $hours_bits, values %bv_copy_for
+            );
 
-            HOUR: for ( split /,/, $hours // '0-23' ) {
-                my $is_absence = s{^!}{};
-                $_ = '0-23' if !length;
-                if ( m{ \A 0*(\d+) (?::0*(\d+))? ([ap]m)?
-                     - 0*(\d+) (?::0*(\d+))? ([ap]m)? \z }ixms
-                   ){
+            # Process the chain of (ranges of) hours by modifying the
+            # respective bits in each bit vector.
+            for my $hours ( split /,/, $hours // '0-23' ) {
 
-                    # Stunde  # Minute  - # Stunde  # Minute(mglw. undef.)
-                    # Achtung: Zur Wahrung der Konsistenz mit den Zeitstempeln
-                    # bedeutet das Fehlen der Minutenangabe im Bisteil: h2+1
-                    my ($h1,$m1,$h2,$m2) = ($1, $2||0, $4, $5); 
+                my $is_absence = $hours =~ s{^!}{};
+                $hours = '0-23' if !length($hours);
+
+                if ( $hours =~ m{ \A $hour_min_rx - $hour_min_rx \z }ixms ){
+
+                    my ($h1, $m1, $h2, $m2) = ($1, $2||0, $4, $5); 
+
                     $h1 += 12 if $3 && lc($3) eq 'pm';
-                    croak "Keine Stunde (0-24): $h1" if !($h1 >= 0 && $h1 < 25);
-                    croak "Keine Minute (0-59): $m1" if !($m1 >= 0 && $m1 < 60);
-                    $h1 = ($h1%24)*$hourdiv+$m1/$min_unit;
-
                     $h2 += 12 if $6 && lc($6) eq 'pm';
-                    croak "Keine Stunde (0-24): $h2" if !($h2 >= 0 && $h2 < 25);
-                    croak "Keine Minute (0-59): $m2"
-                        if defined($m2) && !($m2 >= 0 && $m2 < 60);
-                    $h2 = ($h2*$hourdiv+($m2//60)/$min_unit)%$daylength;
+                    _check_hour($_) for $h1, $h2;
+                    _check_minute($_) for $m1, $m2 // ();
 
-                    my $hh = $h1;
-                    do { $bitsetter->( !$is_absence, $hh );
-                         $hh = ($hh+1)%$daylength;
-                       } until $hh == $h2
-                       ;
+                    $h1 = $h1 * $hourdiv + $m1 / $min_unit;
+
+                    $m2 //= 60; # Note: In accordance to Time::Point logic
+                                # the lack of minutes in the to-part means: h2+1
+                    $h2 = $h2 * $hourdiv + $m2 / $min_unit;
+                    $h2 %= $daylength; # so you can input 12pm meaning midnight
+
+                    DATOM: # day atom
+                    for (1..$daylength) {
+                      $bitsetter->( !$is_absence, $h1 );
+                      $h1 = ( $h1 + 1 ) % $daylength; # These two lines differ in
+                      last DATOM if $h1 == $h2;       # order from the days' loop
+                    }                                 # above!
 
                 }
+
                 else {
-                    $_ += 12 if s{([ap]m)$}{}i && lc($1) eq 'pm';
-                    die "Keine Stunde (0-24): $_" if !($_ >= 0 && $_ < 25);
-                    my $h = $_ % 24 * $hourdiv;
+                    $hours += 12 if $hours =~ s{([ap]m)$}{}i && lc($1) eq 'pm';
+                    _check_hour($hours);
+                    my $h = $hours % 24 * $hourdiv;
                     $bitsetter->(!$is_absence, $h, $h+$hourdiv-1);
                 }
+
             }
 
         }
 
-        $_ ||= $default_hours for @days;
+        $_ ||= $holiday for @days;
+
         $wp = \@days;
 
     }
     
-    @week_patterns = ([1, 0, delete $week_patterns{''} ]);
-    for my $sel ( sort { $a cmp $b } keys %week_patterns ) {
+    @week_patterns = ([1, 0, delete $week_patterns{q[]} ]);
+    for my $sel ( sort keys %week_patterns ) {
         my ($factor, $add) = $sel =~ m{ (\d+) n ([+-]\d+)? }xms;
         croak "week pattern selector malformed: $sel" if !$factor;
         $add //= 0;
@@ -161,8 +175,9 @@ sub from_string {
 
     my $sel = sub {
         my $week_num = shift;
+        my $divisible;
         for my $wp ( @week_patterns ) {
-            my $divisible = $week_num - $wp->[1];
+            $divisible = $week_num - $wp->[1];
             next if $divisible < 0
                  || $divisible % $wp->[0];
             return @{$wp->[2]};
@@ -177,19 +192,60 @@ sub from_string {
     }
     $net_ratio /= 53;
 
-    @{$args}{qw/hourdiv pattern description net_seconds_per_week/}
-        = ($hourdiv, $sel, $week_pattern, $net_ratio);
+    @{$args}{qw/hourdiv  pattern description    net_seconds_per_week/}
+        = (    $hourdiv, $sel,   $week_pattern, $net_ratio        );
+
     return $class->new($args);
 
 }
 
-sub gcf_minutes { # hour partitioner (greatest common factor)
+sub _gcf_minutes { # hour partitioner (greatest common factor)
      my $x = 60;
      while (@_) {
          my $y = shift || 60;
          ($x, $y) = ($y, $x % $y) while $y;
      }
      return $x;
+}
+
+sub _get_number_of_wday {
+    my $wday = shift;
+    return $WDAYNUM{ ucfirst $wday }
+        // croak "Not a week day: $wday";
+}
+
+sub _check_hour {
+    my $h = shift;
+    $h >= 0 && $h < 25
+        or croak "Not in hours range (0-24): $h";
+}
+
+sub _check_minute {
+    my $m = shift;
+    $m >= 0 && $m < 60
+        or croak "Not in minutes range (0-59): $m";
+}
+
+sub _get_multivec_bitsetter {
+    my @vec = @_;
+
+    return sub {
+
+        my ($bit, $start, $end) = @_;
+
+        if ( $start == ($end//$start) ) {
+            $_->Bit_Copy($start, $bit) for @vec;
+        }
+
+        elsif ( $start < $end ) {
+            my $meth = 'Interval_'.( $bit ? 'Fill' : 'Empty' );
+            $_->$meth( $start, $end ) for @vec;
+        }
+
+        else { die 'start index > end index' }
+
+    };
+
 }
 
 sub BUILD {
