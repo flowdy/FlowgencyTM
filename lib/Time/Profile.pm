@@ -93,7 +93,7 @@ sub calc_slices {
                ->calc_slices($from, $until);
 }
 
-around respect => sub {
+around couple => sub {
     my ($wrapped, $self, $span) = @_;
     
     if ( ref $span eq 'HASH' ) {

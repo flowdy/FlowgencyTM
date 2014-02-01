@@ -43,7 +43,7 @@ sub _find_span_covering {
     return $prior, $span;
 }
 
-sub respect {
+sub couple {
     my ($self,$span) = @_;
 
     $span->does("Time::Structure::Link")
