@@ -4,7 +4,7 @@ package FlowDB;
 use base qw/DBIx::Class::Schema/;
 use Carp qw/croak/;
 
-__PACKAGE__->load_classes(qw|User Task Step TimeSegment|);
+__PACKAGE__->load_classes(qw|User Task Step TimeStage|);
 
 sub import {
     my ($class, $dbh_ref, $filename) = @_;

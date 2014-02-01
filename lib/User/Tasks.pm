@@ -33,19 +33,19 @@ has cache => (
     default => sub {{}},
 );
 
-has ['time_profile_provider', 'flowrank_processor'] => (
+has ['track_finder', 'flowrank_processor'] => (
     is => 'rw', isa => 'CodeRef', required => 1,
 );
 
 sub _build_task_obj {
     my ($self, $row) = @_;
-    my $tpp = $self->time_profile_provider;
+    my $tpp = $self->track_finder;
     return Task->new(
         step_retriever => $self->step_retriever,
         dbicrow => $row,
-        profile_resolver => sub {[ map { 
-            my $profile = $tpp->($_->profile);
-            { profile => $profile, until => $_->until };
+        track_finder => sub {[ map { 
+            my $track = $tpp->($_->track);
+            { track => $track, until => $_->until };
         } @_ ]},
     );
 };

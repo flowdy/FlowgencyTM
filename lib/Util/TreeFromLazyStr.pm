@@ -189,11 +189,11 @@ sub parse_taskstep_title {
         push @{$data{tags}}, $1;
     }
 
-    # Recognize from-date, time profile (or contiguous pairs of both) and the
+    # Recognize from-date, time track (or contiguous pairs of both) and the
     # deadline after all.
     my $date_rx = qr{\d[.\-\d]{,8}[\d.]\b};
     if ( $head =~
-           s{ ( [a-z] \w+                   # id string of a time profile (tp)
+           s{ ( [a-z] \w+                   # id string of a time track (tp)
               | $date_rx                    # date to be parsed by Time::Point
               | (?:,?(?:$date_rx:[^,\s]+))+ # ","-sep. pairs of from-date and tp
               )? --? ($date_rx)             # deadline date
@@ -204,15 +204,15 @@ sub parse_taskstep_title {
         if ( @components > 1 ) {
             for ( split /,/, $1 ) {
                 my ($date, $tplabel) = split /:/, $_;
-                $data{timeprofile_from}{$date} = $tplabel;
+                $data{timetrack_from}{$date} = $tplabel;
             }
         }
         elsif ( my $single = shift @components ) {
             if ( $single =~ /^\d/ ) {
-                $data{timeprofile_from}{$single} = "DEFAULT";
+                $data{timetrack_from}{$single} = "DEFAULT";
             }
             else {
-                $data{timeprofile} = $single;
+                $data{timetrack} = $single;
             }
         }
     }

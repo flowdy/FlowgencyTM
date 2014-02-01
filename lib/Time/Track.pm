@@ -1,7 +1,7 @@
 #!perl
 use strict;
 
-package Time::Profile;
+package Time::Track;
 use Moose;
 use Time::Span;
 use Carp qw(carp croak);
@@ -35,7 +35,7 @@ has ['from_earliest', 'until_latest'] => (
         my $self = shift;
         my $span = $self->_find_span_covering(shift);
         if ( $span ) {
-            croak "Time profile borders can be extended, not narrowed";
+            croak "Time track borders can be extended, not narrowed";
         }
         $self->_update_version;
     }
@@ -43,7 +43,7 @@ has ['from_earliest', 'until_latest'] => (
 
 has successor => (
     is => 'ro',
-    isa => 'Time::Profile',
+    isa => 'Time::Track',
     trigger => sub {
         my ($self, $succ) = shift;
         $succ->mustnt_start_later($self->end->until_date->successor);
@@ -53,7 +53,7 @@ has successor => (
 
 has _parent => (
     is => 'ro',
-    isa => 'Time::Profile',
+    isa => 'Time::Track',
     init_arg => 'parent',
 );
 
@@ -310,7 +310,7 @@ sub seek_last_net_second_timestamp {
 
     }
     else {
-        croak "Timestamp not found - not enough time on this profile";
+        croak "Timestamp not found - not enough time on this track";
     }
 
     return Time::Point->from_epoch(

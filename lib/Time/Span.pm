@@ -15,7 +15,7 @@ with "Time::Structure::Link";
 
 has description => ( is => 'rw', isa => 'Str' );
 
-has profile => ( is => 'rw', isa => 'Time::Profile', weak_ref => 1 );
+has track => ( is => 'rw', isa => 'Time::Track', weak_ref => 1 );
 
 has rhythm => (
     is => 'ro',
@@ -108,7 +108,7 @@ sub from_string {
 sub new_alike {
     my ($self, $args) = @_;
 
-    for my $arg (qw/description profile/) {
+    for my $arg (qw/description track/) {
         next if exists $args->{$arg};
         $args->{$arg} = $_ if defined($_ = $self->$arg());
     }

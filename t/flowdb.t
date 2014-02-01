@@ -8,13 +8,23 @@ use FlowDB \$db => (@ARGV ? shift :());
 
 ok $db->isa("DBIx::Class::Schema"), "database initialized";
 
-my $task = $db->resultset("Task")->new({
-    user => 'fh',
+my $user = $db->resultset("User")->find_or_create({
+    id => 'fh',
+    username => 'Florian Heß',
+    password => '',
+    time_model => '{"default":{"label":"UB/IT","week_pattern":"Mo-Fr@9-17:30"}}',
+    weights => '{"pri":1,"tpd":1,"due":1,"open":1,"eptn":1}',
+    priorities => '{1:"Auf Halde",2:"Gelegentlich",3:"Bald erledigen",5:"Dringend"}',
+});
+
+ok $user->isa("FlowDB::User"), "User fh gefunden oder erstellt";
+
+my $task = $user->tasks->new({
     name => 'test',
     priority => 2,
     from_date => '2014-01-20 12:30',
+    timestages => [{ track => 'default', until_date => '2014-02-03 9:30' }],
     title => 'Meine erste Testaufgabe',
-    timesegments => [{ profile => 'default', until_date => '2014-02-03 9:30' }],
     description => 'Wäre toll, wenn es funktioniert',
 });
 
