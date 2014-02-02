@@ -5,14 +5,14 @@ package Time::Model;
 use Moose;
 use Carp qw(carp croak);
 use Date::Calc;
-use Time::Profile;
+use Time::Track;
 
-has _time_profiles => (
+has _time_tracks => (
     is => 'ro',
-    isa => 'HashRef[Time::Profile]',
+    isa => 'HashRef[Time::Track]',
     traits => [ 'Hash' ],
     default => sub { {} },
-    handles => { time_profile => 'get' },
+    handles => { get_track => 'get' },
 );
 
 sub from_json {
@@ -23,7 +23,7 @@ sub from_json {
 
     my $model = JSON::from_json(shift, { relaxed => 1 });
 
-    my (%tprofiles,$next_round_promise);
+    my (%tracks, $next_round_promise);
 
     my $grch = Util::GraphChecker->new( axes => {
         parents => sub {
@@ -42,8 +42,8 @@ sub from_json {
 
         my $parent = $props->{parent};
         if ( defined($parent) && !ref($parent) ) {
-            if ( defined $tprofiles{$parent} ) {
-                $props->{parent} = $tprofiles{$parent};
+            if ( defined $tracks{$parent} ) {
+                $props->{parent} = $tracks{$parent};
                 $next_round_promise++;
             }
             else {
@@ -82,7 +82,7 @@ sub from_json {
             }
 
             if ( $v->{obj} || $v->{week_pattern} ) {}
-            elsif ( defined(my $tp = $tprofiles{$v->{ref}}) ) { 
+            elsif ( defined(my $tp = $tracks{$v->{ref}}) ) { 
                 next if $v->{ignore} || !$v->{apply};
                 $next_round_promise++;
                 $v = $tp->get_section( $v->{from_date}, $v->{until_date} );
@@ -98,15 +98,15 @@ sub from_json {
         
         delete $model->{$key};
     
-        my $tprof = Time::Profile->new(
-            $props->{pattern} // $parent->fillIn->description
+        my $track = Time::Track->new(
+            $props->{week_pattern} // $parent->fillIn->description
         );
 
-        $tprofiles{ $key } = $tprof;
+        $tracks{ $key } = $track;
 
         for my $v ( @$to_suggest, @{$props->{variations}}, @$to_impose ) {
             next if !(blessed($v) || $v->{reuse} || $v->{week_pattern});
-            $tprof->respect($v);
+            $track->couple($v);
         }
                        
     }
@@ -117,12 +117,12 @@ sub from_json {
             goto PROP;
         }
         else {
-            die "Time profile definitions with irresoluble dependencies: ",
+            die "Time track definitions with irresoluble dependencies: ",
                join ", ", keys $model;
         }
     }
 
-    return $class->new( _time_profiles => \%tprofiles );
+    return $class->new( _time_tracks => \%tracks );
 
 }
 
