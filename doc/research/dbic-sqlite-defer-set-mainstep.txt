@@ -1,0 +1,232 @@
+DBIx::Class (SQLite) to ensure a field is set but not before commit: better solutions?
+[URL: http://perlmonks.org/?node_id=1073078]
+
+<p>My smart time management project distinguishes tasks and steps. Characteristics of their relation:</p>
+
+<ul><li>Every task consists of at least one step, and these steps can be subordinated to each other for project-scale stuff.</li><li>One of these steps is the main_step of the task. It is named with a zero-length string by convention. Metadata stored in that row doesn't relate to the single step but to the overall task.</li><li>The factual progress of a task is stored in FlowDB::Step rows containing a number of checkboxes and how many of them are checked, while the time progress is calculated based on data from FlowDB::Task from_date field and related FlowDB::TimeStage rows. Both progress indicators are computed and cached by a Task instance retrieving data from and storing to a FlowDB::Task "on demand"</li><li>Substeps or sub-trees of steps can have deadlines, timestages etc. that differ from those of the overall task. Those steps with a non-zero-length name but referred from FlowDB::Task be called <em>subtasks</em>.</li></ul>
+
+<p>My problem is similar to building a department-staff relation where each department selects by foreign key one of the <em>n</em> staff members as a manager. I learnt of the possibility of deferring foreign key checks until commit even in SQLite, but I guess, this doesn't apply here: SQLite does not cry about unfullfilled foreign key but *NULL* constraints. I outlined the deadlock-like circular requirement problem in the source comment below and can hopefully delete it some day when SQLite reliably ensures consistency on its own. As this is a Perl board, not one on SQL / relational databases, my question shall focus a plain perl/DBIx::Class solution that, as a benefit, can be ported later to MySQL, PostgreSQL, no matter what engine. The advantage of having the plain database engine secure data consistency be second rate, albeit favorable in database console sessions.</p>
+
+<p>I tried with a $storage->txn_do() call below and it seems to work, but I am not quite sure if it covers all methods of adding and modifying data in the database. Can it be bypassed somehow, intended or not? Can't help it smells, doesn't it? Is there perhaps a more elegant way to make DBIx::Class ensure a task has got, at latest upon committing, a main step set?</p>
+
+<p>Considered triggers already, but a COMMIT event apparently is not supported by SQLite. Also considered to drop main_step in favor of a join on step.task=task.name and step.parent IS NULL, if this is even possible and my presumption is wrong that multiple join criteria involved in the core querying scenarios indicate a bad database design just as well. Thus at any rate, as well as by step.name="ROOT", I would rule the subtask feature out. I would therefore do need at least a field main_step_name in the task row as the second join criterion. But then wouldn't be able to make it a requirement of a main step to exist in the first place (well, somehow yes, but probably not more sustainable than what is there, right?).</p>
+
+<code>
+package FlowDB::Task;
+use Carp qw/croak/;
+use Moose;
+extends 'DBIx::Class::Core';
+
+my ( $MANDATORY, $OPTIONAL ) = map { { is_nullable => $_ } } 0, 1;
+
+__PACKAGE__->table('task');
+__PACKAGE__->add_column( ROWID => { data_type => 'INTEGER' } );
+__PACKAGE__->add_columns(
+    user      => $MANDATORY,    # TODO: Must be set for subtasks?
+    name      => $MANDATORY,    #   dito: subtask steps can do without
+    title     => $MANDATORY,
+    main_step => $OPTIONAL,
+        # It's not really, but otherwise we would run into circular
+        # requirement problems:
+        # Because steps (like main_step) have a foreign key constraint
+        # matching our autoincremented primary key, the task record
+        # must be inserted first.
+        # By deferring the step-side foreign key check, we would have
+        # to guess our primary key, but doing so smells of pitfalls.
+        # So we have to ensure main_step is properly dealt with in our
+        # insert and update wrappers.
+    # ... from_date, priority, and fields related to archival storage
+    # and repetition.
+);
+
+__PACKAGE__->belongs_to(
+    user_row => 'FlowDB::User',
+    { 'foreign.id' => 'self.user' }
+);
+
+__PACKAGE__->has_many(
+    steps => 'FlowDB::Step',
+    { 'foreign.task' => 'self.ROWID' },
+    { cascade_copy   => 1, cascade_delete => 1 },
+);
+
+__PACKAGE__->has_many(
+    timestages =>
+        'FlowDB::TimeStage',    # provides track_id, until_date, ...
+    { 'foreign.task_id' => 'self.ROWID' }
+);
+
+__PACKAGE__->set_primary_key('ROWID');
+
+{ # In order to simplify the usage of a FlowDB::Task, it shall dele-
+  # gate metadata handling to its main_step
+
+    my %tmp_msr;    # private cache used for rows not yet in storage
+    my @proxy_fields
+        = qw(description done checks expenditure_of_time_share substeps);
+
+    __PACKAGE__->belongs_to(
+        main_step_row => 'FlowDB::Step',
+        { 'foreign.ROWID' => 'self.main_step' },
+        { proxy           => \@proxy_fields, cascade_update => 1 },
+    );
+
+# As DBIx::Class::Row constructor would wee about unmatched parameters,
+# we have to store and keep them in our own private cache in order to
+# flush them not before insertion
+    sub _tmp_main_step {
+        my $args      = shift;
+        my $main_step = do {
+            if ( my $row = shift ) {
+                if ( exists $tmp_msr{$row} ) {
+                    delete $tmp_msr{$row};
+                }
+                else { $tmp_msr{$row} = {} }
+            }
+            else { {} }
+        };
+        for (@proxy_fields) {
+            my $val = delete $args->{$_} // next;
+            $main_step->{$_} = $val;
+        }
+        return $main_step;
+    }
+
+    around new => sub {
+        my ( $orig, $class ) = ( shift, shift );
+        my $args      = @_ > 1 ? {@_} : shift;
+        my $main_step = _tmp_main_step($args);
+        my $self      = $class->$orig($args);
+        $tmp_msr{$self} = $main_step;
+        return $self;
+    };
+
+    # Wrap the proxy accessors to have temporary values accessed
+    # instead, if any.
+    # TODO: Figure out if this applies to rows in storage as well,
+    # i.e. whether or not DBI::Class defers writing changes to
+    # main_step_row until commit of the task row:
+    for my $field (@proxy_fields) {
+        around $field => sub {
+            my ( $orig, $self ) = ( shift, shift );
+
+            # if ( $self->in_storage ) {
+            #     my $val = shift; $self->$orig( $val // () )
+            #        // $tmp...
+            if ( $self->in_storage ) { $self->$orig(shift); }
+            elsif (@_) { $tmp_msr{$self}{$field} = shift; }
+            else       { return $tmp_msr{$self}{$field}; }
+        };
+    }
+
+    sub DEMOLISH {
+        my $self = shift;
+        delete $tmp_msr{$self};
+    }
+
+}
+
+around copy => sub {
+
+    # [...]
+};
+
+around insert => sub {
+    $DB::single = 1;
+    my ( $orig, $self ) = ( shift, shift );
+    my $args = @_ > 1 ? {@_} : shift;
+    my $main_step = _tmp_main_step( $args => $self );
+    $main_step->{name} = q{};
+    $self->result_source->storage->txn_do(
+        sub {
+            $self->$orig($args);
+            $main_step = $self->add_to_steps($main_step);
+            $self->update( { main_step_row => $main_step } );
+        }
+    );
+    return $self;
+};
+
+around update => sub {
+    $DB::single = 1;
+    my ( $orig, $self ) = ( shift, shift );
+    my $args = @_ > 1 ? {@_} : shift;
+    my $main_step = _tmp_main_step( $args => $self );
+    $main_step->{name} = q{};
+    $self->$orig($args);
+    $self->main_step_row->$orig($main_step);
+    return $self;
+};
+
+package FlowDB::Step;
+use Moose;
+extends 'DBIx::Class::Core';
+
+__PACKAGE__->table('step');
+
+my @INTEGER  = ( data_type   => 'INTEGER' );
+my @NULLABLE = ( is_nullable => 1 );
+
+__PACKAGE__->add_columns(
+    ROWID                     => {@INTEGER},
+    task                      => {},
+    parent                    => {@NULLABLE},
+    name                      => { default_value => '' },
+    description               => {@NULLABLE},
+    link                      => {@NULLABLE},
+    pos                       => { @NULLABLE, @INTEGER },
+    done                      => { @INTEGER, default_value => 0 },
+    checks                    => { @INTEGER, default_value => 1 },
+    expenditure_of_time_share => { @INTEGER, default_value => 1 }
+);
+__PACKAGE__->set_primary_key("ROWID");
+
+__PACKAGE__->belongs_to(
+    parent_row => 'FlowDB::Step',
+    { 'foreign.ROWID' => 'self.parent' }
+);
+
+__PACKAGE__->belongs_to(
+    task_row => 'FlowDB::Task',
+    { 'foreign.ROWID' => 'self.task' }
+);
+
+# TODO? Assert $step->ROWID == $step->subtask_row->main_step->ROWID
+__PACKAGE__->belongs_to(
+    subtask_row => 'FlowDB::Task',
+    { 'foreign.main_step' => 'self.ROWID' },
+    {   proxy => [qw/timestages from_date client/]
+        ,    # not: priority -> s. definition below
+        is_foreign_key_constraint => 0,
+    }
+);
+
+__PACKAGE__->belongs_to(
+    link_row => 'FlowDB::Step',
+    { 'foreign.ROWID' => 'self.link', }
+);
+
+__PACKAGE__->has_many(
+    substeps => 'FlowDB::Step',
+    {   'foreign.parent' => 'self.ROWID',
+        'foreign.task'   => 'self.task'
+    },
+    { cascade_copy => 0 }
+);
+
+# [...]
+
+__END__
+
+</code>
+
+=for Interested
+
+One very, very short *cough* introductory paragraph what my beloved open-source baby is all about: Programing a time management system is a cool thing to do in order to learn time management the hard way, or at least to procrastinate around it. The true mission is to make machines <em>understand</em> that humans do not work 24/7 (since if, they'll do no more soon), i.e. to respect that so-marked spans in the personal time model, no matter if they are regular, recurring or not, do not count in any time-based urgency scoring criteria used to rank the task items. In return, the increase of urgency will be accordingly steeper in the actual working time. One of those arbitrarily weighed scoring criteria will be, for instance, the drift between the progressive time and how much of the task is done (checked) so far.
+
+In the end, programing such a tool in my leisure time is better for me than suffering of work-related urgency sorrow, yet better than solving the problem for me alone and not helping other office workers as well, by meditation and alike.
+
+As of soon hosted on a git repository server yet to choose. Open for contributors.
+
+=cut
+
