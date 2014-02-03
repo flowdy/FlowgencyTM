@@ -6,15 +6,14 @@ use Carp qw/croak/;
 use Moose;
 extends 'DBIx::Class::Core';
 
-
-my ($MANDATORY, $OPTIONAL) = map {{ is_nullable => $_ }} 0, 1;
+my ($MANDATORY, $OPTIONAL) = map { { is_nullable => $_ } } 0, 1;
 
 __PACKAGE__->table('task');
 __PACKAGE__->add_column( ROWID => { data_type => 'INTEGER' });
 __PACKAGE__->add_columns(
     user             => $MANDATORY,
     name             => $MANDATORY,
-    title            => $OPTIONAL,
+    title            => $MANDATORY,
     main_step        => $OPTIONAL,
         # It's not really, but otherwise we would run into circular reference problems:
         # Because steps (like main_step) have a foreign key constraint matching our
@@ -32,13 +31,17 @@ __PACKAGE__->add_columns(
     client           => $OPTIONAL,
 );
 
+__PACKAGE__->belongs_to( user_row => 'FlowDB::User',
+    { 'foreign.id' => 'self.user' }
+);
+
 __PACKAGE__->has_many( steps => 'FlowDB::Step',
     { 'foreign.task' => 'self.ROWID' },
-    { copy_cascade => 1 },
+    { cascade_copy => 1, cascade_delete => 1 },
 );
 
 __PACKAGE__->has_many(
-    timesegments => 'FlowDB::TimeSegment',
+    timestages => 'FlowDB::TimeStage',
     { 'foreign.task_id' => 'self.ROWID' }
 );
 
@@ -49,7 +52,7 @@ __PACKAGE__->set_primary_key( 'ROWID' );
 
 __PACKAGE__->belongs_to( main_step_row => 'FlowDB::Step',
     { 'foreign.ROWID' => 'self.main_step'},
-    { proxy => \@proxy_fields },
+    { proxy => \@proxy_fields, } # wherefore this: cascade_update => 1 ?
 );
 
 sub _tmp_main_step {

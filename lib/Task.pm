@@ -10,7 +10,10 @@ has _cursor => (
     required => 1,
     lazy => 1,
     builder => '_build_cursor',
-    handels => { update_cursor => 'update' },
+    handels => {
+        update_cursor => 'update',
+        test_apply_time_stages => 'apply_stages'
+    },
 );
 
 has name => (
@@ -45,7 +48,7 @@ has progress => (
     init_arg => undef,
 );
 
-has ['step_retriever', 'profile_resolver'] => (
+has ['step_retriever', 'track_finder'] => (
     is => 'ro', isa => 'CodeRef', required => 1,
 );
 
@@ -53,34 +56,44 @@ sub _build_cursor {
     use Time::Cursor;
     my $row = shift->dbicrow;
     my $cursor = Time::Cursor->new({
-        timeprofiles => $self->profile_resolver->($row->timesegment_rows),
+        timestages => $self->track_finder->($row->timestages),
     });
     $cursor->run_from($row->from_date);
     return $cursor;
 }
 
-sub reprofile_cursor {
-    my $self = shift;
+sub redraw_cursor_way {
+    my ($self, @stages) = @_;
     my $row = $self->dbicrow;
     my $cursor = $self->_cursor;
 
-    if ( ref $_[0] eq 'HASH' ) {
-        $cursor->timeprofiles->respect($_) for @_;
-        $row->timesegment_rows(
-            map { delete $_->{from_date}; for my $p ($_->{profile) { $p = $p->id } }
-                $cursor->timeprofiles->all
+    my $tr = $self->track_finder;
+
+    if ( ref $stages[0] eq 'HASH' ) {
+        for my $p ( map { $_->{track} } @stages ) {
+            $p = $tr->($p) if !ref $p;
+        }
+        $cursor->apply_stages( @stages );
+        $row->timestages(
+            map { $_->{track} = $_->{track}->id }
+                $cursor->timeway_to_stage_hrefs;
         );
     }
-    elsif ( !@_ or ref $_[0] eq 'ARRAY' ) {
-        my @profiles = $self->profile_resolver->(
-            $row->timesegment_rows( ($_ = shift) ? @$_ : () )
+
+    elsif ( !@stages || ref $stages[0] eq 'ARRAY' ) {
+        @stages = $pr->(
+            $row->timestages(
+                ($_ = shift @stages ) ? @$_ : ()
+            )
         )
-        $profiles[0]{from_date} = ( $row->from_date );
-        $cursor->reprofile(@profiles);
+        $stages[0]{from_date} = ( $row->from_date );
+        $cursor->change_way(@stages);
     }
+
     else { die }
 
     return wantarray ? $cursor->update : ();
+
 }
 
 sub store {
@@ -304,10 +317,11 @@ sub _store_write_to_db {
 
     if ( $row->in_storage ) {
         
-        $self->reprofile_cursor;
+        $self->redraw_cursor_way;
 
         $self->_clear_progress; # to be recalculated on next progress() call
         return $row->update;
+
     }
     elsif ( $self->cursor ) {
         return $row->insert;

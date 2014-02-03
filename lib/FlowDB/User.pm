@@ -7,8 +7,8 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('user');
 __PACKAGE__->add_columns(qw/
-    id username password time_model
-    weights priorities
+    id username password
+    weights time_model priorities
 /);
 
 __PACKAGE__->has_many(tasks => 'FlowDB::Task',
