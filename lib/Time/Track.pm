@@ -7,6 +7,12 @@ use Time::Span;
 use Carp qw(carp croak);
 use Scalar::Util qw(refaddr);
 
+has name => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
 has fillIn => (
     is => 'ro',
     isa => 'Time::Span',
@@ -18,7 +24,7 @@ with 'Time::Structure::Chain';
 has version => (
     is => 'rw',
     isa => 'Int',
-    default => sub { time - $^T },
+    default => do { my $i; sub { ++$i } },
     lazy => 1,
     clearer => '_update_version',
 );
@@ -275,16 +281,7 @@ sub seek_last_net_second_timestamp {
 
     my $rem_abs = $pos->{remaining_abs};
     my $rem_pres = $pos->{remaining_pres};
-    if ( $rem_pres >= 0 ) {
-        my $sl = $lspan->slice->slicing;
-        my ($val, $pres, $abs) = (undef, 0, 0);
-        for ( my $i = -1; $pres < $rem_pres; $i-- ) {
-            $val = $sl->[$i];
-            ($val > 0 ? $pres : $abs) += abs $val;
-        }
-        $rem_abs -= $abs;
-    }
-    elsif ( $rem_pres < 0 ) {
+    if ( $rem_pres < 0 ) {
 
         my $find_pres_sec = abs $rem_pres;
         my $seek_from_ts = $lspan->until_date->successor;
@@ -294,7 +291,8 @@ sub seek_last_net_second_timestamp {
             $self->until_latest->last_sec - $seek_from_ts->epoch_sec
         );
 
-        my $found_pres_seconds = $rhythm->net_seconds_per_week
+        my ($found_pres_seconds, $plus_rem_abs)
+          = $rhythm->net_seconds_per_week
             ? $rhythm->count_absence_between_net_seconds(
                 $seek_from_ts, $find_pres_sec,
                 $coverage && ($coverage - $find_pres_sec)
@@ -302,20 +300,25 @@ sub seek_last_net_second_timestamp {
             : 0
             ;
 
+        $rem_abs += $plus_rem_abs;
+
         if ( my $remaining = $find_pres_sec - $found_pres_seconds ) {
+            die "no successor to gather $remaining seconds" if !$successor;
+            die "remaining seconds negative" if $remaining < 0;
+            my $start_ts = $self->until_latest->successor;
             return $successor->seek_last_net_second_timestamp(
-                $seek_from_ts, $remaining
+                $start_ts, $remaining
             );
         }
 
     }
     else {
-        croak "Timestamp not found - not enough time on this track";
+       $rem_abs -= $lspan->slice->absence_in_presence_tail($rem_pres);
     }
 
     return Time::Point->from_epoch(
         $ts->epoch_sec + $net_seconds + $rem_abs - 1,
-        ($ts->get_precision) x 2,
+        ($ts->get_precision) x 2,    # minimal = maximal precision
     );
 }
 

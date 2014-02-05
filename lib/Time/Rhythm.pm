@@ -6,6 +6,7 @@ package Time::Rhythm;
 use Moose;
 use Bit::Vector;
 use Time::CalendarWeekCycle;
+use Time::SlicedInSeconds;
 use Carp qw(carp croak);
 
 my %WDAYNUM; @WDAYNUM{

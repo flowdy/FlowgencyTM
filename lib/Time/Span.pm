@@ -7,6 +7,7 @@ use Moose;
 use FlowTime::Types;
 use Time::Point;
 use Time::Rhythm;
+use Time::SlicedInSeconds;
 use Date::Calc qw(Delta_Days Add_Delta_Days);
 use Carp qw(carp croak);
 use List::Util qw(min max);
@@ -30,7 +31,7 @@ has slice => (
     is => 'ro',
     lazy => 1,
     builder => '_calc_slice',
-    isa => 'Time::Slice',
+    isa => 'Time::SlicedInSeconds',
     init_arg => undef,
 );
 
@@ -156,7 +157,7 @@ sub _calc_slice {
     }
 
     return $cursor_end > $span_end ? $self->next : undef,
-           Time::Slice->new(
+           Time::SlicedInSeconds->new(
                span => $self,
                position => $self->from_date->epoch_sec,
                slicing => $slice,

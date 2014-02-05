@@ -1,14 +1,11 @@
-#!perl
-use strict;
-use utf8;
-
 package Time::Cursor;
 use Carp qw(croak carp);
-use Scalar::Util qw(weaken);
+# use Scalar::Util qw(weaken); # apparently no more needed
 use List::Util qw(sum);
 use FlowTime::Types;
-use Time::Point;
 use Moose;
+use Time::Cursor::Way;
+use Time::Point;
 
 has _runner => (
     is => 'rw',
@@ -24,11 +21,10 @@ has version => (
     init_arg => undef,
 );
 
-has timeprofiles => (
+has _timeway => (
     is => 'rw',
-    isa => 'Time::Cursor::Profile',
+    isa => 'Time::Cursor::Way',
     required => 1,
-    coerce => 1,
 );
 
 around BUILDARGS => sub {
@@ -36,59 +32,53 @@ around BUILDARGS => sub {
 
     my $args = $class->$orig(@args);
 
-    $_ = $class->timeprofiles($_)
-        for $args->{timeprofiles};
+    if ( my $t = $args->{timestages} ) {
+        croak "timestages attribute not an array-ref"
+            if ref $t ne "ARRAY";
+        $t->[0]->{from_date} = $args->{start_ts}
+            // croak "missing start_date attribute";
+        $args->{_timeway} = Time::Cursor::Way->from_stage_hrefs(@$t);
+    }
+    else {
+        croak "Missing mandatory attribut timestages used ".
+              "to initialize internal _timeway";
+    }
 
     return $args;
 
 };
 
-sub run_from {  shift->timeprofiles->start->from_date(@_)  }
-sub run_until { shift->timeprofiles->end->until_date(@_)   }
+sub start_ts {  shift->_timeway->start->from_date(@_)  }
+sub due_ts { shift->_timeway->end->until_date(@_)   }
 
-sub reprofile {
-    my $self = shift;
+sub change_way {
+    return shift->_timeway( Time::Cursor::Way->from_stage_hrefs(@_) );
+}
 
-    my $list = @_ > 1 ? \@_ : @_ ? shift
-             : croak "Time::Cursor::reprofile() missing LIST or ARRAY-ref
-        
-    my $last = ref $list eq 'HASH'  ? do { my $l = $list; $list=[]; $l }
-             : ref $list eq 'ARRAY' ? shift @$list
-             :                        return $self->timeprofiles($list);
-             ;
-
-    my $until = $last->{until_date};
-    $last->{from_date} //= ref $self ? $self->run_from : $until; # temporarily
-
-    my $inilink = Time::Cursor::Profile::Segment->new($last);
-    my $pc = Time::Cursor::Profile->new( start => $inilink );
-    for my $l ( @$list ) {
-        $l->{from_date} //= $last->until_date->successor;
-        $l = Time::Cursor::Profile::Segment->new($l);
-        $pc->respect($l);
+sub apply_stages {
+    my $way = shift->_timeway;
+    for my $stage_href ( @_ ) {
+        my $stage = Time::Cursor::Stage->new($stage_href); 
+        $way->couple($stage);
     }
-    continue { $last = $l }
-
-    return $self->timeprofiles($pc);
-
 }
 
 sub update {
     my ($self, $time) = @_;
 
-    my @timeprofiles = $self->timeprofiles->all;
+    my @timeway = $self->_timeway->all;
     my @ids;
     my $version_hash = sum map {
-        push @ids, $_->profile->id;
+        push @ids, $_->track->name;
         $_->version
-    } @timeprofiles;
+    } @timeway;
     $version_hash .= "::".join(",", @ids);
 
     my $old;
     if ( $self->version ne $version_hash ) {
         if ( $self->_has_runner ) {
             $old = $self->_runner->($time,0);
-            for ( @timeprofiles ) {
+            for ( @timeway ) {
                 $_->_onchange_until($_->until_date);
                 $_->_onchange_from($_->from_date);
             }
@@ -110,13 +100,7 @@ sub update {
 sub _build__runner {
     my ($self) = @_;
 
-    my @slices;
-
-    my $span = $self->timeprofiles;
-
-    while ( my $tp = $self->timeprofiles ) {
-        $tp->add_slices(\@slices);
-    }
+    my $slices = $self->_timeway->get_slices;
 
     return sub {
         my ($time) = @_;
@@ -124,7 +108,7 @@ sub _build__runner {
         my %ret = map { $_ => 0 } qw(elapsed_pres remaining_pres
                                      elapsed_abs  elapsed_abs);
 
-        $_->calc_pos_data($time,\%ret) for @slices;
+        $_->calc_pos_data($time,\%ret) for @$slices;
 
         return \%ret;
     }
@@ -143,152 +127,5 @@ sub alter_coverage {
     }
 }
 
-use 5.014;
+__PACKAGE__->meta->make_immutable;
 
-package Time::Cursor::Profile {
-
-use Moose;
-use FlowTime::Types;
-with 'Time::Structure::Chain';
-
-sub dump {
-    my ($self) = @_;
-
-    return [ map { join ( " ", $_->name,
-             "from", $_->from_date,
-             "until", $_->until_date,
-         );
-       } $self->all ];
-
-}
-
-}
-
-package Time::Cursor::Profile::Segment {
-
-use Moose;
-use FlowTime::Types;
-use List::MoreUtils qw(zip);
-with 'Time::Structure::Link';
-
-has profile => ( is => 'ro', isa => 'Time::Profile', required => 1 );
-
-has _partitions => (
-    is => 'rw',
-    isa => 'Maybe[' . __PACKAGE__ . ']',
-    predicate => 'block_partitioning',
-    clearer => '_clear_partitions',
-);
-
-sub BUILD {
-    my $self = shift;
-    my ($from, $to) = ($self->from_date, $self->until_date);
-    $self->_onchange_until($to);
-    $self->_onchange_from($from);
-    return 1;
-}
-            
-sub like {
-    my ($self, $other) = @_;
-    return $self->profile eq $other->profile;
-}
-
-sub new_alike {
-    my ($self, $args) = @_;
-
-    $args->{profile} = $self->profile;
-
-    return __PACKAGE__->new($args);
-
-}
-
-sub version {
-    my ( $profile, $from, $until ) = map { $_[0]->$_() } 
-        qw/ profile from_date until_date /
-    ;
-    my @from  = reverse split //, $from->epoch_sec =~ s/0*$//r;
-    my @until = reverse split //, $until->last_sec =~ s/0*$//r;
-    return $profile->version . q{.} . join "", zip @from, @until; 
-}
-
-sub _onchange_from {
-    my ($self, $date) = @_;
-    $self->profile->mustnt_start_later($date);
-    if ( my $part = $self->_partitions ) {
-        $part->from_date($date);
-    }
-    return;
-}
-
-sub _onchange_until {
-    my ($self, $date) = @_;
-    my ($last_piece, $profile) = (undef, $self->profile);
-
-    # Redoing our partitions to reflect the until_latest/successor
-    # settings of our profile (if any).
-    #
-    $self->_clear_partitions if $self->partitions;
-
-    my $extender = !$self->block_partitioning && sub {
-       my ($until_date, $next_profile) = @_;
-
-       my $from_date = $last_piece
-           ? $last_piece->until_date->successor
-           : $self->from_date
-           ;
-
-       my $span = __PACKAGE__->new({
-           from_date  => $from_date // $until_date,
-           until_date => $until_date, profile => $profile,
-           partitions => undef, # to block recursion
-       });
-
-       if ( $last_piece ) {
-           $last_piece->next($span);
-       }
-       else {
-           $self->partitions($span);
-       }
-
-       $profile = $next_profile;
-       $last_piece = $span;
-
-    };
-
-    $self->profile->mustnt_end_sooner($date, $extender);
-
-    if ( $last_piece ) {
-        $last_piece->next(__PACKAGE__->new(
-            from_date  => $last_piece->until_date->successor,
-            until_date => $date, profile => $profile,
-            partitions => undef,
-        ));
-    }
-
-    return;
-}
-
-sub add_slices ($\@) {
-    my ($self, $slices) = shift;
-    my ($profile, $from, $until, $part)
-       = map { $self->$_() } qw/profile from_date until_date partitions/;
-
-    my $i = 1;
-    if ( !$part ) {
-        push @$slices, $profile->calc_slices( $from, $until );
-    }
-
-    while ( $part ) {
-        ($profile, $from, $until) =
-             map { $self->$_() } qw/profile from_date until_date/;
-        push @$slices, $profile->calc_slices( $from, $until );
-        ++$i if $part = $part->next;
-    }
-
-    return $i;
-
-}
-
-}
-
-1;
