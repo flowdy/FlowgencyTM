@@ -82,7 +82,8 @@ around BUILDARGS => sub {
             from_date => $day_of_month,  # do really no matter; both time points
             until_date => $day_of_month, # are adjusted dynamically
         );
-        return $class->$orig({ fillIn => $fillIn });
+        my %opts = @_ ? %{+shift} : ();
+        return $class->$orig({ %opts, fillIn => $fillIn });
     }
  
     else {
