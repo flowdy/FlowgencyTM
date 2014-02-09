@@ -15,14 +15,26 @@ has _partitions => (
     init_arg => 'partitions',
 );
 
-sub BUILD {
+*BUILD = \&ensure_track_coverage;
+            
+sub ensure_track_coverage {
     my $self = shift;
     my ($from, $to) = ($self->from_date, $self->until_date);
-    $self->_onchange_until($to);
-    $self->_onchange_from($from);
+    my $track = $self->track;
+    my $ultim_from = $track->start->from_date;
+    my $ultim_to   = $track->end->until_date;
+    if ( $to < $ultim_from ) {
+        $self->_onchange_from($from);
+        $self->_onchange_until($to);
+    }
+    else {
+        $self->_onchange_until($to);
+        $self->_onchange_from($from);
+    } 
     return 1;
+
 }
-            
+
 sub like {
     my ($self, $other) = @_;
     return $self->track eq $other->track;
@@ -117,7 +129,7 @@ sub add_slices_to_aref {
 
     while ( $part ) {
         ($track, $from, $until) =
-             map { $self->$_() } qw/track from_date until_date/;
+             map { $part->$_() } qw/track from_date until_date/;
         push @$slices, $track->calc_slices( $from, $until );
         $part = $part->next and $i++;
     }

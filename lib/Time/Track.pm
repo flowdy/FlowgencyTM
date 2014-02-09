@@ -51,7 +51,7 @@ has successor => (
     is => 'ro',
     isa => 'Time::Track',
     trigger => sub {
-        my ($self, $succ) = shift;
+        my ($self, $succ) = @_;
         $succ->mustnt_start_later($self->end->until_date->successor);
         $self->_update_version;
     }
@@ -220,10 +220,8 @@ sub mustnt_end_sooner { # recursive on successor if any
     my ($self, $tp, $extender) = @_;
 
     my $end = $self->end;
-
-    return if $tp <= $end->until_date;
-
     my $successor = $self->successor;
+
     my $until_latest = $self->until_latest // do {
         if ( $successor ) {
             my $from_earliest = $successor->from_earliest
@@ -232,22 +230,27 @@ sub mustnt_end_sooner { # recursive on successor if any
         }
         else { undef }
     };
+    
+    return if ( !$until_latest || $end->until_date == $until_latest )
+           && $tp <= $end->until_date;
+        ;
 
     my $tp1 = $tp;
     if ( $until_latest && $tp > $until_latest ) {
-        croak "Can't end after maximal until_date"
-            if !$extender;
+        croak "Can't end after maximal until_date" . ( $successor
+            ? " (could with a passed extender sub-ref)"
+            : q{}
+          ) if !($successor && $extender);
         $extender->($until_latest, $successor);
         $tp1 = $until_latest;
     }
     
+    my $end_span = $end->alter_coverage( undef, $tp1, $self->fillIn );
+    $self->_set_end($end_span);
+
     if ( $successor ) {
         $successor->mustnt_end_sooner($tp, $extender);
     }
-
-    $end = $end->alter_coverage( undef, $tp1, $self->fillIn );
-
-    $self->_set_end($end);
 
     return;
 }

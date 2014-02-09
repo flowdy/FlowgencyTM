@@ -77,11 +77,8 @@ sub update {
     my $old;
     if ( $self->version ne $version_hash ) {
         if ( $self->_has_runner ) {
+            for ( @timeway ) { $_->ensure_track_coverage; }
             $old = $self->_runner->($time,0);
-            for ( @timeway ) {
-                $_->_onchange_until($_->until_date);
-                $_->_onchange_from($_->from_date);
-            }
             $self->_clear_runner;
         }
         $self->version($version_hash);

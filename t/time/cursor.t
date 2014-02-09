@@ -57,19 +57,45 @@ sub test_progressing_cursor {
 
 sub test_multitrack_cursor {
 
+    use Date::Calc qw(Today Monday_of_Week Week_of_Year Day_of_Week Add_Delta_Days);
+
     my $track1 = Time::Track->new('Mo-Fr@9-17,!12', { name => 'First' });
-    my $track2 = Time::Track->new('Mo-Fr@9-12', { name => 'Second' });
+    my $track2 = Time::Track->new('Mo-Fr@9-12', {
+        name => 'Second',
+        successor => $track1,
+    });
 
-    my $cursor = Time::Cursor->new(
-        start_ts => Time::Point->parse_ts('2014-02-03'),
-        timestages => [
-            { track => $track1, until_date => '02-07' },
-            { track => $track2, until_date => '02-21' },
-        ]
-    );
+    for ( -1, 0, 1 ) {
+        my @date = Today();
+        $date[0] += $_; # increment/decrement year
+        my @monday = Monday_of_Week( Week_of_Year(@date) );
+        my $week_end = sprintf "%d-%02d-%02d", Day_of_Week(@date)>5 ? @date
+                                             : Add_Delta_Days(@monday, 5)
+                                             ;
+        (undef, my @friday1_md) = Add_Delta_Days(@monday, 4);
+        (undef, my @friday2_md) = Add_Delta_Days(@monday, 18); # 2 wk track 2
 
-    $DB::single = 1;
-    my $pos = $cursor->update( Time::Point->parse_ts("2014-02-08 12:00") );
-    is $pos, 0.5, "Track 1 + 2";
+        my $monday = sprintf "%4d-%02d-%02d",@monday;
+        my ($friday, $fr_plus2w)
+            = map { sprintf("%02d-%02d", @$_) } \@friday1_md, \@friday2_md
+        ;
 
+        my $fr_plus1w = sprintf "%4d-%02d-%02d", Add_Delta_Days(@monday, 11);
+        $track2->until_latest($fr_plus1w);
+
+        my $cursor = Time::Cursor->new(
+            start_ts => Time::Point->parse_ts($monday),
+            timestages => [
+                { track => $track1, until_date => $friday },
+                { track => $track2, until_date => $fr_plus2w },
+            ]
+        );
+
+        $DB::single++;
+        my $pos = $cursor->update( Time::Point->parse_ts("$week_end 12:00") );
+        is $pos, 0.4, "cursor from $monday over a track until $friday, then "
+                    . "over another with successor until $fr_plus2w";
+
+    }
 }
+

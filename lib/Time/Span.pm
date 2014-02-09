@@ -149,7 +149,8 @@ sub _calc_slice {
     my ($start, $slice);
     if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {
         $start = $span_start;
-        $slice = $self->{slice} //= $rhythm->sliced($start, $span_end);
+        if ( my $s = $self->{slice} ) { return $s }
+        $slice = $rhythm->sliced($start, $span_end);
     }
     else {
         $start = max($span_start, $cursor_start);
@@ -159,7 +160,7 @@ sub _calc_slice {
     return $cursor_end > $span_end ? $self->next : undef,
            Time::SlicedInSeconds->new(
                span => $self,
-               position => $self->from_date->epoch_sec,
+               position => $ts_null + $start,
                slicing => $slice,
            )
         ;
