@@ -15,10 +15,10 @@ has from_date => (
      trigger => sub {
         my ($self, $date, $old) = @_;
         my $ud = $self->until_date // return;
-        croak "from_date must be earlier than or equal to until_date"
+        croak "from_date ($date) > until_date ($ud)"
             if !$date->fix_order($ud);
-        $self->$_($date, $old) if $old
-                              and $_ = $self->can("_onchange_from");
+        my $trigger = $self->can("_onchange_from");
+        $self->$trigger($date, $old) if $old && $trigger;
      },
      coerce => 1,
 );
@@ -30,10 +30,10 @@ has until_date => (
      trigger => sub {
         my ($self, $date, $old) = @_;
         my $fd = $self->from_date // return;
-        croak "until_date must be later than or equal to from_date"
+        croak "until_date ($date) < from_date ($fd)"
             if !$fd->fix_order($date);
-        $self->$_($date, $old) if $old
-                              and $_ = $self->can("_onchange_until");
+        my $trigger = $self->can("_onchange_until");
+        $self->$trigger($date, $old) if $old && $trigger;
      },
      coerce => 1,
 );
