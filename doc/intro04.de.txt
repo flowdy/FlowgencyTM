@@ -1,7 +1,13 @@
 Über FlowTime
 ===============
 
-Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 12.01.2014
+FlowTime ist eine Software, mit der du deine Aufgaben verwalten kannst. Die Software ordnet deine Aufgaben nach absteigender Dringlichkeit. Die Dringlichkeit einer Aufgabe ergibt sich aus ihrer Priorität, ihrem aktuellen Erledigungsfortschritt sowie daraus, wie viel Zeit seit ihrer Eintragung bzw. ihrem Startdatum vergangen und bis zur gesetzten Frist noch übrig ist. Die Liste wird bewusst nicht laufend aktualisiert, sondern nur auf einen Klick auf das FlowTime-Logo in der Ecke, nachdem du gestört wurdest in schnell wieder zurückfinden möchtest.
+
+Mit "Zeit" ist bei FlowTime jedoch nicht in erster Linie das Kontinuum gemeint, das von analogen Uhren in Tick und Tack, von Maschinen in Sekunden seit wann auch immer eingeteilt wird. Zeit gehorcht in FlowTime vorrangig deinem individuell festgelegten Zeitmodell, welches aus Grundrhythmen von wiederkehrenden Arbeits- und Freiphasen und aus einmaligen Variationen für Urlaub, Teilzeit etc. besteht. Du kannst dein Zeitmodell bei Bedarf zwischen verschiedenen Jobs oder Arten von Aufgaben differenzieren. Wie das en detail vonstatten geht, liest du später. Dass die Dringlichkeit jedenfalls nur während Arbeitszeitphasen ansteigt und durch das Setzen von Erledigungshäkchen abgebaut werden muss, sie während Freizeiten dagegen eingefroren ist, kennzeichnet FlowTime.
+
+Die einzelnen Teilberechnungen, die die besagten Eigenschaften auswerten (teilweise auch kombinieren), gehen qua Voreinstellung zu gleichen Teilen in die Gesamtdringlichkeit ein. Wenn du willst, kannst du sie beliebig gewichten.
+
+Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 14.03.2014
 
  1. [Was ist FlowTime?](#was)
     * [Zielgruppe der Software](#zielgruppe)
@@ -12,7 +18,7 @@ Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 12.01.
     * [Zeitliche Nähe zum Fristende](#deadline)
     * [Diskrepanz zwischen zeitlichem und Erledigungsfortschritt](#tpd)
     * [wie lange eine Aufgabe schon offen ist](#open)
-    * [voraussichtlicher zusätzlicher Bruttozeitbedarf](#addtmneed)
+    * [voraussichtlicher relativer Bruttozeitbedarf](#reltmneed)
  4. [Was verbirgt sich hinter dem Zeitfortschritt?](#zeitfortschritt)
  5. [Wie wird der Erledigungsfortschritt berechnet?](#erledigungsfortschritt)
  6. [Exklusive Zeitzuteilung](#exkl-zeitzuteilung)
@@ -109,11 +115,11 @@ Werden die Details einer Aufgabe eingeblendet, gilt sie als offen, bis sie erled
 
 Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen.
 
-### e) <a name="addtmneed">voraussichtlicher zusätzlicher Bruttozeitbedarf</a>
+### e) <a name="reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a>
 
-Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe und danach, wie sich Arbeits- und Freizeitphasen vor und nach ihrer Frist verteilen. Bei der Ermittlung der nachfristigen Zeitstruktur wird das zugeordnete Zeitsegment bzw., falls die vorfristige Zeitstruktur aus Etappen verschiedener Schienen zusammengesetzt ist, nur das letzte soweit gerechnet, bis die Bruttozeit die noch benötigte Nettozeit umfasst.
+Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe, der bisherigen Bearbeitungsgeschwindigkeit und danach, wie sich Arbeits- und Freizeitphasen vor und nach ihrer Frist verteilen. Bei der Ermittlung der nachfristigen Zeitstruktur wird das zugeordnete Zeitsegment beziehungsweise, falls die vorfristige Zeitstruktur aus Etappen verschiedener Schienen zusammengesetzt ist, nur das letzte soweit gerechnet, bis die Bruttozeit die noch benötigte Nettozeit umfasst.
 
-Gibt dein Zeitmodell nicht genügend Nettosekunden her, etwa weil die Etappe mit einer Schiene verknüpft ist, das nur bis zu einem festgelegten Zeitpunkt gültig ist, aber keine andere Schiene als Nachfolger bestimmt, so ist dies ein Fall, zu dem du eine eigene Konstante bestimmen kannst. 
+Wenn die Etappe mit einer Schiene verknüpft ist, das nur bis zu einem festgelegten Zeitpunkt gültig ist, aber keine andere Schiene als Nachfolger bestimmt, so kann es sein, dass es einfach nicht genügend Nettozeitsekunden für eine Aufgabe gibt. Für diesen Fall kannst du eine eigene Wichtungskonstante bestimmen.
 
 
 <a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a>

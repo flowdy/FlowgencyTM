@@ -7,8 +7,9 @@ use Moose;
 use Carp qw(carp croak);
 use Time::Local;
 
-use overload '""' => 'get_qm_timestamp',
-            '<=>' => 'precision_sensitive_cmp';
+use overload q{""} => 'get_qm_timestamp',
+            q{<=>} => 'precision_sensitive_cmp',
+           q{bool} => sub { 1 };
 
 has [qw|day month year hour min sec|] => (
      is => 'rw',

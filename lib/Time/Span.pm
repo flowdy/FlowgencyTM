@@ -181,6 +181,10 @@ sub like {
     $self->pattern == $fillIn->pattern;
 }
 
+after alter_coverage => sub {
+    delete $_[0]->{slice}
+};
+
 __PACKAGE__->meta->make_immutable;
 
 1;

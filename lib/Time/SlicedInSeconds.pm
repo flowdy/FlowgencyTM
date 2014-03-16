@@ -80,7 +80,7 @@ sub calc_pos_data {
 
         my @s = $self->slicing;
         my $cursec = $first_sec;
-        my ($orig,$lenh,$s);
+        my $s;
 
         my @loop = (
             \$store->{elapsed_pres}, \$store->{elapsed_abs},
@@ -95,13 +95,12 @@ sub calc_pos_data {
                 $_   += $sec for $cursec, $$s < 0 ? $$abs : $$pres;  
                 $len -= $sec;
                 $$s  -= $$s / abs($$s) * $sec;
-                $lenh = $lenh && $lenh-1;
             }
             continue { shift @s if !$$s; next PART if !$len; }      
         }
         continue {
             last if !@loop; # so block is run only once between iter. 1 + 2
-            $store->{span} = $lenh && $$s < 0 ? $orig : $self->span;
+            $store->{span} = $self->span;
             $store->{changed} = $cursec + $$s + 1;
             $store->{state} = ($$s || (ref $s[0] ? $s[1] : $s[0])) > 0 || 0;
         } 

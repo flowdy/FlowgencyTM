@@ -16,7 +16,7 @@ my $model = Time::Model->from_json(<<'JSON');
            { "week_pattern": "Mi@13-17", "from": "21.5.13", "until": "31.",
              "description": "Ehrenamtliche Arbeit"
            }
-       ],
+       ]
    },
 
    "urlaub": { "pattern": "Mo-So@!0-23" }

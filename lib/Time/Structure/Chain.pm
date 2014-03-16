@@ -24,7 +24,7 @@ has end => (
 );
 
 
-sub _find_span_covering {
+sub find_span_covering {
     my ($self) = shift;
     my ($span,$ts) = @_ > 1 ? @_ : ($self->start,shift);
     my $prior;
@@ -65,7 +65,7 @@ sub couple {
         }
         else {
             my ($prior, $span2)
-                = _find_span_covering(undef, $start, $lspan_ud_succ);
+                = find_span_covering(undef, $start, $lspan_ud_succ);
             if ( $span2 ) {
                 $span2->from_date($lspan_ud_succ);
                 $lspan->next($span2);
@@ -95,11 +95,11 @@ sub couple {
     }
     elsif (
         my ($prior,$trunc_right_span)
-            = _find_span_covering(undef, $start, $span_from_date)
+            = find_span_covering(undef, $start, $span_from_date)
       ) {
 
         my $successor = $lspan->until_date->successor;
-        my $trunc_left_span = _find_span_covering(
+        my $trunc_left_span = find_span_covering(
             undef, $trunc_right_span, $successor
         );
 

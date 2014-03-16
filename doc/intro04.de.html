@@ -10,7 +10,13 @@ p, li {font-family: sans-serif; line-height:130%; }
 </head><body>
 <h1>Über FlowTime</h1>
 
-<p>Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 12.01.2014</p>
+<p>FlowTime ist eine Software, mit der du deine Aufgaben verwalten kannst. Die Software ordnet deine Aufgaben nach absteigender Dringlichkeit. Die Dringlichkeit einer Aufgabe ergibt sich aus ihrer Priorität, ihrem aktuellen Erledigungsfortschritt sowie daraus, wie viel Zeit seit ihrer Eintragung bzw. ihrem Startdatum vergangen und bis zur gesetzten Frist noch übrig ist. Die Liste wird bewusst nicht laufend aktualisiert, sondern nur auf einen Klick auf das FlowTime-Logo in der Ecke, nachdem du gestört wurdest in schnell wieder zurückfinden möchtest.</p>
+
+<p>Mit "Zeit" ist bei FlowTime jedoch nicht in erster Linie das Kontinuum gemeint, das von analogen Uhren in Tick und Tack, von Maschinen in Sekunden seit wann auch immer eingeteilt wird. Zeit gehorcht in FlowTime vorrangig deinem individuell festgelegten Zeitmodell, welches aus Grundrhythmen von wiederkehrenden Arbeits- und Freiphasen und aus einmaligen Variationen für Urlaub, Teilzeit etc. besteht. Du kannst dein Zeitmodell bei Bedarf zwischen verschiedenen Jobs oder Arten von Aufgaben differenzieren. Wie das en detail vonstatten geht, liest du später. Dass die Dringlichkeit jedenfalls nur während Arbeitszeitphasen ansteigt und durch das Setzen von Erledigungshäkchen abgebaut werden muss, sie während Freizeiten dagegen eingefroren ist, kennzeichnet FlowTime.</p>
+
+<p>Die einzelnen Teilberechnungen, die die besagten Eigenschaften auswerten (teilweise auch kombinieren), gehen qua Voreinstellung zu gleichen Teilen in die Gesamtdringlichkeit ein. Wenn du willst, kannst du sie beliebig gewichten.</p>
+
+<p>Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 14.03.2014</p>
 
 <ol>
 <li><a href="#was">Was ist FlowTime?</a>
@@ -25,7 +31,7 @@ p, li {font-family: sans-serif; line-height:130%; }
 <li><a href="#deadline">Zeitliche Nähe zum Fristende</a></li>
 <li><a href="#tpd">Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a></li>
 <li><a href="#open">wie lange eine Aufgabe schon offen ist</a></li>
-<li><a href="#addtmneed">voraussichtlicher zusätzlicher Bruttozeitbedarf</a></li>
+<li><a href="#reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a></li>
 </ul></li>
 <li><a href="#zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></li>
 <li><a href="#erledigungsfortschritt">Wie wird der Erledigungsfortschritt berechnet?</a></li>
@@ -120,11 +126,11 @@ p, li {font-family: sans-serif; line-height:130%; }
 
 <p>Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen.</p>
 
-<h3>e) <a name="addtmneed">voraussichtlicher zusätzlicher Bruttozeitbedarf</a></h3>
+<h3>e) <a name="reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a></h3>
 
-<p>Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe und danach, wie sich Arbeits- und Freizeitphasen vor und nach ihrer Frist verteilen. Bei der Ermittlung der nachfristigen Zeitstruktur wird das zugeordnete Zeitsegment bzw., falls die vorfristige Zeitstruktur aus Segmenten verschiedener Profile zusammengesetzt ist, nur das letzte soweit gerechnet, bis die Bruttozeit die noch benötigte Nettozeit umfasst.</p>
+<p>Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe, der bisherigen Bearbeitungsgeschwindigkeit und danach, wie sich Arbeits- und Freizeitphasen vor und nach ihrer Frist verteilen. Bei der Ermittlung der nachfristigen Zeitstruktur wird das zugeordnete Zeitsegment beziehungsweise, falls die vorfristige Zeitstruktur aus Etappen verschiedener Schienen zusammengesetzt ist, nur das letzte soweit gerechnet, bis die Bruttozeit die noch benötigte Nettozeit umfasst.</p>
 
-<p>Gibt dein Zeitmodell nicht genügend Nettosekunden her, etwa weil das Segment mit einem Profil verknüpft ist, das nur bis zu einem festgelegten Zeitpunkt gültig ist aber kein anderes Profil als Nachfolger bestimmt, so ist dies ein Fall, zu dem du eine eigene Konstante bestimmen kannst. </p>
+<p>Wenn die Etappe mit einer Schiene verknüpft ist, das nur bis zu einem festgelegten Zeitpunkt gültig ist, aber keine andere Schiene als Nachfolger bestimmt, so kann es sein, dass es einfach nicht genügend Nettozeitsekunden für eine Aufgabe gibt. Für diesen Fall kannst du eine eigene Wichtungskonstante bestimmen.</p>
 
 <h2><a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></h2>
 
@@ -147,7 +153,7 @@ p, li {font-family: sans-serif; line-height:130%; }
 <pre><code>`...;2n:...;3n-1:...` --&gt; unterschiedliche Muster für ungerade und gerade Wochen und ein drittes für die KW 2, 5, 8 usw. bis KW 51.
 </code></pre>
 
-<p>Und wer bis hierhin noch durchsieht und sich weiter verkünsteln möchte, kann Zeitprofile Normalmuster und Von/Bis-Variationen voneinander erben lassen. Versehentliche Zirkelschlüsse werden jedenfalls erkannt und verhindert. Die Vererbung von Variationen erfolgt nach einem von drei Modi, geltend für alle oder für bestimmte: suggest (überschreibbar), impose (überschreibend) und optional (explizit einzuhängen). Festgelegt werden diese Modi von einem Profil für alle von ihm erbenden. Letztere können den Modus aber selbst wiederum ändern, entweder nur für sich oder auch für alle davon wiederum erbenden Profile. Grundsätzlich obliegt Ihnen die Entscheidung, ob du entweder Zeit und Konzentration in die Pflege deines Zeitmodells investierst oder darin, es auch später noch zu begreifen.</p>
+<p>Und wer bis hierhin noch durchsieht und sich weiter verkünsteln möchte, kann Zeitschienen Normalmuster und Von/Bis-Variationen voneinander erben lassen. Versehentliche Zirkelschlüsse werden jedenfalls erkannt und verhindert. Die Vererbung von Variationen erfolgt nach einem von drei Modi, geltend für alle oder für bestimmte: suggest (überschreibbar), impose (überschreibend) und optional (explizit einzuhängen). Festgelegt werden diese Modi von einer Schiene für alle von ihm erbenden. Letztere können den Modus aber selbst wiederum ändern, entweder nur für sich oder auch für alle davon wiederum erbenden Schienen. Grundsätzlich obliegt Ihnen die Entscheidung, ob du entweder Zeit und Konzentration in die Pflege deines Zeitmodells investierst oder darin, es auch später noch zu begreifen.</p>
 
 <p>Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein solltest du bei der Definition deines Zeitmodells pragmatisch nach der Devise verfahren:</p>
 
@@ -156,7 +162,7 @@ p, li {font-family: sans-serif; line-height:130%; }
 
 <p>Selbst wenn die ganze Zeitlogik von FlowTime eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.</p>
 
-<p>Abweichungen von derartigen im Voraus geplanten Zeitprofilen (vergangene Zeiten zu manipulieren ist nicht möglich) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger du dich an die definierte Zeiteinteilung hältst, umso weniger gleiten die Aufgaben während deiner Freizeit ins Rote.</p>
+<p>Abweichungen von derartigen im Voraus geplanten Zeitschienen (vergangene Zeiten zu manipulieren ist nicht möglich) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger du dich an die definierte Zeiteinteilung hältst, umso weniger gleiten die Aufgaben während deiner Freizeit ins Rote.</p>
 
 <p>Mit so konfigurierbaren Zeitmodellen soll FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Die Sache hat einen Haken: Der Maschine ist es egal, ob dem definierten Zeitmodell intrinsisch oder extrinsische Motivation zugrunde liegt. Das heißt, diktierst du nicht der Maschine deinen Arbeitstakt, sondern hast du vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil. Vielleicht wird dein Chef sagen:</p>
 
@@ -188,17 +194,17 @@ p, li {font-family: sans-serif; line-height:130%; }
 
 <p>Viele Aufgaben haben die Eigenschaft, dass du nicht zugleich auch an anderen Aufgaben arbeiten kannst, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen, die du im Büro vorbereitest und erst zum Schluss ausschließlich mit ihnen befasst sind. So kannst du in FlowTime für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.</p>
 
-<p>Auch auf Zeitprofilebene könnten Reservierungen möglich sein. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitprofile, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben desselben Zeitprofils.</p>
+<p>Auch auf Zeitschienenebene könnten Reservierungen möglich sein. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitschienen, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben derselben Zeitschiene.</p>
 
 <h3>Zwei Möglichkeiten, das nachzubilden</h3>
 
 <ol>
-<li><p>für die Aufgabe, sagen wir eine Messepräsenz, ein eigenes Zeitprofil erstellen und als Variation definieren:</p>
+<li><p>für die Aufgabe, sagen wir eine Messepräsenz, eine eigene Zeitschiene erstellen und als Variation definieren:</p>
 
 <pre><code>  { label: 'abw_messe', self: 'ignore' }
 </code></pre>
 
-<p>Im Wurzelprofil festlegen (setzt ein weiteres Profil mit dem Namen »abwesend« und Normalmuster 'Mo-So@!' voraus):</p>
+<p>In der Wurzelschiene festlegen (setzt eine weitere Schiene mit dem Namen »abwesend« und Normalmuster 'Mo-So@!' voraus):</p>
 
 <pre><code>  { label: 'abw_messe', from_date: '...', until_date: '...',
      pattern: 'abwesend' }
@@ -209,7 +215,7 @@ p, li {font-family: sans-serif; line-height:130%; }
 <h2><a name="weitere-kernfunktionen">Weitere Kernfunktionen</a></h2>
 
 <ul>
-<li>Schritte samt untergeordneten können nachträglich in eine (Unter-)Aufgabe mit eigener Priorität, Von/Bis-Datierung und Zeitprofil überführt werden.</li>
+<li>Schritte samt untergeordneten können nachträglich in eine (Unter-)Aufgabe mit eigener Priorität, Von/Bis-Datierung und Zeitschiene überführt werden.</li>
 <li>Abhängigkeiten zwischen Aufgaben und Einzelschritten. Abhängigkeiten können wiederum Unterschritte im Kontext der abhängigen Aufgabe haben, die Aufwandschätzung wird ebenfalls noch mal gesondert vorgenommen.</li>
 <li>Aufgaben können sich wiederholen. Die Zwischenzeit bis zur nächsten Wiederholung kann an den Fristbeginn, an das Fristende oder an die vollständige Erledigung des aktuellen Durchlaufs gekoppelt werden.</li>
 <li>Du kannst vor Feierabend voraussehen, wie die Dringlichkeiten am nächsten Morgen sein werden.</li>

@@ -1,6 +1,7 @@
 INFILE="$1.txt"
 OUTFILE="$1.html"
 
+{ 
 cat <<HEADER
 <html>
 <head>
@@ -13,3 +14,4 @@ echo "</head><body>"
 markdown $INFILE
 
 echo "</body></html>"
+} > $OUTFILE

@@ -1,4 +1,6 @@
+
 package Time::Cursor;
+use strict;
 use Carp qw(croak carp);
 # use Scalar::Util qw(weaken); # apparently no more needed
 use List::Util qw(sum);
@@ -36,7 +38,7 @@ around BUILDARGS => sub {
         croak "timestages attribute not an array-ref"
             if ref $t ne "ARRAY";
         $t->[0]->{from_date} = $args->{start_ts}
-            // croak "missing start_date attribute";
+            // croak "missing start_ts attribute";
         $args->{_timeway} = Time::Cursor::Way->from_stage_hrefs(@$t);
     }
     else {
@@ -65,6 +67,8 @@ sub apply_stages {
 
 sub update {
     my ($self, $time) = @_;
+
+    $time //= time;
 
     my @timeway = $self->_timeway->all;
     my @ids;
@@ -122,6 +126,26 @@ sub alter_coverage {
         $self->run_until($until);
         $self->run_from($from);
     }
+}
+
+sub timestamp_of_nth_net_second_since {
+    my ($self, $net_seconds, $from_ts) = @_;
+
+    my $stage = defined($from_ts)
+        ? $self->_timeway->find_span_covering($from_ts) // do {
+             croak "Time $from_ts not covered by cursor timeway";
+          }
+        : $self->_timeway->start;
+
+    my ($stage_part, $iter) = $stage->partition_sensitive_iterator;
+
+    if ( $from_ts ) {
+        $stage_part = $iter->() until $stage_part->covers_ts($from_ts);
+    }
+    
+    return $stage_part->track->timestamp_of_nth_net_second_since(
+        $net_seconds, $from_ts // $stage->from_date, $iter
+    );
 }
 
 __PACKAGE__->meta->make_immutable;

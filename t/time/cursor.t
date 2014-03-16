@@ -57,7 +57,9 @@ sub test_progressing_cursor {
 
 sub test_multitrack_cursor {
 
-    use Date::Calc qw(Today Monday_of_Week Week_of_Year Day_of_Week Add_Delta_Days);
+    use Date::Calc qw(Today Monday_of_Week Week_of_Year
+                      Day_of_Week Add_Delta_Days
+                     );
 
     my $track1 = Time::Track->new('Mo-Fr@9-17,!12', { name => 'First' });
     my $track2 = Time::Track->new('Mo-Fr@9-12', {
@@ -65,9 +67,9 @@ sub test_multitrack_cursor {
         successor => $track1,
     });
 
-    for ( -1, 0, 1 ) {
+    for my $ydiff ( -1, 0, 1 ) {
         my @date = Today();
-        $date[0] += $_; # increment/decrement year
+        $date[0] += $ydiff; # increment/decrement year
         my @monday = Monday_of_Week( Week_of_Year(@date) );
         my $week_end = sprintf "%d-%02d-%02d", Day_of_Week(@date)>5 ? @date
                                              : Add_Delta_Days(@monday, 5)
@@ -91,11 +93,31 @@ sub test_multitrack_cursor {
             ]
         );
 
-        $DB::single++;
         my $pos = $cursor->update( Time::Point->parse_ts("$week_end 12:00") );
         is $pos, 0.4, "cursor from $monday over a track until $friday, then "
                     . "over another with successor until $fr_plus2w";
 
+        my $wednesday = Time::Point->parse_ts(
+            sprintf "%4d-%02d-%02d 12:30", Add_Delta_Days(@monday, 2)
+        );
+        my ($wednesday_2w, $wednesday_3w)
+            = map {
+                  sprintf "%4d-%02d-%02d 11:00:00",
+                      Add_Delta_Days(@monday, $_)
+              } 16, 16+7
+            ;
+
+        my $estim_ts = $cursor->timestamp_of_nth_net_second_since(
+            59 * 3600, $wednesday
+        );
+        is "$estim_ts", $wednesday_2w, "estimation over two weeks";
+
+        $estim_ts = $cursor->timestamp_of_nth_net_second_since(
+            99 * 3600, $wednesday
+        );
+        is "$estim_ts", $wednesday_3w, "estimation over three weeks";
+
     }
+
 }
 

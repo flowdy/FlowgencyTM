@@ -269,9 +269,14 @@ sub test_track_respect_tspan {
         "over-all state after all couplings";
 
     my $ts0 = Time::Point->parse_ts('25.10.12 12:00:00');
-    my $ts0a = $tp->seek_last_net_second_timestamp($ts0, 90_000);
-    $ts0a &&= $ts0a.q{};
-    is $ts0a, '2012-10-30 02:59:59', 'final timestamp covered by slice';
+    subtest_seek_last_net_second_timestamp(
+        $tp, $ts0, 19800 => '2012-10-26 13:00:00',
+        'first second of work-day at full hour'
+    );
+    subtest_seek_last_net_second_timestamp(
+        $tp, $ts0, 90_000 => '2012-10-30 03:00:00',
+        'final timestamp covered by slice'
+    );
     
     my $tspan90 = Time::Span->from_string('25.:Mo-Su@15');
     my $ts1 = Time::Point->parse_ts("14:00")->fill_in_assumptions;
@@ -281,14 +286,23 @@ sub test_track_respect_tspan {
        "count absence among net seconds over an hour";
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3601), 86400,
        "count absence among net seconds over a day";
-    my $ts0b = $tp->seek_last_net_second_timestamp($ts0, 130_000);
-    $ts0b &&= $ts0b.q{};
-    is $ts0b, '2012-11-01 11:06:39', '... or, respectively, in the fill-in';
+    subtest_seek_last_net_second_timestamp(
+        $tp, $ts0, 130_000 => '2012-11-01 11:06:40',
+         '... or, respectively, in the fill-in'
+    );
+
+    my $ts2 = Time::Point->parse_ts("30.10.12 23");
+    subtest_seek_last_net_second_timestamp(
+        $tp, $ts2, 0 => '2012-10-31 00:00:00',
+        "leisure seconds equal to next net_second",
+    );
+
+    
     my $tspan91 =  Time::Span->from_string('25.:Mo-Su@23-0');
-    my $ts2 = Time::Point->parse_ts("23:15")->fill_in_assumptions;
-    is $tspan91->rhythm->count_absence_between_net_seconds($ts2, 6300), 0,
+    my $ts3 = Time::Point->parse_ts("23:15")->fill_in_assumptions;
+    is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6300), 0,
        "net seconds transition from one day to the other";
-    is $tspan91->rhythm->count_absence_between_net_seconds($ts2, 6301), 79200,
+    is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6301), 79200,
        " ... plus one net second again in the night";
 
     #  TODO: {
@@ -307,6 +321,11 @@ sub test_track_respect_tspan {
     $tp->reset;
     my $num =()= grep !defined, @spans;
     ok $num <= 1, 'timeline reset';
+}
+sub subtest_seek_last_net_second_timestamp {
+    my ($tp, $ts, $n, $end_ts, $test_name) = @_;
+    $ts = $tp->timestamp_of_nth_net_second_since($n, $ts);
+    is $ts &&= $ts.q{}, $end_ts, $test_name; 
 }
 
 sub test_time_calendarweekcycle {

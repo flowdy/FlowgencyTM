@@ -7,6 +7,12 @@ with 'Time::Structure::Link';
 
 has track => ( is => 'ro', isa => 'Time::Track', required => 1 );
 
+has prior_slice => ( # used for estimating completion time
+    isa => 'Time::SlicedInSeconds',
+    reader => 'pass_after_slice',
+    writer => '_set_prior_slice',
+);
+
 has _partitions => (
     is => 'rw',
     isa => 'Maybe[' . __PACKAGE__ . ']',
@@ -124,12 +130,14 @@ sub add_slices_to_aref {
 
     my $i = 1;
     if ( !$part ) {
+        if ( my $s = $slices->[-1] ) { $self->_set_prior_slice( $s ); }
         push @$slices, $track->calc_slices( $from, $until );
     }
 
     while ( $part ) {
         ($track, $from, $until) =
              map { $part->$_() } qw/track from_date until_date/;
+        if ( my $s = $slices->[-1] ) { $part->_set_prior_slice( $s ); }
         push @$slices, $track->calc_slices( $from, $until );
         $part = $part->next and $i++;
     }
@@ -138,5 +146,28 @@ sub add_slices_to_aref {
 
 }
 
+sub partition_sensitive_iterator {
+    my $self = shift;
+    my $part = $self->_partitions;
+
+    return (
+        $part // $self,
+        sub {
+            return if !$self;
+            my $next;
+
+            # Find next partition or stage
+            1 until $next
+                = $part ? ($part = $part->next) : do {
+                    $self = $self->next        or return;
+                    $part = $self->_partitions or $self;
+                }
+            ;
+
+            return $next;
+
+        }
+    );
+}
 __PACKAGE__->meta->make_immutable;
 

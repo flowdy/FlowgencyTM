@@ -5,7 +5,7 @@ package Time::Track;
 use Moose;
 use Time::Span;
 use Carp qw(carp croak);
-use Scalar::Util qw(refaddr);
+use Scalar::Util qw(blessed refaddr);
 
 has name => (
     is => 'ro',
@@ -39,7 +39,7 @@ has ['from_earliest', 'until_latest'] => (
     coerce => 1,
     trigger => sub {
         my $self = shift;
-        my $span = $self->_find_span_covering(shift);
+        my $span = $self->find_span_covering(shift);
         if ( $span ) {
             croak "Time track borders can be extended, not narrowed";
         }
@@ -96,7 +96,7 @@ sub calc_slices {
     my ($self, $from, $until) = @_;
     $from = $from->run_from if $from->isa("Time::Cursor");
 
-    return $self->_find_span_covering($self->start, $from)
+    return $self->find_span_covering($self->start, $from)
                ->calc_slices($from, $until);
 }
 
@@ -134,8 +134,8 @@ sub get_section {
     $self->mustnt_start_later($from);
     $self->mustnt_end_sooner($until);
 
-    my $from_span = $self->_find_span_covering($from);
-    my $until_span = $self->_find_span_covering($from_span, $until);
+    my $from_span = $self->find_span_covering($from);
+    my $until_span = $self->find_span_covering($from_span, $until);
 
     if ( $from_span == $until_span ) {
         return $from_span->new_shared_rhythm($from, $until);
@@ -272,20 +272,50 @@ sub inherit_variations {
 
 }
 
-sub seek_last_net_second_timestamp {
-    my ($self, $ts, $net_seconds) = @_;
+sub timestamp_of_nth_net_second_since {
+    my ($self, $net_seconds, $ts, $early_pass) = @_;
     
-    my $span = $self->start;
-    my $pos = { remaining_pres => -$net_seconds };
+    # Argument validation
+    croak 'The number of net seconds (argument #1) is undefined'
+        if !defined $net_seconds;
+    croak 'Missing timestamp from when to count (argument #2)'
+        if !( ref($ts) ? blessed($ts) && $ts->isa('Time::Point') : $ts );
+
+    # If correspondent Time::Cursor method has called us: Get extended data
+    my ($next_stage, $signal_slice, $last_sec) = do {
+        if ( $early_pass and my $p = $early_pass->() ) {
+            my $slice = $p->pass_after_slice;
+            $p, $slice, $slice->position + $slice->length;
+        }
+        else { undef, undef, undef; }
+    };
+
+    # Pass through to all slices up to a) where next stage says so
+    # or b) all net seconds are found or c) our spans are exhausted.
+    my $span = $self->start; 
+    my $pos = { remaining_pres => -($net_seconds||1) };
     my $lspan;
-    while ( $span && $pos->{remaining_pres} < 0 ) {
-        $span->slice->calc_pos_data($ts->epoch_sec,$pos);
-        ($lspan, $span) = ($span,$span->next);
+    my $epts = ref $ts ? $ts->epoch_sec : $ts;
+    while ( $pos->{remaining_pres} < 0 && $span ) {         # b), c)
+        if ( $last_sec && $span->covers_ts($last_sec) ) {   # a)
+            $signal_slice->calc_pos_data( $epts, $pos );
+            return $next_stage->track->timestamp_of_nth_net_second_since(
+                abs $pos->{remaining_pres}, $next_stage->from_date, $early_pass
+            );
+        }
+        else {
+            $span->slice->calc_pos_data( $epts, $pos );
+        }
+    }
+    continue {
+        $lspan = $span;
+        $span  = $span->next;
     }
 
-    my $rem_abs = $pos->{remaining_abs};
-    my $rem_pres = $pos->{remaining_pres};
+    my ($rem_abs, $rem_pres) = @{ $pos }{qw{ remaining_abs remaining_pres }};
     if ( $rem_pres < 0 ) {
+        # There still are net seconds remaining so we must gather them
+        # in our base rhythm, respecting however any until_latest setting ...
 
         my $find_pres_sec = abs $rem_pres;
         my $seek_from_ts = $lspan->until_date->successor;
@@ -310,19 +340,22 @@ sub seek_last_net_second_timestamp {
             die "no successor to gather $remaining seconds" if !$successor;
             die "remaining seconds negative" if $remaining < 0;
             my $start_ts = $self->until_latest->successor;
-            return $successor->seek_last_net_second_timestamp(
-                $start_ts, $remaining
+            return $successor->timestamp_of_nth_net_second_since(
+                $remaining, $start_ts
             );
         }
 
     }
-    else {
+
+    elsif ( $rem_pres ) {
+       # If we have gone to far, we will have to go back
        $rem_abs -= $lspan->slice->absence_in_presence_tail($rem_pres);
     }
 
+    else {}
+
     return Time::Point->from_epoch(
-        $ts->epoch_sec + $net_seconds + $rem_abs - 1,
-        ($ts->get_precision) x 2,    # minimal = maximal precision
+        $ts->epoch_sec + $net_seconds + $rem_abs, 
     );
 }
 
