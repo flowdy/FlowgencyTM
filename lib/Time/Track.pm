@@ -5,7 +5,7 @@ package Time::Track;
 use Moose;
 use Time::Span;
 use Carp qw(carp croak);
-use Scalar::Util qw(blessed refaddr);
+use Scalar::Util qw(blessed refaddr weaken);
 
 has name => (
     is => 'ro',
@@ -39,9 +39,8 @@ has ['from_earliest', 'until_latest'] => (
     coerce => 1,
     trigger => sub {
         my $self = shift;
-        my $span = $self->find_span_covering(shift);
-        if ( $span ) {
-            croak "Time track borders can be extended, not narrowed";
+        if ( $self->find_span_covering(shift) ) {
+            croak "Time track limits can be extended, not narrowed";
         }
         $self->_update_version;
     }
@@ -57,32 +56,50 @@ has successor => (
     }
 );
 
-has _parent => (
+has default_inherit_mode => (
+    is      => 'rw',
+    isa     => 'Str',
+    default => 'optional',
+);
+
+has force_receive_mode => (
+    is => 'rw',
+    isa => 'Maybe[Str]',
+);
+
+has _parents => (
     is => 'ro',
-    isa => 'Time::Track',
-    init_arg => 'parent',
+    isa => 'ArrayRef[Time::Track]',
+    init_arg => 'unmentioned_variations_from',
+    default => sub { [] },
+);
+
+has _children => (
+    is => 'ro',
+    init_arg => undef,
+    default => sub { [] },
 );
 
 has _variations => (
     is => 'ro',
     isa => 'ArrayRef[HashRef]',
-    init_arg => undef,
+    init_arg => 'variations',
     default => sub { [] },
     traits => [ 'Array' ],
-    handles => { _add_variation => 'push' },
+    handles => { add_variations => 'push' },
 );
 
 around BUILDARGS => sub {
     my ($orig, $class) = (shift, shift);
 
-    if ( @_ == 1 ? !ref $_[0] : @_ == 2 ? ref($_[1]) eq 'HASH' : !1 ) {
+    if ( @_ == 2 ? ref($_[1]) eq 'HASH' : @_ % 2 ) {
         my $day_of_month = (localtime)[3];
         my $fillIn = Time::Span->new(
             week_pattern => shift,
             from_date => $day_of_month,  # do really no matter; both time points
             until_date => $day_of_month, # are adjusted dynamically
         );
-        my %opts = @_ ? %{+shift} : ();
+        my %opts = @_ == 1 ? %{+shift} : @_;
         return $class->$orig({ %opts, fillIn => $fillIn });
     }
  
@@ -91,6 +108,19 @@ around BUILDARGS => sub {
     }
 
 };
+
+sub BUILD {
+    my $self = shift;
+
+    for my $p (@{ $self->_parents }) {
+        my $children = $p->_children;
+        push @$children, $self;
+        weaken $children->[-1];
+    } 
+
+    $self->apply_variations;
+
+}
 
 sub calc_slices {
     my ($self, $from, $until) = @_;
@@ -101,57 +131,73 @@ sub calc_slices {
 }
 
 around couple => sub {
-    my ($wrapped, $self, $span) = @_;
-    
-    if ( ref $span eq 'HASH' ) {
-        my $tspan = $span;
-        if ( my $base = $tspan->{obj} ) {
-            $span = $base->new_shared_rhythm(
-                @{$tspan}{'from_date', 'until_date'}
-            );
-        }
-        else {
-            $span = Time::Span->new($tspan);
-            $tspan->{obj} = $span;
-        }
-        $self->_add_variation($tspan);
-    }
+    my ($wrapped, $self, $span, $truncate_if_off) = @_;
 
+    my $last = $span->get_last_in_chain;
+    my $sts = $self->from_earliest // $span->from_date;
+    my $ets = $self->until_latest // $last->until_date;
+    if ( $truncate_if_off ) {
+        return if $span->from_date > $ets || $sts > $last->until_date;
+        if ( $span->from_date < $sts->epoch_sec ) {
+            until ( $span->covers_ts($sts) ) { $span = $span->next; }
+            $span->from_date($sts);
+        }
+        if ( $ets->last_sec < $last->until_date ) {
+            $last = $span;
+            until ( $last->covers_ts($ets) ) { $last = $last->next; }
+            $last->until_date($ets);
+            $last->nonext;
+        }
+    }
+    else {
+        my $fail = !defined $truncate_if_off;
+        ($fail ? croak "Span hits track coverage limits" : return)
+            if $span->from_date < $sts->epoch_sec
+            || $ets->last_sec < $last->until_date
+            ;
+    }
+            
     $self->$wrapped($span);
 
-    #apply_all_roles($span, 'Time::Span::SubHiatus') unless $span->is_absence;
     $self->_update_version;
-    return;
+    return 1;
 
 };
 
 sub get_section {
-    my ($self, $from, $until) = @_;
+    my ($self, $props) = @_;
 
-    ref $_ or $_ = Time::Point->parse_ts($_) for $from, $until;
-    $from->fix_order($until) or croak 'from and until arguments in wrong order';
+    my ( $from, $until ) = map { ref $_ or $_ = Time::Point->parse_ts($_) }
+                               delete @{$props}{ 'from_date', 'until_date' }
+                         ;
+
+    $from->fix_order($until)
+        or croak 'from and until arguments in wrong order';
 
     $self->mustnt_start_later($from);
     $self->mustnt_end_sooner($until);
+
+    $props //= {};
 
     my $from_span = $self->find_span_covering($from);
     my $until_span = $self->find_span_covering($from_span, $until);
 
     if ( $from_span == $until_span ) {
-        return $from_span->new_shared_rhythm($from, $until);
+        return $from_span->new_shared_rhythm($from, $until, $props);
     }
 
     my $start_span = $from_span->new_shared_rhythm($from, undef);
 
     my ($last_span, $cur_span) = ($start_span, $from_span->next);
     until ( $cur_span && $cur_span == $until_span ) {
-        my $next_span = $cur_span->new_shared_rhythm();
+        my $next_span = $cur_span->new_shared_rhythm(undef, undef, $props);
         $last_span->next( $next_span );
         $cur_span = $cur_span->next;
     }
     
     if ( $cur_span ) {
-        $last_span->next( $cur_span->new_shared_rhythm(undef, $until) );
+        my $tail = $cur_span->new_shared_rhythm(undef, $until, $props );
+        $last_span->next($tail);
     }
 
     return $start_span;
@@ -177,12 +223,12 @@ sub dump {
             from_date   => $span->from_date.q{},
             until_date  => $span->until_date.q{},
             rhythm      => {
-                 patternId => refaddr($rhythm->pattern),
-                 description => $rhythm->description,
-                 from_week_day => $rhythm->from_week_day,
+                 patternId      => refaddr($rhythm->pattern),
+                 description    => $rhythm->description,
+                 from_week_day  => $rhythm->from_week_day,
                  until_week_day => $rhythm->until_week_day,
-                 mins_per_unit => 60 / $rhythm->hourdiv,
-                 atomic_enum => $rhythm->atoms->to_Enum,
+                 mins_per_unit  => 60 / $rhythm->hourdiv,
+                 atomic_enum    => $rhythm->atoms->to_Enum,
             },
         };
     }
@@ -222,14 +268,7 @@ sub mustnt_end_sooner { # recursive on successor if any
     my $end = $self->end;
     my $successor = $self->successor;
 
-    my $until_latest = $self->until_latest // do {
-        if ( $successor ) {
-            my $from_earliest = $successor->from_earliest
-                // croak "Cannot succeed at unknown point in time";
-            $from_earliest->predecessor;
-        }
-        else { undef }
-    };
+    my $until_latest = $self->until_latest;
     
     return if ( !$until_latest || $end->until_date == $until_latest )
            && $tp <= $end->until_date;
@@ -237,10 +276,10 @@ sub mustnt_end_sooner { # recursive on successor if any
 
     my $tp1 = $tp;
     if ( $until_latest && $tp > $until_latest ) {
-        croak "Can't end after maximal until_date" . ( $successor
-            ? " (could with a passed extender sub-ref)"
-            : q{}
-          ) if !($successor && $extender);
+        croak "Can't end after maximal until_date" . (
+            $successor ? " (could do with a passed extender sub reference)"
+                       : q{}
+        ) if !($successor && $extender);
         $extender->($until_latest, $successor);
         $tp1 = $until_latest;
     }
@@ -255,21 +294,256 @@ sub mustnt_end_sooner { # recursive on successor if any
     return;
 }
 
+around until_latest => sub {
+    my ($wrapped, $self) = (shift, shift);
 
-sub inherit_variations {
-    my ($self, $expl_var) = @_;
+    return $self->$wrapped(@_) // do {
+        if ( my $successor = $self->successor ) {
+            my $from_earliest = $successor->from_earliest
+                // croak "Cannot succeed at unknown point in time";
+            $from_earliest->predecessor;
+        }
+        else { () }
+    };
 
-    my ( @to_suggest, @to_impose );
-    if ( my $p = $self->parent ) {
-        my ($inner_suggest, $inner_impose) = $p->inherit_variations($expl_var);
-        @to_suggest = @$inner_suggest;
-        @to_impose = @$inner_impose;    
+};
+
+sub _populate {
+    my ($properties, $var) = @_;
+    while ( my ($key, $value) = each %$properties ) {
+        next if exists $var->{$key};
+        $var->{$key} = $value;
+    }
+}
+
+sub _register_variations_in {
+    my ($self, $variations, $ancestry) = @_;
+
+    my $track_name = $self->name;
+
+    if ( defined $ancestry ) {
+        push @$ancestry, $track_name;
+    }
+    else { $ancestry = [ $track_name ]; }
+
+    for my $p (@{ $self->_parents }) {
+        $p->_register_variations_in( $variations, $ancestry );
+        pop @$ancestry;
     }
 
-    for my $v ( @{$self->_variations} ) {
+    my %seen;
+    my $cnt = keys %$variations;
+
+    VARIATION:
+    for my $var ( map { {%$_} } @{ $self->_variations } ) {
+        my ($name, $ref) = delete @{$var}{'name', 'ref'};
+
+        $var->{ "_for_$track_name" } = delete $var->{apply} // 1;
+        $var->{ "_pos" }             = $cnt++; # increment after assignment
+
+        if ( $name and my $props = $variations->{$name} ) {
+
+            # Keep variation untouched unless it is inherited from ancestry
+            if ( !$props->{ _inherited_by }{ $track_name } ) {
+                carp "Variation $name left untouched: "
+                   . "originates from a sibling's ancestry";
+                next VARIATION;
+            }
+            elsif ( $props->{inherit_mode} eq 'block' ) {
+                carp "Variation $name has been blocked from inheritance. "
+                   . "If you need, reuse it by 'ref' attribute";
+                next VARIATION;
+            }
+
+            # When reusing a name, we must accept the rhythm
+            # of the original variation
+            for my $key (qw(week_pattern ref section_from)) {
+                next if !defined $var->{$key};
+                croak "'$key' property present"
+                    . "but name '$name' used in upper levels"
+                    ;
+            }
+
+            _populate( $props => $var );
+            
+        }
+
+        elsif ( defined $ref ) {
+
+            if ( blessed($ref) && $ref->isa("Time::Track") ) {
+                $var->{base} = $ref->fillIn;
+            }
+            else {
+
+                my $properties = $variations->{$ref}
+                    // croak "Track $track_name, variation $name: ",
+                        ref $ref
+                            ? "'ref' is $ref, i.e. neither a variation "
+                              . "name nor a reference to another track"
+                            : "No base variation with name '$ref' registered"
+                            ;
+
+                for my $key (qw( week_pattern section_from )) {
+                    next if !defined $var->{$key};
+                    croak "$name: $key property present "
+                        . "but bases on $ref"
+                        ;
+                }
+
+                _populate( $properties => $var );
+
+                $var->{base} = delete $var->{_span_obj};
+
+            }
+        }
+
+        elsif ( my $p = delete $var->{week_pattern} ) {
+            my $span = Time::Span->new(
+                %$var,
+                week_pattern => $p,
+                track => $self
+            );
+            $var->{ _span_obj } = $span;
+        }
+
+        elsif ( !$var->{base} ) {
+            $var->{base} = $self->fillIn;
+        }
+
+        $var->{ inherit_mode  }
+            //= defined $name ? $self->default_inherit_mode : 'optional';
+
+        $var->{ _inherited_by } //= { map { $_ => 1 } @$ancestry };
+
+        $name        //= "_unnamed_" . refaddr $var;
+        $seen{ $name } = 1;
+
+        $variations->{ $name } = $var;
+    }
+
+    return \%seen;
+
+}
+
+sub apply_variations {
+    my ($self) = @_;
+
+    my (%levels, %variations);
+    my @ORDER = qw( bottom suggest middle impose top );
+    
+    if ( $self->start->next ) { $self->reset; }
+
+    my $seen = $self->_register_variations_in( \%variations );
+
+    my $force_inh = $self->force_receive_mode;
+    for my $key ( @ORDER ) { $levels{ $key } = [] }
+
+    VARIATION:
+    while ( my ($name, $properties) = each %variations ) {
+
+        my $level;
+
+        if ( $seen->{ $name } ) {
+
+            my $apply = delete $properties->{ "_for_" . $self->name };
+
+            next VARIATION if !$apply || lc $apply eq 'ignore';
+
+            $level = $levels{ $apply eq 1           ? 'middle'
+                            : lc $apply eq 'bottom' ? 'bottom'
+                            : lc $apply eq 'top'    ? 'top'
+                            :     croak "apply = $apply"
+                     } // die $apply
+                     ;
+        }
+
+        else {
+
+            my $inh = $properties->{ inherit_mode };
+            next VARIATION if lc $inh eq 'block';
+            $inh = $force_inh // $inh;
+            next VARIATION if lc $inh eq 'optional';
+            $level = $levels{ lc $inh eq 'suggest' ? 'suggest'
+                            : lc $inh eq 'impose'  ? 'impose'
+                            : croak "unsupported inherit_mode = $inh"
+                     } // die $inh
+                     ;
+
+        }
+
+        delete $properties->{ inherit_mode };
+        push @$level, $properties;
+
+    }
+
+    my @arranged_variations
+        = map { sort { $a->{_pos} <=> $b->{_pos} } @$_ } @levels{ @ORDER };
+
+    my @ATTRIBUTES = qw(from_date until_date description);
+
+    for my $span ( @arranged_variations ) {
+
+        my ($name, $base, $track, $obj)
+            = delete @{$span}{qw( name base section_from _span_obj )};
+
+        my $attr = {
+            map({
+                exists $span->{$_} ? ($_ => delete $span->{$_}) : ()
+            } @ATTRIBUTES),
+            track => $self
+        };
+
+        if ( my @unprocessed = grep { !/^_/ } keys %$span ) {
+            croak "Unprocessed attributes for variation '$name': "
+                . join q{, }, @unprocessed
+                ;
+        }
+
+        $span = $base  ? $base->new_alike( $attr )
+              : $track ? $track->get_section( $attr )
+              : $obj   // croak "Not enough data to make span $name"
+        ;
+
+        $self->couple( $span, 1 );
+
+    }
+    
+}
+
+sub edit_variations {
+    my ($self, @variations) = shift;
+
+    for my $new_var ( @variations ) {
         
+        my $found;
+        my $variations = $self->_variations;
+
+        for my $old_var ( $new_var->{name} ? @$variations : () ) {
+            next if $old_var->{name} ne $new_var->{name};
+            _populate($old_var => $new_var);
+            $old_var = $new_var;
+            $found = 1;
+        }
+
+        if ( !$found ) {
+            push @$variations, $new_var;
+        }
+
     }
 
+    for my $desc ( values %{ $self->gather_family } ) {
+        $desc->apply_variations;
+    }
+}
+
+sub gather_family {
+    my ($self, $desc) = @_;
+    $desc //= {};
+    $desc->{ $self->name } = $self;
+    for my $child ( @{ $self->_children } ) {
+        $child->gather_family( $desc );
+    }
+    return $desc;
 }
 
 sub timestamp_of_nth_net_second_since {

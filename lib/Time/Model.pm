@@ -5,6 +5,7 @@ package Time::Model;
 use Moose;
 use Carp qw(carp croak);
 use Date::Calc;
+use Scalar::Util qw( blessed );
 use Time::Track;
 
 has _time_tracks => (
@@ -16,113 +17,67 @@ has _time_tracks => (
 );
 
 sub from_json {
-    use Util::GraphChecker;
+    use Algorithm::Dependency::Ordered;
+    use Algorithm::Dependency::Source::HoA;
     use JSON ();
 
     my $class = shift;
 
-    my $model = JSON::from_json(shift, { relaxed => 1 });
+    my $model = JSON::from_json(shift);
 
-    my (%tracks, $next_round_promise);
+    my %dependencies;
 
-    my $grch = Util::GraphChecker->new( axes => {
-        parents => sub {
-            my ($parent, $child) = @_;
-            push @{$parent->{children}}, $child;
-        },
-        children => sub {
-            my ($child, $parent) = @_;
-            push @{$child->{parents}}, $parent;
-        }
-    });
+    while ( my ($id, $track_init_data) = each %$model ) {
 
-    my %alias = ( from => 'from_date', until => 'until_date' );
+        my %is_required; # keys:   $id_of_required_track
+                         # values: \@scalar_refs_to_be_filled_with_track_oref
 
-    PROP: while ( my ($key, $props) = each %$model ) {
-
-        my $parent = $props->{parent};
-        if ( defined($parent) && !ref($parent) ) {
-            if ( defined $tracks{$parent} ) {
-                $props->{parent} = $tracks{$parent};
-                $next_round_promise++;
-            }
-            else {
-                # dies if circular dependencies are detected
-                $grch->declare( $key => parents => $parent );
-                next PROP;
+        # Prior to track $id being constructed, all its parents must be ready
+        my $parents_key = 'unmentioned_variations_from';
+        if ( my $p = $track_init_data->{$parents_key} ) {
+            for my $p ( ref $p ? @$p : $track_init_data->{$parents_key} ) {
+                push @{$is_required{$p}}, \$p;
             }
         }
 
-        my ($to_suggest, $to_impose);
-        if ( $parent ) {
-            ($to_suggest, $to_impose) = $parent->inherit_variations(
-                 $props->{variations}
-            );
-        }
-    
-        if ( my $mode = $props->{inherited_variations_all} ) {
-            if ( $mode eq 'optional' ) {
-                (@$to_suggest, @$to_impose) = ();
-            }
-            elsif ( $mode eq 'suggest' ) {
-                # append @to_impose to @to_suggest & empty the former
-                (@$to_suggest, @$to_impose) = (@$to_suggest, @$to_impose);
-            }
-            elsif ( $mode eq 'impose' ) {
-                # prepend @to_suggest to @to_impose & empty the former
-                (@$to_impose, @$to_suggest) = (@$to_suggest, @$to_impose);
-            }
-            else { die "unsupported inherited_variations_all mode: $mode!" }
+        # ... and its successor, if any
+        if ( my $succ = $track_init_data->{successor} ) {
+            $is_required{ $succ } = [ \$track_init_data->{successor} ];
         }
 
-        foreach my $v ( @{ $props->{variations} } ) {
-
-            while ( my ($key, $alias) = each %alias ) {
-                $v->{$alias} = $_ if $_ = delete $v->{$key};
+        # ... to not forget its variations which are sections of another track
+        for my $var ( @{ $track_init_data->{variations} } ) {
+            my $s;
+            if ( $s = $var->{track_section} ) {
+                push @{$is_required{$s}}, \$var->{section_from};
             }
-
-            if ( $v->{obj} || $v->{week_pattern} ) {}
-            elsif ( defined(my $tp = $tracks{$v->{ref}}) ) { 
-                next if $v->{ignore} || !$v->{apply};
-                $next_round_promise++;
-                $v = $tp->get_section( $v->{from_date}, $v->{until_date} );
-                1;
+            elsif ( $s = $var->{ref} and $model->{$s} ) {
+                push @{$is_required{$s}}, \$var->{ref};
             }
-            else {
-                # dies if circular dependencies are detected
-                $grch->declare( $key => parents => $v->{ref} );
-                next PROP;
-            }
+        }
 
-        }
-        
-        delete $model->{$key};
-    
-        my $track = Time::Track->new(
-            $props->{week_pattern} // $parent->fillIn->description
-        );
+        $dependencies{$id} = [ keys %is_required ];
 
-        $tracks{ $key } = $track;
+        $track_init_data->{ _requires } = \%is_required;
+        $track_init_data->{ name      } = $id;
 
-        for my $v ( @$to_suggest, @{$props->{variations}}, @$to_impose ) {
-            next if !(blessed($v) || $v->{reuse} || $v->{week_pattern});
-            $track->couple($v);
-        }
-                       
-    }
-    
-    if ( %$model ) {
-        if ( $next_round_promise ) {
-            $next_round_promise=0;
-            goto PROP;
-        }
-        else {
-            die "Time track definitions with irresoluble dependencies: ",
-               join ", ", keys $model;
-        }
     }
 
-    return $class->new( _time_tracks => \%tracks );
+    my $order = Algorithm::Dependency::Ordered->new(
+        source => Algorithm::Dependency::Source::HoA->new(\%dependencies),
+    )->schedule_all;
+
+    for my $track ( @{$model}{ @$order } ) {
+        my $requirements = delete $track->{ _requires };
+        while ( my ($id, $refs) = each %$requirements ) {
+            my $dep_track = $model->{$id};
+            die "track $id not constructed" if !blessed($dep_track);
+            for my $ref ( @$refs ) { $$ref = $dep_track; }
+        }
+        $track = Time::Track->new(delete $track->{week_pattern}, $track);
+    } 
+    
+    return $class->new( _time_tracks => $model );
 
 }
 

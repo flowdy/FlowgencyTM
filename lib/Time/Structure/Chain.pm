@@ -18,7 +18,7 @@ has end => (
     does => 'Time::Structure::Link',
     lazy => 1,
     default => sub {
-        return last_link_of_chain_from( shift->start );
+        return shift->start->get_last_in_chain;
     },
     writer => '_set_end',
 );
@@ -48,7 +48,7 @@ sub couple {
 
     my ($start,$last) = ($self->start, $self->end);
 
-    my $lspan = last_link_of_chain_from($span);
+    my $lspan = $span->get_last_in_chain;
 
     my $span_from_date = $span->from_date;
     if ( $span_from_date < $start->from_date->epoch_sec ) {
@@ -161,13 +161,5 @@ sub detect_circular {
     }
     continue { $span = $next }
 }
-
-sub last_link_of_chain_from {
-    my $span = shift;
-    my $next;
-    while ( $next = $span->next ) { $span = $next }
-    return $span;
-}
-
 
 1;

@@ -109,20 +109,21 @@ sub from_string {
 sub new_alike {
     my ($self, $args) = @_;
 
-    for my $arg (qw/description track/) {
+    for my $arg (qw/from_date until_date description track/) {
         next if exists $args->{$arg};
         $args->{$arg} = $_ if defined($_ = $self->$arg());
     }
 
     $args->{week_pattern} = $self->rhythm;
-    return __PACKAGE__->new($args);
+    return ( ref $self )->new($args);
 
 }
 
 sub new_shared_rhythm {
     shift->new_alike({
-        map { my $arg = shift; defined($arg) ? ($_ => $arg) : () }
+        (map { my $arg = shift; defined($arg) ? ($_ => $arg) : () }
             qw/from_date until_date/
+        ), $_[0] ? %{+shift} : ()
     });
 }
 

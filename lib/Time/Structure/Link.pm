@@ -49,6 +49,12 @@ sub covers_ts {
     $self->from_date <= $ts && $ts <= $self->until_date;
 }
 
+sub get_last_in_chain {
+    my ($self) = @_;
+    my $last = $self;
+    $last = $self while $self = $self->next;
+    return $last;
+}
 
 around 'new_alike' => sub {
     my ($wrapped, $self) = (shift, shift);
