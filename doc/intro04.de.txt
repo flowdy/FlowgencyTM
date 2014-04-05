@@ -1,13 +1,13 @@
 Über FlowTime
 ===============
 
-FlowTime ist eine Software, mit der du deine Aufgaben verwalten kannst. Die Software ordnet deine Aufgaben nach absteigender Dringlichkeit. Die Dringlichkeit einer Aufgabe ergibt sich aus ihrer Priorität, ihrem aktuellen Erledigungsfortschritt sowie daraus, wie viel Zeit seit ihrer Eintragung bzw. ihrem Startdatum vergangen und bis zur gesetzten Frist noch übrig ist. Die Liste wird bewusst nicht laufend aktualisiert, sondern nur auf einen Klick auf das FlowTime-Logo in der Ecke, nachdem du gestört wurdest in schnell wieder zurückfinden möchtest.
+FlowTime ist eine Software, um deine Aufgaben zu strukturieren und zu verwalten und dich nach Störungen leichter zu refokussieren. Sie kann dir helfen, die Dringlichkeiten von Aufgaben in den vorab explizit der Arbeit gewidmeten Anteilen deiner Lebenszeit einzupassen. Immer wenn du z.B. gestört worden bist oder eine neue Aufgabe eingetragen hast, klickst du auf das FlowTime-Logo und erfährst, woran du »jetzt« arbeiten solltest, um am Ende alle festgelegten Fristen bestmöglich zu wahren.
 
-Mit "Zeit" ist bei FlowTime jedoch nicht in erster Linie das Kontinuum gemeint, das von analogen Uhren in Tick und Tack, von Maschinen in Sekunden seit wann auch immer eingeteilt wird. Zeit gehorcht in FlowTime vorrangig deinem individuell festgelegten Zeitmodell, welches aus Grundrhythmen von wiederkehrenden Arbeits- und Freiphasen und aus einmaligen Variationen für Urlaub, Teilzeit etc. besteht. Du kannst dein Zeitmodell bei Bedarf zwischen verschiedenen Jobs oder Arten von Aufgaben differenzieren. Wie das en detail vonstatten geht, liest du später. Dass die Dringlichkeit jedenfalls nur während Arbeitszeitphasen ansteigt und durch das Setzen von Erledigungshäkchen abgebaut werden muss, sie während Freizeiten dagegen eingefroren ist, kennzeichnet FlowTime.
+FlowTime ordnet eingetragene Aufgaben absteigend nach Dringlichkeit. Dieser Begriff umfasst in FlowTime jedoch nicht allein die *Priorität* einer Aufgabe, sondern ist mehrdimensional ausgelegt. Neben der Priorität wird zum Einen der *Erledigungsfortschritt* einer Aufgabe berücksichtigt. Abhängig von deiner schrittbezogenen Aufwandsschätzung macht er mal größere, mal kleinere Sprünge nach vorn, wenn du ein Erledigthäkchen setzt. Zum Anderen zählt die *Zeit*, die seit dem Start verstrichen und bis zur gesetzten weichen oder harten Frist noch übrig ist. In FlowTime ist Zeit kein Kontinuum. Arbeits- und freie Phasen, also wann die Zeit laufen und wann sie (rechnerisch) stehen bleiben soll, legst du in deinem Zeitmodell fest. Diese drei Aspekte, also die Priorität, der Sach- und der Zeitfortschritt, finden sich als Eingangsgrößen einzeln und kombiniert in verschiedenen Berechnungen wieder, die weiter unten erläutert sind. Die Ergebniswerte summieren sich beliebig gewichtet zum Rankingkriterium der Dringlichkeit.
 
-Die einzelnen Teilberechnungen, die die besagten Eigenschaften auswerten (teilweise auch kombinieren), gehen qua Voreinstellung zu gleichen Teilen in die Gesamtdringlichkeit ein. Wenn du willst, kannst du sie beliebig gewichten.
+Idee, Prototypentwicklung und Dokumentation: Florian Heß
 
-Autor: Florian Heß (Idee, Prototypentwicklung, Dokumentation) - Version: 14.03.2014
+Aktuelle Version: 0.1 (4. April 2014), das heißt ein Softwareprojekt im Alphastadium, Prototyp, experimentell und *nicht* zur produktiven Benutzung geeignet.
 
  1. [Was ist FlowTime?](#was)
     * [Zielgruppe der Software](#zielgruppe)
@@ -36,7 +36,7 @@ Was macht nun den Reiz von FlowTime aus?
 
 Dein erster Schritt nach der Installation besteht darin, dass du dein persönliches Zeitmodell definierst. Reguläre Präsenzzeiten und zeitlich begrenzte Variationen (z.B. Urlaube) können berücksichtigt werden und sind jederzeit änderbar, natürlich nur für die Zukunft. Mithilfe dieses Modells bzw. der darin enthaltenen Zeitschiene(n) zählt beim Dringlichkeitsranking nur die definierte Arbeitszeit. Inaktive Aufgaben, bei mehreren unterschiedlichen Zeitschienen müssen das durchaus nicht alle zugleich sein, steigen während der Freizeiten nicht in der Liste auf und können daher leicht von den aktiven Aufgaben überholt werden.
 
-Bei der Definition von Zeitschienen in einer einfachen, kompakten Syntax ist Pragmatismus gefragt: Es kommt nicht darauf an, deine Vorgaben minutengenau einhalten zu können. Schätze ruhig grob. Realiter unvermeidliche Abweichungen sollten sich am Ende aber ausgleichen und die Schwankungen nicht zu stark sein, überschaubar bleiben, damit FlowTime seinen Zweck erfüllen kann und das Ranking dir dabei hilft, alle verbindlichen und selbstgesetzten Fristen zu wahren.
+Zeitschienen spezifizierst du in einer einfachen, kompakten Syntax. Hierbei ist Pragmatismus gefragt: Es wird nicht von dir erwartet, dass du deine Vorgaben minutengenau einhältst. Schätze ruhig grob. Realiter unvermeidliche Abweichungen sollten sich am Ende ausgleichen und die Schwankungen nicht zu stark sein, überschaubar bleiben, damit FlowTime seinen Zweck erfüllen kann und das Ranking dir dabei hilft, alle verbindlichen und selbstgesetzten Fristen zu wahren.
 
 Der einzelnen Aufgabe weist du ausgehend von einem Startdatum eine Zeitschiene zu und gibst ein, bis wann sie für die Aufgabe gilt. Dieses Datum ist bei solch einem einzigen Zeitsegment die Frist dieser Aufgabe. Wenn sie keine offizielle hat, solltest du provisorisch eine setzen, sie ist ja jederzeit verschiebbar. Weitere solcher Zeitsegmente kannst bei Bedarf du hinzufügen, auf diese Weise lässt du die Aufgabe zu den angegebenen Zeitpunkten die Schiene wechseln.
 
@@ -73,11 +73,11 @@ Es verwendet clientseitig HTML5-Technologien, ist also auf einen modernen Browse
 <a name="was-nicht">Was ist FlowTime nicht?</a>
 -----------------------------------------------
 
-FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Eine entscheidende Voraussetzung einer Version ab 1.0 ist der wissenschaftliche, von Dritten etwa im Rahmen einer unabhängigen Studie erbrachte Nachweis, dass die Verwendung von FlowTime und ggf. ähnlicher Programme einem eventuell drohenden Burn-out des Nutzers keinen Vorschub leistet, sondern ihn bestenfalls verhindern hilft. Zusätzlich sind bis zur Version 1.0 die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern durch Vorgesetzte ausgemerzt. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.
+FlowTime ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Bis zur Version 1.0 sollen die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern durch Vorgesetzte ausgemerzt sein. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.
 
-Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für dich bewährt? Prima – nutze es frohgemut weiter, FlowTime ist kein Ersatz. Denn egal ob ein Tool besser ist als ein anderes: In diesen Belangen wechselfreudig zu sein ist eher kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.
+Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für dich bewährt? Prima – nutze es frohgemut weiter, FlowTime ist kein Ersatz. Denn egal, ob ein Tool besser ist als ein anderes, hier wechselfreudig zu sein ist grundsätzlich kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.
 
-Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Du must also keine persönlichen Daten einem Drittanbieter anvertrauen. FlowTime kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« arbeitet ein Miniwebserver, der von außerhalb deines PCs lt. Voreinstellung nicht zugreifbar ist.
+Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Du musst also nicht schon wieder persönliche Daten einem Drittanbieter anvertrauen. FlowTime kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« fungiert es als Miniwebserver, der von außerhalb deiner Hardware voreingestellterweise nicht zugreifbar ist.
 
 
 <a name="kriterien">Welche Größen der Dringlichkeit kennt FlowTime?</a>
@@ -125,31 +125,15 @@ Wenn die Etappe mit einer Schiene verknüpft ist, das nur bis zu einem festgeleg
 <a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a>
 ----------------------------------------------
 
-Kurz: effektiv allein der Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo es herkommt: im Job – und nur da sollte das Programm auch verwendet werden. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus der Freizeit in die Arbeitszeit. Betroffene Aufgaben sind also in ersterer wie eingefroren, während sie in letzterer entsprechend schneller dringlich werden.
+Kurz: effektiv allein der Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo er herkommt, nämlich in der extrem durchgetakteten Arbeitswelt des industriellen und Informationszeitalters – und nur da sollte das Programm auch verwendet werden. FlowTime hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus Freiphasen in die Arbeitsphasen davor. Betroffene Aufgaben sind also in Freiphasen wie eingefroren, während sie sonst entsprechend schneller dringlich werden.
 
 Damit das funktioniert, hinterlegst du in deinem Nutzerdatensatz ein individuelles Zeitmodell. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art definierst du mit minimalem Eingabeaufwand. Bei Bedarf definierst du mehrere Schienen und verknüpfst sie mit verschiedenen Aufgaben.
 
-Bis die Benutzerschnittstelle das intuitiv über Formulare und ähnlichem ermöglicht, müssen die wochenbasierten Zeitmuster in einer kompakten und hoffendlich eingängigen Syntax angegeben werden, zum Beispiel:
+Bis die Benutzerschnittstelle die Spezifikation deines Zeitmodells intuitiv und zuverlässig über konventionelle grafische Elemente ermöglicht, bleibt dir nur die direkte Deklaration in Form eines JSON-Strings, der in deinem Nutzerdatensatz gespeichert wird. Dies soll hier aber nicht in allen Details erklärt werden. Bei Interesse siehe [Die Spezifikation des Zeitmodells entzaubert](tmodel.de.html).
 
-    `Mo-Fr@9-12,14-17,Mo@!9-12,Do@!14,15-20:30` --> Montag bis Freitag von 9:00 bis sechs (genauer: 17:59!), einstündige Mittagspause um eins, Montag beginnt erst mittags, Donnerstag Mittagspause zwei Stunden aber zu arbeiten bis abends halb neun,
+Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein solltest du bei der Definition deines Zeitmodells pragmatisch nach der Devise verfahren: *So fein wie nötig, aber so grob wie möglich.* Selbst wenn die ganze Zeitlogik von FlowTime eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.
 
-oder:
-
-    `15.-19.7.13:Mo-So@!0-23` --> Urlaub, Teil "0-23" ist übrigens auslassbar. Es handelt sich hierbei um eine sogenannte Variation, die auf das Normalmuster (voriges Beispiel) angewendet wird.
-
-Bei Bedarf lassen sich selbst Kalenderwochen dienstplangetreu differenzieren:
-
-    `...;2n:...;3n-1:...` --> unterschiedliche Muster für ungerade und gerade Wochen und ein drittes für die KW 2, 5, 8 usw. bis KW 51. 
-
-Und wer bis hierhin noch durchsieht und sich weiter verkünsteln möchte, kann Zeitschienen Normalmuster und Von/Bis-Variationen voneinander erben lassen. Versehentliche Zirkelschlüsse werden jedenfalls erkannt und verhindert. Die Vererbung von Variationen erfolgt nach einem von drei Modi, geltend für alle oder für bestimmte: suggest (überschreibbar), impose (überschreibend) und optional (explizit einzuhängen). Festgelegt werden diese Modi von einer Schiene für alle von ihm erbenden. Letztere können den Modus aber selbst wiederum ändern, entweder nur für sich oder auch für alle davon wiederum erbenden Schienen. Grundsätzlich obliegt Ihnen die Entscheidung, ob du entweder Zeit und Konzentration in die Pflege deines Zeitmodells investierst oder darin, es auch später noch zu begreifen.
-
-Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein solltest du bei der Definition deines Zeitmodells pragmatisch nach der Devise verfahren:
-
-    So fein wie nötig, aber so grob wie möglich.
-
-Selbst wenn die ganze Zeitlogik von FlowTime eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.
-
-Abweichungen von derartigen im Voraus geplanten Zeitschienen (vergangene Zeiten zu manipulieren ist nicht möglich) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger du dich an die definierte Zeiteinteilung hältst, umso weniger gleiten die Aufgaben während deiner Freizeit ins Rote.
+Abweichungen von derartigen im Voraus geplanten Zeitschienen (rückwirkend zu manipulieren wird nicht empfohlen) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger du dich an die definierte Zeiteinteilung hältst, umso weniger gleiten die Aufgaben während deiner Freizeit ins Rote.
 
 Mit so konfigurierbaren Zeitmodellen soll FlowTime der zunehmenden Verschmelzung von Arbeit und Freizeit entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Die Sache hat einen Haken: Der Maschine ist es egal, ob dem definierten Zeitmodell intrinsisch oder extrinsische Motivation zugrunde liegt. Das heißt, diktierst du nicht der Maschine deinen Arbeitstakt, sondern hast du vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil. Vielleicht wird dein Chef sagen:
 
