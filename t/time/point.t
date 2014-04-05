@@ -2,7 +2,7 @@
 use strict;
 
 use FindBin;
-use Test::More tests => 68;
+use Test::More tests => 72;
 
 use Time::Point;
 use Date::Calc;
@@ -132,6 +132,10 @@ is($tsa->month, 12, " ... leaping Jan to Dec");
 is($tsa->year, 2011, " ... leaping 2012 to 2011");
 
 $tsa = Time::Point->parse_ts('2012-07-15');
+cmp_ok( $tsa, '==', $tsa->epoch_sec, "left-hand comparison operand denotes first second covered");
+cmp_ok( $tsa, '!=', $tsa->last_sec, "left-hand comparison operand does not denote last second covered");
+cmp_ok( $tsa->last_sec, '==', $tsa, "right-hand comparison operand denotes last second covered");
+cmp_ok( $tsa->epoch_sec, '!=', $tsa, "right-hand comparison operand does not denote first second covered");
 $tsb = Time::Point->parse_ts('2012-07-15 17:00:00');
 ok( $tsa < $tsb && $tsb < $tsa, 'compare whole day and particular time of it');
 $tsb = Time::Point->parse_ts('2012-07-14 23:59:59');

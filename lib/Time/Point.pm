@@ -1,6 +1,49 @@
 #!perl
 use strict;
-use utf8;
+
+=head1 NAME
+
+Time::Point - Create and compare variably precise point of time specifications
+
+=head1 PART OF DISTRIBUTION
+
+This class is an essential core part of FlowTime, used e.g. for the ends of a Time::Span
+and Time::Cursor::Stage.
+
+=head1 SYNOPSIS
+
+  my $german_date  = "5.4.14 12:00";     # full 1st minute of the 12th hour of the day
+  my $iso8601_date = "2014-04-05 12:00"; # both formats are supported
+  my $lazy_date    = "14-4-5 12:00";     # may omit century '20' and leading numbers, too
+  my $ISO8601_daTe = "2014-04-05T12:00"; # opt. ISO-compliant 'T' separating date and time
+  my $ts_with_sec  = "2014-04-05 12:00:00"; # maximal precision
+  my $ts_hour      = "2014-04-05 12";    # represents full 12th hour
+  my $ts_day       = "2014-04-05";       # represents full day: Minimal precision
+
+  # All these variants are digested by timestamp parser
+  $_ = Time::Point->parse_ts($_) for (
+      $german_date, $iso8601_date, $lazy_date, $ISO8601_daTe,
+      $ts_with_sec, $ts_hour, $ts_day
+  );
+
+  # You may have unspecified parts of a time spec filled according to the current date:
+  my $ts = Time::Point->parse_ts("04-05")->fill_in_assumptions; # adds 2014
+
+  # You may pass an already created instance as a base time for assumptions:
+  my $base = Time::Point->parse_ts("2013-11-14");
+  my $ts = Time::Point->parse_ts("04-05", $base); # fills in assumptions, too
+  my $ts = Time::Point->parse_ts("04-05", 2013, 11, 14); # as you like
+
+  # use fix_order to assume unspecified parts so that ts2 is after ts2
+  my $ts = Time::Point->parse_ts("04-05");
+  if ( $base->fix_order($ts) ) {
+      # $ts->year == 2014
+  }
+  if ( $ts->fix_order($base) ) {
+      # $ts->year == 2013 as April is before November
+  }
+
+=cut
 
 package Time::Point;
 use Moose;
@@ -24,11 +67,6 @@ has [map { 'assumed_'.$_ } qw(day month year)] => (
 has remainder => ( is => 'ro', isa => 'Str' );
 
 has epoch_sec => ( is => 'ro', isa => 'Int', writer => '_set_epoch_sec' );
-
-sub from_plain_ts {
-    my ($class, $ts) = @_;
-    return $class->new( epoch_sec => $ts );
-}
 
 sub parse_ts {
     use Scalar::Util 'blessed';
@@ -79,10 +117,10 @@ sub parse_ts {
        
     croak "Could not parse date" if $ts =~ m{ \A \d* [.-] \d }xms;
 
-    # Parsen wir nun den Zeitteil. Der ist immer absolut:
+    # Let us parse the time part which is always absolute:
     $ts =~ s{ \G \s* T?
-        0?(\d\d?) (?: \: 0?(\d\d?) # Minuten sind optional
-        (?:\:0?(\d\d?))? )? # Braucht man eines Tages Sekunden? Horror!
+        0?(\d\d?) (?: \: 0?(\d\d?) # Minutes are optional
+        (?:\:0?(\d\d?))? )? # Will we need to indicate seconds someday? Horror!
     \s* | }{}xms;
     croak 'Invalid time'
         if !Date::Calc::check_time(map { $_ || 0 } $1, $2, $3);
@@ -94,7 +132,11 @@ sub parse_ts {
         if !defined( $ret{year} || $ret{month} || $ret{day} || $ret{hour} );
 
     $ret{remainder} = $ts;
-    return $class->new(\%ret);
+    my $self = $class->new(\%ret);
+
+    if ( @_ > 2 ) { $self->fill_in_assumptions }
+
+    return $self;
    
 }
 
@@ -190,9 +232,9 @@ sub _upd_epoch_sec {
 
 sub fill_in_assumptions {
     my $self = shift;
-    $self->year($_) if !defined($self->year) and $_ = $self->assumed_year;
+    $self->year($_)  if !defined($self->year)  and $_ = $self->assumed_year;
     $self->month($_) if !defined($self->month) and $_ = $self->assumed_month;
-    $self->day($_) if !defined($self->day) and $_ = $self->assumed_day;
+    $self->day($_)   if !defined($self->day)   and $_ = $self->assumed_day;
     return $self;
 }
 
@@ -209,8 +251,16 @@ sub precision_sensitive_cmp {
     my $stsb = ref($tsb) ? $tsb->get_qm_timestamp : get_std_timestamp($tsb); 
     return 0 if $stsa eq $stsb; # equality, also in regard to precision
 
-    my ($shorter,$longer) = sort { length($a) <=> length($b) } $stsa, $stsb;
-    return $longer =~ s{^ \Q$shorter\E }{}xms ? -1 : ($stsa cmp $stsb);
+    my ($shorter, $longer, $limsec) = length($stsa) > length($stsb)
+         ? ($stsb, $stsa, sub { get_std_timestamp($tsb->last_sec) })
+         : ($stsa, $stsb, sub {
+              ref $tsa ? get_std_timestamp($tsa->epoch_sec) : $stsa,
+           })
+         ;
+
+    return index($longer, $shorter) == 0
+        ? ( $longer eq $limsec->() ? 0 : -1 )
+        : ( $stsa cmp $stsb );
 
 }
 
