@@ -5,6 +5,8 @@ FlowTime ist eine Software, um deine Aufgaben zu strukturieren und zu verwalten 
 
 FlowTime ordnet eingetragene Aufgaben absteigend nach Dringlichkeit. Dieser Begriff umfasst in FlowTime jedoch nicht allein die *Priorität* einer Aufgabe, sondern ist mehrdimensional ausgelegt. Neben der Priorität wird zum Einen der *Erledigungsfortschritt* einer Aufgabe berücksichtigt. Abhängig von deiner schrittbezogenen Aufwandsschätzung macht er mal größere, mal kleinere Sprünge nach vorn, wenn du ein Erledigthäkchen setzt. Zum Anderen zählt die *Zeit*, die seit dem Start verstrichen und bis zur gesetzten weichen oder harten Frist noch übrig ist. In FlowTime ist Zeit kein Kontinuum. Arbeits- und freie Phasen, also wann die Zeit laufen und wann sie (rechnerisch) stehen bleiben soll, legst du in deinem Zeitmodell fest. Diese drei Aspekte, also die Priorität, der Sach- und der Zeitfortschritt, finden sich als Eingangsgrößen einzeln und kombiniert in verschiedenen Berechnungen wieder, die weiter unten erläutert sind. Die Ergebniswerte summieren sich beliebig gewichtet zum Rankingkriterium der Dringlichkeit.
 
+![Hauptseite von FlowTime: Aufgabenliste](snapshot-home.png)
+
 Idee, Prototypentwicklung und Dokumentation: Florian Heß
 
 Aktuelle Version: 0.1 (4. April 2014), das heißt ein Softwareprojekt im Alphastadium, Prototyp, experimentell und *nicht* zur produktiven Benutzung geeignet.
