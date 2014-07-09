@@ -16,15 +16,15 @@
 <body>
   <header>
     <h1><img id="logo" src="logo/flowtime-logo-einfacher.png" alt="FlowTime" /></h1>
-    <p></p>
+    <p>Zeit ist Geld? Und Kraft ein Ackerfeld<br />– das auszulaugen noch teurer käme.</p>
   </header>
 
 <nav id="leftnav">
 <ul>
-<li>Neuer Plan …</li>
-<li>Schreibtisch<ul>
-    <li>Ablage</li>
-    <li>Schublade</li>
+<li>Neuer Eintrag</li>
+<li>Schreibtisch<form><ul style="list-style-type:none;">
+    <li><label><input type="checkbox" /> Ablage</label></li>
+    <li><label><input type="checkbox" /> Schublade</label></li>
 </ul></li>
 <li>Zukünftiges</li>
 <li><form id="suche">
@@ -33,10 +33,16 @@
 <li>Erledigt</li>
 <li>Papierkorb</li>
 </ul></li>
+<li>Import (1)</li>
 </ul>
+
+<ul>
+<li>Einstellungen</li>
+</ul>
+
 </nav>
 <ol id="plans">
-<li>
+<li class="shadow">
 <header>
 <!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
 <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>

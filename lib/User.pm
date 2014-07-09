@@ -29,18 +29,18 @@ has _time_model => (
 has tasks => (
     is => 'ro',
     isa => 'User::Tasks',
-    init_args => undef,
+    init_arg => undef,
     default => sub {
         my $self = shift;
-        User::Tasks->new(
-            time_profile_provider => sub {
+        User::Tasks->new({
+            track_finder => sub {
                 $self->_time_model->get_profile(shift);
             }, 
-            flowrank_processor => FlowRank->new({
+            flowrank_processor => FlowRank->new_closure({
                 get_weights => sub { $self->weights }
-            })->closure;
-            tasks_rs => $self->_dbicrow->tasks,
-        );
+            }),
+            task_rs => scalar $self->_dbicrow->tasks,
+        });
     },
     lazy => 1,
 );
@@ -53,7 +53,7 @@ has weights => (
     default => sub {
         return from_json(shift->_dbicrow->weights);
     },
-};
+);
     
 sub store_weights {
     my ($self) = @_;
@@ -69,4 +69,4 @@ sub update_time_model {
     return $model;
 }
 
-__PACKAGE->meta->make_immutable;
+__PACKAGE__->meta->make_immutable;

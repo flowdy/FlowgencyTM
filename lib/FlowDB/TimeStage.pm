@@ -1,6 +1,6 @@
 use strict;
 
-package FlowDB::TimeSegment;;
+package FlowDB::TimeStage;
 
 use Moose;
 extends 'DBIx::Class::Core';

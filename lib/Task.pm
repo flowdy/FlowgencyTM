@@ -11,14 +11,15 @@ has _cursor => (
     lazy => 1,
     builder => '_build_cursor',
     handles => {
-        update_cursor => 'update',
-        test_apply_time_stages => 'apply_stages'
+        update_cursor           => 'update',
+        probe_time_stages       => 'apply_stages',
     },
 );
 
 has name => (
     is => 'ro',
     isa => 'Str',
+    lazy => 1,
     default => sub { shift->dbicrow->name },
     init_arg => undef,
 );
@@ -32,10 +33,6 @@ has dbicrow => (
         main_step steps
     ]],
     required => 1,
-    default => sub {
-        my $self = shift;
-        $self->step_retriever->($self->name);
-    },
     clearer => 'release_row',
 );
 
@@ -48,18 +45,28 @@ has progress => (
     init_arg => undef,
 );
 
-has ['step_retriever', 'track_finder'] => (
+has callback_proxy => (
     is => 'ro', isa => 'CodeRef', required => 1,
 );
 
+BEGIN { 
+    for (qw( bind_tracks link_step_row )) {
+        no strict 'refs';
+        my $callback = $_;
+        *$callback = sub {
+            goto &{ shift->callback_proxy->($callback) };
+        };
+    }
+}
+ 
 sub _build_cursor {
     use Time::Cursor;
     my $self = shift;
     my $row = $self->dbicrow;
     my $cursor = Time::Cursor->new({
+        start_ts   => $row->from_date,
         timestages => $self->track_finder->($row->timestages),
     });
-    $cursor->run_from($row->from_date);
     return $cursor;
 }
 
@@ -71,10 +78,7 @@ sub redraw_cursor_way {
     my $tr = $self->track_finder;
 
     if ( ref $stages[0] eq 'HASH' ) {
-        for my $p ( map { $_->{track} } @stages ) {
-            $p = $tr->($p) if !ref $p;
-        }
-        $cursor->apply_stages( @stages );
+        $cursor->apply_stages( $self->bind_tracks(@stages) );
         $row->timestages(
             map { $_->{track} = $_->{track}->id }
                 $cursor->timeway_to_stage_hrefs
@@ -82,18 +86,15 @@ sub redraw_cursor_way {
     }
 
     elsif ( !@stages || ref $stages[0] eq 'ARRAY' ) {
-        my @stages = $tr->(
-            $row->timestages(
-                ($_ = shift @stages ) ? @$_ : ()
-            )
-        );
+        my $list = shift @stages;
+        my @stages = $self->bind_tracks($row->timestages(@$list));
         $stages[0]{from_date} = ( $row->from_date );
         $cursor->change_way(@stages);
     }
 
     else { die }
 
-    return wantarray ? $cursor->update : ();
+    # Needed?: return wantarray ? $cursor->update : ();
 
 }
 
@@ -102,8 +103,8 @@ sub store {
     my $args = @_ % 2 ? shift : { @_ };
 
     # Get name of upmost step to be stored 
-    my $root = %$args == 1    # store() callable with { $step_name => \%data }
-             ? do {           # or with { (step => $name), %further_data }
+    my $root = keys(%$args) == 1 # store() callable with { $step_name => \%data }
+             ? do {              # or with { (step => $name), %further_data }
                    my ($k) = keys %$args;   # ^ omitted? => task/main_step data
                    ($args) = values %$args;
                    $k;
@@ -119,7 +120,7 @@ sub store {
         $steps->{ $step->name } //= {};
     }
 
-    $steps = [ # was hash, is now array reference
+    $steps = $args->{substeps} && [ # was hash, is now array reference
         $self->_sequence_step_data_hrefs(
             $root, $steps, delete $args->{substeps},
         )
@@ -142,7 +143,7 @@ sub store {
 }
 
 sub _sequence_step_data_hrefs {
-    my ($parent_name, $steps_href, $top_sequence) = @_;
+    my ($self, $parent_name, $steps_href, $top_sequence) = @_;
 
     my %parent_of;   # %seen with parent names as values:
                      # Used to prevent circular references that
@@ -151,7 +152,7 @@ sub _sequence_step_data_hrefs {
     my $sequencer = sub {
         my $sequence = shift;
 
-        my ($defined_pos, $undefined_pos) = split m{\s*;\s*}x, $order, 2;
+        my ($defined_pos, $undefined_pos) = split m{\s*;\s*}x, $sequence, 2;
         my  @defined_pos                  = split m{   ,\s*}x, $defined_pos;
         my ($order_num, @steps)           = ( undef, () );
 
@@ -160,7 +161,7 @@ sub _sequence_step_data_hrefs {
 
             next CLUSTER if !defined $cl;
 
-            for my $step_name ( split m{ [/] }x, $cl ) {
+            for my $step_name ( split m{ [/] }xms, $cl ) {
                 my $step = $steps_href->{$step_name};
 
                 croak qq{No step "$step_name" defined} if !$step;
@@ -172,6 +173,7 @@ sub _sequence_step_data_hrefs {
                 
                 push @steps, $step;
    
+                $parent_of{ $step } = $parent_name;
             }
             
         }
@@ -193,106 +195,20 @@ sub _sequence_step_data_hrefs {
             unshift @steps, $sequencer->($substeps);
         }
 
-        push @ordered_steps, $steps;
+        push @ordered_steps, $step;
 
     }
 
+    if ( my @not_seen = grep { !defined $parent_of{$_} } keys %$steps_href ) {
+        croak 'steps hash-ref contains keys not listed in any substeps entry'
+            . ': ', join q{, }, @not_seen;
+    }
     return @ordered_steps;
 
 }
 
-sub _DEPRECATED_store_flatten_substeps_tree {
-    my ($self, $args) = @_;
-
-    $args->{_level} = 0;
-    my @rec_path = $args;
-    my %steps;
-    my $steps_rs = $self->steps;
-    my $is_ancestor = { _ancestor => 1 };
-
-    { my $p = $args->{parent};
-      my $n = $args->{oldname};
-
-      my $pr = $p ? $steps_rs->find({ name => $p })
-                 || croak "$n: No step $p to be a child of"
-             : $steps_rs->find({ name => $n })->parent_row
-             ;
-
-      while ( $pr ) {
-          $pr->name ne $n or croak "Cannot descend from myself: $n";
-          $steps{$pr->name} = $is_ancestor;
-      } continue { $pr = $pr->parent_row; }
-
-    }
-
-    while ( my $current = $rec_path[-1] ) {
-
-        if ( my $attr = shift @{ $current->{substeps} // [] } ) {
-
-            if ( !ref($attr) ) {
-                $attr = { oldname => $attr };
-            }
-
-            $attr->{name} //= $attr->{oldname};
-            my $substep = $attr->{oldname} // $attr->{name};
-
-            if ( $substep and my $seen = $steps{$substep} ) {
-                croak $seen->{_ancestor}
-                    ? "$substep can't be ancestor and descendent at once"
-                    : "$substep already subordinated to "
-                      . ($seen->{parent} || "ROOT node")
-                    ;
-            }
-
-            $steps{$substep} = $is_ancestor;
-
-            croak "No step $substep associated to task ".$self->name
-                if $substep and !$self->steps->find($substep);
-
-            if ( $attr->{pos} ) {
-                carp "{position} is determined by position in substeps array"
-            }
-            else { $attr->{pos} = ++$current->{_substeps_processed}; }
-
-            if ( $attr->{parent} ) {
-                carp "{parent} is imposed from higher level - uninfluencable";
-            }
-            else { $attr->{parent} = $current->{name}; }
-
-            $attr->{_level} = $current->{_level} + 1;
-
-            push @rec_path, $attr;
-
-        }
-        else {
-
-            if ( my $link = delete $current->{link} ) {
-                $current->{link_row} = $self->step_retriever->(@$link);
-            }
-
-            for (qw( from_date timesegments client priority )) {
-                my ($field,$value) = ($_, delete($current->{$_}) // next);
-                $current->{subtask_row}{$field} = $value;
-            }
-
-            for my $c ( $steps{ delete $current->{oldname} } ) {
-                croak "circularly referred to or multiple entry of $c->{name}"
-                    if defined($c) && $c != $is_ancestor;
-                $c = $current;
-            }
-
-            pop @rec_path;
-
-        }
-
-    }
-
-    return \%steps;
-
-}
-    
 sub _store_write_to_db {
-    my ($self, $steps_upd_data, $root_step) = @_;
+    my ($self, $root_step, $root, $steps_upd_data) = @_;
 
     my $row = $self->dbicrow;
     my $steps_rs = $row->steps;
@@ -304,29 +220,19 @@ sub _store_write_to_db {
         $steps2{$step} = { %$properties };
     }
 
-    my $root = $steps2{$root_step};
-
     if ( !length($root_step) ) {
-        my $str = delete $root->{subtask_row};
-        $row->update($str) if $str && %$str;
+        delete $root->{oldname};
+        while ( my ($key, $value) = each %$root ) {
+            $row->$key($value);
+        }
         croak "root step cannot have a parent"
             if $root->{parent};
     }
     elsif ( my $p = $root->{parent} ) {
-        my $p_row = $steps_rs->find($p);
-        my $pos = $root->{pos};
-        my $siblings = $p_row->substeps;
-        my $num_siblings = $siblings->count;
-        if ( defined($pos) && $num_siblings >= $pos ) {
-            my @later_sibs = $siblings->search({ pos=>{ '>=' => $pos } });
-            $_->update({ pos => $_->pos+1 })
-                for sort { $b->pos <=> $a->pos } @later_sibs;
-        }
-        else {
-            $root->{pos} = $num_siblings + 1;
-        }
+        croak "parent row with ID $p not found"
+            if !$steps_rs->find($p);
     }
-    else { die "No parent" }
+    else { croak "No parent" }
 
     my @NON_DB_FIELDS = qw/ substeps _ancestor _level _substeps_processed /;
 
@@ -395,7 +301,7 @@ sub _store_write_to_db {
         return $row->update;
 
     }
-    elsif ( $self->cursor ) {
+    elsif ( $self->_cursor ) {
         return $row->insert;
     }
     else { die }

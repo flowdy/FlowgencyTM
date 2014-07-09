@@ -11,21 +11,14 @@ has task_rs => (
     required => 1,
 );
 
-has step_retriever => (
+has _task_interface_proxy => (
     is => 'ro',
-    init_arg => undef,
+    isa => 'CodeRef',
     lazy => 1,
-    default => sub {
-        my $task_rs = shift->task_rs;
-        sub {
-            my ($task,$step) = @_;
-            $task = $task_rs->find($task) // return;
-            return $task if @_ == 1;
-            return $task->steps->find($step);
-        }
-    },
+    builder => '__build_task_interface_proxy',
+    init_arg => undef,
 );
-
+    
 has cache => (
     is => 'ro',
     isa => 'HashRef[Task]',
@@ -39,15 +32,52 @@ has ['track_finder', 'flowrank_processor'] => (
 
 sub _build_task_obj {
     my ($self, $row) = @_;
-    my $tpp = $self->track_finder;
     return Task->new(
-        step_retriever => $self->step_retriever,
         dbicrow => $row,
-        track_finder => sub {[ map { 
-            my $track = $tpp->($_->track);
-            { track => $track, until => $_->until };
-        } @_ ]},
+        callback_proxy => $self->_task_interface_proxy,
     );
+}
+
+sub __build_task_interface_proxy {
+    my ($self) = @_;
+    my %callback_for = (
+
+        bind_tracks => sub {
+            my $task = shift;
+            my @stages = ref $_[0] eq 'ARRAY' ? @{ shift @_ } : @_;
+            my $tpp = $self->track_finder;
+            for my $s ( @stages ) {
+                my ($track, $until)
+                    = blessed($s) ? ($s->track, $s->until)
+                                  : @{$s}{'track', 'until'}
+                                  ;
+                 $track = $tpp->($track)
+                     // croak "Track not found: '$track'";
+                 $s = { track => $track, until => $until };
+            }
+            return @_ && wantarray ? @stages : \@stages;
+        },
+
+        link_step_row => sub {
+            my ($task, $step, $o) = @_;
+            my ($otask, $ostep) = $o ? @{$o}{'task', 'step'} : ();
+            croak "hashref with 'task' and 'step' names missing"
+                if !($otask && $ostep);
+            my $found = $self->tasks_rs->find($otask)
+                // croak "No task '$otask' defined";
+            $found = $found->substeps->find($ostep)
+                // croak "Task '$otask' has no step of name '$ostep'"
+            return $step->link_row($found);
+        },    
+
+    );
+
+    return sub {
+        my $name = shift;
+        return $callback_for{ $name } //
+            croak "callback not found: $name";
+    };
+
 }
 
 sub _next_unused_name {
@@ -55,7 +85,7 @@ sub _next_unused_name {
     my $search_expr = $prefix ? { like   => "$prefix%" }
                     :           { regexp => '^[0-9]+$' }
                     ;
-    $name = $self->tasks->search(
+    my $name = $self->tasks->search(
         { name => $search_expr }, { columns => ['name'] }
     )->get_column('name')->max();
 
@@ -96,7 +126,7 @@ sub add {
 sub copy {
     my ($self, $existing_task_name, $md_href) = @_;
 
-    my $base_row = $tasks_rs->find($existing_task_name)
+    my $base_row = $self->tasks_rs->find($existing_task_name)
         // croak "No task with name $existing_task_name found";
 
     my $name = delete $md_href->{name}
@@ -114,24 +144,29 @@ sub copy {
 sub update {
     my ($self, $existing_task_name, $md_href) = @_;
     my $new_name = $md_href->{name};
-    my $task = $self->cache->{$existing_task_name}
-    $task->store($md_href);
+    my $task = $self->get($existing_task_name);
+    my $res_href = $task->store($md_href);
     if ( $new_name ) {
         $self->cache->{$new_name} = delete $self->cache->{$existing_task_name};
+    }
+
+    # Recalculate progress of depending tasks on next access of progress 
+    for my $task ( @{$res_href->{task_to_recalc}} ) {
+        $self->get($task)->clear_progress;
     }
     return $task;
 }
 
 sub delete {
     my ($self, $name) = @_;
-    if ( my $task = delete $self->cache->{$id} ) {
+    if ( my $task = delete $self->cache->{$name} ) {
         $task->dbirow->delete;
     }
-    elsif ( my $row = $self->task_rs->find($id) ) {
+    elsif ( my $row = $self->task_rs->find($name) ) {
         $row->delete;
     }
     else {
-        carp "no task $id to delete";
+        carp "no task $name to delete";
         return 0;
     }
     return 1;

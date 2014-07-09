@@ -12,7 +12,7 @@ and Time::Cursor::Stage.
 
 =head1 SYNOPSIS
 
-  my $german_date  = "5.4.14 12:00";     # full 1st minute of the 12th hour of the day
+  my $german_date  = "5.4.14 12:00";     # full 1st minute of the 12th hour of April 5th
   my $iso8601_date = "2014-04-05 12:00"; # both formats are supported
   my $lazy_date    = "14-4-5 12:00";     # may omit century '20' and leading numbers, too
   my $ISO8601_daTe = "2014-04-05T12:00"; # opt. ISO-compliant 'T' separating date and time
@@ -41,6 +41,13 @@ and Time::Cursor::Stage.
   }
   if ( $ts->fix_order($base) ) {
       # $ts->year == 2013 as April is before November
+  }
+
+  my $ts = Time::Point->from_epoch( time, 0, 0); # min and max position: full day
+  if ( $ts < time && time < $ts ) {
+      # Both conditions are met in between the first and the last second of the day:
+      # In the first, $ts is the left-hand operand -> first second of denoted coverage
+      # In the second, $ts is at the right hand -> last second of denoted coverage
   }
 
 =cut
