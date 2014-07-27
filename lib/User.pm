@@ -22,7 +22,7 @@ has _time_model => (
     init_arg => undef,
     default => sub {
         my ($self) = shift;
-        Time::Model->from_json(shift->_dbicrow->time_model);    
+        Time::Model->from_json($self->_dbicrow->time_model);    
     }
 );
 
@@ -34,7 +34,7 @@ has tasks => (
         my $self = shift;
         User::Tasks->new({
             track_finder => sub {
-                $self->_time_model->get_profile(shift);
+                $self->_time_model->get_track(shift);
             }, 
             flowrank_processor => FlowRank->new_closure({
                 get_weights => sub { $self->weights }

@@ -45,27 +45,22 @@ has progress => (
     init_arg => undef,
 );
 
-has callback_proxy => (
-    is => 'ro', isa => 'CodeRef', required => 1,
+has tasks => ( # sub bind_tracks, link_step_row
+    is => 'ro',
+    weak_ref => 1,
+    isa => 'User::Tasks',
+    required => 1,
 );
 
-BEGIN { 
-    for (qw( bind_tracks link_step_row )) {
-        no strict 'refs';
-        my $callback = $_;
-        *$callback = sub {
-            goto &{ shift->callback_proxy->($callback) };
-        };
-    }
-}
- 
 sub _build_cursor {
     use Time::Cursor;
     my $self = shift;
     my $row = $self->dbicrow;
+    my @ts = $row->timestages;
+    croak "Task record has no associated timestages" if !@ts;
     my $cursor = Time::Cursor->new({
         start_ts   => $row->from_date,
-        timestages => $self->track_finder->($row->timestages),
+        timestages => [ $self->tasks->bind_tracks(@ts) ],
     });
     return $cursor;
 }
@@ -75,19 +70,19 @@ sub redraw_cursor_way {
     my $row = $self->dbicrow;
     my $cursor = $self->_cursor;
 
-    my $tr = $self->track_finder;
+    my $tasks = $self->tasks;
 
     if ( ref $stages[0] eq 'HASH' ) {
-        $cursor->apply_stages( $self->bind_tracks(@stages) );
+        $cursor->apply_stages( $tasks->bind_tracks(@stages) );
         $row->timestages(
             map { $_->{track} = $_->{track}->id }
                 $cursor->timeway_to_stage_hrefs
         );
     }
 
-    elsif ( !@stages || ref $stages[0] eq 'ARRAY' ) {
-        my $list = shift @stages;
-        my @stages = $self->bind_tracks($row->timestages(@$list));
+    elsif ( !@stages || (ref $stages[0] eq 'ARRAY' && @stages == 1) ) {
+        my $list = shift @stages // [];
+        my @stages = $tasks->bind_tracks($row->timestages(@$list));
         $stages[0]{from_date} = ( $row->from_date );
         $cursor->change_way(@stages);
     }
@@ -131,15 +126,14 @@ sub store {
     );
 
     my @to_recalc;
-
     while ( my ($step, $args) = each %$steps ) {
         next if !grep { defined($_) } @{$args}{qw{ done checks exp_oftime }};
         push @to_recalc, $step;
     }
+    $self->tasks->recalc_dependencies($self => @to_recalc);
 
-    return {
-        tasks_to_recalc => [ $self->tasks_to_recalc(@to_recalc) ]
-    };
+    return 1;
+
 }
 
 sub _sequence_step_data_hrefs {
@@ -293,48 +287,24 @@ sub _store_write_to_db {
 
     $row->main_step_row( $steps_rs->find({ name => '' }) );
 
+    my $result;
+
     if ( $row->in_storage ) {
         
+        $result = $row->update;
         $self->redraw_cursor_way;
-
         $self->_clear_progress; # to be recalculated on next progress() call
-        return $row->update;
 
     }
-    elsif ( $self->_cursor ) {
-        return $row->insert;
+    else {
+        $result = $row->insert();
+        for my $ts ( @{ $root->{timestages} } ) {
+            $row->add_to_timestages($ts);
+        }
+        croak "Can't build cursor: $@" if !eval { $self->_cursor };
     }
-    else { die }
 
-}
-
-sub tasks_to_recalc {
-     my $self = shift;
-     my @links = @_;
-
-     my $get_step = $self->step_retriever;
-     my (%depending, $task, $step, $link, $p, $str);
-
-     while ( $link = shift @links ) {
-         ($task,$step) = @$link;
-         next if $depending{$task}{$step}++;
-
-         $link = $get_step->($task, $step);
-
-         if ( $p = $link->parent_row ) {
-             push @links, [ $p->task, $p->name ];
-             if ( $str = $link->subtask_row ) {
-                 $depending{$str->name}++;
-             }
-         }
-
-         push @links, map {[ $_->task, $_->name ]}
-                      $link->linked_by->all;
-
-     }
-
-     return keys %depending;
-
+    return $result;
 }
 
 sub is_link_valid {

@@ -38,4 +38,7 @@ my $task = $user->tasks->add({
     checks => 5,
 });
 
-is $task->name, "test1", "Created test1";
+is $task->name, "task1", "Created test1";
+
+done_testing();
+

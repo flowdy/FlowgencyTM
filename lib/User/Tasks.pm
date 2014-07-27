@@ -11,14 +11,6 @@ has task_rs => (
     required => 1,
 );
 
-has _task_interface_proxy => (
-    is => 'ro',
-    isa => 'CodeRef',
-    lazy => 1,
-    builder => '__build_task_interface_proxy',
-    init_arg => undef,
-);
-    
 has cache => (
     is => 'ro',
     isa => 'HashRef[Task]',
@@ -34,50 +26,8 @@ sub _build_task_obj {
     my ($self, $row) = @_;
     return Task->new(
         dbicrow => $row,
-        callback_proxy => $self->_task_interface_proxy,
+        tasks => $self,
     );
-}
-
-sub __build_task_interface_proxy {
-    my ($self) = @_;
-    my %callback_for = (
-
-        bind_tracks => sub {
-            my $task = shift;
-            my @stages = ref $_[0] eq 'ARRAY' ? @{ shift @_ } : @_;
-            my $tpp = $self->track_finder;
-            for my $s ( @stages ) {
-                my ($track, $until)
-                    = blessed($s) ? ($s->track, $s->until)
-                                  : @{$s}{'track', 'until'}
-                                  ;
-                 $track = $tpp->($track)
-                     // croak "Track not found: '$track'";
-                 $s = { track => $track, until => $until };
-            }
-            return @_ && wantarray ? @stages : \@stages;
-        },
-
-        link_step_row => sub {
-            my ($task, $step, $o) = @_;
-            my ($otask, $ostep) = $o ? @{$o}{'task', 'step'} : ();
-            croak "hashref with 'task' and 'step' names missing"
-                if !($otask && $ostep);
-            my $found = $self->tasks_rs->find($otask)
-                // croak "No task '$otask' defined";
-            $found = $found->substeps->find($ostep)
-                // croak "Task '$otask' has no step of name '$ostep'"
-            return $step->link_row($found);
-        },    
-
-    );
-
-    return sub {
-        my $name = shift;
-        return $callback_for{ $name } //
-            croak "callback not found: $name";
-    };
-
 }
 
 sub _next_unused_name {
@@ -150,10 +100,6 @@ sub update {
         $self->cache->{$new_name} = delete $self->cache->{$existing_task_name};
     }
 
-    # Recalculate progress of depending tasks on next access of progress 
-    for my $task ( @{$res_href->{task_to_recalc}} ) {
-        $self->get($task)->clear_progress;
-    }
     return $task;
 }
 
@@ -172,6 +118,86 @@ sub delete {
     return 1;
 }
     
+sub bind_tracks {
+     my $self = shift;
+     my @stages = ref $_[0] eq 'ARRAY' ? @{ shift @_ } : @_;
+     my $tpp = $self->track_finder;
+     for my $s ( @stages ) {
+         my ($track, $until)
+             = blessed($s) ? ($s->track, $s->until_date)
+                           : @{$s}{'track', 'until_date'}
+                           ;
+
+         $track = $tpp->($track)
+             // croak "Track not found: '$track'";
+
+         $s = { track => $track, until_date => $until };
+
+     }
+
+     return @_ && wantarray ? @stages : \@stages;
+
+}
+
+sub _retrieve_task_step {
+    my ($self, $task, $step) = @_;
+
+    my $found = $self->tasks_rs->find($task)
+        // croak "No task '$task' defined";
+    $found = $found->substeps->find($step)
+        // croak "Task '$task' has no step named '$step'";
+
+    return $step;
+
+}
+
+sub link_step_row {
+    my ($self, $step, $other) = @_;
+    my ($other_task, $other_step)
+        = $other ? @{$other}{'task', 'step'} : ();
+
+    croak "hashref with 'task' and 'step' names missing"
+        if !($other_task && $other_step);
+    croak "Cannot establish links between steps of same task"
+        if $step->task eq $other_task->id;
+
+    return $step->link_row(
+        $self->_retrieve_task_step($other_task, $other_step)
+    );
+}    
+
+sub recalc_dependencies {
+     my ($self, $task) = (shift, shift);
+     my @links = map {[ $task, $_ ]} @_;
+
+     my (%depending, $step, $link, $p, $str);
+
+     while ( $link = shift @links ) {
+         ($task,$step) = @$link;
+         next if $depending{$task}{$step}++;
+
+         $link = $self->_retrieve_task_step($task, $step);
+
+         if ( $p = $link->parent_row ) {
+             push @links, [ $p->task, $p->name ];
+             if ( $str = $link->subtask_row ) {
+                 $depending{$str->name}++;
+             }
+         }
+
+         push @links, map {[ $_->task, $_->name ]}
+                      $link->linked_by->all;
+
+     }
+
+     for my $task ( keys %depending ) {
+         $self->get($task)->_clear_progress;
+     }
+
+     return;
+
+}
+
 1;
 
 __END__

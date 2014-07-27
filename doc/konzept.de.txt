@@ -1,23 +1,25 @@
 FlowTime – Konzept einer neuartigen Zeit- und Aufgabenmanagementsoftware
 ========================================================================
 
-Büroarbeit ist geprägt von großer Verschiedenheit der Aufgaben, die im Kopf behalten und erledigt werden müssen. Nicht nur in ihren inhaltlichen Anforderungen, Bedingungen und Verfahren unterscheiden sie sich stark. Die einen Aufgaben sind auch dringlicher als die anderen, und es gibt auch wichtigere und weniger wichtige, und mal komplexere, mal simplere Sachen sorgen leicht für ein Chaos im Kopf. Hier den Überblick zu behalten, erfordert eigentlich eine Assistenz, damit man den Kopf freihat für die Aufgaben selbst statt mit ständigen Abwägungen, welche Aufgabe »jetzt« am ehesten bearbeitet werden sollte.
+In der Büroarbeit anfallende Aufgaben müssen oft quasi-parallel im Kopf behalten und erledigt werden. Obendrein sind sie sehr verschieden, und zwar nicht nur in Bezug auf ihre inhaltlichen Aspekte. Noch dazu sind die einen Aufgaben dringlicher als die anderen, und es gibt auch wichtigere und weniger wichtige, und mal komplexere, mal simplere Sachen zu tun. Das alles ballt sich leicht zu einem Chaos im Kopf zusammen. Hier den Überblick zu behalten, erfordert eigentlich eine Assistenz, damit man den Kopf freihat für die Aufgaben selbst statt mit ständigen Abwägungen, welche Aufgabe aktuell am ehesten bearbeitet werden sollte.
 
-Als wäre das noch nicht genug, kommt schon wieder eine Mail mit einem »EILT«-Vermerk im Betreff in den Posteingang, ein Telefonanruf geht ein oder jemand schneit persönlich ins Büro und möchte »mal schnell« irgendwas von einem. Und dieser Zustand soll auch noch der Sollzustand sein, Stichwort »Multitasking«? In Studien wurde ermittelt, dass es nach einer Unterbrechung viele Minuten braucht, bis die Konzentration wieder die alte Tiefe wie davor erreicht hat und dass dies immer schlechter geht, dass die Konzentrationsfähigkeit sozusagen verschleißt und konzentriertes Arbeiten immer seltener ist.
+Als wäre das noch nicht genug, kommt schon wieder eine Mail mit einem »EILT«-Vermerk im Betreff in den Posteingang, ein Telefonanruf geht ein oder jemand schneit persönlich ins Büro und möchte »mal schnell« irgendwas von einem. Und dieser Zustand soll auch noch der Sollzustand sein, »Multitaskingfähigkeit« im Wahn einer sich immer schneller um sich selbst drehenden Arbeitswelt? In Studien wurde ermittelt, dass es nach einer Unterbrechung viele Minuten braucht, bis die Konzentration wieder annähernd die alte Tiefe wie davor erreicht hat und dass dies mit jeder Unterbrechung immer schlechter geht, dass die Konzentrationsfähigkeit sozusagen verschleißt und konzentriertes Arbeiten immer mehr zu einer Utopie verkommt.
 
-FlowTime soll eine Open-Source-Software werden, die dabei unterstützt, mit dieser Situation besser umzugehen, die Konzentrationsfähigkeit erhält und die Resilienz gegen Unterbrechungen verbessert. Bei der Entwicklungen sind zwei eigentlich widersprüchliche Herausforderungen zu vereinbaren: Einfachheit der Bedienung des Programms zum einen und Flexibilität zum anderen, so dass es sich so gut wie möglich an die Arbeitsweise des Anwenders anpasst.
+FlowTime soll eine Open-Source-Software werden, die dabei unterstützt, mit dieser Situation besser umzugehen. Sie soll die Konzentrationsfähigkeit erhalten und die Resilienz gegen Unterbrechungen verbessern. Bei der Entwicklung des Programms sind zwei eigentlich widersprüchliche Herausforderungen zu vereinbaren: Einfachheit in der Anwendung zum einen und Flexibilität zum anderen, so dass es sich so gut wie möglich an die Arbeitsweise des Anwenders anpasst.
 
 Das Programm soll im Wesentlichen:
 
  * **die sogenannte Refokussierungsphase nach Unterbrechungen bei der Arbeit verkürzen**. Damit ist die Zeit gemeint, die benötigt wird, bis man wieder so tief »drin« ist wie vor einer Unterbrechung. 
- * **zwischen dem im Büro herrschenden Multitaskingwahn und dem menschlichen Gehirn vermitteln**. *Gut* machen kann es bekanntlich nur eines nach dem anderen, und dass es hier einen Unterschied zwischen den Geschlechtern gäbe, ist wissenschaftlich nicht belegt. In der Redewendung »auf mehreren Hochzeiten gleichzeitig tanzen« müsste es ehrlicherweise *torkeln* heißen. 
- * **der Verschmelzung von Arbeits- und Freizeit entgegenwirken**, indem sie den Dringlichkeitsanstieg von eingetragenen Aufgaben rechnerisch aus der Freizeit in die Arbeitszeit verlagert. Damit setzt das Programm die Bereitschaft des Anwenders voraus (bzw. kann ihn durchaus in einem gewissen Rahmen dazu motivieren), hinreichend genau vorauszuplanen und sicherlich auf ein Stück Spontaneität zu verzichten. 
+ * **zwischen dem im Büro herrschenden Multitaskingwahn und dem menschlichen Gehirn vermitteln**. *Gut* machen kann es bekanntlich nur eines nach dem anderen. Dass es hier einen Unterschied zwischen den Geschlechtern gäbe, ist übrigens wissenschaftlich nicht belegt. Jedenfalls müsste es in der Redewendung »auf mehreren Hochzeiten gleichzeitig tanzen« ehrlicherweise *torkeln* heißen. 
+ * **der Verschmelzung von Arbeits- und Freizeit entgegenwirken**, indem sie den Dringlichkeitsanstieg von eingetragenen Aufgaben rechnerisch aus der Freizeit in die Arbeitszeit verlagert. Damit setzt das Programm die Bereitschaft des Anwenders voraus bzw. soll ihn in erster Linie dazu motivieren, hinreichend genau vorauszuplanen.
 
-Der Sinn und Zweck des Projekts ist, Flowerlebnisse bei der Büroarbeit zu begünstigen. Daher der Name. Das Programm zählt sich zu den Zeit- und Aufgabenmanagementsystemen. Die sind oft entweder zu einfach gestrickt sind oder zu komplex – die Mitte ist noch zu wenig vertreten. FlowTime ist *keine* professionelle Projektmanagementsoftware. Das Augenmerk liegt bei der Entwicklung eines Prototyps auch nicht darauf, sich gut in bestehende Groupwarelösungen einzufügen. Vielmehr lasst uns die Entnetzung zum Prinzip erheben. Wo keine Netze, da keine Abhängigkeiten, da Freiheit, da ist konzentriertes Arbeiten möglich. 
+Der Sinn und Zweck des Projekts ist, Flowerlebnisse bei der Büroarbeit zu begünstigen – daher der Name. Das Programm zählt sich zu den Zeit- und Aufgabenmanagementsystemen. Andere Vertreter dieser Softwaregattung sind oft entweder zu einfach gestrickt sind oder zu komplex – die Mitte ist noch zu wenig vertreten. FlowTime ist weder ein einfaches Todolistenprogramm, noch eine professionelle Projektmanagementsoftware. Es ist für Vorhaben kleiner und mittlerer Größe geeignet, die für sich genommen vom Einzelnen überschaut werden können. Das Augenmerk liegt bei der Entwicklung eines Prototyps auch nicht darauf, sich gut in bestehende Groupwarelösungen einzufügen. Vielmehr sei die Entnetzung zum Prinzip erhoben. Wo keine Netze, da keine Abhängigkeiten, da Freiheit – da ist konzentriertes Arbeiten möglich. 
 
-FlowTime wird – das heißt: ist in essentiellen Teilen bereits – in der Programmiersprache Perl realisiert und unterliegt den Bedingungen der GNU General Public License, Version 3.0, oder wahlweise denselben wie Perl selbst. Ja, ich weiß, Perl hat nicht gerade den Ruf einer leicht *lesbaren* Programmiersprache. Folgt der Entwickler einschlägigen Richtlinien, nämlich den »Perl Best Practices« von Conway (2006) und »Modern Perl« von cromatic (2014), ist der resultierende Code mehr als vorzeigbar und Dritte bekommen schnell eine Ahnung, was einzelne Passagen tun.
+FlowTime wird – ist übrigens bereits zu essentiellen Teilen – in der Programmiersprache Perl realisiert. Es handelt sich um freie und offene Software unter den Bedingungen der GNU General Public License, Version 3.0, oder wahlweise der Perl Artistic License.
 
-Die Software fußt auf dem Webframework Mojolicious. So kann die Benutzeroberfläche über den bevorzugten Webbrowser des Anwenders laufen und mittels HTML5 und Javascript realisiert werden. Der Serverseite kann entweder eine Maschine im Inter-/Intranet oder ein Programm sein, das abgeschottet von der Außenwelt direkt auf dem lokalen System läuft. Letzteres macht weniger datenschutzrechtliche und Sicherheitsprobleme und hat daher Priorität.
+FlowTime ist mit dem Webframework Mojolicious realisiert. Dadurch kann die Benutzeroberfläche über den bevorzugten Webbrowser des Anwenders laufen und mittels HTML5 und Javascript realisiert werden. Der Serverseite kann entweder eine Maschine im Inter-/Intranet sein oder ein Programm, das abgeschottet von der Außenwelt direkt auf dem lokalen System läuft. Weil letztere Betriebsart weniger datenschutzrechtliche und Sicherheitsprobleme macht, soll sie bei der Entwicklung bevorzugt werden.
+
+Der folgende Screenshot zeigt einen Entwurf der Hauptansicht von FlowTime. Links ist die Navigation, rechts werden die aktuell dringlichsten Aufgaben aufgelistet.
 
 ![Hauptseite von FlowTime: Aufgabenliste – Prototyp](snapshot-home.png)
 
@@ -27,51 +29,65 @@ Technische Konzeption
 <a name="kriterien">Wie wird die Dringlichkeit berechnet?</a>
 --------------------------------------------------------------
 
-Fünf verschiedene Größen sind derzeit berücksichtigt. Jede spiegelt einen anderen Begriff von Dringlichkeit wieder. Weitere Dimensionen können dazukommen. Sie werden unabhängig voneinander berechnet, anschließend über eine gedachte kontinuierliche, lineare und einheitslose Skala normiert, die durch den jeweiligen kleinsten und größten Wert begrenzt ist. Die normierten Werte im Bereich von 0 (Minimum) bis 1 (Maximum) werden jeweils mit einem Wichtungsfaktor multipliziert, den der User jeweils seinem Gefühl entsprechend für alle Aufgaben bestimmen kann (voreingestellt ist neutralerweise 1 bei allen). Alle aktuell anstehenden Aufgaben werden schließlich nach der schlichten Summe dieser Produkte, ihrem sogenannten »FlowRank« geordnet angezeigt.
+Nur fünf verschiedene Größen scheinen mir derzeit sinnvoll. Sie spiegeln verschiedene Begriffe von Dringlichkeit wieder. Weitere Dimensionen können dazukommen. Sie werden unabhängig voneinander berechnet, anschließend über eine gedachte kontinuierliche, lineare und einheitslose Skala normiert. Die resultierenden Werte im Bereich von 0 (Minimum) bis 1 (Maximum) werden jeweils mit einem Wichtungsfaktor multipliziert, den der User jeweils seinem Gefühl entsprechend für alle Aufgaben bestimmen kann (voreingestellt ist neutralerweise 1 bei allen). Alle aktuell anstehenden Aufgaben werden schließlich in absteigender Ordnung nach der schlichten Summe dieser Produkte, ihrem sogenannten »FlowRank« angezeigt.
 
-### a) <a name="prio">Priorität</a>
+  1. <a name="prio">Priorität</a>
 
-Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« sind in FlowTime lediglich informativ. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und eine weitere Aufgabe bekommt Priorität 3000, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. 
+  Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« sind in FlowTime lediglich informativ. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und eine weitere Aufgabe bekommt Priorität 3000, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. 
 
-### b) <a name="deadline">Zeitliche Nähe zum Fristende</a>
+  2. <a name="deadline">Zeitliche Nähe zum Fristende</a>
 
-Je näher die Frist rückt, umso dringlicher ist eine Aufgabe. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nicht wert eingetragen zu werden.
+  Je näher die Frist rückt, umso dringlicher ist eine Aufgabe. Grundsätzlich sollte jede Aufgabe mit einem Fristende belegt werden. Aufgaben, für die man sich nicht einmal eine provisorische Frist »ausdenken« kann, sind nach gängiger Lehrmeinung des Zeitmanagements beiseite zu legen.
 
-### c) <a name="tpd">Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a>
+  3. <a name="tpd">Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a>
 
-Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn und Fristende hinterherhinkt, als umso dringlicher gilt die Aufgabe.
+  Je weiter der Erledigungsfortschritt dem zeitlichen Fortschritt zwischen Beginn und Fristende hinterherhinkt, als umso dringlicher gilt die Aufgabe.
 
-In der Liste wird dieses Kriterium auch farblich visualisiert.
+  In der Liste wird dieses Kriterium auch farblich visualisiert.
 
 
-### d) <a name="open">wie lange eine Aufgabe schon offen ist</a>
+  4. <a name="open">Zeit, wie lange eine Aufgabe schon offen ist</a>
 
-Werden die Details einer Aufgabe eingeblendet, gilt sie als offen, bis sie erledigt ist oder wieder geschlossen wird. Offene Aufgaben, sowie gemäß der anderen Größen dringlichere geschlossene Aufgaben werden auf der »Schreibtisch«-Ansicht gelistet, der Rest in den Ansichten »Ablage« bzw. die begonnenen, aber pausierenden Aufgaben in »Schublade«.
+  Werden die Details einer Aufgabe eingeblendet, gilt sie als offen, bis sie erledigt ist oder wieder geschlossen wird. Offene Aufgaben, aber auch geschlossene, die gemäß der anderen Größen dringlicher sind, werden auf der »Schreibtisch«-Ansicht gelistet, der Rest in den Ansichten »Ablage« bzw. die begonnenen, aber pausierenden Aufgaben in »Schublade«.
 
-Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen.
+  Durch diese Größe ist bei entsprechender Gewichtung gewährleistet, dass nur ein paar wenige offene Aufgaben tatsächlich auf dem virtuellen Schreibtisch liegen und der Anwender den ganzen Rest mental ausblenden kann.
 
-### e) <a name="reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a>
+  5. <a name="reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a>
 
-Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe, der bisherigen Bearbeitungsgeschwindigkeit und danach, wie viele Arbeits- und Freizeitphasen vor bzw. nach ihrer Frist liegen und wie lang sie sind. 
+  Diese Größe richtet sich nach dem aktuellen Erledigungsfortschritt der Aufgabe, der bisherigen Bearbeitungsgeschwindigkeit und danach, wie viele und wie lange Arbeits- und Freizeitphasen vor bzw. nach ihrer Frist liegen. 
 
 <a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt genau?</a>
 ---------------------------------------------------------------------------
 
-Folgendes bezieht sich auf die obigen Größen b) bis e).
+Folgendes bezieht sich auf die obigen Größen 2 bis 5. 
 
-Nur die laufende geplante *Arbeitszeit* ist für die Dringlichkeitsberechnung relevant. In FlowTime-Terminologie unterscheiden wir diese sogenannte »Nettozeit« von der realen, der »Bruttozeit«, die auch die Freiphasen umfasst. Während der geplanten Freiphasen sind Aufgaben quasi eingefroren: Ihre zeitbezogenen Dringlichkeitswerte ändern sich nicht. Dafür steigen sie in den Arbeitsphasen entsprechend steiler an. Alle Sekunden einer Freiphase gelten gewissermaßen als *identisch* mit der nächsten Nettosekunde.
+Nur die laufende geplante *Arbeitszeit* ist für die Dringlichkeitsberechnung relevant. In FlowTime-Terminologie unterscheiden wir diese sogenannte »Nettozeit« von der realen, der »Bruttozeit«, die auch die Freiphasen umfasst. Während der geplanten Freiphasen sind Aufgaben quasi eingefroren: Ihre zeitbezogenen Dringlichkeitswerte ändern sich nicht. Dafür steigen sie in den Arbeitsphasen entsprechend steiler an. Alle Sekunden einer Freiphase gelten gewissermaßen als *identisch* mit der nächsten Nettosekunde, bildlich gesprochen pendelt der Sekundenzeiger gewissermaßen zwischen zwei Strichen des Ziffernblatts.
 
-Welche »echte« Sekunde in einer Arbeits- oder einer Freiphase liegt, ergibt sich aus dem Zeitmodell, das der Anwender definiert, bevor er die erste Aufgabe einträgt. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten werden unterstützt.
+Welche Sekunde der Realzeit in einer Arbeits- oder einer Freiphase liegt, ergibt sich aus dem Zeitmodell, das der Anwender definiert, bevor er die erste Aufgabe einträgt. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten werden unterstützt.
 
-Auf technischer Ebene besteht ein Zeitmodell aus einer oder bei Bedarf mehreren Schienen. Eine Zeitschiene hat einen festen Grundrhythmus von Arbeits- und Phasen. Er richtet sich danach, an welchen Wochentagen der Anwender wann mit der Arbeit beginnt, wann er in die Pause(n) geht und wann in den Feierabend. Und: Sie kann Variationen eingelagert bekommen, also andere Rhythmen, die von dann bis dann anstelle des Grundrhythmus' gelten sollen. Diese Variationen können explizit für eine Schiene definiert sein oder – dies jedoch nur experimentell – implizit von anderen Schienen übernommen werden.
+Auf technischer Ebene besteht ein Zeitmodell aus einer oder – bei Bedarf – mehreren Schienen. Eine Zeitschiene hat einen festen Grundrhythmus von Arbeits- und Freiphasen. Er richtet sich danach, an welchen Wochentagen der Anwender wann mit der Arbeit beginnt, wann er in die Pause(n) geht und wann in den Feierabend. Und: Sie kann Variationen eingelagert bekommen, also andere Rhythmen, die von dann bis dann anstelle des Grundrhythmus' gelten sollen. Diese Variationen können explizit für eine Schiene definiert sein oder implizit von anderen Schienen übernommen werden. Letztere Möglichkeit ist dabei experimentell, ihre Zukunft noch ungewiss.
 
-Aufgaben sind bei Eintragung mit einer Zeitschiene zu verknüpfen, und natürlich mit einem Startdatum (falls abweichend vom Zeitpunkt der Eintragung) und einem Fristende. Ob eine Frist »hart« ist oder »weich«, das spielt für FlowTime keine Rolle. Sowohl Aufgaben als auch Zeitschienen selbst können zu definierten Zeitpunkten auf eine andere Schiene wechseln. In Bezug auf Aufgaben sprechen wir dann von Zeitsegmentierung. Die Benutzeroberfläche sollte so gestaltet werden, dass Zeitsegmente und -schienen nur für die Zukunft eingeführt und geändert werden können, nicht rückwirkend. Das würde die Dringlichkeitsberechnung verfälschen.
+Aufgaben sind bei Eintragung mit einer Zeitschiene zu verknüpfen, und natürlich mit einem Startdatum (voreingestellt auf den Zeitpunkt der Eintragung) und einem Fristende. Ob eine Frist »hart« ist oder »weich«, das spielt für FlowTime keine Rolle. Sowohl Aufgaben als auch die Zeitschienen selbst können zu definierten Zeitpunkten auf eine andere Schiene wechseln. In Bezug auf Aufgaben sprechen wir dann von Zeitsegmentierung. Die Benutzeroberfläche sollte so gestaltet werden, dass Zeitsegmente und -schienen nur für die Zukunft eingeführt und geändert werden können, nicht rückwirkend. Das würde die Dringlichkeitsberechnung verfälschen.
 
 Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Sie muss also vor dem Anwender soweit verborgen und einzelne Funktionen von ihm erst manuell freigeschaltet werden. Dies erfordert eine Benutzeroberfläche, die mit seinen Ansprüchen »wächst«. Grundsätzlich sollte das Zeitmodell ganz pragmatisch nach der Devise *So fein wie nötig, aber so grob wie möglich* definiert sein.
 
+### Beispiele
+
+Im Folgenden werden die Notationen für Grundrhythmen unterschiedlicher Komplexität erläutert. In dieser Notation wird ein Grundrhythmus in der Datenbank hinterlegt. Dem weniger bedarften Anwender muss er über ein intelligentes, intuitiv zu bedienendes kleines Formular zugänglich gemacht werden, das im Hintergrund diese Notation erzeugen und wiederum interpretieren kann.
+
+ * `Mo-Fr@9-16`: Arbeitswoche mit fünf Werktagen. Die Nettozeit läuft an diesen Tagen ab neun durchgängig bis … nein, genau genommen nicht bis um vier, sondern bis 16:59:59. Eine feste Mittagspause ist nicht definiert, sollte dennnoch im Rahmen der stets gebotenen Pufferzeit gemacht werden. Nun nehmen wir an, der Anwender hat mit dieser Zeitschiene eine Aufgabe verknüpft, die gestartet wird am Freitag um zwölf und bis Dienstag der Woche darauf um 15 Uhr erledigt sein muss. Ohne die beschriebene Unterscheidung zwischen Arbeits- und Freiphasen müsste FlowTime am Montag früh davon ausgehen, dass das Aufwandäquivalent zur verstrichenen Echtzeit, nämlich 12 + 24 + 24 + 9 = 69 von 99 Stunden => ca. 70% erledigt ist. Aber wer kann schon 69 Stunden auf die zwei restlichen Arbeitsstunden am Freitag verdichten, zumal vor Feierabend. Dank der Logik weiß FlowTime, dass er Montag um neun, quasi seit Freitag abend nur 23,6%, entsprechend fünf von 19 Nettostunden geschafft haben sollte.
+
+ * `Mo-Do@9-16,!12,Fr@9-12,!13-16`: mit regelmäßiger Mittagspause von zwölf bis eine Sekunde vor eins, außer am Freitag, da macht der Anwender regelmäßig schon um eins Feierabend und verzichtet dafür auf die Mittagspause. Das Ausrufezeichen markiert Freizeiten.
+
+ * `2n+1:Mo,Di,Do,Fr@9-16,Mi@8-11:30;Mo,Di,Do,Fr@9-16,Mi@11:30-15:00`: Nicht selten müssen sich auch Büroarbeiter an Dienstpläne halten, die nach Kalenderwochen alternieren. In diesem Beispiel arbeitet der Anwender mittwochs von acht bis halb zwölf in ungeraden Kalenderwochen, in geraden dagegen hat er die folgende Schicht bis um drei. An allen anderen Tagen geht seine Arbeitszeit durchgängig von neun bis fünf. »2n+1« spezifiziert die Kalenderwochennummern im Bereich von 1 bis 53 nach ISO-Zählung an, für die der anschließend notierte Rhythmus (bis zum folgenden Semikolon oder bis zum Schluss) gilt. Statt 2 und +1 können beliebige Ganzzahlen angegeben werden, letztere auch im negativen Bereich. Ob ein Rhythmus mit »xn±y:«-Einschränkung für eine gegebene Kalenderwoche anzuwenden ist, prüft das System über (w-y)/x = n bei n∈ℤ und n≥0. 
+
+### Danach muss man sich dann haargenau richten?
+
 Abweichungen von derartigen Vorausplanungen sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger sich der User an die definierte Zeiteinteilung hält, umso weniger gleiten ihm die Aufgaben während seiner Freizeit ins Rote, sorgen für umso weniger Überraschung, wenn er wieder im Büro ist und FlowTime aufruft. Die Zeitlogik funktioniert für ihn also nur so gut, wie sich die geplanten und die tatsächlichen Arbeits- und Freiphasen decken. 
 
-### <a name="exkl-zeitzuteilung">*Noch nicht umgesetzt:* Exklusive Zeitzuteilung</a>
+All das ist bereits implementiert und von automatisierten Tests abgedeckt.
+
+### <a name="exkl-zeitzuteilung">*Idee, noch nicht umgesetzt:* Exklusive Zeitzuteilung</a>
 
 Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. Es geht bei dieser klassischen Terminsicht vor allem darum, zeitliche Konflikte zu vermeiden. FlowTime soll das Konzept weiterentwickeln und sauber in das Ganze integrieren. Hierzu habe ich schon erste Ideen.
 
@@ -83,16 +99,23 @@ Auch auf Zeitschienenebene könnten Reservierungen möglich sein. Solche Reservi
 <a name="erledigungsfortschritt">Wie wird der Erledigungsfortschritt berechnet?</a>
 ----------------------------------------------
 
-Aufgaben zu erledigen ist die beste Möglichkeit, die Dringlichkeit einer Aufgabe zu reduzieren und sie im blauen Bereich zu halten.
+Aufgaben zu erledigen ist die beste Möglichkeit, die Dringlichkeit einer Aufgabe zu reduzieren und sie im blauen Bereich zu halten. Du wirst nicht daran gehindert, ständig an den Erledigungsfristen oder am Zeitmodell zu schrauben, um Aufgaben zu »entröten«, das ist jedoch keine zweckmäßige Verwendung des Programms.
 
 Kleine Aufgaben bekommen einfach ein Erledigungshäkchen und verschwinden ins Archiv. Größere Vorhaben dagegen, auf jeden Fall Projekte, an denen auch Kollegen mitarbeiten, sollten in Schritten und ggf. Unterschritten/-aufgaben gegliedert werden.
 
-Einzelne Schritte können bei Bedarf mehrere Kästchen zum Abhaken bekommen, etwa wenn sie mehrmals in Folge abgearbeitet werden müssen, oder wenn sie dem Wesen nach in Phasen eingeteilt sind, die selbstverständlich sind und keiner expliziten Beschreibung bedürfen.
+Einzelne Schritte können bei Bedarf eine Reihe von Kästchen zum Abhaken bekommen, etwa wenn sie mehrmals in Folge abgearbeitet werden müssen, oder wenn sie dem Wesen nach in Phasen eingeteilt sind, die selbstverständlich sind oder sich aus der Beschreibung des Schrittes ergeben.
 
-Schritte auf allen Ebenen können zudem in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, denen sie hierarchisch über-, unter- oder beigeordnet sind. Anhand dieser Schätzungen berechnet FlowTime, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt der Aufgabe treibt.
+Schritte auf allen Ebenen können zudem in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, denen sie hierarchisch über-, unter- oder beigeordnet sind. Anhand dieser Schätzungen berechnet FlowTime, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt der Aufgabe treibt. Dieser sachliche Gesamtfortschritt ist relevant für die Berechnung der Dringlichkeitsdimensionen 3 und 5 (siehe oben).
 
-**Warum könnte man nicht einfach eingeben, wieviel Prozent von der gesamten Aufgabe man schätzungsweise erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen** Das würde mich als Anwender bestimmt über kurz oder lang zum Schummeln verleiten. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. Ich würde damit Zeit verschwenden, die ich besser hätte in die Erledigung der Aufgaben hätte stecken können.
+**Warum könnte man nicht einfach eingeben, wieviel Prozent von der gesamten Aufgabe man schätzungsweise erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen?** Das würde mich als Anwender bestimmt über kurz oder lang ans Schummeln gewöhnen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. Ich würde damit Zeit verschwenden, die ich besser hätte in die Erledigung der Aufgaben hätte stecken können.
 
+### Beispiel 1
+
+ * Aufgabentitel: "Kalkulation Auftrag Müller 25.5.2011"; Start: 30.5.11 11:30; Ende: 30. 18:00; Priorität mittel; Aufwand: 1; Häkchen: 1; Erledigt: 0
+
+### Beispiel 2
+
+ * Aufgabentitel: "Migration Excel-Kundentabelle nach MySQL+Webapp"; Start: 21.7.2012 9:00; Ende: 15.10. 17:00; Priorität: hoch; # TODOC 
 
 <a name="weitere-kernfunktionen">Weitere geplante Kernfunktionen</a>
 --------------------------------------------------------------------
@@ -106,7 +129,7 @@ Schritte auf allen Ebenen können zudem in ihrem Aufwand geschätzt werden. Die 
 Risiken
 =========
 
-Rein technisch ist es egal, ob das definierte Zeitmodell von der selbstbestimmten Lebensgestaltung des Users herrührt oder er es von seinem Vorgesetzten aufoktroyiert bekommen hat. Das heißt, diktiert nicht der User der Maschine seinen Arbeitstakt, sondern hat er vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil, und FlowTime möglicherweise zum Produktivitätskiller schlechthin. Aus diesem Grund sollte FlowTime nur freiwillig verwendet werden und es dürfen keine Nachteile durch die Nichtanwendung entstehen. Aufgaben- und Zeitmanagement muss Privatsache bleiben, egal ob FlowTime oder andere Tools/Methoden verwendet werden oder gar nichts dergleichen.
+Rein technisch ist es egal, ob das definierte Zeitmodell von der selbstbestimmten Lebensgestaltung des Users herrührt oder er es von seinem Vorgesetzten aufoktroyiert bekommen hat. Das heißt, diktiert nicht der User der Maschine seinen Arbeitstakt, sondern hat er vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil, und FlowTime nachgerade kontraproduktiv. Aus diesem Grund sollte FlowTime nur freiwillig verwendet werden und es dürfen keine Nachteile durch die Nichtanwendung entstehen. Aufgaben- und Zeitmanagement muss Privatsache bleiben, egal ob FlowTime oder andere Tools/Methoden verwendet werden oder gar nichts dergleichen.
 
 Überhaupt lässt sich FlowTime durch sein Funktionsprinzip als Instrument missbrauchen, um die Leistungsmessung von Angestellten zu überwachen. Das Open-Source-Prinzip – so viele ethische Vorteile es haben mag – macht es unmöglich, solche unethischen, schädlichen Bestrebungen effektiv zu verhindern. Durch ein Manifest können wir uns allenfalls davon distanzieren. Weder wird das Entwickler-Kernteam an Funktionen arbeiten, die eindeutig auf Leistungsmessung abzielen, noch die Entwicklung und die Installation entsprechender Erweiterungen irgendwie unterstützen. Sollte es je Firmen geben, die Support, Betreuung, Betrieb oder Installation von FlowTime anbieten, so sei ihnen empfohlen, vorrangig Betriebsräte und Gewerkschaften als Kunden zu akzeptieren.
 
@@ -126,4 +149,3 @@ Horde Groupware, Aufgaben-Modul
 
 Läuft im Browser. Über ein Formular wird eine Aufgabe erstellt und bearbeitet. Aufgaben können nur nach einem Kriterium angeordnet werden, also entweder nach Priorität (5 Stufen) oder nach Stichdatum. Die geschätzte Zeit (Bedarf) einer Aufgabe ist ein Freitextfeld, wohl zur reinen Information. Es gibt keine Möglichkeit, den Erledigungsfortschritt anzugeben.
 
----

@@ -48,7 +48,7 @@ __PACKAGE__->has_many(
 __PACKAGE__->set_primary_key( 'ROWID' );
 
 { my %tmp_msr;
-  my @proxy_fields = qw(timestages description done checks expoftime_share substeps);
+  my @proxy_fields = qw(description done checks expoftime_share substeps);
 
 __PACKAGE__->belongs_to( main_step_row => 'FlowDB::Step',
     { 'foreign.ROWID' => 'self.main_step'},
