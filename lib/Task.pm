@@ -1,8 +1,11 @@
 use strict;
 
 package Task;
+use 5.014;
 use Moose;
 use Carp qw(carp croak);
+use Algorithm::Dependency::Ordered;
+use Algorithm::Dependency::Source::HoA;
 
 has _cursor => (
     is => 'ro',
@@ -98,39 +101,50 @@ sub store {
     my $args = @_ % 2 ? shift : { @_ };
 
     # Get name of upmost step to be stored 
-    my $root = keys(%$args) == 1 # store() callable with { $step_name => \%data }
-             ? do {              # or with { (step => $name), %further_data }
-                   my ($k) = keys %$args;   # ^ omitted? => task/main_step data
+    my $root = keys(%$args) == 1
+             ? do { # store() callable with { $step_name => \%data }:
+                   my ($k) = keys %$args;
                    ($args) = values %$args;
                    $k;
                }
+               # or with { (step => $name), %further_data }:
              : delete $args->{step} // ''; 
 
     $args->{oldname} = $root;
 
-    my $steps = delete $args->{steps} // {};
+    # As we want to be able to mention known steps in {substeps}
+    # without declaring them in {steps} hash ...
+    my $new_steps = do {
+        my $steps_href = delete $args->{steps} // {};
+        my $steps_rs  = $self->dbicrow->steps_rs;
+        my @search_args = ( {}, { columns => [qw/name/] } );
+        $steps_href->{ $_->name } //= {}
+            for $root ? $steps_rs->find($root)->and_below(@search_args)
+                      : $steps_rs->search(@search_args)
+                      ;
+        $steps_href;
+    };
 
-    # Make sure %$steps sub-hash has all existing steps with value {} at least
-    for my $step ( $self->steps->search( {}, { columns => [qw/name/] } ) ) {
-        $steps->{ $step->name } //= {};
+    # We expect all upper steps before their lower levels
+    my @steps;
+    if ( my $s = delete $args->{substeps} ) {
+        @steps = $self->_sequence_step_data_hrefs( $root, $new_steps, $s );
+    }
+    else {
+        @steps = values %$new_steps;
     }
 
-    $steps = $args->{substeps} && [ # was hash, is now array reference
-        $self->_sequence_step_data_hrefs(
-            $root, $steps, delete $args->{substeps},
-        )
-    ];
-
     $self->dbicrow->result_source->storage->txn_do(
-        \&_store_write_to_db => $self, $root, $args, $steps,
+        \&_store_write_to_db => $self, $args, @steps
     );
 
     my @to_recalc;
-    while ( my ($step, $args) = each %$steps ) {
-        next if !grep { defined($_) } @{$args}{qw{ done checks exp_oftime }};
+    while ( my ($step, $args) = each %$new_steps ) {
+        next if !grep { defined($_) }
+             @{$args}{qw{ done checks expoftime_share }};
         push @to_recalc, $step;
     }
-    $self->tasks->recalc_dependencies($self => @to_recalc);
+    $self->tasks->recalculate_dependencies($self => @to_recalc);
 
     return 1;
 
@@ -139,12 +153,13 @@ sub store {
 sub _sequence_step_data_hrefs {
     my ($self, $parent_name, $steps_href, $top_sequence) = @_;
 
-    my %parent_of;   # %seen with parent names as values:
-                     # Used to prevent circular references that
-                     # would certainly cause endless loops
+    my %dependencies;   # %seen with parent names as values:
+    my %parent_of;      # Used to prevent circular references that
+                        # would certainly cause endless loops
 
     my $sequencer = sub {
-        my $sequence = shift;
+        my ($parent_name, $sequence) = @_;
+        return [] if !length $sequence;
 
         my ($defined_pos, $undefined_pos) = split m{\s*;\s*}x, $sequence, 2;
         my  @defined_pos                  = split m{   ,\s*}x, $defined_pos;
@@ -155,153 +170,166 @@ sub _sequence_step_data_hrefs {
 
             next CLUSTER if !defined $cl;
 
-            for my $step_name ( split m{ [/] }xms, $cl ) {
-                my $step = $steps_href->{$step_name};
+            my @cluster = split m{ [|/] }xms, $cl;
+            
+            my $order_plus = 0;
 
+            for my $step_name ( @cluster ) {
+                my $step = $steps_href->{$step_name};
+                my $order_num = $order_num && ( $order_num + $order_plus );
                 croak qq{No step "$step_name" defined} if !$step;
                 croak qq{Step already subordinated to $parent_of{$step}}
-                    if $parent_of{$step};
+                    if $parent_of{$step_name};
 
-                @{$step}{ 'oldname', 'parent',     'pos'      }
-                    = ( $step_name,  $parent_name, $order_num );
+                @{$step}{ 'parent', 'pos' } = ( $parent_name, $order_num );
                 
-                push @steps, $step;
+                push @steps, $step_name;
    
-                $parent_of{ $step } = $parent_name;
+                $parent_of{$step_name} = $parent_name;
+
             }
-            
+            continue {
+                $order_plus += 1/@cluster;
+            }
         }
         continue {
             $order_num++;
         }
         
-        return @steps;
+        return \@steps;
 
     }; # end of $sequencer definition
 
-    my @steps = $sequencer->($top_sequence);
-    my @ordered_steps;
+    $parent_name = '#ROOT#' if !length $parent_name;
+    $dependencies{$parent_name} = $sequencer->(q{} => $top_sequence);
 
-    while ( my $step = shift @steps ) {
-
-        if ( my $substeps = delete $step->{substeps} ) {
-            $parent_name = $step->{name} // $step->{old_name};
-            unshift @steps, $sequencer->($substeps);
-        }
-
-        push @ordered_steps, $step;
-
+    while ( my ($step,$md) = each $steps_href ) {
+        $md->{oldname} = $step;
+        $dependencies{$step} = $sequencer->($step => $md->{substeps});
     }
 
-    if ( my @not_seen = grep { !defined $parent_of{$_} } keys %$steps_href ) {
-        croak 'steps hash-ref contains keys not listed in any substeps entry'
-            . ': ', join q{, }, @not_seen;
+    my $dep_source
+        = Algorithm::Dependency::Source::HoA->new(\%dependencies)
+        ;
+    my $resolved_order = Algorithm::Dependency::Ordered->new(
+        source => $dep_source
+    )->schedule_all // croak "ADO failed to resolve order of steps";
+
+    my @ordered_steps = reverse @$resolved_order;
+
+    if ( $ordered_steps[0] eq q{#ROOT#} ) {
+        shift @ordered_steps;
+        delete $steps_href->{''};
     }
+    for my $step ( @ordered_steps ) {
+        $step = delete $steps_href->{$step};
+    }
+
+    if ( my @orphans = keys %$steps_href ) {
+        croak "Some steps of which the data provided in {steps}"
+            ." are not hooked in any {substeps} order chain: "
+            . join q{, }, @orphans
+        ;
+    }
+    
+    
     return @ordered_steps;
 
 }
 
 sub _store_write_to_db {
-    my ($self, $root_step, $root, $steps_upd_data) = @_;
+    my ($self, $root, @steps_upd_data) = @_;
 
+    ########################################################
+    ## 1. Save the data of the root step
+    #####################################/
     my $row = $self->dbicrow;
     my $steps_rs = $row->steps;
     my %new_parents;
+    my $name = delete $root->{oldname};
 
-    my %steps2; # working copy to be rebuild on reentry
-                # (e.g. database reconnection)
-    while ( my ($step, $properties) = each %$steps_upd_data ) {
-        $steps2{$step} = { %$properties };
+    if ( length $name ) {
+        my $step_row = $steps_rs->find($name);
+        $root->{name} //= $name;
+        my $p = $root->{parent};
+        croak "Not found: parent row for step '$name' with ID $p"
+            if $p && !$steps_rs->find($p);
+        if ($step_row) { $row = $step_row; }
+        elsif ( $p && exists $root->{pos} ) {
+            $row = $steps_rs->new({ name => $name });
+        }
+        else {
+            croak "New step must have a parent and a position"
+        }
     }
-
-    if ( !length($root_step) ) {
-        delete $root->{oldname};
+    else {
+        croak "root step cannot have a parent"
+            if $root->{parent};
         while ( my ($key, $value) = each %$root ) {
             $row->$key($value);
         }
-        croak "root step cannot have a parent"
-            if $root->{parent};
     }
-    elsif ( my $p = $root->{parent} ) {
-        croak "parent row with ID $p not found"
-            if !$steps_rs->find($p);
-    }
-    else { croak "No parent" }
-
-    my @NON_DB_FIELDS = qw/ substeps _ancestor _level _substeps_processed /;
-
-    while ( my $step = $steps_rs->next ) {
-
-        if ( my $s = delete $steps2{ $step->name } ) {
-
-            for my $p ($s->{parent}) {
-                last if $steps_rs->find($s->{parent});
-
-                # can't have a nonexisting row as a parent,
-                # so let's reset it to NULL temporarily
-                push @{$new_parents{$p}}, $step->name;
-                $p = undef;
-
-            }
-
-            delete @{$s}{@NON_DB_FIELDS};
-                # If we kept emptied array-ref substeps here, DBIx::Class
-                # would think $step hasn't any and erase what has just been
-                # or is yet to be updated.
-                # _level is needed for rows to insert only (s.b)
-
-            $step->update($s);
-
-        }
-
-        else {
-            # Forget all substeps unmentioned in the hierarchy
-            # given that DBIx::Class will delete their descendents with
-            # cascade_delete => 1 set.
-    
-            my ($ar,$ah) = ($step,undef);
-            until ( $ah ) { $ar = $ar->parent_row;
-                $step->delete if ($ah = $steps2{$ar->name})
-                              && $ah->{substeps}
-                              ;
-            }
-    
-        }
-    
-    }
-
-    # In order to not violate foreign key constraint (task,parent/name)
-    # we insert new steps one level after another.
-    for my $s ( sort { $a->{_level} <=> $b->{_level} } values %steps2 ) {
-        delete @{$s}{@NON_DB_FIELDS};
-        $row->add_to_steps($s);
-    }
-
-    while ( my ($name,$substeps) = %new_parents ) {
-        $steps_rs->search({ name => { in => $substeps } })
-                ->update({ parent => $name })
-                ;
-    }
-
-    is_link_valid($_) for $steps_rs->search({ link => { '!=' => undef }});
-
-    $row->main_step_row( $steps_rs->find({ name => '' }) );
 
     my $result;
 
     if ( $row->in_storage ) {
-        
         $result = $row->update;
         $self->redraw_cursor_way;
-        $self->_clear_progress; # to be recalculated on next progress() call
-
+        $self->_clear_progress; 
+            # to be recalculated on next progress() call
     }
     else {
         $result = $row->insert();
         for my $ts ( @{ $root->{timestages} } ) {
             $row->add_to_timestages($ts);
         }
-        croak "Can't build cursor: $@" if !eval { $self->_cursor };
+        eval { $self->_cursor } or croak "Can't build cursor: $@";
+    }
+
+    ###########################################################
+    ## 2. Save or remove the data of the steps below
+    #################################################/
+    my %in_hierarchy = map {
+        my $substeps = delete $_->{substeps};
+        $_->{oldname} => (defined $_->{parent} && defined $substeps);
+    } @steps_upd_data;
+    my %rows_cache;
+
+    for my $step ( @steps_upd_data ) {
+        my $name = delete $step->{oldname};
+        $step->{name} //= $name;
+        my $step_row;
+
+        if ( %$step ) {
+            my $p = delete $step->{parent};
+            my $p_row = length $p ? $rows_cache{ $p }
+                      :           $row->main_step_row;
+            croak "Can't find parent row '$p' for step '$name'"
+                if !$p_row;
+            $rows_cache{ $name } = $step_row
+                = $p_row->update_or_create_related(
+                    substeps => $step
+                );
+        }
+
+        else { # even neither {parent} nor {pos} exist 
+            # Forget all substeps unmentioned in the hierarchy
+            # given that DBIx::Class will delete their descendents
+            # with cascade_delete => 1 set. Climb hierarchy up to
+            # the first having {substeps} which doesn't contain
+            # parent as it did once
+            $step_row = $steps_rs->find({ name => $name });
+            my $ar = $step_row;
+            while ( $ar = $ar->parent_row ) {
+                next if !$in_hierarchy{ $ar->name };
+                $step_row->delete;
+                last;
+            }
+            
+        }
+
+        is_link_valid($step_row) if defined $step_row->link;
+
     }
 
     return $result;

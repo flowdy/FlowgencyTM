@@ -143,7 +143,7 @@ sub _retrieve_task_step {
     my ($self, $task, $step) = @_;
 
     my $found = $self->tasks_rs->find($task)
-        // croak "No task '$task' defined";
+        // croak "No task '$task' found in database";
     $found = $found->substeps->find($step)
         // croak "Task '$task' has no step named '$step'";
 
@@ -166,7 +166,7 @@ sub link_step_row {
     );
 }    
 
-sub recalc_dependencies {
+sub recalculate_dependencies {
      my ($self, $task) = (shift, shift);
      my @links = map {[ $task, $_ ]} @_;
 
@@ -174,15 +174,12 @@ sub recalc_dependencies {
 
      while ( $link = shift @links ) {
          ($task,$step) = @$link;
-         next if $depending{$task}{$step}++;
+         next if $depending{$task}++;
 
          $link = $self->_retrieve_task_step($task, $step);
 
          if ( $p = $link->parent_row ) {
              push @links, [ $p->task, $p->name ];
-             if ( $str = $link->subtask_row ) {
-                 $depending{$str->name}++;
-             }
          }
 
          push @links, map {[ $_->task, $_->name ]}
@@ -198,26 +195,5 @@ sub recalc_dependencies {
 
 }
 
-1;
-
-__END__
-
-sub new_task { # do not use
-    my ($self, $id, $copy_flag) = @_;
-    my $task_rs = $self->task_rs;
-
-    my ($r,$r_base);
-
-    do { $r = $task_rs->find($id); } while $r
-        && ($r_base ||= $r)
-        && $id =~ s{ (?<!\d) (\d*) \z }{ $1+1 }exms;
-
-    my $row =  $r_base && $copy_flag ? $r_base->copy({ name => $id })
-                        : $copy_flag ? croak "No task found to copy: $id"
-                                     : $task_rs->new({ name => $id })
-                                     ;
-
-    return $self->cache->{$row->name} = $self->_build_task_obj($row);
-
-}
+__PACKAGE__->meta->make_immutable();
 

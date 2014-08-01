@@ -17,7 +17,7 @@ __PACKAGE__->add_columns(
     name => { default_value => '' },
     description => { @NULLABLE },
     link => { @NULLABLE },
-    pos => { @NULLABLE, @INTEGER },
+    pos => { @NULLABLE, data_type => 'FLOAT' },
     done => { @INTEGER, default_value => 0 },
     checks => { @INTEGER, default_value => 1 },
     expoftime_share => { @INTEGER, default_value => 1 }
@@ -181,8 +181,10 @@ sub prior_deps {
 }
 
 sub and_below {
-    my $self = shift;
-    return $self, map { $_->and_below } $self->substeps->all;
+    my ($self) = shift;
+    my @args = @_ ? @_ : ({});
+    return $self, map { $_->and_below(@args) }
+                      $self->substeps->search(@args);
 }
 
 1;

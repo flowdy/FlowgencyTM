@@ -40,5 +40,64 @@ my $task = $user->tasks->add({
 
 is $task->name, "task1", "Created test1";
 
+my $task2 = $user->tasks->add({
+    name => 'kundenmigr',
+    priority => 3,
+    from_date => '21.7.2014 9:00',
+    timestages => [{ track => 'default', until_date => '15.10. 17:00' }],
+    title => 'Migration Excel-Kundentabelle nach SQL-Datenbank und Webapp',
+    description => 'My first task with steps',
+    checks => 1,
+    substeps => 'export2csv,dbsetup,csvinput,webapp',
+    steps => {
+        audit => {
+            description => "Datensicherheits-Audit v. extern",
+            expoftime_share => 2,
+            checks => 2,
+            done => 0,
+        },
+        crtables => {
+            description => "Erstellung des SQL-Codes",
+            expoftime_share => 3,
+            checks => 3,
+            done => 2,
+        },
+        csvinput => {
+            description => "CSV-Daten mittels Datenbank-API verarbeiten",
+            expoftime_share => 2,
+            checks => 1,
+            done => 0,
+        },
+        dbsetup => {
+            description => "Konzeption der Datenbank, Entitäten und Relationen",
+            expoftime_share => 3,
+            checks => 1,
+            done => 0,
+            substeps => 'crtables/dblogic',
+        },
+        dblogic => {
+            description => "Logik auf niedriger Ebene mittels Datenbank-Wrapper implementieren",
+            expoftime_share => 2,
+            checks => 3,
+            done => 1,
+        },
+        export2csv => {
+            description => "Export nach CSV-Format",
+            expoftime_share => 1,
+            checks => 1,
+            done => 0,
+        },
+        webapp => {
+            description => "Webapp erstellen unter Rückgriff auf Datenbankschnittstelle",
+            expoftime_share => 6,
+            checks => 2,
+            done => 0,
+            substeps => 'audit',
+        },
+    }, 
+});
+
+is $task2->name, 'kundenmigr', "Created task with steps";
+
 done_testing();
 
