@@ -12,7 +12,6 @@ sub from_stage_hrefs {
 
     $start->{from_date} //= $start->{until_date};
 
-    $DB::single=1;
     my $last = $start = Time::Cursor::Stage->new($start);
     my $self = $class->new( start => $start );
 

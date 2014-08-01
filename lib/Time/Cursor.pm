@@ -31,7 +31,6 @@ has _timeway => (
 
 around BUILDARGS => sub {
     my ($orig, $class, @args) = @_;
-    $DB::single=1;
 
     my $args = $class->$orig(@args);
 
