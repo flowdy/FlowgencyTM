@@ -1,6 +1,27 @@
 FlowTime – Konzept einer neuartigen Zeit- und Aufgabenmanagementsoftware
 ========================================================================
 
+
+<ol>
+<li><a href="#vorueberlegungen">Vorüberlegungen</li>
+<li><a href="#kriterien">Welche Größen der Dringlichkeit kennt FlowTime?</a>
+<ul>
+<li><a href="#prio">Prioritätsgrad</a></li>
+<li><a href="#deadline">Zeitliche Nähe zum Fristende</a></li>
+<li><a href="#tpd">Diskrepanz zwischen zeitlichem und Erledigungsfortschritt</a></li>
+<li><a href="#open">wie lange eine Aufgabe schon offen ist</a></li>
+<li><a href="#reltmneed">voraussichtlicher relativer Bruttozeitbedarf</a></li>
+</ul></li>
+<li><a href="#zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></li>
+<li><a href="#erledigungsfortschritt">Wie wird der Erledigungsfortschritt berechnet?</a></li>
+<li><a href="#weitere-kernfunktionen">Weitere Kernfunktionen</a></li>
+<li><a href="#risiken">Risiken</a></li>
+<li><a href="#vergleich">Vergleich mit anderen Tools</a></li>
+</ol>
+
+<a name="vorueberlegungen">Vorüberlegungen</a>
+----------------------------------------------
+
 In der Büroarbeit anfallende Aufgaben müssen oft quasi-parallel im Kopf behalten und erledigt werden. Obendrein sind sie sehr verschieden, und zwar nicht nur in Bezug auf ihre inhaltlichen Aspekte. Noch dazu sind die einen Aufgaben dringlicher als die anderen, und es gibt auch wichtigere und weniger wichtige, und mal komplexere, mal simplere Sachen zu tun. Das alles ballt sich leicht zu einem Chaos im Kopf zusammen. Hier den Überblick zu behalten, erfordert eigentlich eine Assistenz, damit man den Kopf freihat für die Aufgaben selbst statt mit ständigen Abwägungen, welche Aufgabe aktuell am ehesten bearbeitet werden sollte.
 
 Als wäre das noch nicht genug, kommt schon wieder eine Mail mit einem »EILT«-Vermerk im Betreff in den Posteingang, ein Telefonanruf geht ein oder jemand schneit persönlich ins Büro und möchte »mal schnell« irgendwas von einem. Und dieser Zustand soll auch noch der Sollzustand sein, »Multitaskingfähigkeit« im Wahn einer sich immer schneller um sich selbst drehenden Arbeitswelt? In Studien wurde ermittelt, dass es nach einer Unterbrechung viele Minuten braucht, bis die Konzentration wieder annähernd die alte Tiefe wie davor erreicht hat und dass dies mit jeder Unterbrechung immer schlechter geht, dass die Konzentrationsfähigkeit sozusagen verschleißt und konzentriertes Arbeiten immer mehr zu einer Utopie verkommt.
@@ -91,7 +112,7 @@ All das ist bereits implementiert und von automatisierten Tests abgedeckt.
 
 Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. Es geht bei dieser klassischen Terminsicht vor allem darum, zeitliche Konflikte zu vermeiden. FlowTime soll das Konzept weiterentwickeln und sauber in das Ganze integrieren. Hierzu habe ich schon erste Ideen.
 
-Viele Aufgaben haben die Eigenschaft, dass sie die Arbeit an anderen Aufgaben ausschließen, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen: Bei der Vorbereitung dieser Sachen im Büro können sich noch andere Aufgaben vordrängeln, erst zum Schluss ist man ausschließlich mit ihnen befasst und dass sollte bei der Dringlichkeitsberechnung anderer anstehenden Aufgaben berücksichtigt werden. So kannst du in FlowTime für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.
+Viele Aufgaben haben die Eigenschaft, dass sie die Arbeit an anderen Aufgaben ausschließen, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen: Bei der Vorbereitung dieser Sachen im Büro können sich noch andere Aufgaben vordrängeln, erst zum Schluss ist man ausschließlich mit ihnen befasst und dass sollte bei der Dringlichkeitsberechnung anderer anstehenden Aufgaben berücksichtigt werden. So kann der Anwender in FlowTime für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.
 
 Auch auf Zeitschienenebene könnten Reservierungen möglich sein. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitschienen, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben derselben Zeitschiene.
 
@@ -99,7 +120,7 @@ Auch auf Zeitschienenebene könnten Reservierungen möglich sein. Solche Reservi
 <a name="erledigungsfortschritt">Wie wird der Erledigungsfortschritt berechnet?</a>
 ----------------------------------------------
 
-Aufgaben zu erledigen ist die beste Möglichkeit, die Dringlichkeit einer Aufgabe zu reduzieren und sie im blauen Bereich zu halten. Du wirst nicht daran gehindert, ständig an den Erledigungsfristen oder am Zeitmodell zu schrauben, um Aufgaben zu »entröten«, das ist jedoch keine zweckmäßige Verwendung des Programms.
+Aufgaben zu erledigen ist die beste Möglichkeit, die Dringlichkeit einer Aufgabe zu reduzieren und sie im blauen Bereich zu halten. Der Anwender wird nicht daran gehindert, ständig an den Erledigungsfristen oder am Zeitmodell zu schrauben, um Aufgaben zu »entröten«, das ist jedoch keine zweckmäßige Verwendung des Programms.
 
 Kleine Aufgaben bekommen einfach ein Erledigungshäkchen und verschwinden ins Archiv. Größere Vorhaben dagegen, auf jeden Fall Projekte, an denen auch Kollegen mitarbeiten, sollten in Schritten und ggf. Unterschritten/-aufgaben gegliedert werden.
 
@@ -107,15 +128,31 @@ Einzelne Schritte können bei Bedarf eine Reihe von Kästchen zum Abhaken bekomm
 
 Schritte auf allen Ebenen können zudem in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, denen sie hierarchisch über-, unter- oder beigeordnet sind. Anhand dieser Schätzungen berechnet FlowTime, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt der Aufgabe treibt. Dieser sachliche Gesamtfortschritt ist relevant für die Berechnung der Dringlichkeitsdimensionen 3 und 5 (siehe oben).
 
-**Warum könnte man nicht einfach eingeben, wieviel Prozent von der gesamten Aufgabe man schätzungsweise erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen?** Das würde mich als Anwender bestimmt über kurz oder lang ans Schummeln gewöhnen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. Ich würde damit Zeit verschwenden, die ich besser hätte in die Erledigung der Aufgaben hätte stecken können.
+**Warum könnte man nicht einfach eingeben, wieviel Prozent von der gesamten Aufgabe man schätzungsweise erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen?** Das würde mich als Anwender bestimmt über kurz oder lang ans Schummeln gewöhnen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. Ich würde damit Zeit verschwenden, die ich besser hätte in die Erledigung der Aufgaben hätte stecken können. Die Kopplung hat natürlich vor allem den Vorteil, dass später auf tiefere Ebenen hinzugefügte Schritte sich auf den höheren Ebenen nicht mehr auf die Aufwandstruktur auswirken.
 
 ### Beispiel 1
 
- * Aufgabentitel: "Kalkulation Auftrag Müller 25.5.2011"; Start: 30.5.11 11:30; Ende: 30. 18:00; Priorität mittel; Aufwand: 1; Häkchen: 1; Erledigt: 0
+ * Aufgabentitel: "Kalkulation Auftrag Müller 25.5.2011"; Start: 30.5.11 11:30; Ende: 30. 18:00; Priorität: mittel; Zeitschiene: buero; Häkchen: 1; Erledigt: 0
 
 ### Beispiel 2
 
- * Aufgabentitel: "Migration Excel-Kundentabelle nach MySQL+Webapp"; Start: 21.7.2012 9:00; Ende: 15.10. 17:00; Priorität: hoch; # TODOC 
+ * Aufgabentitel: "Migration Excel-Kundentabelle nach SQL-Datenbank und Webapp"; Start: 21.7.2012 9:00; Ende: 15.10. 17:00; Zeitschiene: buero; Priorität: hoch; Aufwand: 1; Häkchen: 1; Erledigt: 0
+
+   * Schritttitel: "Export nach CSV-Format"; Position: 1; Aufwand: 1; Häkchen: 1; Erledigt: 1
+
+   * Schritttitel: "Konzeption der Datenbank, Entitäten und Relationen"; Position: 2; Aufwand: 3;Häkchen: 1; Erledigt: 0
+
+     * Unterschritttitel: "Erstellung des SQL-Codes"; Position: 1; Aufwand: 3; Häkchen: 3; Erledigt: 2
+
+     * Unterschritttitel: "Logik auf niedriger Ebene mittels Datenbank-Wrapper implementieren"; Position: 1; Aufwand: 2; Häkchen: 3; Erledigt: 1;
+
+   * Schritttitel: "CSV-Daten mittels Datenbank-API verarbeiten"; Position: 3; Aufwand: 2; Häkchen: 1; Erledigt: 0;
+
+   * Schritttitel: "Webapp erstellen unter Rückgriff auf Datenbankschnittstelle"; Position: 4; Aufwand: 6; Häkchen: 2; Erledigt: 0
+
+     * Schritttitel: "Datensicherheits-Audit v. extern"; Position: 1; Aufwand: 2; Häkchen: 2; Erledigt: 0
+
+Beachte die Einstellung der beiden Unterschritte der Datenbankkonzeption. Beide stehen auf Position 1. Das heißt, sie werden beide angezeigt, bis einer erledigt ist. Ersterer hat drei Aufwandsanteile, und zwei von drei Häkchen ist gesetzt. Beim zweiten Unterschritt ist es schon schwieriger: Hier ist nur eines von drei Häkchen gesetzt, aber es sind nur 2 Aufwandsanteile. Der ganze Schritt umfasst also 3+3+2 Aufwandsanteile, wovon 2 plus 2*(1/3) = 2,66 erledigt sind. Der Hauptschritt umfasst einen Aufwandspunkt, der erste Schritt ebenfalls und der vorletzte Schritt zwei Punkte, insgesamt also 4. 8 plus 4 plus die sechs vom letzten Schritt sind 18 Aufwandsanteile, von denen unsere erledigten 2,66 ca. 14,7% im Gesamtfortschritt ausmachen.
 
 <a name="weitere-kernfunktionen">Weitere geplante Kernfunktionen</a>
 --------------------------------------------------------------------
@@ -123,11 +160,11 @@ Schritte auf allen Ebenen können zudem in ihrem Aufwand geschätzt werden. Die 
  * Schritte samt untergeordneten können nachträglich in eine (Unter-)Aufgabe mit eigener Priorität, Von/Bis-Datierung und Zeitschiene überführt werden.
  * Abhängigkeiten zwischen Aufgaben und Einzelschritten. Abhängigkeiten können wiederum Unterschritte im Kontext der abhängigen Aufgabe haben, die Aufwandschätzung wird ebenfalls noch mal gesondert vorgenommen.
  * Aufgaben können sich wiederholen. Die Zwischenzeit bis zur nächsten Wiederholung kann an den Fristbeginn, an das Fristende oder an die vollständige Erledigung des aktuellen Durchlaufs gekoppelt werden.
- * Du kannst voraussehen, wie die Dringlichkeiten zu einem angegebenen Zeitpunkt sein werden in der Annahme, dass du erst dann wieder deine Arbeit aufnimmst. Wer möchte, kann sich also einfach ein 24/7er Modell definieren (`Mo-So@0-23`) und vor dem Start in den Feierabend der Überraschung zuvorkommen, wie rot am nächsten Morgen alles sein wird. Aber dann könnte man FlowTime im Prinzip gleich vergessen. Diese Möglichkeit gibt es vor allem für den Umgang mit ungeplanten Abwesenheiten.
+ * der Anwender soll voraussehen können, wie die Dringlichkeiten zu einem angegebenen Zeitpunkt sein werden in der Annahme, dass er erst dann wieder seine Arbeit aufnimmt. Wer möchte, kann sich also einfach ein 24/7er Modell definieren (`Mo-So@0-23`) und vor dem Start in den Feierabend der Überraschung zuvorkommen, wie rot am nächsten Morgen alles sein wird. Aber dann könnte man FlowTime im Prinzip gleich vergessen. Diese Möglichkeit gibt es vor allem für den Umgang mit ungeplanten Abwesenheiten.
 
 
-Risiken
-=========
+<a name="risiken">Risiken</a>
+-----------------------------
 
 Rein technisch ist es egal, ob das definierte Zeitmodell von der selbstbestimmten Lebensgestaltung des Users herrührt oder er es von seinem Vorgesetzten aufoktroyiert bekommen hat. Das heißt, diktiert nicht der User der Maschine seinen Arbeitstakt, sondern hat er vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil, und FlowTime nachgerade kontraproduktiv. Aus diesem Grund sollte FlowTime nur freiwillig verwendet werden und es dürfen keine Nachteile durch die Nichtanwendung entstehen. Aufgaben- und Zeitmanagement muss Privatsache bleiben, egal ob FlowTime oder andere Tools/Methoden verwendet werden oder gar nichts dergleichen.
 
@@ -136,16 +173,14 @@ Rein technisch ist es egal, ob das definierte Zeitmodell von der selbstbestimmte
 Nicht zuletzt gibt es ein gewisses Risiko einer zwar nicht seelischen, aber einer mentalen Abhängigkeit von FlowTime. Die Software ist abstrakt gesehen eine Art von Prothese, die das Zeitdringlichkeitsgefühl ersetzt und zu einem gewissen Grad auch die Fähigkeit, Dringlichkeit und Wichtigkeit abzuwägen. Dass es dieses Gefühl überhaupt gibt und es im engeren Sinne natürlich ist, steht infrage: Zumindest wurde es erst mit der Uhr für den Einzelnen relevant, also der Zeitmessung im Alltag, mit dem Beginn des relativ jungen industriellen Zeitalters.
 
 
-Vergleich mit anderen Tools
-===========================
+<a name="vergleich">Vergleich mit anderen Tools</a>
+---------------------------------------------------
 
-taskwarrior
------------
+### taskwarrior
 
 Taskwarrior ist über Textbefehle zu bedienen. Verschiedene Kriterien und Einstellungen unterstützt, um Aufgaben übersichtlich zusammenzustellen. Dringlichkeit wird durch mehrere Größen bestimmt, die mittels Koeffizienten gewichtet werden. Urlaube können eingetragen werden. Aufgaben können im Lieblingseditor betrachtet und bearbeitet werden. Aufgaben gelten entweder als erledigt oder nicht, ein kontinuierlicher Fortschritt wird nicht erfasst.
 
-Horde Groupware, Aufgaben-Modul
--------------------------------
+### Horde Groupware, Aufgaben-Modul
 
 Läuft im Browser. Über ein Formular wird eine Aufgabe erstellt und bearbeitet. Aufgaben können nur nach einem Kriterium angeordnet werden, also entweder nach Priorität (5 Stufen) oder nach Stichdatum. Die geschätzte Zeit (Bedarf) einer Aufgabe ist ein Freitextfeld, wohl zur reinen Information. Es gibt keine Möglichkeit, den Erledigungsfortschritt anzugeben.
 
