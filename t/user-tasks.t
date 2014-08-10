@@ -99,5 +99,13 @@ my $task2 = $user->tasks->add({
 
 is $task2->name, 'kundenmigr', "Created task with steps";
 
+# TODO: Test for exceptions
+#  * circular dependency in hash to store
+#  * typo in substeps
+#  * orphan steps
+#  * invalid parent for single step to update
+#    * not existing
+#    * make a descendent a parent
+#    * make an ancestor a descendent
 done_testing();
 

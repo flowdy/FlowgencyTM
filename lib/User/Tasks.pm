@@ -140,14 +140,15 @@ sub bind_tracks {
 }
 
 sub _retrieve_task_step {
-    my ($self, $task, $step) = @_;
+    my ($self, $task_id, $step_name) = @_;
 
-    my $found = $self->tasks_rs->find($task)
-        // croak "No task '$task' found in database";
-    $found = $found->substeps->find($step)
-        // croak "Task '$task' has no step named '$step'";
+    my $found = $self->task_rs->find({ name => $task_id })
+        // croak "No task with ID='$task_id' found in database";
 
-    return $step;
+    $found = $found->steps->find({ name => $step_name })
+        // croak "Task '$task_id' has no step named '$step_name'";
+
+    return $found;
 
 }
 
@@ -168,7 +169,7 @@ sub link_step_row {
 
 sub recalculate_dependencies {
      my ($self, $task) = (shift, shift);
-     my @links = map {[ $task, $_ ]} @_;
+     my @links = map {[ $task->name, $_ ]} @_;
 
      my (%depending, $step, $link, $p, $str);
 
@@ -179,16 +180,16 @@ sub recalculate_dependencies {
          $link = $self->_retrieve_task_step($task, $step);
 
          if ( $p = $link->parent_row ) {
-             push @links, [ $p->task, $p->name ];
+             push @links, [ $p->task_row->name, $p->name ];
          }
 
-         push @links, map {[ $_->task, $_->name ]}
+         push @links, map {[ $_->task_row->name, $_->name ]}
                       $link->linked_by->all;
 
      }
 
      for my $task ( keys %depending ) {
-         $self->get($task)->_clear_progress;
+         $self->get($task)->clear_progress;
      }
 
      return;

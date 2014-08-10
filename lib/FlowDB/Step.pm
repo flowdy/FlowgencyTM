@@ -180,6 +180,19 @@ sub prior_deps {
 
 }
 
+sub ancestors_upto {
+    my ($self, $upto) = @_;
+    $upto //= $self->name;
+
+    my ($p, @rows) = ($self, ());
+    while ( $p = $p->parent_row() ) {
+        last if $p->name eq $upto;
+        push @rows, $p;
+    }
+
+    return @rows;
+}
+
 sub and_below {
     my ($self) = shift;
     my @args = @_ ? @_ : ({});
