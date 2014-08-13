@@ -3,7 +3,6 @@ use strict;
 package Task;
 use 5.014;
 use Moose;
-use Carp qw(carp croak);
 use Algorithm::Dependency::Ordered;
 use Algorithm::Dependency::Source::HoA;
 
@@ -60,7 +59,7 @@ sub _build_cursor {
     my $self = shift;
     my $row = $self->dbicrow;
     my @ts = $row->timestages;
-    croak "Task record has no associated timestages" if !@ts;
+    FtError::Task::FailsToLoad->throw("Task record has no associated timestages") if !@ts;
     my $cursor = Time::Cursor->new({
         start_ts   => $row->from_date,
         timestages => [ $self->tasks->bind_tracks(@ts) ],
@@ -115,9 +114,10 @@ sub store {
 
     my $steps = delete $args->{steps} // {};
     my $steps_rs = $self->dbicrow->steps_rs;
-    my $root_step
-        = $root && ($steps_rs->find($root) // croak qq{No step '$root'})
-        ;
+    my $root_step = $root && (
+        $steps_rs->find($root) // FtError::Task::InvalidDataToStore
+            ->throw(qq{No step '$root'})
+        );
 
     # As we want to be able to mention known steps in {substeps}
     # without declaring them manually in {steps} hash ...
@@ -156,7 +156,7 @@ sub store {
              @{$args}{qw{ done checks expoftime_share }};
         push @to_recalc, $args->{name} // $step;
     }
-    $DB::single=1;
+
     $self->tasks->recalculate_dependencies($self => @to_recalc);
 
     return 1;
@@ -188,14 +188,18 @@ sub _ordered_step_hrefs {
             for my $step_name ( @cluster ) {
                     
                 if ( my $dep = $dependencies{$step_name} ) {
-                    croak qq{Step $step_name can't have parent $parent_name }
-                        . qq{since it is subordinated to $dep->[0]}
+                    FtError::Task::InvalidDataToStore->throw(
+                        qq{Step $step_name can't have parent $parent_name }
+                      . qq{since it is subordinated to $dep->[0]}
+                    );
                 }
 
                 my $step = $steps{$step_name}
-                    // croak qq{No step "$step_name" defined or found} . (
-                           $root_name && qq{ below "$root_name"}
-                    );
+                    // FtError::Task::InvalidDataToStore->throw(
+                           qq{No step "$step_name" defined or found} . (
+                               $root_name && qq{ below "$root_name"}
+                           )
+                       );
 
                 $step->{parent} = $parent_name;
                 $step->{pos}    = $order_num && ( $order_num + $order_plus );
@@ -240,10 +244,11 @@ sub _ordered_step_hrefs {
     }
 
     if ( my @orphans = keys %steps ) {
-        croak "Some steps of which the data provided in {steps}"
+        FtError::Task::InvalidDataToStore->throw(
+             "Some steps of which the data provided in {steps}"
             ." are not hooked in any {substeps} order chain: "
             . join q{, }, @orphans
-        ;
+        );
     }
     
     return $ordered_steps;
@@ -260,19 +265,23 @@ sub _store_root_step {
         my $step_row = $steps_rs->find($root_name);
         $data->{name} //= $root_name;
         my $p = $data->{parent};
-        croak "Not found: parent for step '$root_name' with name $p"
-            if $p && !$steps_rs->find($p);
+        FtError::Task::InvalidDataToStore->throw(
+            "Not found: parent for step '$root_name' with name $p"
+        ) if $p && !$steps_rs->find($p);
         if ($step_row) { $row = $step_row; }
         elsif ( $p && exists $data->{pos} ) {
             $row = $steps_rs->new($data);
         }
         else {
-            croak "New step must have a parent and a position"
+            FtError::Task::InvalidDataToStore->throw(
+                "New step must have a parent and a position"
+            );
         }
     }
     else {
-        croak "root step cannot have a parent"
-            if defined $data->{parent};
+        FtError::Task::InvalidDataToStore->throw(
+            "root step cannot have a parent"
+        ) if defined $data->{parent};
         while ( my ($key, $value) = each %$data ) {
             $row->$key($value);
         }
@@ -289,7 +298,9 @@ sub _store_root_step {
         for my $ts ( @{ $data->{timestages} } ) {
             $row->add_to_timestages($ts);
         } 
-        croak "Cursor setup failed: $@" if !eval { $self->_cursor };
+        FtError::Task::InvalidDataToStore->throw(
+            "Cursor setup failed: $@"
+        ) if !eval { $self->_cursor };
     }
 }
 
@@ -309,9 +320,10 @@ sub _store_steps_below {
         my $substeps = delete($step->{substeps}) // next;
         next if !defined $step->{parent}; # avoid breaks in hierarchy chain
         my %substeps = map { $_ => 1 } split /[,;|\/\s]+/, $substeps;
-        croak qq{$root_name can't be substep of $name }
+        FtError::Task::InvalidDataToStore->throw(
+           qq{$root_name can't be substep of $name }
             . q{(circular dependency)}
-            if $substeps{$root_name};
+        ) if $substeps{$root_name};
         $in_hierarchy{ $step->{oldname} } = \%substeps;
     }
 
@@ -348,9 +360,10 @@ sub _store_steps_below {
                         next if !$rows_tmp{$d};
                         my $line = join "/", $d->ancestors_upto($name);
                         $line = $line ? "descendent (via $line)" : "substep";
-                        croak qq{Circular dependency detected: $d can't be }
-                            . qq{$line and ancestor at the same time}
-                            ;
+                        FtError::Task::InvalidDataToStore->throw(
+                            qq{Circular dependency detected: $d can't be }
+                          . qq{$line and ancestor at the same time}
+                        );
                     }
                 
                 }
@@ -361,8 +374,9 @@ sub _store_steps_below {
             }
 
             else { 
-                croak "Didn't cache parent $p for step $name"
-                    if !defined $p_row;
+                FtError::Task::InvalidDataToStore->throw(
+                    "Didn't cache parent $p for step $name"
+                ) if !defined $p_row;
                 $rows_tmp{ $name } = $step_row
                     = $p_row->add_to_substeps($step);
             }
@@ -398,11 +412,13 @@ sub is_link_valid {
 
     my $req_step = $self->link_row // return;
 
-    croak "Steps may not be subtasks and links at the same time"
-        if $self->subtask_row;
+    FtError::Task::InvalidDataToStore->throw(
+        "Steps may not be subtasks and links at the same time"
+    ) if $self->subtask_row;
 
-    croak "Can't have multiple levels of indirection/linkage"
-        if $req_step->link;
+    FtError::Task::InvalidDataToStore->throw(
+        "Can't have multiple levels of indirection/linkage"
+    ) if $req_step->link;
 
     my %is_successor;
     $is_successor{ $_->name }++ for grep !$_->link, $self->and_below;
@@ -416,12 +432,24 @@ sub is_link_valid {
 
     my @conflicts = grep $is_successor{$_}, $req_step->prior_deps($self->name);
     if ( @conflicts ) {
-        croak "Circular or dead-locking dependency in ",
-            $self->dbicrow->name, " from ", $req_step->name, " to ",
-            join ",", @conflicts;
+        FtError::Task::InvalidDataToStore->throw(
+            "Circular or dead-locking dependency in ",
+            $self->dbicrow->name, " from ", $req_step->name, " to "
+                . join ",", @conflicts
+        );
     }
 
     return;         
 }
+
+__PACKAGE__->meta->make_immutable();
+
+package FtError::Task::FailsToLoad;
+use Moose;
+extends 'FtError';
+
+package FtError::Task::InvalidDataToStore;
+use Moose;
+extends 'FtError';
 
 1;
