@@ -2,10 +2,11 @@
 use strict;
 
 use FindBin;
-use Test::More tests => 72;
+use Test::More tests => 74;
 
 use Time::Point;
 use Date::Calc;
+use Scalar::Util qw(refaddr);
 
 my $cur_ts_string_ref;
 my ($DAY,$MONTH,$YEAR) = (localtime time)[3,4,5];
@@ -153,3 +154,12 @@ ok( !$tsb->remainder && $tsa < $tsb && $tsb < $tsa,
     'whole day less and more than that day restricted to zero\'th hour');
 is( $tsb->last_sec, 1342306799, 'last second of an hour' );
 
+Time::Point->now("2010-05-12");
+my $tsc = Time::Point->parse_ts("1.");
+is( "".$tsc->fill_in_assumptions, "2010-05-01",
+    "Changing base date with Time::Point->now()"
+);
+
+$tsc = Time::Point->now();
+my $tsc2 = Time::Point->now();
+cmp_ok( refaddr($tsc), '!=', refaddr($tsc2), "Calling class method now() from Time::Point externally, get copy of underlying instance");

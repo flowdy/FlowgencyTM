@@ -56,6 +56,7 @@ package Time::Point;
 use Moose;
 use Carp qw(carp croak);
 use Time::Local;
+use Scalar::Util 'blessed';
 
 use overload q{""} => 'get_qm_timestamp',
             q{<=>} => 'precision_sensitive_cmp',
@@ -75,20 +76,61 @@ has remainder => ( is => 'ro', isa => 'Str' );
 
 has epoch_sec => ( is => 'ro', isa => 'Int', writer => '_set_epoch_sec' );
 
+my $TS;
+sub now {
+    my $class = shift;
+    
+    # Calls from within this package with $TS as their first argument
+    # can simply return it when it is defined, otherwise preinitialized
+    my $priv = @_ && \$_[0] == \$TS and shift; 
+    return $TS if $TS && $priv && !@_;
+    my $arg = @_  ? $_[0]
+            : $TS ? goto RETURN
+            :       $ENV{FLOWTIME_TODAY} // time
+            ;
+
+    if ( $arg =~ m{^\d+$}xms ) { # is positive integer
+        $TS = $class->from_epoch($arg);
+    }
+    elsif ( ref $arg ) {
+        my $isObj = blessed($arg) && $arg->isa($class);
+        $TS = $class->new(
+           year  => $isObj ? $arg->year  : $arg->{year},
+           month => $isObj ? $arg->month : $arg->{month},
+           day   => $isObj ? $arg->day   : $arg->{day},
+        );
+    }
+    else {
+        my @date = localtime(time);
+        $TS = $class->parse_ts($arg, $date[5]+1900, $date[4]+1, $date[3])
+            ->fill_in_assumptions;
+    }
+
+RETURN:
+    if ( $TS && defined wantarray ) {
+        my $v;
+        return $priv ? $TS : $class->new(
+            map { defined($v = $TS->$_()) ? ($_ => $v) : () }
+                qw(year month day hour min sec)
+        );
+    }
+    else { return }
+
+}
+
 sub parse_ts {
-    use Scalar::Util 'blessed';
     my ($class, $ts, $year, $month, $day) = @_;
     if (ref $year and my $date = $year) {
         croak "Not a $class object" if !(blessed($date) && $date->isa($class));
         ($year,$month,$day) = ($date->year, $date->month, $date->day);
     }
-    my @date = localtime(time);
     my %ret;
-    $ret{assumed_year} = $year ||= $date[5]+1900;
-    $ret{assumed_month} = $month ||= $date[4]+1;
-    $ret{assumed_day} = $day ||= $date[3]; 
+    my $base_ts = $year && $month && $day ? undef : $class->now($TS);
+    $ret{assumed_year}  = $year  ||= $base_ts->year;
+    $ret{assumed_month} = $month ||= $base_ts->month;
+    $ret{assumed_day}   = $day   ||= $base_ts->day; 
 
-    # Parsen wir den Datumsteil
+    # Parse the date components
     if ( $ts =~ s{ \A (?:(?:(\d{4}|\d\d) - )? 0?(\d\d?) - )? 0?(\d\d?)
                    (?![.:\d]) }{}gxms
                    # look ahead to tell apart german notation or clock time
@@ -151,6 +193,9 @@ sub from_epoch {
     my ($class, $sec_since_epoch, $min_precision, $max_precision) = @_;
     
     my %date;
+    if ( !defined $sec_since_epoch ) {
+        croak "from_epoch missing first argument: seconds since epoch"
+    }
     @date{qw|sec min hour day month year|} = localtime $sec_since_epoch;
     $date{month}++; $date{year} += 1900;
 
