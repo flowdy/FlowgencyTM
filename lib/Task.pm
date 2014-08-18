@@ -15,6 +15,8 @@ has _cursor => (
     handles => {
         update_cursor           => 'update',
         probe_time_stages       => 'apply_stages',
+        timestamp_at_net_second => 'timestamp_of_nth_net_second_since',
+        map { $_ => $_ } qw(start_ts due_ts),
     },
 );
 

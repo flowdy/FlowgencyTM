@@ -1,6 +1,7 @@
 use strict;
 
 package FlowRank;
+use FlowTime::Types;
 use Moose;
 
 has time => (
@@ -95,15 +96,15 @@ around register_task => sub {
 
     my $score = FlowRank::Score->new({
         %ctd,
-        priority => $task->priority,
-        progress => $task->progress,
-        open     => $task->open_sec($ctd{elapsed_pres}),
-        _task    => $task,
+        priority  => $task->priority,
+        progress  => $task->progress,
+        open      => $task->open_sec($ctd{elapsed_pres}),
+        _task     => $task,
     });
 
     $self->$orig( "$task" => $score );
 
-    for my $which (qw( priority due drift open timeneed )) {
+    for my $which (qw( priority due drift open addtmneed )) {
         $self->_set_minmax( $which => $score->$which() );
     }
 
@@ -146,11 +147,15 @@ sub get_ranking {
 }
 
 package FlowRank::Score;
+use POSIX qw(ceil);
+use List::Util qw(min);
 use Moose;
 
-has [ qw(elapsed_abs elapsed_pres remaining_abs remaining_pres priority) ] => (
+has [ qw(elapsed_pres priority) ] => (
     is => 'ro', isa => 'Int',
 );
+
+has due => ( is => 'ro', isa => 'Int', init_arg => 'remaining_pres' );
 
 has _task => (
     is => 'ro', isa => 'Task',
@@ -186,6 +191,40 @@ sub calculate_score {
     $self->rundata($rundata_href);
     return $self->score($score);
 
+}
+
+sub addtmneed {
+    my $self = shift;
+
+    my $task = $self->_task;
+
+    my $netsec;
+    if ( my $progress = $self->progress ) {
+        $netsec = ceil( $self->elapsed_pres / $progress );
+    }
+    else {
+        $netsec = 2 * $self->elapsed_pres + $self->due;
+    }
+
+    my $start = $task->start_ts->epoch_sec;
+    my ($planned_to_finish, $estimate_to_finish)
+        = map { $_->last_sec - $start }
+              $task->due_ts, $task->timestamp_at_net_second($netsec) // return
+          ;
+
+    return $estimate_to_finish / $planned_to_finish;
+
+}
+
+sub drift {
+    my $self = shift;
+
+    my $progress = $self->progress;
+    my $tmneed   = $self->elapsed_pres;
+
+    return ( $progress - $tmneed )
+        / ( 1 - min($progress, $tmneed) )
+        ;
 }
 
 __PACKAGE__->meta->make_immutable;
