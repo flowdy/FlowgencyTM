@@ -3,7 +3,7 @@ use strict;
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
-use LinearNum2ColourMapper;
+use Util::LinearNum2ColourMapper;
 use List::Util qw(min);
 
 my @basecolor = (0,0xC0,0xff);
