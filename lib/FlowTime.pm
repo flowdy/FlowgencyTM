@@ -1,6 +1,7 @@
 use strict;
 
 package FlowTime; {
+our $VERSION = '0.01';
 use Carp qw(croak);
 my $db;
 use FlowDB \$db => $ENV{FLOWDB_SQLITE_FILE} || "flow.db";

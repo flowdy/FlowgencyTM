@@ -1,0 +1,16 @@
+#!/bin/sh
+egrep -rh '^[\s;]*(use|require) ' lib script t \
+  | sed -rne 's/ *(use|require) //; /^[A-Z]/p' \
+  | sort | uniq | perl -Ilib -ne "$(cat <<'PERL')"
+    BEGIN { %seen = () }
+    chomp;
+    $i++;
+    my ($mod,$name,$version) = /(([^\s;]+)(?: (\d[^\s;]+))?)/;
+    warn("Not parsed: $_\n") && next if !$mod;
+    next if $seen{$mod}++;
+    print $name, " => ", eval(qq{
+        package TestLoad$i;
+        use $mod ();
+        "OK, ".(\$${name}::VERSION // "loaded (just version unknown)")
+    }) // $@, "\n";
+PERL
