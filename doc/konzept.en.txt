@@ -4,20 +4,36 @@ FlowTime – An innovative time and task management software tool: Concept
 Origins
 -------
 
-A multitude of tasks in office context often have to be kept in the head, and done, at the same time. Moreover, they are very homogenous not only in regard to substantial aspects. Additionally, some tasks are more urgent than other, there are important and less important ones, rather complex and rather simple to-dos. All this tends to cluster in the head. To retain the overview requires an assistance so that you can put your focus on the substantials alone instead of sharing it with considerations all the time which task you better do right now.
+In office, a multitude of tasks often have to be kept in the head, and done, at the same time. Moreover, they are very homogenous not only in regard to what is to do. Additionally, some tasks are more urgent than other, there are important and less important ones, rather complex and rather simple to-dos. All this tends to cluster in the head. To retain the overview requires an assistance so that you can put your focus on the substantials alone instead of sharing it with considerations all the time which task you better do right now.
 
 This being not enough, another "URGENT"-flagged mail would pop up in your inbox every now and then, the  phone would ring and someone come in your office asking for a favour you could do on the go. Mind this the status quo, as being as it should be, multitasking ideology everywhere, a work culture spinning around itself. There have been surveys and studies: It takes many minutes to restore concentration nearly to the extent like it was before an interruption and a bit longer each time when repeated.
 
-FlowTime will be an open-source software tool that supports in dealing with this situation. It is intended to sustain your capacity to concentrate and the resilience shield against interrupts. In development, two conflicting challenges have to be brought into agreement: On the one hand simplicity and user-friendliness, flexibility on the other in that the application adapts to the user's working methods.
+FlowTime will be an open-source software tool that supports in dealing with this situation. It is intended to sustain your capacity to concentrate and the resilience shield against interrupts. In development, two conflicting challenges have to be brought into agreement: On the one hand simplicity and user-friendliness, flexibility on the other in that the application adapts to the user's working manner.
 
 Basically the program shall:
 
-  * **shorten the time needed to refocus after interruptions.** This is the time it takes until one is as deep, mentally, in one's duty as before.
+  * **shorten the time needed to refocus after interruptions.** This is the time it takes until one is mentally as deep in one's duty as before.
 
-  * **mediate between the office multitaskism and the human brain.** You can do things *well* only one after the other. Claims of differences in multitasking ability between the sexes have no scientific evidence.
+  * **mediate between the office multitaskism and the human brain.** You can do things *well* only one after the other. Claims of differences in multitasking ability between the sexes have no scientific evidence. In German we have a saying "to dance at different weddings at the same time". Transferred to what really results it would better be like "to stagger".
 
-  * **remedy interblends of work and life** by moving the urgency increase of registered tasks calculatorily from the leisure time into the working time. For this to achieve the user is required, exercised, motivated at least, to plan in advance with sufficient precision.
+  * **remedy interblends of work and life** by moving the urgency increase of registered tasks from the leisure time into the working time, just on the basis of the figures. For this to achieve the user is required, exercised, motivated at least, to plan in advance with sufficient precision.
 
-The final and main objective of the FlowTime project is to lead to flow experience in office work by software – hence that name is coined – and to a private life free of business worries. See the tool in the kind of time and task management systems. Other programs of this software category are often too simple or too complex, the medium is represented too rarely. FlowTime is neither a simple todo list applet nor a professional project management application. It is considered appropriate for small and medium projects one can overview without aid as single items, but not together. The focus of development shall not be to have it support integration into existing groupware solutions. Rather the disconnection is regarded as an subversive principle. Where there are no nets, there are no interdependencies, there is freedom and concentrated work possible.
+The final and main objective of the FlowTime project is to lead to flow experience in office work by software – hence that name is coined – and to a private life free of business worries. See the tool in the kind of time and task management systems. Other programs of this software category are often too simple or too complex, the medium demand is met too rarely. FlowTime is neither a simple todo list applet nor a professional project management application. It is considered appropriate for small and medium projects one can overview without aid as single items, though not necessarily together. The focus of development shall not be to have it support integration into existing groupware solutions. Rather the disconnection is regarded as an subversive principle. Where there are no nets, there are no interdependencies, there is freedom and concentrated work possible.
 
-FlowTime is realized – already in essential parts – in the Perl programing language. It is free and open source software used under the terms of the GNU General Public License or, at your ...
+FlowTime is realized – already in essential parts – in the Perl programing language. It is free and open source software used under the terms of the GNU General Public License, version 3.
+
+Instead of including a native graphical user interface, FlowTime works as a server to leverage the rendering and user interaction capabilities of your favourite Webbrowser. The user interface is realized with HTML5 and Javascript. The server side can either run on a dedicated machine or just as a program on the local system, protected against access from the outer world by default.
+
+The following screenshot shows a draft of the main view of FlowTime. On the left-hand side is the navigation, on the right-hand side the most urgent tasks are listed.
+
+![Hauptseite von FlowTime: Aufgabenliste – Prototyp](snapshot-home.png)
+
+Technical conception
+=====================
+
+How is urgency calculated in detail?
+-------------------------------------
+
+Only five dimensions of urgency I can identify as meaningful and worth comprising in the first place. They reflect different aspects of urgency, and others may easily be added in the future. These indicators are calculated independently and normalized on a continuous scale in turn. The resulting values between 0 (the minimum) and 1 (maximum) are then multiplied with an integer weight the user provides according to what seems appropriate, it is 1 for all by default, just for the sake of neutrality. All pending tasks are ranked, in descending order, according to the sum of these products, called their "FlowRank".
+
+
