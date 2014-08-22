@@ -47,70 +47,52 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->set_primary_key( 'ROWID' );
 
-{ my %tmp_msr;
-  my @proxy_fields = qw(description done checks expoftime_share substeps);
+my @proxy_fields = qw(description done checks expoftime_share substeps);
 
 __PACKAGE__->belongs_to( main_step_row => 'FlowDB::Step',
     { 'foreign.ROWID' => 'self.main_step'},
     { proxy => \@proxy_fields, } # wherefore this: cascade_update => 1 ?
 );
 
-sub _tmp_main_step {
+sub _extract_proxy {
     my $args = shift;
-    my $main_step = do {
-        if ( my $row = shift ) {
-            if ( exists $tmp_msr{$row} ) { delete $tmp_msr{$row}; }
-            else { $tmp_msr{$row} = {} }
-        }
-        else { {} }
-    };
-    for ( @proxy_fields ) {
-        my $val = delete $args->{$_} // next;
-        $main_step->{$_} = $val;
+    my %main_step_data;
+    for my $pf ( @proxy_fields ) {
+        next if !exists $args->{$pf};
+        $main_step_data{$pf} = delete $args->{$pf}
     }
-    return $main_step;
+    return \%main_step_data;
 }
 
 around new => sub {
     my ($orig, $class) = (shift, shift);    
-    my $args = @_ > 1 ? { @_ } : shift;
-    my $main_step = _tmp_main_step($args);
+    my $args = @_ > 1 ? {@_} : shift // {};
+    my $main_step = _extract_proxy($args);
     my $self = $class->$orig($args);
-    $tmp_msr{ $self } = $main_step;
+    $self->main_step_row($self->new_related(
+        steps => $main_step,
+    ));
     return $self;
 };
 
-for my $field ( @proxy_fields ) {
-    around $field => sub {
-        my ($orig, $self) = (shift, shift);
-        if ( $self->in_storage ) { $self->$orig(@_); }
-        elsif ( @_ ) { $tmp_msr{$self}{$field} = shift; }
-        else { return $tmp_msr{$self}{$field}; }
-    };
-}
+around insert => sub {
+    my ($orig, $self) = @_;
+    my $msr = $self->main_step_row;
+    $self->main_step_row(undef);
+    $self->$orig();
+    $msr->insert();
+    $self->update({'main_step_row' => $msr });
+};
 
-sub DEMOLISH {
-    my $self = shift;
-    delete $tmp_msr{$self};
-}
-
-}
-
-sub sqlt_deploy_hook {
-   my ($self, $sqlt_table) = @_;
-
-   $sqlt_table->add_index(
-        name => 'user_task',
-        fields => ['user', 'name'],
-        type => 'unique'
-   );
-   $sqlt_table->add_index(
-        name => 'task_mainstep',
-        fields => ['main_step'],
-        type => 'unique'
-   );
-
-}
+around update => sub {
+    my ($orig, $self) = (shift, shift);
+    my $args = @_ > 1 ? {@_} : shift;
+    my $main_step_data = _extract_proxy( $args );
+    $main_step_data->{name} = q{};
+    $self->$orig($args);
+    $self->main_step_row->$orig($main_step_data);
+    return $self;
+};
 
 around copy => sub {
     my ($orig, $self, $args) = @_;
@@ -130,28 +112,21 @@ around copy => sub {
 
 };
 
-around insert => sub {
-    my ($orig, $self) = (shift, shift);
-    my $args = @_ > 1 ? { @_ } : shift;
-    my $main_step = _tmp_main_step($args => $self );
-    $main_step->{name} = q{};
-    $self->result_source->storage->txn_do(sub {
-         $self->$orig($args);
-         $main_step = $self->add_to_steps($main_step);
-         $self->update({ main_step_row => $main_step });
-    });
-    return $self;
-};
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
 
-around update => sub {
-    my ($orig, $self) = (shift, shift);
-    my $args = @_ > 1 ? {@_} : shift;
-    my $main_step = _tmp_main_step( $args => $self );
-    $main_step->{name} = q{};
-    $self->$orig($args);
-    $self->main_step_row->$orig($main_step);
-    return $self;
-};
+   $sqlt_table->add_index(
+        name => 'user_task',
+        fields => ['user', 'name'],
+        type => 'unique'
+   );
+   $sqlt_table->add_index(
+        name => 'task_mainstep',
+        fields => ['main_step'],
+        type => 'unique'
+   );
+
+}
 
 1;
 
