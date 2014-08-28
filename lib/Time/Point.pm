@@ -34,7 +34,7 @@ and Time::Cursor::Stage.
   my $ts = Time::Point->parse_ts("04-05", $base); # fills in assumptions, too
   my $ts = Time::Point->parse_ts("04-05", 2013, 11, 14); # as you like
 
-  # use fix_order to assume unspecified parts so that ts2 is after ts2
+  # assume unspecified parts so that ts2 is after ts2
   my $ts = Time::Point->parse_ts("04-05");
   if ( $base->fix_order($ts) ) {
       # $ts->year == 2014
@@ -57,6 +57,7 @@ use Moose;
 use Carp qw(carp croak);
 use Time::Local;
 use Scalar::Util 'blessed';
+use Date::Calc qw(Add_N_Delta_YMD Add_Delta_YMDHMS);
 
 use overload q{""} => 'get_qm_timestamp',
             q{<=>} => 'precision_sensitive_cmp',
@@ -77,7 +78,8 @@ has remainder => ( is => 'ro', isa => 'Str' );
 has epoch_sec => ( is => 'ro', isa => 'Int', writer => '_set_epoch_sec' );
 
 my $TS;
-sub now {
+{ my $_last_update;
+  sub now {
     my $class = shift;
     
     # Calls from within this package with $TS as their first argument
@@ -107,16 +109,19 @@ sub now {
     }
 
 RETURN:
+
+    if ( my $seconds_since_last_call = time - ($_last_update // time) ) {
+        $TS->move($seconds_since_last_call);
+    }
+
+    $_last_update = time;
+
     if ( $TS && defined wantarray ) {
-        my $v;
-        return $priv ? $TS : $class->new(
-            map { defined($v = $TS->$_()) ? ($_ => $v) : () }
-                qw(year month day hour min sec)
-        );
+        return $priv ? $TS : $TS->copy
     }
     else { return }
 
-}
+}}
 
 sub parse_ts {
     my ($class, $ts, $year, $month, $day) = @_;
@@ -150,17 +155,10 @@ sub parse_ts {
         $month = $ret{month} = $2 if defined $2;
         $day = $ret{day} = $1 if defined $1;
     }
-    elsif ( $ts =~ s{ \A \+ ((?i:\s*\d+[dwmy])+) }{}igxms ) {
-        use Date::Calc qw(Add_N_Delta_YMD);
-        my $diff = $1;
-        my ($dd,$dw,$dm,$dy) = (0,0,0,0);
-        while ( $diff =~ m{ (\d+) ([dwmy]) }igxms ) {
-            my ($n,$u) = ($1,$2);
-            if (lc($u) eq 'w') { $u = "d"; $n *= 7; }
-            ( lc($u) eq 'd' ? $dd : lc($u) eq 'm' ? $dm : $dy ) += $n;
-        }
-        ($year, $month, $day) = @ret{qw|year month day|} =
-            Add_N_Delta_YMD($year, $month, $day, $dy, $dm, $dd);
+    elsif ( $ts =~ s{ \A \+ ((?i:\s*-?\d+[dwmy])+) }{}igxms ) {
+        @ret{qw|year month day|} = ($year, $month, $day);
+        move(\%ret, $1);
+        ($year, $month, $day) = @ret{qw|year month day|};
     }
     # else { croak "Kein Datum im String: $ts" } # to early
        
@@ -187,6 +185,18 @@ sub parse_ts {
 
     return $self;
    
+}
+
+sub copy {
+    my ($class, $from) = shift;
+    if ( my $pkg = ref $class ) {
+        ($from, $class) = ($class, $pkg);
+    }
+    my $v;
+    $class->new({
+        map { defined($v = $from->$_()) ? ($_ => $v) : () }
+            qw(year month day hour min sec)
+    });
 }
 
 sub from_epoch {
@@ -218,6 +228,42 @@ sub from_epoch {
 
     return $class->new(%date);
 
+}
+
+sub move {
+    my ($href, $diff) = @_;
+
+    my @fields = qw(year month day hour min sec);
+
+    if ( !ref $diff ) {
+        if ( $diff =~ /\D/ ) {
+            my $neg = $diff =~ s{ ^ ([+-]) }{}xms && $1 eq q{-};
+            my (%args,%long);
+            @long{qw{y m d h M s}} = @fields;
+            while ( $diff =~ m{ \s* (-?) (\d+) ([ymwdhMs]) }gxms ) {
+                my ($s, $n, $u) = ($1, $2, $3);
+                if ( $u eq 'w' ) { $u = 'd'; $n *= 7 }
+                $args{ $long{$u} } += $n * ( ($s xor $neg) ? -1 : 1 );
+            }
+            $diff = \%args;
+        }
+        else {
+            $diff = { sec => $diff };
+        }
+    }
+
+    my @ymdhms = Add_Delta_YMDHMS(
+        map { $_ //= 0 } map { @{$_}{ @fields } } $href, $diff
+    );
+
+    my ($i, %fields) = (0, ());
+    for my $f ( @fields ) {
+        $href->{$f} // $diff->{$f} // next;
+        $href->{$f} = $ymdhms[$i];
+    }
+    continue { $i++ }
+
+    return $href;
 }
 
 sub fix_order {
