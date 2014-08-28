@@ -293,27 +293,26 @@ The day patterns are realized with Bit::Vector, where each bit denotes work (1) 
 
 =item up-to-date time-zone information
 
-=head1 AUTHOR
+=back
 
-Florian Hess <flories at arcor dot de>
-       
 =head1 COPYRIGHT
-       Copyright (c) 2012 - 2013 by Florian Hess. All rights reserved.
+
+(C) 2012-2014 Florian Hess
 
 =head1 LICENSE
-This package is free software; you can use, modify and redistribute it
-under the same terms as Perl itself, i.e., at your option, under the
-terms either of the "Artistic License" or the "GNU General Public
-License".
 
-The C library at the core of the module "Date::Calc::XS" can, at your
-discretion, also be used, modified and redistributed under the terms of
-the "GNU Library General Public License".
+This file is part of FlowTime.
 
-Please refer to the files "Artistic.txt", "GNU_GPL.txt" and
-"GNU_LGPL.txt" in the "license" subdirectory of this distribution for
-any details!
+FlowTime is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-=head1 DISCLAIMER
+FlowTime is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
+You should have received a copy of the GNU General Public License
+along with FlowTime. If not, see <http://www.gnu.org/licenses/>.
 
