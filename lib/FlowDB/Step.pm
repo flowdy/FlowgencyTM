@@ -98,12 +98,6 @@ has is_parent => (
     default => sub { !!(shift->substeps->count); },
 );
 
-around [qw[description done checks]] => sub {
-    my ($orig, $self, $value) = @_;
-    if ( $self->link and my $link = $self->link_row ) { $link->$orig; }
-    else { $self->$orig(exists $_[2] ? $value : ()) }
-};
-
 before ['insert', 'update'] => sub {
     my ($self, $args) = @_;
     $args //= {};
@@ -113,8 +107,8 @@ before ['insert', 'update'] => sub {
     croak "done field cannot be negative" if $done < 0;
     croak "checks value cannot be negative" if $checks < 0;
     croak "expoftime_share value cannot be less than 1" if $exp < 1;
-    croak "Checks must be >0 unless step has (or is promised) substeps\n"
-        if !$checks && !$self->is_parent;
+    croak "Checks must be >0 unless step is linked or has / will have substeps"
+        if !$checks && !($self->link_row || $self->is_parent);
     croak "Step cannot have more checks done than available"
         if $done > $checks;
 };
@@ -198,6 +192,12 @@ sub prior_deps {
 
     return @ret, $p->prior_deps($task_name);
 
+}
+
+sub isa_subtask {
+    my ($self) = @_;
+    my $subtask = $self->subtask_row // return;
+    return ($subtask->name // '') eq $self->task;
 }
 
 sub ancestors_upto {

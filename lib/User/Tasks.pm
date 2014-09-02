@@ -157,40 +157,39 @@ sub _retrieve_task_step {
 sub link_step_row {
     my ($self, $step, $other) = @_;
     my ($other_task, $other_step)
-        = ref $other ? @{$other}{'task', 'step'} : split /[.:\/>]/, $other, 2;
+        = ref $other ? @{$other}{'task', 'step'} : split /[.:\/>]/, $other||'', 2;
 
     $other_step //= '';
 
-    croak "hashref with 'task' and 'step' names missing"
-        if !($other_task && $other_step);
-    croak "Cannot establish links between steps of same task"
-        if $step->task eq $other_task->id;
+    croak "task part is missing" if !$other_task;
 
     my $req_step = $self->_retrieve_task_step($other_task, $other_step);
-    
+
     FtError::Task::InvalidDataToStore->throw(
         "Step to link couldn't be resolved: $other_task/$other_step"
     ) if !$req_step;
 
     FtError::Task::InvalidDataToStore->throw(
-        "Steps may not be subtasks and links at the same time"
-    ) if $self->subtask_row;
-
+        "Cannot establish links between steps of same task"
+    ) if $step->task eq $req_step->task;
+    
     FtError::Task::InvalidDataToStore->throw(
         "Can't have multiple levels of indirection/linkage"
     ) if $req_step->link;
 
     my %is_successor;
-    $is_successor{ $_->name }++ for grep { !$_->link }  $self->and_below;
-    my ($p,$ch) = ($step, $step);
+    $is_successor{ $_->name }++ for grep { !$_->link }  $step->and_below;
+    my ($p,$ch) = ($step) x 2;
     while ( $p = $p->parent_row ) {
+        my $pos = $ch->pos;
         $is_successor{ $_->name }++ for $p->substeps->search({
             link => undef,
-            pos => { '>=' => $ch->pos }
+            $pos ? ( pos => [ undef, { '>=' => $pos } ] ) : (),
         }, { columns => ['name'] });
     } continue { $ch = $p; }
 
-    my @conflicts = grep $is_successor{$_}, $req_step->prior_deps($self->name);
+    my @conflicts
+        = grep { $is_successor{$_} } $req_step->prior_deps($step->name);
     if ( @conflicts ) {
         FtError::Task::InvalidDataToStore->throw(
             "Circular or dead-locking dependency from ",
@@ -246,7 +245,7 @@ sub get_tfls_parser {
         %opts
     });
 
-    return sub {
+    return $dry_run ? $parser : (), sub {
         my $href = $parser->parse(shift);
         return $href if $dry_run;
         my ($name, $copy) = @{$href}{'name','copy'};
@@ -289,9 +288,9 @@ sub _parse_taskstep_title {
         push @{$data{tags}}, $1;
     }
 
-    return $head if !%data and $head =~ /^[a-z]\S+$/;
+    return { oldname => $head } if !%data and $head =~ /^[a-z]\S+$/;
 
-    $data{ $parent ? 'description' : 'title' } = $head;
+    $data{ $parent ? 'description' : 'title' } = length($head) ? $head : undef;
     $data{parents_name} = $parent->{name} // '(anonymous parent)'
         if $parent;
     
@@ -326,9 +325,9 @@ sub _finish_step_data {
    
     my (@ordered, @unordered);
     for my $part ( @_ ) {
-        $DB::single = 1;
         my $name = delete $part->{name}
-                // croak "Step has no name: ". $part->{title};
+                // croak "Step has no name: "
+                   . ($part->{title} // $part->{description});
 
         # Suck and gather all descendents into a top-level hash.
         if ( my $steps = delete $part->{steps} ) {
@@ -360,6 +359,7 @@ sub _finish_step_data {
 
     delete @{$hash}{qw/parents_name _substeps_order/};
 
+    return;
 }
 
 __PACKAGE__->meta->make_immutable();

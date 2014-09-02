@@ -471,6 +471,8 @@ sub _normalize_task_data {
     }
 }
 
+sub step { shift->steps->find({ name => shift }) }
+
 __PACKAGE__->meta->make_immutable();
 
 package FtError::Task::FailsToLoad;

@@ -46,7 +46,7 @@ my $task2 = $user->tasks->add({
     priority => 3,
     from_date => '21.7.2014 9:00',
     timestages => [{ track => 'default', until_date => '15.10. 17:00' }],
-    title => 'Migration Excel-Kundentabelle nach SQL-Datenbank und Webapp',
+    title => 'Migrate excel sheet to sql database to be accessed via webapp',
     description => 'My first task with steps',
     checks => 1,
     substeps => 'export2csv,dbsetup,csvinput,webapp',
@@ -112,7 +112,7 @@ sub parser_test {
 }
 
 my $task3 = parser_test('Simple task parsed with Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
-This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default ;1 a step =foo ;expoftime_share 3
+This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default ;1 a step =foo ;expoftime_share 3 ;1 =link2migr ;link kundenmigr ;checks 0
 TASK
 name => 'task3',
 title => 'This is an example task',
@@ -122,9 +122,14 @@ steps => {
     foo => {
         description => 'a step',
         expoftime_share => 3,
-    }
+    },
+    link2migr => {
+        link => 'kundenmigr',
+        checks => 0,
+        description => undef,
+    },
 },
-substeps => ';foo',
+substeps => ';foo|link2migr',
 timestages => [
     { track => 'default', until_date => '9-4' }
 ],
@@ -133,7 +138,7 @@ COMPARE
 is $task3->dbicrow->priority, 3, "priority label resolved to number";
 is $task3->priority, 'soon', "priority output as label";
 
-my $step = $task3->steps->find({ name => 'foo' });
+my $step = $task3->step('foo');
 is $step->done, 0, "default value of done is 0";
 is $step->checks, 1, "default value of checks is 1";
 for my $field ( qw(done checks expoftime_share) ) {
@@ -145,7 +150,11 @@ throws_ok { $step->update({ expoftime_share => 0 }) } qr/less than/,
 throws_ok { $step->update({ checks => 0 }) } qr/Checks must be >0/,
     "Checks must be >0 when step is not a parent of substeps";
 throws_ok { $step->update({ done => 3 }) } qr/than available/,
-    "You cannot do more checks than available";
+    "You cannot make more checks than available";
+
+$step = $task3->step('link2migr');
+is $step->checks, 0, "checks can be 0 for a link";
+is $step->link_row->checks, 1, "which is independent from linked row";
 
 # TODO: Test for exceptions
 #  * circular dependency in hash to store
