@@ -17,5 +17,6 @@ WriteMakefile(
         'Scalar::Util' => 0, # OK, 1.27
         'Test::More' => 0, # OK, 0.98
         'Time::Local' => 0, # OK, 1.2300
+        'Test::Exception' => 0, # OK, 0.32
     }
 );

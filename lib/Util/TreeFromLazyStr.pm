@@ -5,62 +5,6 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use Carp qw(croak);
  
-=head1 NAME
-
-Util::TreeFromLazyStr - Deserialize tree structures from quick notated strings
-
-=head1 VERSION
-
-Version 0.001 (i.e. draft/alpha - Please test, but do not use)
-
-DRAFT/DELETE: Not ready for, I not even decided if this module should go for CPAN. In fact, it started as a utility module inside the FlowTime project (a time-management tool, so bloody alpha it is not even published yet, consider taskwarrior &co. for the time being) and is maybe not enough generalized for public use.
-
-=head1 WHAT THIS MODULE PROVIDES 
-
-=over 4
-
-=item *
-
-A customizable leaves-to-root (bottom-up) parser
-
-=item *
-
-for manageable monohierarchical tree structures
-
-=item *
-
-input by either someone of whom you cannot expect or who is fed up with hand-coding raw data from scratch
-
-=item *
-
-that is, input in a painless and quick, ad-hoc way
-
-=item *
-
-while learning it bit by bit instead of not understanding it all at once
-
-=back
-
-It relies on a backend sufficiently fault-tolerant in respect to processing the returned data, i.e. content-based validation is beyond the scope of this module.
-
-=head1 WHY YET ANOTHER SERIALIZATION FORMAT?
-
-What is the benefit of using Util::TreeFromLazyStr compared with JSON, YAML or XML?
-
-The notation is optimized for a minimum of syntactic structurals. Nesting is neither indicated by brackets or tags of any kind which would need your caring for balance, nor by indentation that would require you to start every line with as many spaces or tabs as the current depth is, which is a rather boring and error-prone thing to do where auto-indenting facilities are missing (e.g. web form). Last but not least, quoting and escaping literal quotes is obsolete as well when using this module.
-
-Basically, the difference between indentation and our approach is that you notate the current depth with an B<explicit number>. With plain numbers, at least those from 1 to 9, the human brain deals much easier than with balanced chains of parens, paths of nested tags or couples of invisible indentation characters. This proposition is the main rationale of this module and is to me worth a proof.
-
-=head2 An example
-
- This is a task with a deadline ;until 30.11.
- 1and a subordinated step ;2 The whole thing is nestable in that\
- many levels you want ;however: in a certain depth you'll find it not\
- manageable any more ;1 We decrement in order to return to a higher level
- ;from 15.11.:bureau; 24.11.:labor
-
-=cut
-
 my $NoBS = '(?<!\\\)'; # assert backslash in front
 
 subtype 'SeparatorRegexp',
@@ -94,12 +38,21 @@ has list_separator => (
 
 has key_extractor => (
     is => 'ro', isa => 'RegexpRef',
-    default => sub { qr/ \A (\w+) (?: : \s* | \s+) /xms }
+    default => sub { qr/ \A (\w+) (?: $ | : \s* | \s+) /xms }
 );
 
 has sep_cache => (
     is => 'ro', isa => 'HashRef[SeparatorRegexp]',
     default => sub {{}},
+);
+
+has allowed_leaf_keys => (
+    is => 'ro', isa => 'ArrayRef[Str]', auto_deref => 1, default => sub{[]},
+    predicate => 'has_fields',
+);
+
+has leaf_key_aliases => (
+    is => 'ro', isa => 'HashRef[Str]', auto_deref => 1, default => sub {{}}
 );
 
 sub _unescape ($) {
@@ -131,6 +84,7 @@ sub parse {
     ;
 
     my @parts = split /$fullsep/, $_[1];
+    chomp @parts;
 
     $num or return map { parse($self, $_, 1) } @parts;
 
@@ -141,15 +95,36 @@ sub parse {
 
     my $list_sep   = $self->list_separator;
     my $key_extr   = $self->key_extractor;
+    my $fields     = $self->allowed_leaf_keys;
+    my $aliases    = $self->leaf_key_aliases;
+
+    my $key_resolver = sub {
+        my $short = shift;
+        if ( my $alias = $aliases->{$short} ) { return $alias; }
+        else {
+            my @fields = grep { m{ \A \Q$short\E }xms } @$fields;
+            if ( @fields == 1 ) { return $aliases->{$short} = $fields[0]; }
+            elsif ( !@fields ) {
+                croak "key $short is unknown" if $self->has_fields;
+                return $short;
+            }
+            else {
+                croak "Key prefix $short ambiguously matches: ",
+                    join q{ or }, @fields
+            }
+        }
+    };
+
     my %leaves;
     for my $leaf ( @leaves ) {
         croak "Unexpected separator in a leaf: $1 - possibly miscounted?"
             if $leaf =~ $firstsep;
         my $key = $leaf =~ s{$key_extr}{}xms ? $1
                 : croak "Missing key in line \"$leaf\"";
+        $key = $key_resolver->($key);
         _unescape $leaf;
         my @val = split /$list_sep/, $leaf;
-        $leaves{$key} = @val > 1 ? \@val : shift @val;
+        $leaves{$key} = @val > 1 ? \@val : $val[0];
     }
 
     _unescape $twig;
@@ -161,82 +136,6 @@ sub parse {
 }
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
-
-package main;
-use Carp qw/croak/;
-
-sub get_flowtime_task_parser {
-    Util::TreeFromLazyStr->new({
-        create_twig => \&parse_taskstep_title,
-        finish_twig => sub { shift; $_->{substeps} = \@_ if @_; },
-        @_
-    });
-}
-
-sub parse_taskstep_title {
-    my ($head, $parent, $leaves) = @_;
-
-    my %data;
-
-    # Recognize id string for the task/step
-    if ( $head =~ s{ \s* = (\w+) }{}xms ) {
-        $data{name} = $1;
-    }
-
-    # Recognize tags 
-    if ( $head =~ s{ \s* \B \# (\p{Alpha}\w+) }{}xms ) {
-        push @{$data{tags}}, $1;
-    }
-
-    # Recognize from-date, time track (or contiguous pairs of both) and the
-    # deadline after all.
-    my $date_rx = qr{\d[.\-\d]{,8}[\d.]\b};
-    if ( $head =~
-           s{ ( [a-z] \w+                   # id string of a time track (tp)
-              | $date_rx                    # date to be parsed by Time::Point
-              | (?:,?(?:$date_rx:[^,\s]+))+ # ","-sep. pairs of from-date and tp
-              )? --? ($date_rx)             # deadline date
-            }{}xms
-    ) {
-
-        my @components = split /,/, $1//q{};
-        if ( @components > 1 ) {
-            for ( split /,/, $1 ) {
-                my ($date, $tplabel) = split /:/, $_;
-                $data{timetrack_from}{$date} = $tplabel;
-            }
-        }
-        elsif ( my $single = shift @components ) {
-            if ( $single =~ /^\d/ ) {
-                $data{timetrack_from}{$single} = "DEFAULT";
-            }
-            else {
-                $data{timetrack} = $single;
-            }
-        }
-    }
-    
-    return $head if !%data and $head =~ /^[a-z]\S+$/;
-
-    $data{title} = $head;
-    $data{parents_name} = $parent->{name} // '(anonymous parent)'
-        if $parent;
-    
-    while ( my ($key, $leaf) = each %$leaves ) {
-        croak "Key exists: $key" if exists $data{$key};
-        $data{$key} = $leaf;
-    }
-
-    return \%data;
-
-}
-
-if ( @ARGV and $ARGV[0] eq 'test' ) {
-    local $/ = "\n__END__"; eval <DATA>; die $@ if $@;
-}
-
-1;
 
 __END__
 
@@ -430,6 +329,62 @@ Unexpected separator in a leaf: 2 - possibly miscounted? at TreeFromLazyStr.pm l
          'title' => 'Hier noch mal mit untergeordnetem Zeug'
    'title' => 'ich die Bestandteile hier mit ]['
 done_testing;
+
+=head1 NAME
+
+Util::TreeFromLazyStr - Deserialize tree structures from quick notated strings
+
+=head1 VERSION
+
+Version 0.001 (i.e. draft/alpha - Please test, but do not use)
+
+DRAFT/DELETE: Not ready for, I not even decided if this module should go for CPAN. In fact, it started as a utility module inside the FlowTime project (a time-management tool, so bloody alpha it is not even published yet, consider taskwarrior &co. for the time being) and is maybe not enough generalized for public use.
+
+=head1 WHAT THIS MODULE PROVIDES 
+
+=over 4
+
+=item *
+
+A customizable leaves-to-root (bottom-up) parser
+
+=item *
+
+for manageable monohierarchical tree structures
+
+=item *
+
+input by either someone of whom you cannot expect or who is fed up with hand-coding raw data from scratch
+
+=item *
+
+that is, input in a painless and quick, ad-hoc way
+
+=item *
+
+while learning it bit by bit instead of not understanding it all at once
+
+=back
+
+It relies on a backend sufficiently fault-tolerant in respect to processing the returned data, i.e. content-based validation is beyond the scope of this module.
+
+=head1 WHY YET ANOTHER SERIALIZATION FORMAT?
+
+What is the benefit of using Util::TreeFromLazyStr compared with JSON, YAML or XML?
+
+The notation is optimized for a minimum of syntactic structurals. Nesting is neither indicated by brackets or tags of any kind which would need your caring for balance, nor by indentation that would require you to start every line with as many spaces or tabs as the current depth is, which is a rather boring and error-prone thing to do where auto-indenting facilities are missing (e.g. web form). Last but not least, quoting and escaping literal quotes is obsolete as well when using this module.
+
+Basically, the difference between indentation and our approach is that you notate the current depth with an B<explicit number>. With plain numbers, at least those from 1 to 9, the human brain deals much easier than with balanced chains of parens, paths of nested tags or couples of invisible indentation characters. This proposition is the main rationale of this module and is to me worth a proof.
+
+=head2 An example
+
+ This is a task with a deadline ;until 30.11.
+ 1and a subordinated step ;2 The whole thing is nestable in that\
+ many levels you want ;however: in a certain depth you'll find it not\
+ manageable any more ;1 We decrement in order to return to a higher level
+ ;from 15.11.:bureau; 24.11.:labor
+
+=cut
 
 
 =head2 Syntax overview

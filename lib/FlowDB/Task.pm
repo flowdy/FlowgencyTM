@@ -22,7 +22,7 @@ __PACKAGE__->add_columns(
         # key, but doing so smells of pitfalls. So we have to ensure main_step is properly
         # dealt with in our insert and update wrappers.
     from_date        => $MANDATORY,
-    priority         => $MANDATORY,
+    priority         => { %$MANDATORY, data_type => 'INTEGER' },
     archived_because => $OPTIONAL, # enum ('COMPLETE', 'PAUSED', 'CANCELLED')
     archived_ts      => $OPTIONAL,
     repeat_from      => $OPTIONAL,

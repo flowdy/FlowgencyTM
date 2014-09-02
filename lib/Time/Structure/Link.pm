@@ -56,6 +56,18 @@ sub get_last_in_chain {
     return $last;
 }
 
+around BUILDARGS => sub {
+    my ($orig, $class, @args) = @_;
+
+    my $args = $class->$orig(@args);
+
+    my ($from, $to) = @{$args}{'from_date','until_date'};
+    $from = $args->{from_date} = Time::Point->parse_ts($from)      if !ref $from;
+    $args->{until_date}        = Time::Point->parse_ts($to, $from) if !ref $to;
+
+    return $args;
+};
+
 around 'new_alike' => sub {
     my ($wrapped, $self) = (shift, shift);
 

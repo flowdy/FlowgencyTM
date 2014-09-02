@@ -17,9 +17,8 @@ sub from_stage_hrefs {
 
     for my $s ( @stages ) {
         $s->{from_date} //= $last->until_date->successor;
-        $self->couple( Time::Cursor::Stage->new($s) );
+        $self->couple( $last = Time::Cursor::Stage->new($s) );
     }
-    continue { $last = $s }
 
     return $self;
 

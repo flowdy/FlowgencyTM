@@ -2,6 +2,7 @@ use strict;
 
 package User;
 use Moose;
+use Carp qw(croak);
 use Time::Model;
 use User::Tasks;
 use FlowRank;
@@ -39,6 +40,9 @@ has tasks => (
             flowrank_processor => FlowRank->new_closure({
                 get_weights => sub { $self->weights }
             }),
+            priority_resolver => sub {
+                $self->_priorities->{ +shift };
+            },
             task_rs => scalar $self->_dbicrow->tasks,
         });
     },
@@ -55,6 +59,22 @@ has weights => (
     },
 );
     
+has _priorities => (
+    is => 'ro',
+    isa => 'HashRef[Int|Str]',
+    auto_deref => 1,
+    lazy => 1,
+    default => sub {
+        my $href = from_json(shift->_dbicrow->priorities);
+        my %ret;
+        while ( my ($p, $n) = each %$href ) {
+            croak "priority $p redefined" if $ret{"p:$n"};
+            croak "ambiguous label for priority number $n" if $ret{"n:$p"};
+            @ret{ "p:$n", "n:$p" } = ($p, $n);
+        }
+        return \%ret; 
+    },
+);
 sub store_weights {
     my ($self) = @_;
 }

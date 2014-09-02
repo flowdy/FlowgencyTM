@@ -33,6 +33,17 @@ sub test_week_pattern {
     ;
 }
 
+sub test_timespans {
+    my $tspan = eval {
+        Time::Span->new(
+            from_date => '2030-12-31',
+            week_pattern => 'Mo-So',
+            until_date => '+1d'
+       );
+    };
+    ok( !$@, "Time span with absolute from_date and relative until_date (Error: $@)" );
+}
+
 sub test_atoms {
     my $tspan = Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
     is $tspan->rhythm->atoms->to_Enum, '9-16,33-40,57-64,81-88,105-112,'

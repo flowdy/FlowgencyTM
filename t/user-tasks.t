@@ -2,6 +2,7 @@
 use strict;
 
 use Test::More;
+use Test::Exception;
 use User;
 
 my $db;
@@ -19,7 +20,7 @@ my $user = $db->resultset("User")->find_or_create({
     password => '',
     time_model => time_model_json(),
     weights => q[{"pri":1,"tpd":1,"due":1,"open":1,"eptn":1}],
-    priorities => q[{1:"Auf Halde",2:"Gelegentlich",3:"Bald erledigen",5:"Dringend"}],
+    priorities => q[{"pile":1,"whentime":2,"soon":3,"urgent":5}],
 });
 
 ok $user->isa("FlowDB::User"), 'User fh created';
@@ -98,6 +99,53 @@ my $task2 = $user->tasks->add({
 });
 
 is $task2->name, 'kundenmigr', "Created task with steps";
+
+my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
+
+sub parser_test {
+    my ($description, $lazystr, $hash_str4eval) = @_;
+    my $cmp_to_href = eval "#line Hash_Data 0\n 1 && {".$hash_str4eval."}";
+    die if $@;
+    my ($parsed, $task) = $parser->($lazystr);
+    is_deeply( $parsed, $cmp_to_href, $description );
+    return $task;
+}
+
+my $task3 = parser_test('Simple task parsed with Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
+This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default ;1 a step =foo ;expoftime_share 3
+TASK
+name => 'task3',
+title => 'This is an example task',
+from_date => '8-28',
+priority => 'soon',
+steps => {
+    foo => {
+        description => 'a step',
+        expoftime_share => 3,
+    }
+},
+substeps => ';foo',
+timestages => [
+    { track => 'default', until_date => '9-4' }
+],
+COMPARE
+
+is $task3->dbicrow->priority, 3, "priority label resolved to number";
+is $task3->priority, 'soon', "priority output as label";
+
+my $step = $task3->steps->find({ name => 'foo' });
+is $step->done, 0, "default value of done is 0";
+is $step->checks, 1, "default value of checks is 1";
+for my $field ( qw(done checks expoftime_share) ) {
+    throws_ok { $step->update({ $field => -1 }) } qr/cannot be/,
+        "$field cannot be negative";
+}
+throws_ok { $step->update({ expoftime_share => 0 }) } qr/less than/,
+    "Expoftime_share can neither be 0";
+throws_ok { $step->update({ checks => 0 }) } qr/Checks must be >0/,
+    "Checks must be >0 when step is not a parent of substeps";
+throws_ok { $step->update({ done => 3 }) } qr/than available/,
+    "You cannot do more checks than available";
 
 # TODO: Test for exceptions
 #  * circular dependency in hash to store

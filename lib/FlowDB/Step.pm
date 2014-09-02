@@ -3,6 +3,7 @@ use strict;
 package FlowDB::Step;
 
 use Moose;
+use Carp qw(croak);
 extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('step');
@@ -11,19 +12,18 @@ my @INTEGER = ( data_type => 'INTEGER' );
 my @NULLABLE = ( is_nullable => 1 );
 
 __PACKAGE__->add_columns(
-    ROWID => { @INTEGER },
-    task => {},
-    parent => { @NULLABLE },
-    name => { default_value => '' },
-    description => { @NULLABLE },
-    link => { @NULLABLE },
-    pos => { @NULLABLE, data_type => 'FLOAT' },
-    done => { @INTEGER, default_value => 0 },
-    checks => { @INTEGER, default_value => 1 },
-    expoftime_share => { @INTEGER, default_value => 1 }
+    checks          => { @INTEGER, default_value => 1 },
+    done            => { @INTEGER, default_value => 0 },
+    description     => { @NULLABLE },
+    expoftime_share => { @INTEGER, default_value => 1 },
+    name            => { default_value => '' },
+    link            => { @NULLABLE },
+    parent          => { @NULLABLE },
+    pos             => { @NULLABLE, data_type => 'FLOAT' },
+    ROWID           => { @INTEGER },
+    task            => {},
 ); 
 __PACKAGE__->set_primary_key("ROWID");
-
 
 __PACKAGE__->belongs_to(
     parent_row => 'FlowDB::Step',
@@ -80,12 +80,6 @@ sub sqlt_deploy_hook {
 
 }
 
-around [qw[description done checks]] => sub {
-    my ($orig, $self, $value) = @_;
-    if ( $self->link and my $link = $self->link_row ) { $link->$orig; }
-    else { $self->$orig(exists $_[2] ? $value : ()) }
-};
-
 has priority => (
     is => 'ro',
     isa => 'Int',
@@ -98,6 +92,32 @@ has priority => (
         else { die "Can't find out priority" }
     },
 );
+
+has is_parent => (
+    is => 'rw', isa => 'Bool', lazy => 1,
+    default => sub { !!(shift->substeps->count); },
+);
+
+around [qw[description done checks]] => sub {
+    my ($orig, $self, $value) = @_;
+    if ( $self->link and my $link = $self->link_row ) { $link->$orig; }
+    else { $self->$orig(exists $_[2] ? $value : ()) }
+};
+
+before ['insert', 'update'] => sub {
+    my ($self, $args) = @_;
+    $args //= {};
+    my $checks = $args->{checks}            // $self->checks          // 1;
+    my $done   = $args->{done}              // $self->done            // 0;
+    my $exp    = $args->{expoftime_share}   // $self->expoftime_share // 1;
+    croak "done field cannot be negative" if $done < 0;
+    croak "checks value cannot be negative" if $checks < 0;
+    croak "expoftime_share value cannot be less than 1" if $exp < 1;
+    croak "Checks must be >0 unless step has (or is promised) substeps\n"
+        if !$checks && !$self->is_parent;
+    croak "Step cannot have more checks done than available"
+        if $done > $checks;
+};
 
 sub calc_progress {
     my ($self, $LEVEL) = @_;
