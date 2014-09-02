@@ -321,38 +321,6 @@ sub _parse_taskstep_title {
 
 }
 
-sub __DEPRECATED_extract_timecursorway_info {
-    state $datetime_rx = qr{
-        (?<date> (?=\d)[\d.-]*\d\.? | \+ \w+ )? # if "+...", calculate date after the one before
-        (?: (?(<date>)[\sT]|\b) [\d:]+ )
-    }xms;
-
-    my ($from_date, @stages);
-
-    if ( $_[0] =~ s{
-              (?<FROM>  $datetime_rx )? \s --? \s* # date to be parsed by Time::Point
-              (?<TRACK> $datetime_rx@[^,\s]+,? )+   # ","-sep. pairs of until-date and track
-            }{}xms
-    ) {
-
-        $from_date = $+{FROM} ? Time::Point->parse_ts($+{FROM})
-                              : Time::Point->NOW();
-        my $last = $from_date;
-        for my $component ( split /,/, $+{TRACK} ) {
-            my ($date, $tracklabel) = split /@/, $component;
-            $date = Time::Point->parse_ts($date, $last);
-            push @stages, {
-                until_date => $date, track => $tracklabel
-            };
-            $last = $date;
-        }
-
-    }
-
-    return @stages ? ($from_date, \@stages) : ();
-    
-}
-
 sub _finish_step_data {
     my $hash = $_; shift;
    
