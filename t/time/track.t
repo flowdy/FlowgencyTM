@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Exception;
 use FindBin qw($Bin);
 
 use Time::Track;
@@ -34,14 +35,13 @@ sub test_week_pattern {
 }
 
 sub test_timespans {
-    my $tspan = eval {
+    lives_ok {
         Time::Span->new(
             from_date => '2030-12-31',
             week_pattern => 'Mo-So',
             until_date => '+1d'
        );
-    };
-    ok( !$@, "Time span with absolute from_date and relative until_date (Error: $@)" );
+    } "Time span with absolute from_date and relative until_date";
 }
 
 sub test_atoms {

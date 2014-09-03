@@ -175,8 +175,10 @@ sub prior_deps {
 
     my $opts = { columns => ['link'], order_by => { -asc => ['pos'] } };
 
+    my $pos = $self->pos;
     my @prior_steps = $p->substeps->search({
-        pos => { '<=' => $self->pos }
+        $pos ? ( pos => [ undef, { '<=' => $pos } ] ) : (),
+        name => { '!=' => $self->name },
     }, $opts);
 
     while ( my $p = shift @prior_steps ) {
