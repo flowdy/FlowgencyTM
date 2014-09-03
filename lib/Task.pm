@@ -35,7 +35,7 @@ has dbicrow => (
     handles => [qw[
         from_date client open_sec
         title description priority
-        main_step steps
+        main_step_row steps
     ]],
     required => 1,
     default => sub { # called after clearer has been called

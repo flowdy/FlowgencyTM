@@ -40,6 +40,7 @@ my $task = $user->tasks->add({
 });
 
 is $task->name, "task1", "Created test1";
+is $task->description, 'Would appreciate it greatly if it works', "accessing description";
 
 my $task2 = $user->tasks->add({
     name => 'kundenmigr',
@@ -155,6 +156,7 @@ throws_ok { $step->update({ done => 3 }) } qr/than available/,
 $step = $task3->step('link2migr');
 is $step->checks, 0, "checks can be 0 for a link";
 is $step->link_row->checks, 1, "which is independent from linked row";
+$task3->main_step_row->dump_focus;
 
 # TODO: Test for exceptions
 #  * circular dependency in hash to store

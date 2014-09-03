@@ -40,7 +40,7 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->belongs_to(
     subtask_row => 'FlowDB::Task',
     { 'foreign.main_step' => 'self.ROWID' },
-    { proxy => [qw/timesegments from_date client/],
+    { proxy => [qw/title timesegments from_date client/],
       is_foreign_key_constraint => 0,
     }
 );
@@ -135,31 +135,104 @@ sub calc_progress {
 
 }
 
+sub dump_focus {
+    my ($self, $out_fh) = @_;
+    $out_fh //= wantarray && 0;
+
+    my @ret;
+    my $print
+        = $out_fh          ? sub { _print_fmtd_focus_step(@_ => $out_fh) }
+        : defined($out_fh) ? sub { push @ret, [ @_[1, 0, 2] ] }
+        :                    sub { _print_fmtd_focus_step(@_) }
+        ;
+ 
+    my @tree = $self->get_focus;
+    my @depth = ( scalar @tree );
+
+    ITEM:
+    while ( my $step = pop @tree ) {
+        if ( ref $step eq 'ARRAY' ) {
+            push @tree, @$step;
+            push @depth, scalar @$step;
+            next ITEM;
+        }
+
+        my $is_link;
+        if ( ref $step eq 'REF' ) {
+            $step = $$step;
+            $is_link = 1;
+        }
+
+        $print->($step, $#depth, $is_link);
+
+    }
+    continue {
+        pop @depth if !( $depth[-1]-- );
+    }
+    
+    return if !@ret;
+    return wantarray ? @ret : \@ret;    
+
+}
+
+sub _print_fmtd_focus_step {
+    my ($self, $depth, $is_link, $out_fh) = @_;
+    $out_fh //= \*STDOUT;
+    print {$out_fh} join " ",
+                    $depth . "|", 
+                    $self->done."/".$self->checks,
+                    $is_link      ? sprintf("LINK to %s:", do {
+                        join "/", $self->task_row->name, $self->name;
+                    }) : (),
+                    $self->title // $self->description // $self->name,
+                    "\n"
+                  ;
+}
+
 sub get_focus {
     my ($self) = @_;
 
-    my $substeps = $self->substeps->search(
-        {}, { order_by => { -asc => ['pos'] } }
-    );
+    my $substeps = $self->substeps;
+    my $opts = { order_by => { -asc => 'pos' } };
+    my $max_pos = $substeps->get_column('pos')->max // 1;
+    my (@uncomplete, $pos);
 
-    my (@focus, @multi);
-    while ( my $s = $substeps->next ) {
-        if ( !defined($s->pos) ) {
-            push @multi, $s->get_focus();
+    INCR_POS:
+    until ( ++$pos > $max_pos ) {
+        my $expr = $pos ? { like => $pos.q{.%} } : undef;
+        my @substeps = $substeps->search({ pos => $expr }, $opts);
+
+        my @uncmpl_sub;
+
+        for my $step ( @substeps ) {
+            push @uncmpl_sub, $step->get_focus;
         }
-        elsif ( !@focus ) {
-           @focus = $s->get_focus();
+
+        if ( @uncmpl_sub || !@substeps ) {
+            push @uncomplete, @uncmpl_sub;
+            if ( $pos ) { $pos = 0; redo INCR_POS; }
+            else { last INCR_POS; }
+        }
+
+    }
+
+    if ( @uncomplete ) {
+        @uncomplete = ([ splice @uncomplete ]);
+    }
+
+    if ( my $link = $self->link_row ) {
+        if ( my ($l, @steps) = $link->get_focus ) {
+            die "linked step not identical with itself" if $l != $link;
+            push @uncomplete, \$l, @steps;
         }
     }
 
-    my $linked = $self->link_row;
+    if ( @uncomplete || $self->done < $self->checks ) {
+        unshift @uncomplete, $self;
+    }
 
-    return if !@focus && (
-        $linked ? $linked->calc_progress == 1
-                : $self->done == $self->checks
-        );
+    return wantarray ? @uncomplete : \@uncomplete;
 
-    return @focus, [$self, @multi];
 }
 
 sub prior_deps {

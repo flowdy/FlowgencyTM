@@ -71,6 +71,8 @@ sub add {
 
     $task->store($md_href);
     
+    $task->dbicrow->discard_changes; # set defaults
+
     return $task;
 
 }
