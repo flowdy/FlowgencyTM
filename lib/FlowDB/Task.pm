@@ -8,6 +8,12 @@ extends 'DBIx::Class::Core';
 
 my ($MANDATORY, $OPTIONAL) = map { { is_nullable => $_ } } 0, 1;
 
+has _multirel_cache => (
+    is => 'rw',
+    isa => 'HashRef',
+    default => sub {{}}, # for reasons whatsoever, this does not work
+);
+
 __PACKAGE__->table('task');
 __PACKAGE__->add_column( ROWID => { data_type => 'INTEGER' });
 __PACKAGE__->add_columns(
@@ -79,17 +85,23 @@ around insert => sub {
     my ($orig, $self) = @_;
     my $msr = $self->main_step_row;
     $self->main_step_row(undef);
+    my $cache = $self->_multirel_cache();
     $self->$orig();
+    $self->store_multirel_cache($cache);
     $msr->insert();
     $self->update({'main_step_row' => $msr });
 };
 
 around update => sub {
     my ($orig, $self) = (shift, shift);
-    my $args = @_ > 1 ? {@_} : shift;
+    my $args = @_ % 2 ? shift // {} : {@_};
     my $main_step_data = _extract_proxy( $args );
+    my $cache = $self->_multirel_cache();
     $main_step_data->{name} = q{};
     $self->$orig($args);
+    if ( $cache ) {
+        $self->store_multirel_cache($cache);
+    }
     $self->main_step_row->$orig($main_step_data);
     return $self;
 };
@@ -111,6 +123,40 @@ around copy => sub {
     return $c;
 
 };
+
+# DBIx::Class accessors of type 'multi' pass any arguments through to search_related.
+# As we search with $self->$acc->search({ ... }), we would rather have a read write accessor
+# instead:
+
+for my $acc ( 'timestages' ) {
+    around $acc => sub {
+        my ($orig, $self, $aref) = (shift, shift, @_);
+        my $cache = $self->_multirel_cache;
+        if ( !defined $cache ) {
+            $self->_multirel_cache($cache = {});
+        }
+        if ( ref $aref eq 'ARRAY' ) {
+            return $cache->{$acc} = $aref;
+        }
+        elsif ( @_ ) {
+            return $self->$orig(@_);
+        }
+        else {
+            return $cache->{$acc} // $self->$orig();
+        }
+    }
+}
+
+sub store_multirel_cache {
+    my ($self, $cache) = @_;
+    while ( my ($acc, $value) = each %$cache ) {
+        $self->related_resultset($acc)->delete;
+        substr $acc, 0, 0, "add_to_";
+        $self->$acc($_) for @$value;
+    }
+    %$cache = ();
+    return 1;
+}
 
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;

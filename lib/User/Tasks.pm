@@ -71,8 +71,6 @@ sub add {
 
     $task->store($md_href);
     
-    $task->dbicrow->discard_changes; # set defaults
-
     return $task;
 
 }
@@ -273,7 +271,7 @@ sub _parse_taskstep_title {
     my %data;
 
     # Recognize id string for the task/step
-    if ( $head =~ s{ \s* (= (\w+)) }{}gxms ) {
+    if ( $head =~ s{ \s* (= (\w+)) \s* }{}gxms ) {
         $data{name} = $2 if $2;
         if ( $head =~ s{ \G \. (\w+) }{}xms ) {
             $data{ 'step' } = $1;
@@ -281,7 +279,7 @@ sub _parse_taskstep_title {
     }
 
     # Recognize a link
-    if ( $head =~ s{ \s* (?: > (\w+) \. (\w+) ) }{}xms ) {
+    if ( $head =~ s{ \G \s* (?: > (\w+) \. (\w+) ) \s* }{}xms ) {
         $data{link} = [ $1, $2 ];
     }
 
@@ -353,9 +351,9 @@ sub _finish_step_data {
     }
     
     if ( @ordered || @unordered ) {
-        $hash->{substeps} = sprintf "%s;%s", join( q{,},
-                                map { join q{|}, @$_ } @ordered
-                            ), join( q{|}, @unordered)
+        $hash->{substeps} = join ';',
+                                join( q{,}, map { join q{|}, @$_ } @ordered ) || '',
+                                join( q{|}, @unordered) || ()
                           ;
     }
 
@@ -383,6 +381,7 @@ User::Tasks - Set of all tasks by a user
  my $new_task = $tasks->copy("name_of_known_task" => \%data);
  $tasks->delete("name_of_known_task");
 
+ # TODO as of Sep 9 2014:
  $tasks->list(
      desk => 0|1,     # open tasks best to do right now. default: 1
                       #   includes closed tasks more or insignificantly less 

@@ -50,7 +50,7 @@ has progress => (
     is => 'ro',
     isa => 'Num',
     lazy => 1,
-    default => sub { shift->main_step->calc_progress },
+    default => sub { shift->main_step_row->calc_progress },
     clearer => 'clear_progress',
     init_arg => undef,
 );
@@ -80,6 +80,10 @@ around priority => sub {
     my $number = $self->$orig();
     return $self->_tasks->priority_resolver->( "p:$number" ) // $number;
 };
+
+sub current_focus {
+    return shift->main_step_row->current_focus(@_);
+}
 
 sub redraw_cursor_way {
     my ($self, @stages) = @_;
@@ -127,25 +131,26 @@ sub store {
     my $steps = delete $args{steps} // {};
     my $steps_rs = $self->dbicrow->steps_rs;
     my $root_step = $root && (
-        $steps_rs->find($root) // FtError::Task::InvalidDataToStore
-            ->throw(qq{No step '$root'})
-        );
+        $steps_rs->find({ name => $root })
+            // FtError::Task::InvalidDataToStore->throw(qq{No step '$root'})
+    );
 
     # As we want to be able to mention known steps in {substeps}
     # without declaring them manually in {steps} hash ...
     $steps->{ $_->name } //= {}
-        for $root ? $root_step->and_below({}, { columns => ['name'] })
+        for $root ? $root_step->and_below({}, { columns => ['name', 'ROWID', 'task' ] })
                   : $steps_rs->search(    {}, { columns => ['name'] })
         ;
 
     if ( $root_step ) {
-        for my $parent ( $root_step->ancestors_upto() ) {
-            $steps->{ $root_step->name } = {
+        my $step = $root_step;
+        for my $parent ( $step->ancestors_upto() ) {
+            $steps->{ $step->name } = {
                 _skip => "because it is above our hierarchy",
-                 row => $root_step, parent => $parent->name,
+                 row => $step, parent => $parent->name,
             };
         }
-        continue { $root_step = $parent; }
+        continue { $step = $parent; }
     }
 
     my $steps_aref; # list all upper steps before their lower levels
@@ -170,6 +175,7 @@ sub store {
     }
 
     $self->_tasks->recalculate_dependencies($self => @to_recalc);
+    $self->clear_progress;
 
     return 1;
 
@@ -276,14 +282,15 @@ sub _store_root_step {
     my $steps_rs = $row->steps;
     my $root_name = delete $data->{oldname};
 
-    if ( length $root_name ) {
-        my $step_row = $steps_rs->find($root_name);
+    my $store_mode = length($root_name) ? 'step' : 'task';
+
+    if ( $store_mode eq 'step' ) {
+        my $step_row = $steps_rs->find({ name => $root_name });
         $data->{name} //= $root_name;
         my $p = $data->{parent};
         FtError::Task::InvalidDataToStore->throw(
             "Not found: parent for step '$root_name' with name $p"
         ) if $p && !$steps_rs->find($p);
-        $self->_handle_subtask_data_of($data);
         if ($step_row) { $row = $step_row; }
         elsif ( $p && exists $data->{pos} ) {
             $row = $steps_rs->new_result();
@@ -293,12 +300,13 @@ sub _store_root_step {
                 "New step must have a parent and a position"
             );
         }
+        $self->_handle_subtask_data_of( $data => $row );
     }
     else {
         FtError::Task::InvalidDataToStore->throw(
             "root step cannot have a parent"
         ) if defined $data->{parent};
-        $self->_normalize_task_data($data);
+        $self->_normalize_task_data($data => $row);
     }
 
     while ( my ($key, $value) = each %$data ) {
@@ -308,18 +316,19 @@ sub _store_root_step {
     my $result;
 
     if ( $row->in_storage ) {
-        $self->redraw_cursor_way;
+        $self->redraw_cursor_way if $store_mode eq 'task'
+                                 || $data->{subtask_row};
         $result = $row->update;
     }
     else {
         $result = $row->insert;
-        for my $ts ( @{ $data->{timestages} } ) {
-            $row->add_to_timestages($ts);
-        } 
         FtError::Task::InvalidDataToStore->throw(
             "Cursor setup failed: $@"
         ) if !eval { $self->_cursor };
     }
+
+    # to avoid any inconsistencies, notice any defaults, etc.
+    $row->discard_changes();
 
     return $result;
 }
@@ -371,9 +380,9 @@ sub _store_steps_below {
                       : $steps_rs->find({ name => '' })
                       ;
 
-            $self->_handle_subtask_data_of($step);
-
             if ( $step_row ) {
+
+                $self->_handle_subtask_data_of($step, $step_row);
 
                 # Check if there are circular dependencies
                 if ( $in_hierarchy{$name} ) {
@@ -420,6 +429,7 @@ sub _store_steps_below {
             }
 
             $step_row->update_or_insert;
+
         }
 
         else {
@@ -452,14 +462,18 @@ sub _handle_subtask_data_of {
         $subtask_row{$key} = delete $step->{$key};
     }
     $self->_normalize_task_data(\%subtask_row);
-    if ( %subtask_row ) { $step->{subtask_row} = \%subtask_row }
+    if ( %subtask_row ) {
+        $step->{subtask_row} = \%subtask_row;
+    }
 }
 
 sub _normalize_task_data {
     my ($self, $data) = @_;
+
     for my $f ( $data->{from_date} // () ) {
         $f = q{}.( Time::Point->parse_ts($f)->fill_in_assumptions );
     }
+
     for my $p ( $data->{priority} // () ) {
         my $num = $self->_tasks->priority_resolver->("n:$p");
         if ( $num ) { $p = $num }
@@ -469,6 +483,7 @@ sub _normalize_task_data {
             );
         }
     }
+
 }
 
 sub step { shift->steps->find({ name => shift }) }

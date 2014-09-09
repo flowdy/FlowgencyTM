@@ -4,6 +4,7 @@ use strict;
 use Test::More;
 use Test::Exception;
 use User;
+use utf8;
 
 my $db;
 use FlowDB \$db => (@ARGV ? shift :());
@@ -49,7 +50,7 @@ my $task2 = $user->tasks->add({
     timestages => [{ track => 'default', until_date => '15.10. 17:00' }],
     title => 'Migrate excel sheet to sql database to be accessed via webapp',
     description => 'My first task with steps',
-    checks => 1,
+    checks => 2,
     substeps => 'export2csv,dbsetup,csvinput,webapp',
     steps => {
         audit => {
@@ -103,17 +104,11 @@ is $task2->name, 'kundenmigr', "Created task with steps";
 
 my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
 
-sub parser_test {
-    my ($description, $lazystr, $hash_str4eval) = @_;
-    my $cmp_to_href = eval "#line Hash_Data 0\n 1 && {".$hash_str4eval."}";
-    die if $@;
-    my ($parsed, $task) = $parser->($lazystr);
-    is_deeply( $parsed, $cmp_to_href, $description );
-    return $task;
-}
-
 my $task3 = parser_test('Simple task parsed with Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
-This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default ;1 a step =foo ;expoftime_share 3 ;1 =link2migr ;link kundenmigr ;checks 0
+This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default
+  ;1 a step =foo ;expoftime_share: 3
+  ;1 =link2migr ;link kundenmigr ;checks 0
+     ;2 =copyadapt enhancement of a linked step ;o nx
 TASK
 name => 'task3',
 title => 'This is an example task',
@@ -127,8 +122,12 @@ steps => {
     link2migr => {
         link => 'kundenmigr',
         checks => 0,
+        substeps => 'copyadapt',
         description => undef,
     },
+    copyadapt => {
+        description => 'enhancement of a linked step'
+    }
 },
 substeps => ';foo|link2migr',
 timestages => [
@@ -155,8 +154,7 @@ throws_ok { $step->update({ done => 3 }) } qr/than available/,
 
 $step = $task3->step('link2migr');
 is $step->checks, 0, "checks can be 0 for a link";
-is $step->link_row->checks, 1, "which is independent from linked row";
-$task3->main_step_row->dump_focus;
+is $step->link_row->checks, 2, "which is independent from linked row";
 
 # TODO: Test for exceptions
 #  * circular dependency in hash to store
@@ -166,5 +164,92 @@ $task3->main_step_row->dump_focus;
 #    * not existing
 #    * make a descendent a parent
 #    * make an ancestor a descendent
+
+my @focus_arefs;
+
+@focus_arefs = map { $_->[1] = $_->[1]->name; $_ } $task3->current_focus;
+
+is_deeply \@focus_arefs, [
+    [2, 'export2csv', !1],
+    [1, '', 1],
+    [2, 'copyadapt', !1],
+    [1, 'link2migr', !1],
+    [1, 'foo', !1],
+    [0, '', !1]
+], "current_focus test 1";
+
+check_done( $task2,
+    export2csv => 1,
+    crtables   => 3,
+    dblogic    => 3,
+    dbsetup    => 1,
+    audit      => 1,
+);
+
+@focus_arefs = map { $_->[1] = $_->[1]->name; $_ } $task3->current_focus;
+is_deeply \@focus_arefs, [
+    [2, 'csvinput', !1],
+    [1, '', 1],
+    [2, 'copyadapt', !1],
+    [1, 'link2migr', !1],
+    [1, 'foo', !1],
+    [0, '', !1]
+], "current_focus test 2";
+
+is sprintf("%.5f", $task3->progress), sprintf("%.5f", (
+  0/1*1          # task3/
+  + 0/1*3        # foo
+  + ( 0*1        # link2migr ->
+    + 0/1*1      # kundenmigr/
+    + 1/1*1      # export2csv
+    + ( 1/1*3    # dbsetup
+      + 3/3*3    # crtables
+      + 3/3*2    # dblogic
+      ) / 8 * 3  # end dbsetup = 8/8*3
+    + 0/1*1      # csvinput
+    + ( 0/1*6    # webapp
+      + 1/2*2    # audit
+      ) / 8 * 6  # end webapp = 1/8*6
+    + 0/1*1      # copyadapt
+    ) / 14 * 1   # end link2migr = 4/14*1 = 0.2857... 
+) / 5 ), "calculate progress";
+
+check_done( $task2,
+    csvinput => 1,
+    audit => 2,
+    webapp => 2,
+    '' => 2
+);
+check_done( $task3,
+    foo => 1,
+    copyadapt => 1,
+    '' => 1
+);
+
+@focus_arefs = $task3->current_focus;
+is scalar @focus_arefs, 0, "No more steps to do, task completed";
+is $task3->progress, 1, "... progress is at 100% accordingly";
+#diag("Current focus:");
+#$task3->current_focus;
+
 done_testing();
+
+sub check_done {
+    my ( $task_obj, %done_checks ) = @_;
+    my $task = $task_obj->name;
+    while ( my ($step, $done) = each %done_checks ) {
+        #diag("Checking $task:$step => $done");
+        $task_obj->store( $step => { done => $done });
+    }
+} 
+
+sub parser_test {
+    my ($description, $lazystr, $hash_str4eval) = @_;
+    my $cmp_to_href = eval "#line Hash_Data 0\n 1 && {".$hash_str4eval."}";
+                         # ^ force hash context
+    die if $@;
+    my ($parsed, $task) = $parser->($lazystr);
+    is_deeply( $parsed, $cmp_to_href, $description );
+    return $task;
+}
 

@@ -4,6 +4,7 @@ package FlowDB::Step;
 
 use Moose;
 use Carp qw(croak);
+use Scalar::Util qw(reftype);
 extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('step');
@@ -115,27 +116,41 @@ before ['insert', 'update'] => sub {
 
 sub calc_progress {
     my ($self, $LEVEL) = @_;
+    $LEVEL //= 0;
 
-    my $checks = $self->checks;
-    my $orig_exp = $self->expoftime_share;
-    my $exp   = $checks ? $orig_exp                    : 0;
-    my $share = $checks ? $self->done / $checks * $exp : 0;
+    my ($step, $exp, $share) = ($self, 0, 0);
 
     ONCE_OR_TWICE: {
-        my $substeps = $self->substeps;
+
+        my ($checks, $my_exp)  = ($step->checks, $step->expoftime_share);
+        $exp       += $checks ? $my_exp                         : 0;
+        $share     += $checks ? $step->done / $checks * $my_exp : 0;
+
+        my $substeps  = $step->substeps;
         while ( my $s = $substeps->next ) {
           my ($s_exp, $s_share) = $s->calc_progress($LEVEL+1);
           $exp   += $s_exp;
           $share += $s_share * $s_exp;
+          #printf "#\t%d: E %.3f S %.3f\n", $LEVEL, $exp, $share;
         }
-        redo ONCE_OR_TWICE if $self = $self->link_row;
+
+        #printf "# %d %s (%d): E %.3f, S %.3f\n",
+        #    $LEVEL,
+        #    $self == $step ? $step->name
+        #                   : ">".$step->task_row->name."/".$step->name
+        #                   ,
+        #    $self->expoftime_share,
+        #    $exp, $share;
+
+        redo ONCE_OR_TWICE if $step = $step->link_row;
+
     }
 
-    return defined($LEVEL) ? $orig_exp : (), $share / $exp;
+    return $LEVEL ? $self->expoftime_share : (), $share / $exp;
 
 }
 
-sub dump_focus {
+sub current_focus {
     my ($self, $out_fh) = @_;
     $out_fh //= wantarray && 0;
 
@@ -146,18 +161,21 @@ sub dump_focus {
         :                    sub { _print_fmtd_focus_step(@_) }
         ;
  
-    my @tree = $self->get_focus;
+    my @tree = $self->_focus_tree;
     my @depth = ( scalar @tree );
 
     ITEM:
     while ( my $step = pop @tree ) {
+
+        $depth[-1]-- or next ITEM;
+
         if ( ref $step eq 'ARRAY' ) {
             push @tree, @$step;
             push @depth, scalar @$step;
             next ITEM;
         }
 
-        my $is_link;
+        my $is_link = !1;
         if ( ref $step eq 'REF' ) {
             $step = $$step;
             $is_link = 1;
@@ -167,7 +185,7 @@ sub dump_focus {
 
     }
     continue {
-        pop @depth if !( $depth[-1]-- );
+        pop @depth if !$depth[-1];
     }
     
     return if !@ret;
@@ -178,18 +196,23 @@ sub dump_focus {
 sub _print_fmtd_focus_step {
     my ($self, $depth, $is_link, $out_fh) = @_;
     $out_fh //= \*STDOUT;
+    if ( reftype($out_fh) eq 'SCALAR' ) {
+        my $sref = $out_fh;
+        open $out_fh, '>', $sref;
+    }
     print {$out_fh} join " ",
                     $depth . "|", 
-                    $self->done."/".$self->checks,
-                    $is_link      ? sprintf("LINK to %s:", do {
+                    sprintf("%d/%d",$self->done, $self->checks),
+         $is_link ? sprintf("LINK to %s:", do {
                         join "/", $self->task_row->name, $self->name;
-                    }) : (),
+                    })
+                  : (),
                     $self->title // $self->description // $self->name,
                     "\n"
                   ;
 }
 
-sub get_focus {
+sub _focus_tree {
     my ($self) = @_;
 
     my $substeps = $self->substeps;
@@ -205,13 +228,17 @@ sub get_focus {
         my @uncmpl_sub;
 
         for my $step ( @substeps ) {
-            push @uncmpl_sub, $step->get_focus;
+            push @uncmpl_sub, $step->_focus_tree($pos);
         }
 
         if ( @uncmpl_sub || !@substeps ) {
             push @uncomplete, @uncmpl_sub;
             if ( $pos ) { $pos = 0; redo INCR_POS; }
             else { last INCR_POS; }
+        }
+        elsif ( !$pos ) {
+            # all substeps have been processed
+            last INCR_POS;
         }
 
     }
@@ -221,7 +248,7 @@ sub get_focus {
     }
 
     if ( my $link = $self->link_row ) {
-        if ( my ($l, @steps) = $link->get_focus ) {
+        if ( my ($l, @steps) = $link->_focus_tree ) {
             die "linked step not identical with itself" if $l != $link;
             push @uncomplete, \$l, @steps;
         }
