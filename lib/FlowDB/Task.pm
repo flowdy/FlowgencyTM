@@ -9,9 +9,10 @@ extends 'DBIx::Class::Core';
 my ($MANDATORY, $OPTIONAL) = map { { is_nullable => $_ } } 0, 1;
 
 has _multirel_cache => (
-    is => 'rw',
+    is => 'ro',
     isa => 'HashRef',
-    default => sub {{}}, # for reasons whatsoever, this does not work
+    default => sub {{}},
+    lazy => 1, # does not work without with DBIx::Class
 );
 
 __PACKAGE__->table('task');
@@ -132,9 +133,10 @@ for my $acc ( 'timestages' ) {
     around $acc => sub {
         my ($orig, $self, $aref) = (shift, shift, @_);
         my $cache = $self->_multirel_cache;
-        if ( !defined $cache ) {
-            $self->_multirel_cache($cache = {});
-        }
+        #if ( !defined $cache ) {
+        #    $self->_multirel_cache($cache = {});
+        #}
+        die "No cache" if !$cache;
         if ( ref $aref eq 'ARRAY' ) {
             return $cache->{$acc} = $aref;
         }

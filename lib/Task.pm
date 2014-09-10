@@ -285,22 +285,33 @@ sub _store_root_step {
     my $store_mode = length($root_name) ? 'step' : 'task';
 
     if ( $store_mode eq 'step' ) {
+
         my $step_row = $steps_rs->find({ name => $root_name });
         $data->{name} //= $root_name;
+
         my $p = $data->{parent};
         FtError::Task::InvalidDataToStore->throw(
             "Not found: parent for step '$root_name' with name $p"
-        ) if $p && !$steps_rs->find($p);
+        ) if $p && !$steps_rs->find({ name => $p });
+
         if ($step_row) { $row = $step_row; }
+
         elsif ( $p && exists $data->{pos} ) {
             $row = $steps_rs->new_result();
         }
+
         else {
             FtError::Task::InvalidDataToStore->throw(
                 "New step must have a parent and a position"
             );
         }
-        $self->_handle_subtask_data_of( $data => $row );
+
+        $self->_handle_subtask_data_of( $data );
+
+        if ( my $l = delete $data->{link} ) {
+            $self->_tasks->link_step_row( $row => $l );
+        }
+        
     }
     else {
         FtError::Task::InvalidDataToStore->throw(
@@ -382,7 +393,7 @@ sub _store_steps_below {
 
             if ( $step_row ) {
 
-                $self->_handle_subtask_data_of($step, $step_row);
+                $self->_handle_subtask_data_of($step);
 
                 # Check if there are circular dependencies
                 if ( $in_hierarchy{$name} ) {
@@ -391,7 +402,7 @@ sub _store_steps_below {
                 else { # step $name has no explicit substeps
 
                     my (undef, @descendents) = $step_row->and_below(
-                        {}, { -columns => ['name'] }
+                        {}, { -columns => ['name','ROWID','task'] }
                     );
 
                     for my $d ( map { $_->name } @descendents ) {

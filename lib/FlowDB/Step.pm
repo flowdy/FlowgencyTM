@@ -5,6 +5,7 @@ package FlowDB::Step;
 use Moose;
 use Carp qw(croak);
 use Scalar::Util qw(reftype);
+use List::Util qw(first);
 extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('step');
@@ -151,8 +152,8 @@ sub calc_progress {
 }
 
 sub current_focus {
-    my ($self, $out_fh) = @_;
-    $out_fh //= wantarray && 0;
+    my ($self, $out_fh, $limit) = @_;
+    $out_fh //= wantarray && 0; # remains undef in void context 
 
     my @ret;
     my $print
@@ -161,24 +162,35 @@ sub current_focus {
         :                    sub { _print_fmtd_focus_step(@_) }
         ;
  
-    my @tree = $self->_focus_tree;
+    my @tree = $self->_focus_tree($limit);
     my @depth = ( scalar @tree );
+
+    my $link_substeps_blocked;
 
     ITEM:
     while ( my $step = pop @tree ) {
 
         $depth[-1]-- or next ITEM;
 
+        my $is_link = !1;
+
         if ( ref $step eq 'ARRAY' ) {
+            my $last = $tree[-1];
+            if ( ref($last) eq 'REF' && !$$last->is_within_focus ) {
+                # If item is an array ref of substeps of a link,
+                # we display them only if the linked row is currently
+                # focussed in the scope of its associated task.
+                next ITEM if $link_substeps_blocked = !$$last->is_completed;
+            }
             push @tree, @$step;
             push @depth, scalar @$step;
             next ITEM;
         }
 
-        my $is_link = !1;
-        if ( ref $step eq 'REF' ) {
+        elsif ( ref $step eq 'REF' ) {
             $step = $$step;
-            $is_link = 1;
+            $is_link = $link_substeps_blocked ? -1 : 1;
+            $link_substeps_blocked = 0;
         }
 
         $print->($step, $#depth, $is_link);
@@ -203,9 +215,12 @@ sub _print_fmtd_focus_step {
     print {$out_fh} join " ",
                     $depth . "|", 
                     sprintf("%d/%d",$self->done, $self->checks),
-         $is_link ? sprintf("LINK to %s:", do {
+         $is_link ? sprintf("%sLINK to %s:",
+                      $is_link < 0 ? "BLOCKED " : "",
+                      do {
                         join "/", $self->task_row->name, $self->name;
-                    })
+                      }
+                  )
                   : (),
                     $self->title // $self->description // $self->name,
                     "\n"
@@ -213,48 +228,53 @@ sub _print_fmtd_focus_step {
 }
 
 sub _focus_tree {
-    my ($self) = @_;
+    my ($self, $limit) = @_;
+    $limit //= -1;
 
     my $substeps = $self->substeps;
     my $opts = { order_by => { -asc => 'pos' } };
     my $max_pos = $substeps->get_column('pos')->max // 1;
     my (@uncomplete, $pos);
 
-    INCR_POS:
-    until ( ++$pos > $max_pos ) {
-        my $expr = $pos ? { like => $pos.q{.%} } : undef;
-        my @substeps = $substeps->search({ pos => $expr }, $opts);
+    if ( $limit ) {
 
-        my @uncmpl_sub;
+        INCR_POS:
+        until ( ++$pos > $max_pos ) {
+            my $expr = $pos ? { like => $pos.q{.%} } : undef;
+            my @substeps = $substeps->search({ pos => $expr }, $opts);
 
-        for my $step ( @substeps ) {
-            push @uncmpl_sub, $step->_focus_tree($pos);
+            my @uncmpl_sub;
+
+            for my $step ( @substeps ) {
+                push @uncmpl_sub, $step->_focus_tree($limit-1);
+            }
+
+            if ( @uncmpl_sub || !@substeps ) {
+                push @uncomplete, @uncmpl_sub;
+                if ( $pos ) { $pos = 0; redo INCR_POS; }
+                else { last INCR_POS; }
+            }
+            elsif ( !$pos ) {
+                # all substeps have been processed
+                last INCR_POS;
+            }
+
         }
 
-        if ( @uncmpl_sub || !@substeps ) {
-            push @uncomplete, @uncmpl_sub;
-            if ( $pos ) { $pos = 0; redo INCR_POS; }
-            else { last INCR_POS; }
+        if ( @uncomplete ) {
+            @uncomplete = ([ splice @uncomplete ]);
         }
-        elsif ( !$pos ) {
-            # all substeps have been processed
-            last INCR_POS;
+
+        if ( my $link = $self->link_row ) {
+            if ( my ($l, @steps) = $link->_focus_tree($limit-1) ) {
+                die "linked step not identical with itself" if $l != $link;
+                push @uncomplete, \$l, @steps;
+            }
         }
 
     }
 
-    if ( @uncomplete ) {
-        @uncomplete = ([ splice @uncomplete ]);
-    }
-
-    if ( my $link = $self->link_row ) {
-        if ( my ($l, @steps) = $link->_focus_tree ) {
-            die "linked step not identical with itself" if $l != $link;
-            push @uncomplete, \$l, @steps;
-        }
-    }
-
-    if ( @uncomplete || $self->done < $self->checks ) {
+    if ( @uncomplete || !$self->is_completed ) {
         unshift @uncomplete, $self;
     }
 
@@ -262,6 +282,29 @@ sub _focus_tree {
 
 }
 
+sub is_within_focus {
+    my ($self) = @_;
+
+    my $trow = $self->task_row;
+
+    my $id = $self->ROWID;
+    return !! first { $_->[1]->ROWID eq $id }
+              $trow->main_step_row->current_focus
+        ;
+
+}
+
+sub is_completed {
+    my ($self, $limit ) = shift;
+    $limit //= 0;
+
+    if ( $limit ) {
+        return !1 if first { !$_->is_completed($limit-1) } $self->substeps;
+    }
+
+    return $self->done == $self->checks
+}
+       
 sub prior_deps {
     my ($self, $task_name) = @_;
     my @ret;
@@ -273,7 +316,7 @@ sub prior_deps {
         push @ret, $l->prior_deps($task_name);
     }
 
-    my $opts = { columns => ['link'], order_by => { -asc => ['pos'] } };
+    my $opts = { columns => ['link','ROWID','task'], order_by => { -asc => ['pos'] } };
 
     my $pos = $self->pos;
     my @prior_steps = $p->substeps->search({

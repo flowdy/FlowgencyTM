@@ -107,7 +107,7 @@ my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
 my $task3 = parser_test('Simple task parsed with Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
 This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default
   ;1 a step =foo ;expoftime_share: 3
-  ;1 =link2migr ;link kundenmigr ;checks 0
+  ;1 =link2migr ;link kundenmigr.dbsetup ;checks 0
      ;2 =copyadapt enhancement of a linked step ;o nx
 TASK
 name => 'task3',
@@ -120,7 +120,7 @@ steps => {
         expoftime_share => 3,
     },
     link2migr => {
-        link => 'kundenmigr',
+        link => 'kundenmigr.dbsetup',
         checks => 0,
         substeps => 'copyadapt',
         description => undef,
@@ -152,6 +152,17 @@ throws_ok { $step->update({ checks => 0 }) } qr/Checks must be >0/,
 throws_ok { $step->update({ done => 3 }) } qr/than available/,
     "You cannot make more checks than available";
 
+is +($task3->current_focus)[0][2], -1, "blocked link to a row to do after other steps";
+
+check_done($task2, export2csv => 1);
+
+my @focus_arefs;
+
+@focus_arefs = $task3->current_focus;
+ok !$focus_arefs[0][2] && @focus_arefs == 7, "unblocked by checking these other step";
+
+check_done($task2, export2csv => 0);
+$task3->store(link2migr => { link => 'kundenmigr' });
 $step = $task3->step('link2migr');
 is $step->checks, 0, "checks can be 0 for a link";
 is $step->link_row->checks, 2, "which is independent from linked row";
@@ -164,8 +175,6 @@ is $step->link_row->checks, 2, "which is independent from linked row";
 #    * not existing
 #    * make a descendent a parent
 #    * make an ancestor a descendent
-
-my @focus_arefs;
 
 @focus_arefs = map { $_->[1] = $_->[1]->name; $_ } $task3->current_focus;
 
