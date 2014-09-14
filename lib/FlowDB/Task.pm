@@ -12,22 +12,28 @@ has _multirel_cache => (
     is => 'ro',
     isa => 'HashRef',
     default => sub {{}},
-    lazy => 1, # does not work without with DBIx::Class
+    lazy => 1, # does not work without
+);
+
+has _upper_subtask_row => (
+    is => 'rw',
+    isa => __PACKAGE__,
 );
 
 __PACKAGE__->table('task');
 __PACKAGE__->add_column( ROWID => { data_type => 'INTEGER' });
 __PACKAGE__->add_columns(
-    user             => $MANDATORY,
-    name             => $MANDATORY,
+    user             => $OPTIONAL, # Subtask ? null : not null
+    name             => $OPTIONAL, # Subtask ? null : not null
     title            => $MANDATORY,
     main_step        => $OPTIONAL,
-        # It's not really, but otherwise we would run into circular reference problems:
-        # Because steps (like main_step) have a foreign key constraint matching our
-        # autoincremented primary key, the task record must be inserted first.
-        # By deferring the step-side foreign key check, we would have to guess our primary
-        # key, but doing so smells of pitfalls. So we have to ensure main_step is properly
-        # dealt with in our insert and update wrappers.
+        # It's not really, but otherwise we would run into a race condition:
+        # Because all steps (so main_step, too) have a foreign key constraint
+        # matching our autoincremented primary key, the task record must be
+        # inserted first. By deferring the step-side foreign key check, 
+        # we would have to guess our primary key, but doing so smells of
+        # pitfalls. So we have to ensure main_step is properly dealt with
+        # afterwards in our insert and update wrappers below.
     from_date        => $MANDATORY,
     priority         => { %$MANDATORY, data_type => 'INTEGER' },
     archived_because => $OPTIONAL, # enum ('COMPLETE', 'PAUSED', 'CANCELLED')
@@ -84,13 +90,18 @@ around new => sub {
 
 around insert => sub {
     my ($orig, $self) = @_;
-    my $msr = $self->main_step_row;
-    $self->main_step_row(undef);
     my $cache = $self->_multirel_cache();
-    $self->$orig();
+    if ( $self->_is_main ) {
+        my $msr = $self->main_step_row // croak "Main row missing";
+        $self->main_step_row(undef);
+        $self->$orig();
+        $msr->insert();
+        $self->update({'main_step_row' => $msr });
+    }
+    else {
+        $self->$orig();
+    }
     $self->store_multirel_cache($cache);
-    $msr->insert();
-    $self->update({'main_step_row' => $msr });
 };
 
 around update => sub {
@@ -98,12 +109,14 @@ around update => sub {
     my $args = @_ % 2 ? shift // {} : {@_};
     my $main_step_data = _extract_proxy( $args );
     my $cache = $self->_multirel_cache();
-    $main_step_data->{name} = q{};
     $self->$orig($args);
     if ( $cache ) {
         $self->store_multirel_cache($cache);
     }
-    $self->main_step_row->$orig($main_step_data);
+    if ( $self->_is_main ) {
+        $main_step_data->{name} = q{};
+        $self->main_step_row->update($main_step_data);
+    }
     return $self;
 };
 
@@ -125,23 +138,17 @@ around copy => sub {
 
 };
 
-# DBIx::Class accessors of type 'multi' pass any arguments through to search_related.
-# As we search with $self->$acc->search({ ... }), we would rather have a read write accessor
-# instead:
 
 for my $acc ( 'timestages' ) {
     around $acc => sub {
         my ($orig, $self, $aref) = (shift, shift, @_);
         my $cache = $self->_multirel_cache;
-        #if ( !defined $cache ) {
-        #    $self->_multirel_cache($cache = {});
-        #}
         die "No cache" if !$cache;
         if ( ref $aref eq 'ARRAY' ) {
             return $cache->{$acc} = $aref;
         }
         elsif ( @_ ) {
-            return $self->$orig(@_);
+            push @{ $cache->{$acc} //= [undef] }, @_;
         }
         else {
             return $cache->{$acc} // $self->$orig();
@@ -152,7 +159,12 @@ for my $acc ( 'timestages' ) {
 sub store_multirel_cache {
     my ($self, $cache) = @_;
     while ( my ($acc, $value) = each %$cache ) {
-        $self->related_resultset($acc)->delete;
+        if ( defined $value->[0] ) {
+            $self->related_resultset($acc)->delete;
+        }
+        else {
+            shift @$value;
+        }
         substr $acc, 0, 0, "add_to_";
         $self->$acc($_) for @$value;
     }
@@ -174,6 +186,80 @@ sub sqlt_deploy_hook {
         type => 'unique'
    );
 
+}
+
+{
+my %_properties;
+foreach my $col ( __PACKAGE__->columns ) {
+     $_properties{$col} = 'column';
+}
+foreach my $rel ( 'timestages' ) { # TODO add later: tags annotations ...
+     $_properties{$rel} = 'multirel';
+}
+delete $_properties{ROWID};
+
+sub list_properties {
+    my $sort = shift;
+    return keys %_properties if !$sort;
+    return grep { $_properties{$_} eq $sort } keys %_properties;
+}}
+
+# DBIx::Class accessors of type 'multi' pass any arguments through to
+# search_related. As we search with $self->$acc->search({ ... }), we prefer
+# having a read write accessor instead:
+# 
+  
+for my $acc ( list_properties('multirel') ) {
+    around $acc => sub {
+        my ($orig, $self, $aref) = (shift, shift, @_);
+        my $cache = $self->_multirel_cache;
+        die "No cache" if !$cache;
+        if ( ref $aref eq 'ARRAY' ) {
+            return $cache->{$acc} = $aref;
+        }
+        elsif ( @_ ) {
+            push @{ $cache->{$acc} //= [undef] }, @_;
+        }
+        else {
+            return $cache->{$acc} // $self->$orig();
+        }
+    }
+}
+
+    
+for my $acc ( list_properties() ) {
+    { no strict 'refs'; *{"own_".$acc} = \&{$acc}; }
+    around $acc => sub {
+        my ($orig, $self, @args) = @_;
+        if ( @args ) { $self->$orig(@args); }
+        else {
+            my @val = wantarray # retain calling context
+                    ? $self->$orig()
+                    : scalar( $self->$orig() ) // ();
+            if ( @val ) { return splice @val; } 
+            elsif ( my $upper = $self->_upper_subtask ) {
+                return $upper->$acc;
+            }
+            else { return }
+        }
+    };
+}
+       
+sub _is_main {
+    my ($self) = @_;
+    if ( defined $self->user ) {
+        return 1 if length $self->name;
+        croak "Task has no name";
+    }
+    else {
+        croak "Subtask may not have a name"
+            if !defined $self->name;
+        croak "Subtask has no main_row with parent"
+            if !defined $self->main_step_row->parent;
+        croak "Subtask has no assigned upper subtask or task"
+            if !$self->_upper_subtask;
+        return 0;
+    }
 }
 
 1;

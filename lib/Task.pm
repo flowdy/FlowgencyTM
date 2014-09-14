@@ -6,6 +6,7 @@ use Moose;
 use Algorithm::Dependency::Ordered;
 use Algorithm::Dependency::Source::HoA;
 use FlowDB::Task;
+use Carp qw(croak);
 
 has _cursor => (
     is => 'ro',
@@ -32,17 +33,15 @@ has name => (
 has dbicrow => (
     is => 'ro',
     isa => 'FlowDB::Task', # which again is a DBIx::Class::Row
-    handles => [qw[
-        from_date client open_sec
-        title description priority
-        main_step_row steps
-    ]],
+    handles => [
+        qw( priority main_step_row steps )
+    ],
     required => 1,
     default => sub { # called after clearer has been called
         my $self = shift;
         $self->_tasks->tasks_rs->find({ name => $self->name });
     },
-    clearer => 'release_row',
+    clearer => 'uncouple_dbicrow',
 );
 
 
@@ -62,24 +61,84 @@ has _tasks => (
     required => 1,
 );
 
+has subtasks => (
+    is => 'ro',
+    isa => 'HashRef',
+    init_arg => undef,
+    lazy => 1,
+    builder => '_init_subtasks',
+);
+
 sub _build_cursor {
     use Time::Cursor;
+
     my $self = shift;
     my $row = $self->dbicrow;
     my @ts = $row->timestages;
-    FtError::Task::FailsToLoad->throw("Task record has no associated timestages") if !@ts;
+
+    FtError::Task::FailsToLoad->throw(
+        "Task record has no associated timestages"
+    ) if !@ts;
+
     my $cursor = Time::Cursor->new({
         start_ts   => $row->from_date,
         timestages => [ $self->_tasks->bind_tracks(@ts) ],
     });
+
     return $cursor;
+
 }
 
-around priority => sub {
-    my ($orig, $self) = (shift,shift);
-    my $number = $self->$orig();
-    return $self->_tasks->priority_resolver->( "p:$number" ) // $number;
-};
+sub _init_subtasks {
+    my ($self) = shift;
+
+    my %subtasks = ( '' => $self );
+    my (undef, @ordered_steps) = $self->main_step_row->and_below; 
+
+    $self->_update_subtask_if_any($_, \%subtasks) for @ordered_steps;
+
+    return \%subtasks;
+
+}
+
+sub _update_subtask_if_any {
+    my ($self, $step, $subtasks_href) = @_;
+    my $subtask_row = $step->subtask_row // return;
+    $subtasks_href //= $self->subtasks; 
+
+    require Task::SubTask;
+
+    for my $subtask ( $subtasks_href->{ $step->name } ) {
+
+        if ( defined $subtask ) {
+            $subtask->redraw_cursor_way;
+            $subtask->clear_progress;
+        }
+
+        else {
+
+            my $p_row = $step;
+
+            my $parent;
+
+            UPPER:
+            while ( $p_row = $p_row->parent_row ) {
+                last UPPER if $parent = $subtasks_href->{ $p_row->name };
+            }
+
+            $subtask = Task::SubTask->new(
+                task => $self, parent => $parent, dbicrow => $subtask_row
+            );
+
+            $subtask->_cursor;
+
+        }
+        
+    }
+
+    return;
+
+}
 
 sub current_focus {
     return shift->main_step_row->current_focus(@_);
@@ -107,13 +166,13 @@ sub redraw_cursor_way {
 
     else { die }
 
-    # Needed?: return wantarray ? $cursor->update : ();
+    return;
 
 }
 
 sub store {
     my $self = shift;
-    my %args = @_ % 2 ? %{ shift @_ } : @_;
+    my %args = @_ == 1 ? %{ shift @_ } : @_;
 
     # Get name of upmost step to be stored 
     my $root = keys(%args) == 1
@@ -163,8 +222,15 @@ sub store {
 
     $self->dbicrow->result_source->storage->txn_do( sub {
         $self->_store_root_step(\%args);
-        $steps_rs = $self->dbicrow->steps_rs; # update resultset
-        $self->_store_steps_below($root, $steps_rs, $steps_aref);
+        $self->_store_steps_below($root, $steps_aref);
+        my @touched_timestructure;
+        for my $step ( $root_step ? \%args : (), @$steps_aref ) {
+            next if !grep { defined } @{$step}{'from_date','timestages'};
+            push @touched_timestructure, $step->{name} // $step->{oldname};
+        }
+        if ( @touched_timestructure ) {
+            $self->check_timestructure(@touched_timestructure);
+        }
     });
 
     my @to_recalc;
@@ -327,8 +393,7 @@ sub _store_root_step {
     my $result;
 
     if ( $row->in_storage ) {
-        $self->redraw_cursor_way if $store_mode eq 'task'
-                                 || $data->{subtask_row};
+        $self->redraw_cursor_way if $store_mode eq 'task';
         $result = $row->update;
     }
     else {
@@ -338,6 +403,10 @@ sub _store_root_step {
         ) if !eval { $self->_cursor };
     }
 
+    if ( $store_mode eq 'step' ) {
+        $self->_update_subtask_if_any($row);
+    }
+    
     # to avoid any inconsistencies, notice any defaults, etc.
     $row->discard_changes();
 
@@ -345,8 +414,9 @@ sub _store_root_step {
 }
 
 sub _store_steps_below {
-    my ($self, $root_name, $steps_rs, $steps_aref) = @_;
-    
+    my ($self, $root_name, $steps_aref) = @_;
+    my $steps_rs = $self->dbicrow->steps_rs; # update resultset
+
     my %rows_tmp;
     while ( @$steps_aref ) {
         last if !$steps_aref->[0]{_skip};
@@ -440,7 +510,7 @@ sub _store_steps_below {
             }
 
             $step_row->update_or_insert;
-
+            $self->_update_subtask_if_any($step_row);
         }
 
         else {
@@ -464,7 +534,30 @@ sub _store_steps_below {
 
 }
 
-my %SUBTASK_EXT = map { $_ => 1 } FlowDB::Task->columns, 'timestages';
+sub check_timestructure {
+    my ($self,@steps_to_check) = shift;
+    
+    if ( !@steps_to_check ) {
+        @steps_to_check = $self->dbicrow->steps->get_column('name');
+    }
+
+    my %checked;
+
+    ...
+
+    # TODO: Check if the time configurations of subtasks overlap each other. Plus, the initial
+    # time tracks of descendent subtasks may not begin earlier than those of the surrounding
+    # upper subtask, likewise the final timetracks of descendent subtasks may not end later 
+    # accordingly.
+
+    # What complicates things is that expoftime_share, pos and time patterns (i.e. number of net 
+    # seconds in a given time period) have to be considered to calculate if they match with the
+    # assigned timespans. Not only this is to do with subtasks under the same parent step, but
+    # as well with those of different ancestors, even if levels below, until down to a subtask in
+    # question, are unpositioned.
+}
+
+my %SUBTASK_EXT = map { $_ => 1 } FlowDB::Task->list_properties;
 delete @SUBTASK_EXT{'name'};
 sub _handle_subtask_data_of {
     my ($self, $step) = @_;
@@ -496,6 +589,25 @@ sub _normalize_task_data {
     }
 
 }
+
+for my $col ( FlowDB::Task->list_properties( 'column' ), "description" ) {
+    no strict 'refs';
+    next if defined &{$col};
+    *{$col} = sub {
+        my $self = shift;
+        croak "No arguments supported. Use store({ $col => ... }) instead"
+            if @_;
+        $self->dbicrow->$col();
+    }
+}
+
+around priority => sub {
+    my ($orig, $self) = @_;
+    croak "No arguments supported. Use store({ priority => ... }) instead"
+        if @_ > 2;
+    my $number = $self->$orig();
+    return $self->_tasks->priority_resolver->( "p:$number" ) // $number;
+};
 
 sub step { shift->steps->find({ name => shift }) }
 
