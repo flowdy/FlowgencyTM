@@ -61,9 +61,6 @@ sub calc_slicing {
 sub calc_pos_data {
     my ($self, $time, $store) = @_;
     $store //= {};
-    if ( ref $time && $time->isa('Time::Point') ) {
-        $time = $time->epoch_sec;
-    }
 
     my $first_sec = $self->position;
     my $last_sec = $first_sec + $self->length;

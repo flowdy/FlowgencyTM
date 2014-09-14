@@ -70,6 +70,10 @@ sub update {
 
     $time //= time;
 
+    if ( ref $time && $time->isa('Time::Point') ) {
+        $time = $time->epoch_sec;
+    }
+
     my @timeway = $self->_timeway->all;
     my @ids;
     my $version_hash = sum map {
@@ -91,11 +95,16 @@ sub update {
     my $data = $self->_runner->($time);
     $data->{old} = $old if $old;
 
-    my $current_pos = $data->{elapsed_pres} /
-        ( $data->{elapsed_pres} + $data->{remaining_pres} )
-                          ;
+    $data->{remaining_pres} ||= ( $self->start_ts->epoch_sec
+        + $data->{elapsed_pres} + $data->{elapsed_abs}
+    ) - $time;
+
+    my $current_pos = $data->{elapsed_pres}
+        / ( $data->{elapsed_pres} + $data->{remaining_pres} )
+        ;
 
     return %$data, current_pos => $current_pos;
+
 }
 
 sub _build__runner {

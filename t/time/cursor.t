@@ -27,7 +27,7 @@ sub test_progressing_cursor {
     my $ts = Time::Point->parse_ts('7.7.2012');
     my $pos = $cursor->update($ts->epoch_sec);
     $ts = Time::Point->from_epoch($ts->epoch_sec+43200);
-    my $pos2 = $cursor->update($ts->epoch_sec);
+    my $pos2 = $cursor->update($ts);
     is $pos, $pos2, 'elapsed presence time should not increase until '.$ts;
     $ts = Time::Point->from_epoch($ts->epoch_sec+162000);
     my %pos2 = $cursor->update($ts->epoch_sec);
@@ -53,6 +53,11 @@ sub test_progressing_cursor {
        'there is a difference after coupling a new tspan into the timetrack';
     is $pos2{old}{elapsed_pres} - $pos2{elapsed_pres}, 3600,
        "Subhash 'old' on first Time::Cursor->update() call after the couple()";
+
+    ok !$pos{overdue}, "cursor before due-date";
+
+    %pos = $cursor->update(Time::Point->parse_ts('5.8.2012'));
+    ok $pos{remaining_pres} < 0, "cursor past due-date";
 }
 
 sub test_multitrack_cursor {
