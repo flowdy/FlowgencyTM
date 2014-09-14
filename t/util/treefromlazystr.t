@@ -24,6 +24,17 @@ EOS
 
 is_deeply $p->parse($long_str), {'substeps' => ';one|three', steps => { one => { 'substeps' => ';two', description => 'and a subordinated step' }, two => {description => 'The whole thing is nestable in that many levels you want, however, in a certain depth you\'ll find it not manageable any more'}, three => { description => 'We decrement in order to return to a higher level', from_date => '15.11.', timestages => [{ track => 'bureau', until_date => '20.11.'}, { track => 'labor', until_date => '24.11.'}] } }, timestages => [{ track => 'default', until_date => '30.11.' }], title => 'This is a task with a deadline'}, "two levels, timestages in a step";
 
+chomp($long_str = <<'EOS');
+  This is the task title ;description you can apply metadata to it, just append space and semicolon and after it, without space, the metadata field identifier ;from 9-14 ;until 30 10:00@office; 10-10 17:00@labor ;1 This is a substep =foo of the step before, since you incremented the level indicator from 0 to 1 ;1This is another substep on the same level, labeled =bar, it is no problem when you omit the space after the level indicator
+   ;2 this is a subsubstep =bing, again do not forget to increment the number of the separator. You can use newline instead of plain whitespace before the semicolon, you can even mix both for indentation, if you want.\nBut escape any literal newline.\
+
+  Literal space of any kind is escaped with *one* backslash (\\).
+   ;3 the nesting level =three ;4 can be =four ;5 arbitrarily deep, =five ;6: =but don't exaggarate, think well about how many levels match your task. ;1 Mind the =general motto: As simple as possible, as complex as necessary and KISS - keep it simple and stupid.
+EOS
+
+my $href = $p->parse($long_str);
+
+$DB::single=1;
 done_testing;
 
 __END__

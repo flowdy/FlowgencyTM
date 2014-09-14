@@ -62,6 +62,8 @@ sub _unescape ($) {
       my $escaped = $1;
       # turn any backslash + newline into space
         "$escaped" eq "\n"  ? q/' '/      
+      # resolve backslash
+      : $escaped eq "\\"  ? qq/"\\\\"/
       # resolve alphanumeric escapes, possibly with extension
       : "$escaped" =~ /^\w/ ? qq/"\\$escaped"/  
       # resolve the rest escaped not to be detected as separator
