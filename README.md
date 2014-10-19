@@ -155,6 +155,14 @@ And this is the YAML counterpart:
       until_date: 10-10 17:00
     title: '  This is the task title'
 
+Contact Author / Project initiator
+-----------------------------------
+
+E-Mail 1st part: flories
+
+E-Mail 2nd part: @arcor.de
+
+
 License
 -------
 
