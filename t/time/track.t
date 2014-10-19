@@ -6,8 +6,8 @@ use Test::More;
 use Test::Exception;
 use FindBin qw($Bin);
 
-use Time::Track;
-use FlowTime::TestUtil qw(run_tests);
+use FTM::Time::Track;
+use FTM::TestUtil qw(run_tests);
 use Scalar::Util qw(weaken);
 
 exit run_tests(@ARGV);
@@ -15,7 +15,7 @@ exit run_tests(@ARGV);
 sub test_week_pattern {
     my $tspan;
 
-    $tspan = Time::Span->new( from_date => '1.1.13', until_date => '31.3.', week_pattern => 'Mo-So@!;2n:Mo-Mi@9-17;2n+1:Mi-Fr@9-17;3n-2:Mo-Di,Do-Fr@7-15' );
+    $tspan = FTM::Time::Span->new( from_date => '1.1.13', until_date => '31.3.', week_pattern => 'Mo-So@!;2n:Mo-Mi@9-17;2n+1:Mi-Fr@9-17;3n-2:Mo-Di,Do-Fr@7-15' );
     is $tspan->rhythm->atoms->to_Enum,
          q{7-15,55-63,79-87,}                        #  1. KW,    Di    Do Fr
         .q{153-161,177-185,201-209,}                 #  2. KW, Mo Di Mi
@@ -36,7 +36,7 @@ sub test_week_pattern {
 
 sub test_timespans {
     lives_ok {
-        Time::Span->new(
+        FTM::Time::Span->new(
             from_date => '2030-12-31',
             week_pattern => 'Mo-So',
             until_date => '+1d'
@@ -45,7 +45,7 @@ sub test_timespans {
 }
 
 sub test_atoms {
-    my $tspan = Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
+    my $tspan = FTM::Time::Span->from_string('21.5.2012--5.8.:Mo-Fr@9-16');
     is $tspan->rhythm->atoms->to_Enum, '9-16,33-40,57-64,81-88,105-112,'
       .'177-184,201-208,225-232,249-256,273-280,345-352,369-376,393-400,'
       .'417-424,441-448,513-520,537-544,561-568,585-592,609-616,681-688,'
@@ -77,7 +77,7 @@ sub test_atoms {
         'tspan expand by +5 days at the beginning';
     $tspan->from_date('21.5.');
     is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
-    my $tspan2 = Time::Span->from_string('21.5.--5.8.:Mo-Fr@9-17:30');
+    my $tspan2 = FTM::Time::Span->from_string('21.5.--5.8.:Mo-Fr@9-17:30');
     is $tspan2->rhythm->hourdiv, 2,
        'another tspan with end of business day 17:30';
     is length($tspan2->rhythm->atoms->to_Bin), length($tspan_bin)*2,
@@ -88,25 +88,25 @@ sub test_atoms {
 
 sub test_track_respect_tspan {
 
-    my $defaultRhythm = Time::Span->new(
+    my $defaultRhythm = FTM::Time::Span->new(
         week_pattern => 'Mo-Fr@9-17:30',
         from_date => '30.9.12',
         until_date => '30.9.12',
         description => 'my fill-in, normal time rhythm'
     );
 
-    my $tp = Time::Track->new( name => 'test1', fillIn => $defaultRhythm );
+    my $tp = FTM::Time::Track->new( name => 'test1', fillIn => $defaultRhythm );
 
-    ok $tp->isa('Time::Track'), "new time track constructed";
+    ok $tp->isa('FTM::Time::Track'), "new time track constructed";
 
-    my $span1 = Time::Span->new(from_date => '23.9.12', until_date => '3.10.', week_pattern => 'Mo-Th@10-14:30,15:15-19', description => 'only Monday to Thursday');
+    my $span1 = FTM::Time::Span->new(from_date => '23.9.12', until_date => '3.10.', week_pattern => 'Mo-Th@10-14:30,15:15-19', description => 'only Monday to Thursday');
 
     $tp->couple($span1); # [ 2012-09-23 only Monday to Thursday 2012-10-03 ]
 
     is $tp->start, $span1, 'integrated span #1: start points on it';
     is $tp->end, $span1, 'integrated span #1: end points on it';
 
-    my $span2 = Time::Span->new(from_date => '17.10.12', until_date => '30.10.',
+    my $span2 = FTM::Time::Span->new(from_date => '17.10.12', until_date => '30.10.',
        week_pattern => 'Mo-We@7:30-13:00,Th-Sa@13-18:30', description => 'different working times for different days of the week');
     
     $tp->couple($span2); # | 2012-09-23 only Monday to Thursday 2012-10-03 [ 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-30 ]
@@ -117,7 +117,7 @@ sub test_track_respect_tspan {
     ok $fillIn1->pattern == $defaultRhythm->pattern,
         "in between there is a default rhythm bridge";
  
-    my $span3 = Time::Span->new( from_date => '27.8.12', until_date => '15.9.12', week_pattern => 'Mo-Su@!', description => 'holidays' );
+    my $span3 = FTM::Time::Span->new( from_date => '27.8.12', until_date => '15.9.12', week_pattern => 'Mo-Su@!', description => 'holidays' );
 
     $tp->detect_circular;
     $tp->couple($span3); # [ 2012-08-27 holidays 2012-09-15 | 2012-09-16 00:00:00 my fill-in, normal time rhythm 2012-09-22 23:59:59 ] 2012-09-23 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-30 |
@@ -127,7 +127,7 @@ sub test_track_respect_tspan {
     ok $span3->next->pattern == $fillIn1->pattern, 'spanning another bridge to span #1';
     isnt $span3->next, $fillIn1, 'however, it is not the one between span #2 and #3';
 
-    my $span4 = Time::Span->new(description => 'partial holidays', from_date => '20.8.12', until_date => '31.8.', week_pattern => 'Mo-Fr@7:30-11;2n:Mo-Th@7-10:30');
+    my $span4 = FTM::Time::Span->new(description => 'partial holidays', from_date => '20.8.12', until_date => '31.8.', week_pattern => 'Mo-Fr@7:30-11;2n:Mo-Th@7-10:30');
 
     $tp->couple($span4); # [ 2012-08-20 partial holidays 2012-08-31 ] 2012-09-01 holidays 2012-09-15 | 2012-09-16 00:00:00 my fill-in, normal time rhythm 2012-09-22 23:59:59 | 2012-09-23 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-30 |
 
@@ -135,14 +135,14 @@ sub test_track_respect_tspan {
     is $span4->next, $span3, 'transition to holidays';
     is $span3->from_date->get_qm_timestamp, '2012-09-01', 'span #3 now begins later';
 
-    my $span5 = Time::Span->new(from_date => '7.9.12', until_date => '8.9.', week_pattern => 'Mo-Su@10-10', description => 'non-holidays in holidays');
+    my $span5 = FTM::Time::Span->new(from_date => '7.9.12', until_date => '8.9.', week_pattern => 'Mo-Su@10-10', description => 'non-holidays in holidays');
 
     $tp->couple($span5); # 2012-08-20 partial holidays 2012-08-31 | 2012-09-01 holidays 2012-09-06 [ 2012-09-07 non-holidays in holidays 2012-09-08 ] 2012-09-09 holidays 2012-09-15 | 2012-09-16 00:00:00 my fill-in, normal time rhythm 2012-09-22 23:59:59 | 2012-09-23 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-30 |
 
     is $span5, $span4->next->next, 'non-holidays in holidays integriert';
     is $span4->next->pattern, $span5->next->pattern, 'spans before and after had once been identical';
 
-    my $span6 = Time::Span->new(from_date => '22.', until_date => '24.9.12', week_pattern => 'Mo-Su@17-17', description => 'standing in for someone over the week-end');
+    my $span6 = FTM::Time::Span->new(from_date => '22.', until_date => '24.9.12', week_pattern => 'Mo-Su@17-17', description => 'standing in for someone over the week-end');
 
     $tp->couple($span6); # 2012-08-20 partial holidays 2012-08-31 | 2012-09-01 holidays 2012-09-06 | 2012-09-07 non-holidays in holidays 2012-09-08 | 2012-09-09 holidays 2012-09-15 | 2012-09-16 00:00:00 my fill-in, normal time rhythm 2012-09-21 23:59:59 [ 2012-09-22 standing in for someone over the week-end 2012-09-24 ] 2012-09-25 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-30 |
 
@@ -151,7 +151,7 @@ sub test_track_respect_tspan {
     is $span6->next->from_date->get_qm_timestamp, '2012-09-25', 'adaption of the from_date of the span after';
     ok $span3->next->pattern != $span6->next->pattern, 'spans before and after had always been different';
 
-    my $span7 = Time::Span->new(description => 'coverage of a nice co-worker\'s night-shift', from_date => '30.10.', until_date => '31.10.2012', week_pattern => 'Mo-Fr@21:30-22,0-4:30');
+    my $span7 = FTM::Time::Span->new(description => 'coverage of a nice co-worker\'s night-shift', from_date => '30.10.', until_date => '31.10.2012', week_pattern => 'Mo-Fr@21:30-22,0-4:30');
 
     $tp->couple($span7); # 2012-08-20 partial holidays 2012-08-31 | 2012-09-01 holidays 2012-09-06 | 2012-09-07 non-holidays in holidays 2012-09-08 | 2012-09-09 holidays 2012-09-15 | 2012-09-16 00:00:00 my fill-in, normal time rhythm 2012-09-21 23:59:59 | 2012-09-22 standing in for someone over the week-end 2012-09-24 | 2012-09-25 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-29 [ 2012-10-30 coverage of a nice co-worker's night-shift 2012-10-31 ]
 
@@ -166,7 +166,7 @@ sub test_track_respect_tspan {
     my $s5next = $span5->next;
     weaken($_) for $span3, $span4, $span5, $s5next;
 
-    my $span8 = Time::Span->new(description => 'overwriting', week_pattern => 'Mo-Su@!0-23', from_date => '20.8.', until_date => '19.9.12');
+    my $span8 = FTM::Time::Span->new(description => 'overwriting', week_pattern => 'Mo-Su@!0-23', from_date => '20.8.', until_date => '19.9.12');
 
     $tp->couple($span8); # [ 2012-08-20 overwriting 2012-09-19 ] 2012-09-20 00:00:00 my fill-in, normal time rhythm 2012-09-21 | 2012-09-22 standing in for someone over the week-end 2012-09-24 | 2012-09-25 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-29 [ 2012-10-30 coverage of a nice co-worker's night-shift 2012-10-31 ]
 
@@ -178,7 +178,7 @@ sub test_track_respect_tspan {
 
     my $s8next = $span8->next;
     weaken($s8next); # [ 2012-08-20 overwriting 2012-09-19 ] 2012-09-20 00:00:00 my fill-in, normal time rhythm 2012-09-21 23:59:59 | 2012-09-22 standing in for someone over the week-end 2012-09-24 | 2012-09-25 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-29 | 2012-10-30 coverage of a nice co-worker's night-shift 2012-10-31 |
-    my $span9 = Time::Span->new( description => 'overwriting II', from_date => '20.9.', until_date => '2012-09-21', week_pattern => 'Mo-Fr@13' );
+    my $span9 = FTM::Time::Span->new( description => 'overwriting II', from_date => '20.9.', until_date => '2012-09-21', week_pattern => 'Mo-Fr@13' );
 
     $tp->couple($span9); # | 2012-08-20 overwriting 2012-09-19 [ 2012-09-20 overwriting II 2012-09-21 ] 2012-09-22 standing in for someone over the week-end 2012-09-24 | 2012-09-25 only Monday to Thursday 2012-10-03 | 2012-10-04 00:00:00 my fill-in, normal time rhythm 2012-10-16 23:59:59 | 2012-10-17 different working times for different days of the week 2012-10-29 | 2012-10-30 coverage of a nice co-worker's night-shift 2012-10-31 |
 
@@ -275,11 +275,11 @@ sub test_track_respect_tspan {
     );
 
     is_deeply
-        [grep { delete $_->{rhythm}{patternId} } $tp->dump],
+        [grep { delete $_->{rhythm}{patternId} } $tp->dump_spans],
         \@expected_state,
         "over-all state after all couplings";
 
-    my $ts0 = Time::Point->parse_ts('25.10.12 12:00:00');
+    my $ts0 = FTM::Time::Point->parse_ts('25.10.12 12:00:00');
     subtest_seek_last_net_second_timestamp(
         $tp, $ts0, 19800 => '2012-10-26 13:00:00',
         'first second of work-day at full hour'
@@ -289,8 +289,8 @@ sub test_track_respect_tspan {
         'final timestamp covered by slice'
     );
     
-    my $tspan90 = Time::Span->from_string('25.:Mo-Su@15');
-    my $ts1 = Time::Point->parse_ts("14:00")->fill_in_assumptions;
+    my $tspan90 = FTM::Time::Span->from_string('25.:Mo-Su@15');
+    my $ts1 = FTM::Time::Point->parse_ts("14:00")->fill_in_assumptions;
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 1), 3600,
        "count absence before one net seconds";
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3600), 3600,
@@ -302,28 +302,28 @@ sub test_track_respect_tspan {
          '... or, respectively, in the fill-in'
     );
 
-    my $ts2 = Time::Point->parse_ts("30.10.12 23");
+    my $ts2 = FTM::Time::Point->parse_ts("30.10.12 23");
     subtest_seek_last_net_second_timestamp(
         $tp, $ts2, 0 => '2012-10-31 00:00:00',
         "leisure seconds equal to next net_second",
     );
 
     
-    my $tspan91 =  Time::Span->from_string('25.:Mo-Su@23-0');
-    my $ts3 = Time::Point->parse_ts("23:15")->fill_in_assumptions;
+    my $tspan91 =  FTM::Time::Span->from_string('25.:Mo-Su@23-0');
+    my $ts3 = FTM::Time::Point->parse_ts("23:15")->fill_in_assumptions;
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6300), 0,
        "net seconds transition from one day to the other";
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6301), 79200,
        " ... plus one net second again in the night";
 
     #  TODO: {
-    #      local $TODO = 'Time::Track->lock(), unlock(), demand_protect() und '
+    #      local $TODO = 'FTM::Time::Track->lock(), unlock(), demand_protect() und '
     #                  . 'release_protection() noch zu entwickeln';
     #  }
 
     #  TODO: {
-    #      local $TODO = 'Time::Slice::VerticalScanner noch nicht implementiert';
-    #      require_ok 'Time::Slice::VerticalScanner';
+    #      local $TODO = 'FTM::Time::Slice::VerticalScanner noch nicht implementiert';
+    #      require_ok 'FTM::Time::Slice::VerticalScanner';
     # }
 
     my @spans; my $next = $tp->start;
@@ -340,7 +340,7 @@ sub subtest_seek_last_net_second_timestamp {
 }
 
 sub test_time_calendarweekcycle {
-    use Time::CalendarWeekCycle;
+    use FTM::Time::CalendarWeekCycle;
 
     my %callbacks = (
         selector => sub { qw(Mo Di Mi Do Fr Sa So) },
@@ -352,7 +352,7 @@ sub test_time_calendarweekcycle {
     );
 
     my @initial_date = (2013, 5, 25);
-    my $cw = Time::CalendarWeekCycle->new(
+    my $cw = FTM::Time::CalendarWeekCycle->new(
         @initial_date,
         %callbacks,
     );
@@ -370,7 +370,7 @@ sub test_time_calendarweekcycle {
     $cw->move_by_days(4);
     is $cw->day_of_week, 7, 'day method says we have Sunday (which is in 2010)';
     is $cw->year_of_thursday, 2009, 'but year() outputs the year covering the Thursday of the week in question';
-    $cw = Time::CalendarWeekCycle->new(@initial_date, %callbacks)->move_by_days(953);
+    $cw = FTM::Time::CalendarWeekCycle->new(@initial_date, %callbacks)->move_by_days(953);
     is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [7,53,2015],
         'going forward to a week no. 53';
     $cw->move_by_days(-70);

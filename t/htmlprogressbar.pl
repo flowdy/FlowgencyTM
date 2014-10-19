@@ -3,12 +3,12 @@ use strict;
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
-use Util::LinearNum2ColourMapper;
+use FTM::Util::LinearNum2ColourMapper;
 use List::Util qw(min);
 
 my @basecolor = (0,0xC0,0xff);
 
-my $blender = LinearNum2ColourMapper->new({
+my $blender = FTM::Util::LinearNum2ColourMapper->new({
     '1' => [255,38,76],
     '0' => \@basecolor,
     '-1' => [51,255,64],

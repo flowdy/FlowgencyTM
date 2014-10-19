@@ -4,7 +4,7 @@ use strict;
 use Test::More;
 
 my $db;
-use FlowDB \$db => (@ARGV ? shift :());
+use FTM::FlowDB \$db => (@ARGV ? shift :());
 
 ok $db->isa("DBIx::Class::Schema"), "database initialized";
 
@@ -17,7 +17,7 @@ my $user = $db->resultset("User")->find_or_create({
     priorities => '{1:"Auf Halde",2:"Gelegentlich",3:"Bald erledigen",5:"Dringend"}',
 });
 
-ok $user->isa("FlowDB::User"), "User fh gefunden oder erstellt";
+ok $user->isa("FTM::FlowDB::User"), "User fh gefunden oder erstellt";
 
 my $task = $user->tasks->new({
     name => 'test',
@@ -28,7 +28,7 @@ my $task = $user->tasks->new({
     description => 'Wäre toll, wenn es funktioniert',
 });
 
-ok $task->isa("FlowDB::Task"), "FlowDB::Task-Objekt erstellt";
+ok $task->isa("FTM::FlowDB::Task"), "FTM::FlowDB::Task-Objekt erstellt";
 ok $task->insert, "Task in die Datenbank geschrieben";
 is $task->description, $task->main_step_row->description, 'Beschreibung via Proxy';
 is $task->description, 'Wäre toll, wenn es funktioniert', ' ... gesetzt';

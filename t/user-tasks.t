@@ -3,11 +3,11 @@ use strict;
 
 use Test::More;
 use Test::Exception;
-use User;
+use FTM::User;
 use utf8;
 
 my $db;
-use FlowDB \$db => (@ARGV ? shift :());
+use FTM::FlowDB \$db => (@ARGV ? shift :());
 
 ok $db->isa("DBIx::Class::Schema"), "database initialized";
 
@@ -24,12 +24,13 @@ my $user = $db->resultset("User")->find_or_create({
     priorities => q[{"pile":1,"whentime":2,"soon":3,"urgent":5}],
 });
 
-ok $user->isa("FlowDB::User"), 'User fh created';
+ok $user->isa("FTM::FlowDB::User"), 'User fh created';
 
-$user = User->new( dbicrow => $user );
+$user = FTM::User->new( dbicrow => $user );
 
-ok $user->isa("User"), 'Wrapped user in a FlowTime User object';
+ok $user->isa("FTM::User"), 'Wrapped user in a FlowTiMeter User object';
 
+$DB::single = 1;
 my $task = $user->tasks->add({
     name => 'task1',
     priority => 2,
@@ -41,6 +42,7 @@ my $task = $user->tasks->add({
 });
 
 is $task->name, "task1", "Created test1";
+is $task->title, "My first task for testing purposes", "accessing the title of the task";
 is $task->description, 'Would appreciate it greatly if it works', "accessing description";
 
 my $task2 = $user->tasks->add({
@@ -104,11 +106,11 @@ is $task2->name, 'kundenmigr', "Created task with steps";
 
 my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
 
-my $task3 = parser_test('Simple task parsed with Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
+my $task3 = parser_test('Simple task parsed with FTM::Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
 This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default
   ;1 a step =foo ;expoftime_share: 3
   ;1 =link2migr ;link kundenmigr.dbsetup ;checks 0
-     ;2 =copyadapt enhancement of a linked step ;o nx
+     ;2 =copyadapt enhancement of a linked step ;ord nx
 TASK
 name => 'task3',
 title => 'This is an example task',
@@ -123,7 +125,6 @@ steps => {
         link => 'kundenmigr.dbsetup',
         checks => 0,
         substeps => 'copyadapt',
-        description => undef,
     },
     copyadapt => {
         description => 'enhancement of a linked step'
@@ -241,6 +242,19 @@ is $task3->progress, 1, "... progress is at 100% accordingly";
 #diag("Current focus:");
 #$task3->current_focus;
 
+$user->update_time_model({
+    halfwork => {
+        label => 'Work only half a day',
+        week_pattern => 'Mo-Fr@7-12'
+    },
+});
+is_deeply $user->_time_model->get_track('halfwork')->dump, { default_inherit_mode => "optional", week_pattern => 'Mo-Fr@7-12', name => "halfwork", label => "Work only half a day" }, "update the time model with another track";
+
+my $task4 = $parser->('Aufgabe, halbtags ;from 12.9. ;inc todo ;until 5.10.@halfwork ;priority whentime');
+is $task4->name, "todo1", "task name is automatically todo1";
+$DB::single=1;
+my %pos = $task4->update_cursor(FTM::Time::Point->parse_ts('1.10. 15:15')->fill_in_assumptions);
+is $pos{state}, 0, "post-midi off for halfwork tasks";
 done_testing();
 
 sub check_done {

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="logo3.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.94809976"
+     inkscape:cx="370.5952"
+     inkscape:cy="642.88931"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="780"
+     inkscape:window-x="-2"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       id="rect4469"
+       width="715.07257"
+       height="238.16617"
+       x="13.058916"
+       y="256.91013"
+       inkscape:export-filename="/home/floh/flowtimeter/site/logo/flowtimeter.png"
+       inkscape:export-xdpi="37.788738"
+       inkscape:export-ydpi="37.788738" />
+    <path
+       sodipodi:type="arc"
+       style="opacity:0.56760003;fill:none;stroke:none"
+       id="path3755"
+       sodipodi:cx="160.6237"
+       sodipodi:cy="463.4086"
+       sodipodi:rx="332.32489"
+       sodipodi:ry="363.71115"
+       d="M 234.79336,108.87159 A 332.32489,363.71115 0 0 1 490.39679,508.3947"
+       sodipodi:start="4.9374688"
+       sodipodi:end="6.4071892"
+       sodipodi:open="true" />
+    <path
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#00c0ff;fill-opacity:1;stroke:none;stroke-width:22.02700043;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+       d="m 138.17516,273.78215 c 10.60296,0.0759 21.35903,1.74154 31.98326,5.1342 -56.70446,-1.19759 -104.693054,19.7463 -122.558063,73.01317 -16.40878,51.3846 16.806013,94.19431 68.936843,100.41172 52.13083,6.21741 21.75181,1.73975 68.15378,3.86284 50.95173,18.34981 3.85393,21.5505 -44.37809,19.3259 C 38.693033,469.45615 12.347279,406.27106 27.277265,350.66326 39.80908,303.98762 92.228994,273.45315 138.17516,273.78215 z"
+       id="path3757"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="scczccss"
+       inkscape:export-filename="/tmp/flowtimeter.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4425"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       transform="matrix(1.3853973,0,-0.01131646,2.4776261,-161.25243,-468.15532)"
+       inkscape:export-filename="/tmp/flowtimeter.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion4427"><rect
+           id="rect4429"
+           width="400.63614"
+           height="72.926857"
+           x="250.16679"
+           y="293.55365"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#625353;fill-opacity:1;font-family:Sans;-inkscape-font-specification:Sans Bold" /></flowRegion><flowPara
+         id="flowPara4431"
+         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#625353;fill-opacity:1;font-family:Sans;-inkscape-font-specification:Sans Bold">FlowTiMeter</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4433"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:12px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+         id="flowRegion4435"><rect
+           id="rect4437"
+           width="351.71051"
+           height="72.003731"
+           x="321.24741"
+           y="432.9455"
+           style="font-size:12px" /></flowRegion><flowPara
+         id="flowPara4439" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4441"
+       style="font-size:14px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><flowRegion
+         id="flowRegion4443"><rect
+           id="rect4445"
+           width="180.00932"
+           height="74.773102"
+           x="369.24988"
+           y="437.56113"
+           style="font-size:14px" /></flowRegion><flowPara
+         id="flowPara4447" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4449"
+       style="font-size:16px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
+       transform="matrix(1,0,0,1.4658517,-141.23808,8.8548758)"
+       inkscape:export-filename="/tmp/flowtimeter.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><flowRegion
+         id="flowRegion4451"><rect
+           id="rect4453"
+           width="515.10364"
+           height="68.561615"
+           x="334.17114"
+           y="419.09863"
+           style="font-size:16px;font-style:italic;fill:#625353;fill-opacity:1;-inkscape-font-specification:Sans Italic" /></flowRegion><flowPara
+         id="flowPara4457">Fit urgency increase into working time. Commit to top-ranked </flowPara><flowPara
+         id="flowPara4459">      tasks only. Check each single step when done. Ready for </flowPara><flowPara
+         id="flowPara4467">      an update of your focus? Well, please click the logo then.</flowPara></flowRoot>    <text
+       xml:space="preserve"
+       style="font-size:31.50777625999999998px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="194.64372"
+       y="415.67484"
+       id="text3013"
+       sodipodi:linespacing="125%"
+       transform="scale(0.94763888,1.0552543)"><tspan
+         sodipodi:role="line"
+         x="194.64372"
+         y="415.67484"
+         id="tspan3785">Your personal task &amp; time manager</tspan></text>
+    <path
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#33ff40;fill-opacity:1;stroke:none;stroke-width:15;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+       d="m 117.18716,365.12566 c 0,0 -11.83007,-10.99686 -37.32038,-17.95851 0,0 21.9849,22.06959 30.53133,34.96941 4.47916,6.76076 10.6376,21.88101 10.6376,21.88101 6.4891,-41.41477 30.29909,-67.43427 47.22128,-100.13256 -34.78,23.21297 -51.06983,61.24065 -51.06983,61.24065 z"
+       id="path3787"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccsccc" />
+  </g>
+</svg>

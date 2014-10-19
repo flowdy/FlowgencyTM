@@ -3,10 +3,10 @@ use strict;
 
 use FindBin qw($Bin);
 use Test::More;
-use Time::Model;
-use Time::Cursor;
+use FTM::Time::Model;
+use FTM::Time::Cursor;
 
-my $model = Time::Model->from_json(<<'JSON');
+my $model = FTM::Time::Model->from_json(<<'JSON');
 {
    "work": {
        "label": "UB Informationstechnik",
@@ -24,10 +24,10 @@ my $model = Time::Model->from_json(<<'JSON');
 }
 JSON
 
-ok($model->isa("Time::Model"), 'Zeitschema eingerichtet.');
+ok($model->isa("FTM::Time::Model"), 'Zeitschema eingerichtet.');
 
 my $work = $model->get_track("work");
-my $cursor = Time::Cursor->new(
+my $cursor = FTM::Time::Cursor->new(
     timestages => [{ track => $work, until_date => '30.6.13' }],
     start_ts => '1.5.13',
 );
