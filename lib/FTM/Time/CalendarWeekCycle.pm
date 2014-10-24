@@ -143,9 +143,10 @@ sub day_obj {
 sub move_by_days {
     my ($self, $days) = @_;
 
-    if ( !wantarray ) {
+    my $wantarray = wantarray;
+    if ( !defined $wantarray ) {
         &_move_by_days;
-        return $self;
+        return;
     }
 
     my $sel = $self->_selector
@@ -163,7 +164,15 @@ sub move_by_days {
         $days -= $step;
     }
 
-    return @day_patterns;
+    if ( $wantarray ) {
+        return @day_patterns;
+    }
+    else {
+        my $len;
+        $len += $_->Size for @day_patterns;
+        return $step*$len;
+    }
+
 }
 
 sub another_moved_by_days {

@@ -6,7 +6,7 @@ use Moose;
 use Carp qw(carp croak);
 use Time::Local;
 use Scalar::Util 'blessed';
-use Date::Calc qw(Add_N_Delta_YMD Add_Delta_YMDHMS);
+use Date::Calc qw(Add_Delta_Days Add_N_Delta_YMD Add_Delta_YMDHMS);
 
 use overload q{""} => 'get_qm_timestamp',
             q{<=>} => 'precision_sensitive_cmp',
@@ -320,7 +320,7 @@ sub precision_sensitive_cmp {
 
 }
 
-sub date_components { map { $_[0]->$_() } qw{ year month day } }
+sub date_components { @{$_[0]}{qw{ year month day }} }
 sub time_components { map { $_[0]->$_() } qw{ hour min sec } }
 
 sub get_std_timestamp {
@@ -344,7 +344,11 @@ sub last_sec {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec
        // croak "last_sec requires all date components to be defined";
-    $epoch_sec += !defined($self->hour) ? 86399
+    $epoch_sec += !defined($self->hour) ? do { # no, not always 24*3600-1
+                     my @date = Add_Delta_Days($self->date_components, 1);
+                     $date[1]--;
+                     timelocal(0,0,0,reverse @date) - $epoch_sec - 1;
+                  }
                 : !defined($self->min)  ?  3599
                 : !defined($self->sec)  ?    59
                 : 0

@@ -281,14 +281,13 @@ sub move_start {
     my ($self, $days) = @_;
     my $s = $self->_prefix_i;
     my $atoms = $self->atoms;
-    my $daylength = $self->hourdiv * 24;
     if ( $days > 0 ) { # start later
-       $s->move_by_days($days);
+       my $units = $s->move_by_days($days);
        my $new = Bit::Vector->new(0);
-       my $a_size = $atoms->Size / $daylength;
-       $days = $a_size if $days > $a_size;
+       my $a_size = $atoms->Size;
+       $units = $a_size if $units > $a_size;
        $new->Interval_Substitute(
-           $self->atoms, 0, 0, map { $_*$daylength } $days, $a_size
+           $self->atoms, 0, 0, $units, $a_size
        );  
        $self->atoms($new);
     }
@@ -304,11 +303,10 @@ sub move_end {
     my ($self, $days) = @_;
     my $e = $self->_suffix_i;
     my $atoms = $self->atoms;
-    my $daylength = $self->hourdiv * 24;
     if ( $days < 0 ) { # end earlier
-       $e->move_by_days($days);
+       my $units = $e->move_by_days($days);
        my $new = Bit::Vector->new(0);
-       my $len = $atoms->Size - $daylength * -$days;
+       my $len = $atoms->Size + $units;
        $new->Interval_Substitute(
            $self->atoms, 0, 0, 0, $len > 0 ? $len : 0
        );  

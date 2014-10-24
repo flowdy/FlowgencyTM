@@ -16,8 +16,8 @@ my @OPTIONS = qw[
 ];
 
 my @SPAN_OPTIONS = qw[
-    week_pattern|week-pattern|w=s
-    week_pattern_from_track|week-pattern-from-track|wp-from=s
+    week_pattern|week-pattern=s
+    week_pattern_of_track|week-pattern-of-track|wp-of=s
     from_date|from-date=s
     until_date|until-date|=s
     ref|r=s

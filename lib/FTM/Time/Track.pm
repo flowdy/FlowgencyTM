@@ -493,7 +493,7 @@ sub _register_variations_in {
         }
 
         elsif ( defined $ref_track ) {
-            croak 'ref and week_pattern_from_track defined at the same time'
+            croak 'ref and week_pattern_of_track defined at the same time'
                 if defined $ref;
             $var->{base} = $ref_track->fillIn;
         }
@@ -740,9 +740,9 @@ sub gather_dependencies {
             $s = $s->name if $self;
             push @{$is_required{$s}}, \$var->{section_from_track};
         }
-        elsif ( $s = $var->{week_pattern_from_track} ) {
+        elsif ( $s = $var->{week_pattern_of_track} ) {
             $s = $s->name if $self;
-            push @{$is_required{$s}}, \$var->{week_pattern_from_track};
+            push @{$is_required{$s}}, \$var->{week_pattern_of_track};
         }
     }
 
