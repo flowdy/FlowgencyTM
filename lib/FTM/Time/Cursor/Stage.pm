@@ -26,7 +26,6 @@ has _partitions => (
 sub ensure_track_coverage {
     my $self = shift;
     my ($from, $to) = ($self->from_date, $self->until_date);
-    $DB::single = 1 if "$from" eq "2013-10-26";
     my $track = $self->track;
     my $ultim_from = $track->start->from_date;
     my $ultim_to   = $track->end->until_date;
