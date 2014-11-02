@@ -6,7 +6,7 @@ use Moose;
 use Carp qw(carp croak);
 use Time::Local;
 use Scalar::Util 'blessed';
-use Date::Calc qw(Add_Delta_Days Add_N_Delta_YMD Add_Delta_YMDHMS);
+use Date::Calc qw(Add_Delta_Days Add_N_Delta_YMD Add_Delta_YMDHMS Day_of_Week);
 
 use overload q{""} => 'get_qm_timestamp',
             q{<=>} => 'precision_sensitive_cmp',
@@ -25,6 +25,10 @@ has [map { 'assumed_'.$_ } qw(day month year)] => (
 has remainder => ( is => 'ro', isa => 'Str' );
 
 has epoch_sec => ( is => 'ro', isa => 'Int', writer => '_set_epoch_sec' );
+
+my %WD;
+@WD{qw(mo di tu mi we do th fr sa su so)}
+   = ( 1, 2, 2, 3, 3, 4, 4, 5, 6, 7, 7);
 
 my $TS;
 { my $_last_update;
@@ -102,7 +106,7 @@ sub parse_ts {
         $month = $ret{month} = $2 if defined $2;
         $day = $ret{day} = $1 if defined $1;
     }
-    elsif ( $ts =~ s{ \A ( [+-] (?i:\s*-?\d+[dwmy])+ ) }{}igxms ) {
+    elsif ( $ts =~ s{ \A ( [+-](?=[\d>]) (?i:\s*-?\d+[dwmy])* (>\w+)? ) }{}igxms ) {
         @ret{qw|year month day|} = ($year, $month, $day);
         (my $diff = $1) =~ s/^\+//;
         move(\%ret, $diff);
@@ -193,30 +197,37 @@ sub move {
 
     my @fields = qw(year month day hour min sec);
 
+    my ($neg, %args);
     if ( !ref $diff ) {
+        $neg = $diff =~ s{ ^ ([+-]) }{}xms && $1 eq q{-};
         if ( $diff =~ /\D/ ) {
-            my $neg = $diff =~ s{ ^ ([+-]) }{}xms && $1 eq q{-};
-            my (%args,%long);
+            my (%long);
             @long{qw{y m d h M s}} = @fields;
             while ( $diff =~ m{ \s* (-?) (\d+) ([ymwdhMs]) }gxms ) {
                 my ($s, $n, $u) = ($1, $2, $3);
                 if ( $u eq 'w' ) { $u = 'd'; $n *= 7 }
                 $args{ $long{$u} } += $n * ( ($s xor $neg) ? -1 : 1 );
             }
-            $diff = \%args;
         }
         else {
-            $diff = { sec => $diff };
+            %args = ( sec => $diff );
         }
     }
 
     my @ymdhms = Add_Delta_YMDHMS(
-        map { $_ //= 0 } map { @{$_}{ @fields } } $href, $diff
+        map { $_ //= 0 } map { @{$_}{ @fields } } $href, \%args
     );
 
+    if ( $diff =~ m{ > (\w\w) \w* \z }xms ) {
+        my $day = Day_of_Week(@ymdhms[0..2]);
+        my $pos = $WD{ lc $1 } // croak "Not a week day: $1";
+        $day = ( $pos - $day ) % ( $neg ? -7 : 7 );
+        @ymdhms[0..2] = Add_Delta_Days(@ymdhms[0..2], $day);
+    }
+    
     my ($i, %fields) = (0, ());
     for my $f ( @fields ) {
-        $href->{$f} // $diff->{$f} // next;
+        $href->{$f} // $args{$f} // next;
         $href->{$f} = $ymdhms[$i];
     }
     continue { $i++ }
@@ -227,7 +238,7 @@ sub move {
 sub fix_order {
     my ($from_date, $until_date) = @_;
 
-    # 2a. Sicher stellen, dass $from_date nicht nach $until_date kommt:
+    # 2a. Make sure that $from_date does not follow $until_date:
     if ( !$from_date->month && $until_date->month) {
         my $mon = $until_date->month - (
             $from_date->day > $until_date->day ? 1 : 0
@@ -248,7 +259,7 @@ sub fix_order {
         $from_date->fill_in_assumptions;
     }
 
-    # 2b. Wir stellen sicher, dass $until_date nicht vor $from_date kommt:
+    # 2b. Make sure that $until_date does not preceed $from_date:
     if ( !$until_date->month ) {
         my $mon = $from_date->month + (
             $from_date->day > $until_date->day ? 1 : 0
@@ -262,15 +273,13 @@ sub fix_order {
         ));
     }
 
-    #$_->_upd_epoch_sec for $from_date, $until_date;
-
     return $from_date <= $until_date;
 
 }
 
 sub _upd_epoch_sec {
     my $self = shift;
-    my @components = map { $self->$_() } qw|sec min hour day month year|;
+    my @components = @{$self}{ qw|sec min hour day month year| };
     return if (grep { defined $_ } @components[3,4,5]) < 3;
     $_ //= 0 for @components[0..2];
     $components[4]--;
