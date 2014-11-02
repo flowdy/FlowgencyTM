@@ -676,7 +676,7 @@ sub update {
 }
 
 sub _edit_variations {
-    my ($self, @variations) = shift;
+    my ($self, @variations) = @_;
 
     for my $new_var ( @variations ) {
         
@@ -705,7 +705,11 @@ sub _edit_variations {
 sub gather_dependencies {
     my ($class, $data, $dependencies) = @_;
 
-    my $self = ref $class ? $class : undef;
+    my $self;                   # This method can be invoked with the class
+    if ( ref $class ) {         # or with an instance of the class.
+        $self = $class;
+        $dependencies = $data;
+    }
 
     my %is_required; # keys:   $id_of_required_track
                      # values: \@scalar_refs_to_be_filled_with_track_oref
@@ -735,6 +739,7 @@ sub gather_dependencies {
     for my $var (
         @{ $self ? $self->_variations : $data->{variations} }
     ) {
+        defined $var or next;
         my $s;
         if ( $s = $var->{section_from_track} ) {
             $s = $s->name if $self;
