@@ -3,7 +3,7 @@ body {
 }
 
 #logo {
-  width:200px;
+  /* width:200px; */
 }
 
 #leftnav {
@@ -31,7 +31,7 @@ body {
 } 
 
 body > header {
-   height:160px;
+   height:120px;
 }
 
 body > header h1 {
@@ -47,22 +47,32 @@ body > header p {
   padding-left:220px;
   padding-top:1em;
   border-bottom: 2px solid darkgrey;
-  min-height:120px;
+  min-height:100px;
+}
+
+#page {
+    margin-left: 240px;
+    width:700px;
 }
 
 #plans {
-  width:800px;
+   margin-left:0;
+   padding-left:0;
 }
 
 #plans > li {
   margin-bottom:10px;
   border:3px solid #00C0FF;
-  margin-left: 215px;
+  /* margin-left: 215px; */
   padding:0.5em;
   overflow:hidden;
    border-top-right-radius:25px;
    border-bottom-left-radius:25px;
   
+}
+
+#plans > li + li {
+   margin-top:1em;
 }
 
 #plans > li.shadow {
@@ -104,3 +114,5 @@ body > header p {
 #plans .duetime .minutes { font-size:3em; }
 #plans form.details {
 }
+
+.checks input { margin:0; padding:0; }

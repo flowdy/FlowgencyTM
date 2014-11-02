@@ -2,6 +2,21 @@ $(document).ready(initialize_plans);
 
 function initialize_plans () {
    $(".progressbar").each(progressbar2canvas);
+   $(".pending-steps .checks").each(dynamizechecks);
+}
+
+function dynamizechecks () {
+   var progressor = function () {
+       if ( this.checked ) {
+           var previous = this.previousSibling;
+           if ( previous && !previous.checked ) $(previous).click();
+       }
+       else {
+           var next = this.nextSibling;
+           if ( next && next.checked ) $(next).click();
+       }
+   };
+   $(this).children().each(function () { $(this).change(progressor) });
 }
 
 function progressbar2canvas () {
@@ -55,5 +70,6 @@ function progressbar2canvas () {
    gr.addColorStop(1.0, grSides[1]);
    ctx.fillStyle = gr;
    ctx.fillRect(0,0,canvas.width, canvas.height);
+   $(canvas).attr('title', $(this).attr('title') );
    $(this).replaceWith(canvas);
 }
