@@ -178,14 +178,14 @@ sub is_archived {
 }
 sub open {
     my ($self) = @_;
-    $self->store({ open_sec => FTM::Time::Point->now });
+    $self->store({ step => '', open_since => FTM::Time::Point->now });
     delete $self->{is_open};
     return;
 }
 
 sub close {
     my ($self) = @_;
-    $self->_task->store({ open_sec => undef });
+    $self->store({ step => '', open_since => undef });
     delete $self->{is_open};
     return;
 }   
@@ -247,7 +247,7 @@ sub store {
     # As we want to be able to mention known steps in {substeps}
     # without declaring them manually in {steps} hash ...
     $steps->{ $_->name } //= {}
-        for $root ? $root_step->and_below({}, { columns => ['name', 'ROWID', 'task' ] })
+        for $root ? $root_step->and_below({}, { columns => ['name', 'step_id', 'task_id' ] })
                   : $steps_rs->search(    {}, { columns => ['name'] })
         ;
 
@@ -400,10 +400,10 @@ sub _store_root_step {
         my $step_row = $steps_rs->find({ name => $root_name });
         $data->{name} //= $root_name;
 
-        my $p = $data->{parent};
+        my $p = delete $data->{parent};
         FTM::Error::Task::InvalidDataToStore->throw(
             "Not found: parent for step '$root_name' with name $p"
-        ) if $p && !$steps_rs->find({ name => $p });
+        ) if $p && !($data->{parent_row} = $steps_rs->find({ name => $p }));
 
         if ($step_row) { $row = $step_row; }
 
@@ -419,7 +419,7 @@ sub _store_root_step {
 
         $self->_handle_subtask_data_of( $data );
 
-        if ( my $l = delete $data->{link} ) {
+        if ( my $l = delete $data->{link_id} ) {
             $self->_tasks->link_step_row( $row => $l );
         }
         
@@ -498,7 +498,7 @@ sub _store_steps_below {
 
         if ( %$step ) {
             my ($parent, $is_parent, $link)
-                = delete @{$step}{ 'parent', 'is_parent', 'link' };
+                = delete @{$step}{ 'parent', 'is_parent', 'link_id' };
             die "Substep $name is missing its parent" if !defined $parent;
 
             my $p_row = length $parent
@@ -517,7 +517,7 @@ sub _store_steps_below {
                 else { # step $name has no explicit substeps
 
                     my (undef, @descendents) = $step_row->and_below(
-                        {}, { -columns => ['name','ROWID','task'] }
+                        {}, { -columns => ['name','step_id','task_id'] }
                     );
 
                     for my $d ( map { $_->name } @descendents ) {
