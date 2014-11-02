@@ -1,0 +1,10 @@
+<ul class="pending-steps">
+% my $focus = $details->{focus};
+% my $main_step = $focus->[-1][1];
+% foreach my $step ( @$focus ) {
+% $step = $step->[1];
+<li><% if ( $main_step == $step ) { %><em>Complete and archive task <%= $step->task_row->name %><% if ( my $s_name = $step->name ) { %>.<%= $s_name %><% } %>:</em><% } else { %><%= $step->description %> [<%= $step->name %>]<% } %> <span class="checks" data-id="<%= $step->name %>" data-done="<%= $step->done %>">
+%== join "", (map { '<input type="checkbox" checked="checked">' } 1 .. $step->done), (map { '<input type="checkbox">' }  1 .. ($step->checks - $step->done));
+</span></li>
+% }
+</ul>

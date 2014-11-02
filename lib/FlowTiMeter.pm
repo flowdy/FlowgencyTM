@@ -21,16 +21,16 @@ sub database () {
 }
 
 sub user {
-    my ($username, $create_if_unknown) = @_;
+    my ($user_id, $create_if_unknown) = @_;
     return $current_user if !@_;
 
     my $retr = "find";
 
-    my $data = { id => $username };
+    my $data = { user_id => $user_id };
     if ( my $new = $create_if_unknown ) {
         $retr .= "_or_new";
         $data = {
-            id => $username,
+            user_id => $user_id,
             %DEFAULT_USER_DATA,
             ref $new eq 'HASH' ? %$new :
             $new eq '1' ? ()           :
@@ -38,9 +38,9 @@ sub user {
         };
     }
 
-    return $current_user = $users{$username} //= FTM::User->new(
+    return $current_user = $users{$user_id} //= FTM::User->new(
         dbicrow => database->resultset("User")->$retr($data)
-                // croak qq{Could not find a user with id = '$username'}
+                // croak qq{Could not find a user with id = '$user_id'}
     );
 }
 
@@ -48,7 +48,7 @@ sub new_user ($) {
     my ($username) = @_;
     my $user = $users{$username} = FTM::User->new(
         dbicrow => database->resultset("User")->create({
-            %DEFAULT_USER_DATA, id => $username
+            %DEFAULT_USER_DATA, user_id => $username
         })
     );
     return $current_user = $user;

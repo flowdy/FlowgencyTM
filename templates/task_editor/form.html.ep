@@ -1,0 +1,10 @@
+% my $input = stash 'input';
+% if ( my $message = stash 'message' ) {
+<p><%= $message %></p>
+% }
+<p>Create or edit a task:</p>
+
+<form method='post' action="/task/<%= stash('id') // 0 %>/post">
+<textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
+<input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
+</form>
