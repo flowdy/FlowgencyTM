@@ -14,34 +14,34 @@ my @INTEGER = ( data_type => 'INTEGER' );
 my @NULLABLE = ( is_nullable => 1 );
 
 __PACKAGE__->add_columns(
-    ROWID           => { @INTEGER },
+    step_id         => { @INTEGER },
     checks          => { @INTEGER, default_value => 1 },
     done            => { @INTEGER, default_value => 0 },
     description     => { @NULLABLE },
     expoftime_share => { @INTEGER, default_value => 1 },
     name            => { default_value => '' },
-    link            => { @NULLABLE },
-    parent          => { @NULLABLE },
+    link_id         => { @INTEGER, @NULLABLE },
+    parent_id       => { @INTEGER, @NULLABLE },
     pos             => { @NULLABLE, data_type => 'FLOAT' },
-    task            => {},
+    task_id         => { @INTEGER },
 ); 
-__PACKAGE__->set_primary_key("ROWID");
+__PACKAGE__->set_primary_key("step_id");
 
 __PACKAGE__->belongs_to(
     parent_row => 'FTM::FlowDB::Step',
-    { 'foreign.ROWID' => 'self.parent' }
+    { 'foreign.step_id' => 'self.parent_id' }
 );
 
 __PACKAGE__->belongs_to(
     task_row => 'FTM::FlowDB::Task',
-    { 'foreign.ROWID' => 'self.task' }
+    'task_id'
 );
 
 # Bestimmte Schritte einer Aufgabe können eine Zeitbegrenzung, Priorität etc.
 # haben, die von der eigentlich übergeordneten Aufgabe abweichen.
 __PACKAGE__->belongs_to(
     subtask_row => 'FTM::FlowDB::Task',
-    { 'foreign.main_step' => 'self.ROWID' },
+    { 'foreign.main_step_id' => 'self.step_id' },
     { proxy => [qw/title timesegments from_date client/],
       is_foreign_key_constraint => 0,
     }
@@ -49,20 +49,19 @@ __PACKAGE__->belongs_to(
 
 __PACKAGE__->belongs_to(
     link_row => 'FTM::FlowDB::Step',
-    { 'foreign.ROWID' => 'self.link', }
+    { 'foreign.step_id' => 'self.link_id', }
 );
 
 __PACKAGE__->has_many(
     substeps => 'FTM::FlowDB::Step',
-    { 'foreign.parent' => 'self.ROWID',
-      'foreign.task' => 'self.task'
+    { 'foreign.parent_id' => 'self.step_id',
+      'foreign.task_id' => 'self.task_id'
     },
     { cascade_copy => 0 }
 );
 
 __PACKAGE__->has_many(
-    linked_by => 'FTM::FlowDB::Step',
-    { 'foreign.link' => 'self.ROWID' },
+    linked_by => 'FTM::FlowDB::Step', 'link_id',
     { cascade_copy => 0 }
 );
 
@@ -71,13 +70,13 @@ sub sqlt_deploy_hook {
 
    $sqlt_table->add_index(
        name => 'tree',
-       fields => ['task','name'],
+       fields => ['task_id','name'],
        type => 'unique'
    );
 
    $sqlt_table->add_index(
        name => 'links',
-       fields => ['link'],
+       fields => ['link_id'],
    );
 
 }
@@ -300,8 +299,8 @@ sub is_within_focus {
 
     my $trow = $self->task_row;
 
-    my $id = $self->ROWID;
-    return !! first { $_->[1]->ROWID eq $id }
+    my $id = $self->step_id;
+    return !! first { $_->[1]->step_id eq $id }
               $trow->main_step_row->current_focus
         ;
 
@@ -319,17 +318,20 @@ sub is_completed {
 }
        
 sub prior_deps {
-    my ($self, $task_name) = @_;
+    my ($self, $task_id) = @_;
     my @ret;
 
     my $p = $self->parent_row;
     return if !$p;
 
     if ( my $l = $p->link_row ) {
-        push @ret, $l->prior_deps($task_name);
+        push @ret, $l->prior_deps($task_id);
     }
 
-    my $opts = { columns => ['link','ROWID','task'], order_by => { -asc => ['pos'] } };
+    my $opts = {
+        columns => ['link_id','step_id','task_id'],
+        order_by => { -asc => ['pos'] }
+    };
 
     my $pos = $self->pos;
     my @prior_steps = $p->substeps->search({
@@ -341,21 +343,21 @@ sub prior_deps {
         unshift @prior_steps, $p->substeps->search({}, $opts);
         my $l = $p->link_row // next;
 
-        push @ret, $l->task eq $task_name
+        push @ret, $l->task_id eq $task_id
                      ? $l->name
-                     : $l->prior_deps($task_name)
+                     : $l->prior_deps($task_id)
                      ;
 
     }
 
-    return @ret, $p->prior_deps($task_name);
+    return @ret, $p->prior_deps($task_id);
 
 }
 
 sub isa_subtask {
     my ($self) = @_;
     my $subtask = $self->subtask_row // return;
-    return ($subtask->name // '') eq $self->task;
+    return 1;
 }
 
 sub ancestors_upto {

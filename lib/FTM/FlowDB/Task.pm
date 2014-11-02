@@ -21,12 +21,13 @@ has _upper_subtask_row => (
 );
 
 __PACKAGE__->table('task');
-__PACKAGE__->add_column( ROWID => { data_type => 'INTEGER' });
+__PACKAGE__->add_column( task_id => { data_type => 'INTEGER' });
+__PACKAGE__->set_primary_key( 'task_id' );
 __PACKAGE__->add_columns(
-    user             => $OPTIONAL, # Subtask ? null : not null
+    user_id          => $OPTIONAL, # Subtask ? null : not null
     name             => $OPTIONAL, # Subtask ? null : not null
     title            => $MANDATORY,
-    main_step        => $OPTIONAL,
+    main_step_id     => $OPTIONAL,
         # It's not really, but otherwise we would run into a race condition:
         # Because all steps (so main_step, too) have a foreign key constraint
         # matching our autoincremented primary key, the task record must be
@@ -46,25 +47,23 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->belongs_to( user_row => 'FTM::FlowDB::User',
-    { 'foreign.id' => 'self.user' }
+    'user_id'
 );
 
 __PACKAGE__->has_many( steps => 'FTM::FlowDB::Step',
-    { 'foreign.task' => 'self.ROWID' },
+    { 'foreign.task_id' => 'self.task_id' },
     { cascade_copy => 1, cascade_delete => 1 },
 );
 
 __PACKAGE__->has_many(
     timestages => 'FTM::FlowDB::TimeStage',
-    { 'foreign.task_id' => 'self.ROWID' }
+    'task_id'
 );
-
-__PACKAGE__->set_primary_key( 'ROWID' );
 
 my @proxy_fields = qw(description done checks expoftime_share substeps);
 
 __PACKAGE__->belongs_to( main_step_row => 'FTM::FlowDB::Step',
-    { 'foreign.ROWID' => 'self.main_step'},
+    { 'foreign.step_id' => 'self.main_step_id'},
     { proxy => \@proxy_fields, } # wherefore this: cascade_update => 1 ?
 );
 
@@ -132,7 +131,7 @@ around copy => sub {
         $c->update({ main_step_row => $c->steps->find({ name => q{} }) });
     }
     else {
-        $_->copy({ task => $c->ROWID }) for $msr->and_below;
+        $_->copy({ task_id => $c->task_id }) for $msr->and_below;
     }
 
     return $c;
@@ -178,12 +177,12 @@ sub sqlt_deploy_hook {
 
    $sqlt_table->add_index(
         name => 'user_task',
-        fields => ['user', 'name'],
+        fields => ['user_id', 'name'],
         type => 'unique'
    );
    $sqlt_table->add_index(
         name => 'task_mainstep',
-        fields => ['main_step'],
+        fields => ['main_step_id'],
         type => 'unique'
    );
 
@@ -248,7 +247,7 @@ for my $acc ( list_properties() ) {
        
 sub _is_main {
     my ($self) = @_;
-    if ( defined $self->user ) {
+    if ( defined $self->user_id ) {
         return 1 if length $self->name;
         croak "Task has no name";
     }
@@ -256,7 +255,7 @@ sub _is_main {
         croak "Subtask may not have a name"
             if !defined $self->name;
         croak "Subtask has no main_row with parent"
-            if !defined $self->main_step_row->parent;
+            if !defined $self->main_step_row->parent_id;
         croak "Subtask has no assigned upper subtask or task"
             if !$self->_upper_subtask_row;
         return 0;
