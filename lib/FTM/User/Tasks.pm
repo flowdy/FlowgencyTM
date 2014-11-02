@@ -26,6 +26,12 @@ has ['track_finder', 'flowrank_processor', 'priority_resolver' ] => (
     is => 'rw', isa => 'CodeRef', required => 1,
 );
 
+has appendix => (
+    is => 'ro',
+    isa => 'Num',
+    default => 0.1,
+);
+
 sub _build_task_obj {
     my ($self, $row) = @_;
     return FTM::Task->new(
@@ -171,19 +177,19 @@ sub link_step_row {
 
     FTM::Error::Task::InvalidDataToStore->throw(
         "Cannot establish links between steps of same task"
-    ) if $step->task eq $req_step->task;
+    ) if $step->task_id eq $req_step->task_id;
     
     FTM::Error::Task::InvalidDataToStore->throw(
         "Can't have multiple levels of indirection/linkage"
-    ) if $req_step->link;
+    ) if $req_step->link_id;
 
     my %is_successor;
-    $is_successor{ $_->name }++ for grep { !$_->link }  $step->and_below;
+    $is_successor{ $_->name }++ for grep { !$_->link_id }  $step->and_below;
     my ($p,$ch) = ($step) x 2;
     while ( $p = $p->parent_row ) {
         my $pos = $ch->pos;
         $is_successor{ $_->name }++ for $p->substeps->search({
-            link => undef,
+            link_id => undef,
             $pos ? ( pos => [ undef, { '>=' => $pos } ] ) : (),
         }, { columns => ['name'] });
     } continue { $ch = $p; }
@@ -233,7 +239,7 @@ sub recalculate_dependencies {
 sub get_tfls_parser {
     my ($self, %opts) = @_;
     my $dry_run = delete $opts{'-dry'};
-
+    my $common_modifier = delete $opts{'-modifier'} // sub {};
     my $parser = FTM::Util::TreeFromLazyStr->new({
         create_twig => \&_parse_taskstep_title,
         finish_twig => \&_finish_step_data,
@@ -246,21 +252,36 @@ sub get_tfls_parser {
     });
 
     return $dry_run ? $parser : (), sub {
-        my $href = $parser->parse(shift);
-        return $href if $dry_run;
-        my ($name, $copy) = @{$href}{'name','copy'};
-        my $task;
-        if ( $copy ) {
-            delete $href->{copy};
-            $task = $self->copy( $name => $href );
+        my ($string, $modifier) = @_;
+        @_ > 1 or $modifier = $common_modifier;
+        my @tasks;
+        for my $href ( $parser->parse($string) ) {
+            $modifier->() for $href;
+            if ($dry_run) { push @tasks, $href; next }
+            my ($name, $copy) = @{$href}{'name','copy'};
+            my $task;
+            if ( $copy ) {
+                delete @{$href}{'name','copy'};
+                $task = $self->copy( $name => $href );
+            }
+            elsif ( $name and $task = $self->get($name) ) {
+                if ( $href->{step} ) {
+                    if ( my $name = delete $href->{rename_to} ) {
+                        $href->{name} = $name;
+                    }
+                    else { 
+                        delete $href->{name};
+                    }
+                }
+                $task->store($href);
+            }
+            else {
+                $task = $self->add($href);
+            }
+            $href->{task_obj} = $task;
+            push @tasks, $href;
         }
-        elsif ( $name and $task = $self->get($name) ) {
-            $task->store($href);
-        }
-        else {
-            $task = $self->add($href);
-        }
-        return $href => $task;
+        return wantarray ? @tasks : $tasks[-1];
     };
 
 }
@@ -273,8 +294,14 @@ sub _parse_taskstep_title {
     # Recognize id string for the task/step
     if ( $head =~ s{ \s* (= (\w+)) \s* }{}gxms ) {
         $data{name} = $2 if $2;
-        if ( $head =~ s{ \G \. (\w+) }{}xms ) {
-            $data{ 'step' } = $1;
+        if ( $head =~ s{ \G \. ([\w.]+) }{}xms ) {
+            if ( $parent ) { $data{name} .= ".$1"; }
+            else {
+                $data{ 'step' } = $1;
+                if ( my $name = delete $leaves->{name} ) {
+                    $leaves->{rename_to} = $name;
+                }
+            }
         }
     }
 
@@ -290,7 +317,11 @@ sub _parse_taskstep_title {
 
     return { oldname => $head } if !%data and $head =~ /^[a-z]\S+$/;
 
-    $data{ $parent ? 'description' : 'title' } = $head if $head;
+    if ( $head ) {
+        s/^\s+//, s/\s+$// for $head;
+        my $slot = $parent || $data{step} ? 'description' : 'title'; 
+        $data{$slot} = $head;
+    }
 
     $data{parents_name} = $parent->{name} // '(anonymous parent)'
         if $parent;
@@ -367,7 +398,7 @@ sub list {
     my ($self, %criteria) = @_;
     
     my ($desk, $tray, $drawer, $archive)
-        = delete $criteria{ 'desk', 'tray', 'drawer', 'archive' };
+        = delete @criteria{ 'desk', 'tray', 'drawer', 'archive' };
 
     $desk //= 1;
     if ( %criteria ) {
@@ -398,7 +429,7 @@ sub list {
 
     my $list = $processor->();
 
-    my (@on_desk, @in_tray, @in_archive);
+    my (@on_desk, @in_tray, @upcoming, @in_archive);
 
     for my $task ( @$list ) {
         if ( $task->is_open ) {
@@ -415,15 +446,16 @@ sub list {
 
     if ( !$tray ) {
         if ( my $last_on_desk = $on_desk[-1] ) {
-            my $first_score = $on_desk[0]->score->score;
-            my $last_score  = $last_on_desk->score->score;
-            my $appendix = $last_score
+            my $first_score = $on_desk[0]->flowrank->score;
+            my $last_score  = $last_on_desk->flowrank->score;
+            my $appendix = $first_score ? $last_score
                          * (1 - ($first_score - $last_score)
                               / ($first_score * $self->appendix)
-                           )
-                         ;
+                           ) 
+                         : - 1;
             for ( @in_tray ) {
-                 push @on_desk, $_ if $_->score->score > $appendix;
+                 $_->flowrank->score > $appendix or next;
+                 push @on_desk, $_;
             }
         }
         else {
