@@ -99,7 +99,7 @@ around register_task => sub {
     my $time = $self->_time;
     my %ctd = $task->update_cursor( $time );
 
-    return if $even_if_paused && !$ctd{state};
+    return if !($ctd{state} || $even_if_paused);
 
     my $score = FlowRank::Score->new({
         %ctd,
@@ -132,9 +132,10 @@ sub get_ranking {
     $rundata{$_} = $weights{$_} for qw(shortoftime overdue);
     
     if ( keys(%$tasks) == 1 ) {
-        my ($task) = values(%$tasks);
-        $task->flowrank->calculate_score(\%rundata);
-        return $task;
+        my ($score) = values(%$tasks);
+        my $task = $score->_task;
+        $score->calculate_score(\%rundata);
+        return [$task];
     }
 
     # Let's have our own sort function that maps the hash reference 
@@ -193,6 +194,11 @@ has active => (
 has next_statechange_in_hms => (
     is => 'ro',
     init_arg => 'seconds_until_switch',
+);
+
+has time_position => (
+    is => 'ro',
+    init_arg => 'current_pos',
 );
 
 has priority => (
@@ -349,10 +355,10 @@ sub _calc_drift {
 
     my $progress = $self->_task->progress;
     my $elapsed_pres = $self->elapsed_pres;
-    my $tmneed   = $elapsed_pres / ($self->due + $elapsed_pres);
+    my $time_position   = $self->time_position;
 
-    return ( $tmneed - $progress )
-        / ( 1 - min($progress, $tmneed) )
+    return ( $time_position - $progress )
+        / ( 1 - min($progress, $time_position) )
         ;
 }
 
