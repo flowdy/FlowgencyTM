@@ -9,7 +9,7 @@ use FTM::FlowDB \$db => (@ARGV ? shift :());
 ok $db->isa("DBIx::Class::Schema"), "database initialized";
 
 my $user = $db->resultset("User")->find_or_create({
-    id => 'fh',
+    user_id => 'fh',
     username => 'Florian Heß',
     password => '',
     time_model => '{"default":{"label":"UB/IT","week_pattern":"Mo-Fr@9-17:30"}}',
@@ -34,7 +34,7 @@ is $task->description, $task->main_step_row->description, 'Beschreibung via Prox
 is $task->description, 'Wäre toll, wenn es funktioniert', ' ... gesetzt';
 
 my $substep = $task->main_step_row->add_to_substeps({ name => 'substep1', description => 'ein Unterschritt' });
-is $substep->task, 1, "Unterschritt erbt Task-Id vom übergeordneten Schritt";
+is $substep->task_id, 1, "Unterschritt erbt Task-Id vom übergeordneten Schritt";
 
 done_testing();
 

@@ -296,7 +296,7 @@ sub test_track_respect_tspan {
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3600), 3600,
        "count absence among net seconds over an hour";
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3601), 86400,
-       "count absence among net seconds over a day";
+       "count absence among net seconds over a day (fails on dst border, yet to fix)";
     subtest_seek_last_net_second_timestamp(
         $tp, $ts0, 130_000 => '2012-11-01 11:06:40',
          '... or, respectively, in the fill-in'
@@ -314,7 +314,7 @@ sub test_track_respect_tspan {
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6300), 0,
        "net seconds transition from one day to the other";
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6301), 79200,
-       " ... plus one net second again in the night";
+       " ... plus one net second again in the night (fails on dst border, yet to fix)";
 
     #  TODO: {
     #      local $TODO = 'FTM::Time::Track->lock(), unlock(), demand_protect() und '
@@ -370,7 +370,8 @@ sub test_time_calendarweekcycle {
     $cw->move_by_days(4);
     is $cw->day_of_week, 7, 'day method says we have Sunday (which is in 2010)';
     is $cw->year_of_thursday, 2009, 'but year() outputs the year covering the Thursday of the week in question';
-    $cw = FTM::Time::CalendarWeekCycle->new(@initial_date, %callbacks)->move_by_days(953);
+    $cw = FTM::Time::CalendarWeekCycle->new(@initial_date, %callbacks);
+    $cw->move_by_days(953);
     is_deeply [map { $cw->$_() } qw/day_of_week week_num year_of_thursday/], [7,53,2015],
         'going forward to a week no. 53';
     $cw->move_by_days(-70);

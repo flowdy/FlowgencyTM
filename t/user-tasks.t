@@ -16,7 +16,7 @@ sub time_model_json { return <<'END_JSON'; }
 END_JSON
 
 my $user = $db->resultset("User")->find_or_create({
-    id => 'fh',
+    user_id => 'fh',
     username => 'Florian Heß',
     password => '',
     time_model => time_model_json(),
@@ -30,7 +30,6 @@ $user = FTM::User->new( dbicrow => $user );
 
 ok $user->isa("FTM::User"), 'Wrapped user in a FlowTiMeter User object';
 
-$DB::single = 1;
 my $task = $user->tasks->add({
     name => 'task1',
     priority => 2,
@@ -106,6 +105,7 @@ is $task2->name, 'kundenmigr', "Created task with steps";
 
 my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
 
+$DB::single = 1;
 my $task3 = parser_test('Simple task parsed with FTM::Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
 This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default
   ;1 a step =foo ;expoftime_share: 3
@@ -122,7 +122,7 @@ steps => {
         expoftime_share => 3,
     },
     link2migr => {
-        link => 'kundenmigr.dbsetup',
+        link_id => 'kundenmigr.dbsetup',
         checks => 0,
         substeps => 'copyadapt',
     },
@@ -138,6 +138,8 @@ COMPARE
 
 is $task3->dbicrow->priority, 3, "priority label resolved to number";
 is $task3->priority, 'soon', "priority output as label";
+$parser->('=task3.foo have description changed');
+is $task3->step('foo')->description, "have description changed", "changed a step description";
 
 my $step = $task3->step('foo');
 is $step->done, 0, "default value of done is 0";
@@ -163,7 +165,7 @@ my @focus_arefs;
 ok !$focus_arefs[0][2] && @focus_arefs == 7, "unblocked by checking these other step";
 
 check_done($task2, export2csv => 0);
-$task3->store(link2migr => { link => 'kundenmigr' });
+$task3->store(link2migr => { link_id => 'kundenmigr' });
 $step = $task3->step('link2migr');
 is $step->checks, 0, "checks can be 0 for a link";
 is $step->link_row->checks, 2, "which is independent from linked row";
@@ -250,7 +252,7 @@ $user->update_time_model({
 });
 is_deeply $user->_time_model->get_track('halfwork')->dump, { default_inherit_mode => "optional", week_pattern => 'Mo-Fr@7-12', name => "halfwork", label => "Work only half a day" }, "update the time model with another track";
 
-my $task4 = $parser->('Aufgabe, halbtags ;from 12.9. ;inc todo ;until 5.10.@halfwork ;priority whentime');
+my $task4 = $parser->('Aufgabe, halbtags ;from 12.9. ;inc todo ;until 5.10.@halfwork ;priority whentime')->{task_obj};
 is $task4->name, "todo1", "task name is automatically todo1";
 $DB::single=1;
 my %pos = $task4->update_cursor(FTM::Time::Point->parse_ts('1.10. 15:15')->fill_in_assumptions);
@@ -271,7 +273,8 @@ sub parser_test {
     my $cmp_to_href = eval "#line Hash_Data 0\n 1 && {".$hash_str4eval."}";
                          # ^ force hash context
     die if $@;
-    my ($parsed, $task) = $parser->($lazystr);
+    my $parsed = $parser->($lazystr);
+    my $task = delete $parsed->{task_obj};
     is_deeply( $parsed, $cmp_to_href, $description );
     return $task;
 }

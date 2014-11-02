@@ -12,7 +12,9 @@ my $model = FTM::Time::Model->from_json(<<'JSON');
        "label": "UB Informationstechnik",
        "week_pattern": "Mo-Fr@9-17:30",
        "variations": [
-           { "ref":"urlaub", "apply":true, "from_date":"10.5.", "until_date":"7.6.13" },
+           { "week_pattern_of_track":"urlaub", "apply":true,
+             "from_date":"10.5.", "until_date":"7.6.13"
+           },
            { "week_pattern": "Mi@13-17", "from_date": "21.5.13", "until_date": "31.",
              "description": "Ehrenamtliche Arbeit"
            }
