@@ -35,7 +35,7 @@ sub context_info {
         if ( length $path and my $context = $context_info{'context'} ) {
             $path = join q{=}, $context, $path;
         }
-        return join '@', FlowTiMeter::user->id, $path;
+        return join '@', FlowTiMeter::user->user_id, $path;
     }
 }
 1;

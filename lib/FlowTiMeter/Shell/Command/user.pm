@@ -12,7 +12,7 @@ sub run {
     USER_ENTRY: {
         $user = FlowTiMeter::user($user,1);
         if ( !$user->in_storage ) {
-            my $olduser = $user->id;
+            my $olduser = $user->user_id;
             my $newuser = $TERM->readline(
                 "Press Enter to confirm new user $olduser OR change the name: ",
                 $olduser
