@@ -21,7 +21,10 @@ has _time_model => (
     isa => 'FTM::Time::Model',
     lazy => 1,
     init_arg => undef,
-    handles => { update_time_model => 'update' },
+    handles => {
+        update_time_model => 'update',
+        get_available_time_tracks => 'get_available_tracks',
+    },
     default => sub {
         my ($self) = shift;
         FTM::Time::Model->from_json($self->_dbicrow->time_model);    
@@ -62,6 +65,18 @@ has _priorities => (
         return \%ret; 
     },
 );
+
+sub get_labeled_priorities {
+    my ($self) = @_;
+    my $p = $self->_priorities;
+    my $ret = {};
+    while ( my ($label, $num) = each %$p ) {
+        $label =~ s{^n:}{} or next;
+        $ret->{$label} = $num;
+    }
+    return $ret;
+}
+
 sub store_weights {
     my ($self) = @_;
 }
@@ -95,7 +110,7 @@ __END__
 
 =head1 NAME
 
-FTM::User - Representation of a user, invocator and object of FlowTiMeter actions
+FTM::User - Representation of a user, invocator and object of FlowgencyTM actions
 
 =head1 SYNOPSIS
 
@@ -119,18 +134,18 @@ actions involving other entities than tasks.
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

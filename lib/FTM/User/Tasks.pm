@@ -397,8 +397,8 @@ sub _finish_step_data {
 sub list {
     my ($self, %criteria) = @_;
     
-    my ($desk, $tray, $drawer, $archive)
-        = delete @criteria{ 'desk', 'tray', 'drawer', 'archive' };
+    my ($desk, $tray, $drawer, $archive, $now)
+        = delete @criteria{ 'desk', 'tray', 'drawer', 'archive', 'now' };
 
     $desk //= 1;
     if ( %criteria ) {
@@ -414,13 +414,15 @@ sub list {
         : $archive
         ;
 
-    my $now = $criteria{now} ? FTM::Time::Point->parse_ts( delete $criteria{now} )
-                                 ->fill_in_assumptions
-                             : FTM::Time::Point->now;
+    $now = $now ? FTM::Time::Point->parse_ts( $now )->fill_in_assumptions
+                : FTM::Time::Point->now;
 
     my $processor = $self->flowrank_processor;
     $processor->($now);
-    for my $task ( $self->task_rs->search(\%criteria)->get_column('name')->all ) {
+    my $rs = $self->task_rs;
+    $rs->clear_cache;
+
+    for my $task ( $rs->search(\%criteria)->get_column('name')->all ) {
         $task = eval { $self->get($task) }
                 // die "Could not cache task $task: $@";
         next if !($drawer & 2) && $task->start_ts > $now;
@@ -482,7 +484,7 @@ FTM::User::Tasks - Set of all tasks by a user
 
 =head1 SYNOPSIS
 
- my $user = ...; # get a FlowTiMeter user object
+ my $user = ...; # get a FlowgencyTM user object
  my $tasks = $user->tasks;
  
  my $known_task = $tasks->get("name_of_known_task");
@@ -514,18 +516,18 @@ FTM::User::Tasks enables a user to create tasks and provides access to existing 
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

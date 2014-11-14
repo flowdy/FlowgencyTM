@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>FlowTiMeter – Grundlagen</title>
+<title>FlowgencyTM – Grundlagen</title>
 <style type="text/css">
 body { margin: 2em 10em; }
 
@@ -10,26 +10,26 @@ p, li {font-family: sans-serif; line-height:130%; }
 img { width:100%; }
 </style>
 </head><body>
-<h1>Über FlowTiMeter</h1>
+<h1>Über FlowgencyTM</h1>
 
-<p>FlowTiMeter ist eine Software, um deine Aufgaben zu strukturieren und zu verwalten und dich nach Störungen leichter zu refokussieren. Sie kann dir helfen, die Dringlichkeiten von Aufgaben in den vorab explizit der Arbeit gewidmeten Anteilen deiner Lebenszeit einzupassen. Immer wenn du z.B. gestört worden bist oder eine neue Aufgabe eingetragen hast, klickst du auf das FlowTiMeter-Logo und erfährst, woran du »jetzt« arbeiten solltest, um am Ende alle festgelegten Fristen bestmöglich zu wahren.</p>
+<p>FlowgencyTM ist eine Software, um deine Aufgaben zu strukturieren und zu verwalten und dich nach Störungen leichter zu refokussieren. Sie kann dir helfen, die Dringlichkeiten von Aufgaben in den vorab explizit der Arbeit gewidmeten Anteilen deiner Lebenszeit einzupassen. Immer wenn du z.B. gestört worden bist oder eine neue Aufgabe eingetragen hast, klickst du auf das FlowgencyTM-Logo und erfährst, woran du »jetzt« arbeiten solltest, um am Ende alle festgelegten Fristen bestmöglich zu wahren.</p>
 
-<p>FlowTiMeter ordnet eingetragene Aufgaben absteigend nach Dringlichkeit. Dieser Begriff umfasst in FlowTiMeter jedoch nicht allein die <em>Priorität</em> einer Aufgabe, sondern ist mehrdimensional ausgelegt. Neben der Priorität wird zum Einen der <em>Erledigungsfortschritt</em> einer Aufgabe berücksichtigt. Abhängig von deiner schrittbezogenen Aufwandsschätzung macht er mal größere, mal kleinere Sprünge nach vorn, wenn du ein Erledigthäkchen setzt. Zum Anderen zählt die <em>Zeit</em>, die seit dem Start verstrichen und bis zur gesetzten weichen oder harten Frist noch übrig ist. In FlowTiMeter ist Zeit kein Kontinuum. Arbeits- und freie Phasen, also wann die Zeit laufen und wann sie (rechnerisch) stehen bleiben soll, legst du in deinem Zeitmodell fest. Diese drei Aspekte, also die Priorität, der Sach- und der Zeitfortschritt, finden sich als Eingangsgrößen einzeln und kombiniert in verschiedenen Berechnungen wieder, die weiter unten erläutert sind. Die Ergebniswerte summieren sich beliebig gewichtet zum Rankingkriterium der Dringlichkeit.</p>
+<p>FlowgencyTM ordnet eingetragene Aufgaben absteigend nach Dringlichkeit. Dieser Begriff umfasst in FlowgencyTM jedoch nicht allein die <em>Priorität</em> einer Aufgabe, sondern ist mehrdimensional ausgelegt. Neben der Priorität wird zum Einen der <em>Erledigungsfortschritt</em> einer Aufgabe berücksichtigt. Abhängig von deiner schrittbezogenen Aufwandsschätzung macht er mal größere, mal kleinere Sprünge nach vorn, wenn du ein Erledigthäkchen setzt. Zum Anderen zählt die <em>Zeit</em>, die seit dem Start verstrichen und bis zur gesetzten weichen oder harten Frist noch übrig ist. In FlowgencyTM ist Zeit kein Kontinuum. Arbeits- und freie Phasen, also wann die Zeit laufen und wann sie (rechnerisch) stehen bleiben soll, legst du in deinem Zeitmodell fest. Diese drei Aspekte, also die Priorität, der Sach- und der Zeitfortschritt, finden sich als Eingangsgrößen einzeln und kombiniert in verschiedenen Berechnungen wieder, die weiter unten erläutert sind. Die Ergebniswerte summieren sich beliebig gewichtet zum Rankingkriterium der Dringlichkeit.</p>
 
-<p><img src="snapshot-home.png" alt="Hauptseite von FlowTiMeter: Aufgabenliste" title="" /></p>
+<p><img src="snapshot-home.png" alt="Hauptseite von FlowgencyTM: Aufgabenliste" title="" /></p>
 
 <p>Idee, Prototypentwicklung und Dokumentation: Florian Heß</p>
 
 <p>Aktuelle Version: 0.1 (4. April 2014), das heißt ein Softwareprojekt im Alphastadium, Prototyp, experimentell und <em>nicht</em> zur produktiven Benutzung geeignet.</p>
 
 <ol>
-<li><a href="#was">Was ist FlowTiMeter?</a>
+<li><a href="#was">Was ist FlowgencyTM?</a>
 <ul>
 <li><a href="#zielgruppe">Zielgruppe der Software</a></li>
 <li><a href="#technisches">Technische Merkmale des Systems</a></li>
 </ul></li>
-<li><a href="#was-nicht">Was ist FlowTiMeter nicht?</a></li>
-<li><a href="#kriterien">Welche Größen der Dringlichkeit kennt FlowTiMeter?</a>
+<li><a href="#was-nicht">Was ist FlowgencyTM nicht?</a></li>
+<li><a href="#kriterien">Welche Größen der Dringlichkeit kennt FlowgencyTM?</a>
 <ul>
 <li><a href="#prio">Prioritätsgrad</a></li>
 <li><a href="#deadline">Zeitliche Nähe zum Fristende</a></li>
@@ -44,23 +44,23 @@ img { width:100%; }
 <li><a href="#kritisches">Kritische und andere Bemerkungen</a></li>
 </ol>
 
-<h2><a name="was">Was ist FlowTiMeter?</a></h2>
+<h2><a name="was">Was ist FlowgencyTM?</a></h2>
 
-<p>FlowTiMeter ist eine Software zum persönlichen <strong>Aufgaben- und Zeitmanagement</strong>. Oft verbirgt sich hinter diesen Programmen eine schnöde Erledigungsliste. Auf den ersten Blick trifft das sicher auch auf FlowTiMeter zu. Unter der Haube, subkutan, durch die Art, wie diese Erledigungsliste funktioniert, ist dieses Tool jedoch sehr mächtig.</p>
+<p>FlowgencyTM ist eine Software zum persönlichen <strong>Aufgaben- und Zeitmanagement</strong>. Oft verbirgt sich hinter diesen Programmen eine schnöde Erledigungsliste. Auf den ersten Blick trifft das sicher auch auf FlowgencyTM zu. Unter der Haube, subkutan, durch die Art, wie diese Erledigungsliste funktioniert, ist dieses Tool jedoch sehr mächtig.</p>
 
-<p>Was macht nun den Reiz von FlowTiMeter aus?</p>
+<p>Was macht nun den Reiz von FlowgencyTM aus?</p>
 
 <h3>Stehe zu deiner Freizeit und genieße sie arbeitssorglos</h3>
 
 <p>Dein erster Schritt nach der Installation besteht darin, dass du dein persönliches Zeitmodell definierst. Reguläre Präsenzzeiten und zeitlich begrenzte Variationen (z.B. Urlaube) können berücksichtigt werden und sind jederzeit änderbar, natürlich nur für die Zukunft. Mithilfe dieses Modells bzw. der darin enthaltenen Zeitschiene(n) zählt beim Dringlichkeitsranking nur die definierte Arbeitszeit. Inaktive Aufgaben, bei mehreren unterschiedlichen Zeitschienen müssen das durchaus nicht alle zugleich sein, steigen während der Freizeiten nicht in der Liste auf und können daher leicht von den aktiven Aufgaben überholt werden.</p>
 
-<p>Zeitschienen spezifizierst du in einer einfachen, kompakten Syntax. Hierbei ist Pragmatismus gefragt: Es wird nicht von dir erwartet, dass du deine Vorgaben minutengenau einhältst. Schätze ruhig grob. Realiter unvermeidliche Abweichungen sollten sich am Ende ausgleichen und die Schwankungen nicht zu stark sein, überschaubar bleiben, damit FlowTiMeter seinen Zweck erfüllen kann und das Ranking dir dabei hilft, alle verbindlichen und selbstgesetzten Fristen zu wahren.</p>
+<p>Zeitschienen spezifizierst du in einer einfachen, kompakten Syntax. Hierbei ist Pragmatismus gefragt: Es wird nicht von dir erwartet, dass du deine Vorgaben minutengenau einhältst. Schätze ruhig grob. Realiter unvermeidliche Abweichungen sollten sich am Ende ausgleichen und die Schwankungen nicht zu stark sein, überschaubar bleiben, damit FlowgencyTM seinen Zweck erfüllen kann und das Ranking dir dabei hilft, alle verbindlichen und selbstgesetzten Fristen zu wahren.</p>
 
 <p>Der einzelnen Aufgabe weist du ausgehend von einem Startdatum eine Zeitschiene zu und gibst ein, bis wann sie für die Aufgabe gilt. Dieses Datum ist bei solch einem einzigen Zeitsegment die Frist dieser Aufgabe. Wenn sie keine offizielle hat, solltest du provisorisch eine setzen, sie ist ja jederzeit verschiebbar. Weitere solcher Zeitsegmente kannst bei Bedarf du hinzufügen, auf diese Weise lässt du die Aufgabe zu den angegebenen Zeitpunkten die Schiene wechseln.</p>
 
 <h3>Weil nicht alle Schritte einer Aufgabe gleich zeitaufwendig sind</h3>
 
-<p>Größere Aufgaben kannst du in Schritte unterteilen, und diese bei Bedarf wieder in Unterschritte, und so weiter. Dabei bietet dir FlowTiMeter die Möglichkeit, den Anteil eines einzelnen Schrittes am Gesamtzeitaufwand gegenüber anderen, hierarchisch mit ihm direkt verbundenen Schritten zu bestimmen. Das ist kein Muss, belasse die Anteile ruhig bei der Voreinstellung (»1«), solange du dir nicht sicher bist. In diesem Fall wertet FlowTiMeter einfach alle Schritte unter demselben übergeordneten bzw. der Aufgabe als ungefähr gleich zeitaufwendig.</p>
+<p>Größere Aufgaben kannst du in Schritte unterteilen, und diese bei Bedarf wieder in Unterschritte, und so weiter. Dabei bietet dir FlowgencyTM die Möglichkeit, den Anteil eines einzelnen Schrittes am Gesamtzeitaufwand gegenüber anderen, hierarchisch mit ihm direkt verbundenen Schritten zu bestimmen. Das ist kein Muss, belasse die Anteile ruhig bei der Voreinstellung (»1«), solange du dir nicht sicher bist. In diesem Fall wertet FlowgencyTM einfach alle Schritte unter demselben übergeordneten bzw. der Aufgabe als ungefähr gleich zeitaufwendig.</p>
 
 <p>Wieviel Erledigungsfortschritt mit einem bestimmten Häkchem verbunden sind, hängt damit wesentlich von deiner Aufwandsschätzung ab.</p>
 
@@ -70,35 +70,35 @@ img { width:100%; }
 
 <p>Wann immer du die Gewichtungsverhältnisse änderst: Tu das mit Bedacht und Vorsicht und gib dir genügend Zeit, dich daran zu gewöhnen. Du musst den FlowRank-Algorithmus ein Stückweit unbewusst »mitgefühlt« haben können, nur so kommst du mit einer Anpassung dem für dich allgemeingültigen, individuellen Ideal näher. Es hat keinen Sinn, ständig an den Stellschrauben zu drehen, bis dir die momentane Anordnung zusagt.</p>
 
-<p>Das automatische Ranking stößt du mit einem souveränen Klick auf das FlowTiMeter-Logo an, zum Beispiel nach einer Störung oder einer Unterbrechung; auch, wenn du Erledigt-Häkchen gesetzt oder Fristen geändert hast – ein Klick und du weißt, welche Aufgabe »jetzt« am ehesten der Weiterbearbeitung bedarf, um am Ende alle Fristen bestmöglich zu wahren.</p>
+<p>Das automatische Ranking stößt du mit einem souveränen Klick auf das FlowgencyTM-Logo an, zum Beispiel nach einer Störung oder einer Unterbrechung; auch, wenn du Erledigt-Häkchen gesetzt oder Fristen geändert hast – ein Klick und du weißt, welche Aufgabe »jetzt« am ehesten der Weiterbearbeitung bedarf, um am Ende alle Fristen bestmöglich zu wahren.</p>
 
 <h3><a name="zielgruppe">Die Zielgruppe der Software</a></h3>
 
-<p>FlowTiMeter ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist. Die Hauptzielgruppe favorisiert anlagebedingt die stabile, tiefe Konzentration. In der heutigen Arbeitswelt im Multitaskingwahn, die zugleich Störungstoleranz fordert, kann sich eine tiefenorientierte Konzentration kaum entfalten. FlowTiMeter schützt und unterstützt dich, indem das Programm die Refokussierung erleichtert und bei der Entscheidung assistiert, an welcher Aufgabe du »jetzt« am besten weiterarbeitest.</p>
+<p>FlowgencyTM ist vor allem für ein Büroarbeitsumfeld gedacht, das von hoher Selbstständigkeit, heterogenen Aufgabenstellungen und häufigen Störungen aller Art geprägt ist. Die Hauptzielgruppe favorisiert anlagebedingt die stabile, tiefe Konzentration. In der heutigen Arbeitswelt im Multitaskingwahn, die zugleich Störungstoleranz fordert, kann sich eine tiefenorientierte Konzentration kaum entfalten. FlowgencyTM schützt und unterstützt dich, indem das Programm die Refokussierung erleichtert und bei der Entscheidung assistiert, an welcher Aufgabe du »jetzt« am besten weiterarbeitest.</p>
 
 <h3><a name="technisches">Technische Merkmale des Systems</a></h3>
 
-<p>FlowTiMeter bedienst du über den Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Die unabhängige Nutzung ohne Groupwarefunktionalität steht im Vordergrund, da sie weniger arbeitspsychologische und datenschutztechnische Probleme macht. Die Anbindung in betriebsseitig bereits vorhandene Groupware und Workflowmanagementsysteme kann nur über eine flexible Plugin-Architektur erfolgen, die in der aktuellen »Roadmap« der FlowTiMeter-Entwicklung jedoch bewusst nicht an erster Stelle steht. Die Entwicklung eines Prototypen, eines »proof of concept« mit den Grundfunktionen hat Vorrang.</p>
+<p>FlowgencyTM bedienst du über den Webbrowser, wobei es die Möglichkeit gibt, ganz ohne externen Server auszukommen. Die unabhängige Nutzung ohne Groupwarefunktionalität steht im Vordergrund, da sie weniger arbeitspsychologische und datenschutztechnische Probleme macht. Die Anbindung in betriebsseitig bereits vorhandene Groupware und Workflowmanagementsysteme kann nur über eine flexible Plugin-Architektur erfolgen, die in der aktuellen »Roadmap« der FlowgencyTM-Entwicklung jedoch bewusst nicht an erster Stelle steht. Die Entwicklung eines Prototypen, eines »proof of concept« mit den Grundfunktionen hat Vorrang.</p>
 
-<p>FlowTiMeter ist Freie Software, lizenziert unter der General Public License, Version 3.</p>
+<p>FlowgencyTM ist Freie Software, lizenziert unter der General Public License, Version 3.</p>
 
-<p>Als Programmiersprache wird Perl verwendet. Damit ist FlowTiMeter lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme).</p>
+<p>Als Programmiersprache wird Perl verwendet. Damit ist FlowgencyTM lauffähig auf allen Systemen, für die Perl portiert wurde (Windows, Linux, MacOS sowie einige Smartphonebetriebssysteme).</p>
 
 <p>Es verwendet clientseitig HTML5-Technologien, ist also auf einen modernen Browser angewiesen, serverseitig das Webframework Mojolicious sowie das moderne Objektframework Moose, um übersichtlichen Code zu gewährleisten.</p>
 
-<h2><a name="was-nicht">Was ist FlowTiMeter nicht?</a></h2>
+<h2><a name="was-nicht">Was ist FlowgencyTM nicht?</a></h2>
 
-<p>FlowTiMeter ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Bis zur Version 1.0 sollen die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern durch Vorgesetzte ausgemerzt sein. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.</p>
+<p>FlowgencyTM ist nicht fertig, signalisiert durch eine Versionsnummer, die mit 0 beginnt. Bis zur Version 1.0 sollen die gröbsten Missbrauchspotentiale zur Kontrolle von Mitarbeitern durch Vorgesetzte ausgemerzt sein. Die völlige Verhinderung von Missbrauch ist jedoch technisch leider unmöglich.</p>
 
-<p>Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für dich bewährt? Prima – nutze es frohgemut weiter, FlowTiMeter ist kein Ersatz. Denn egal, ob ein Tool besser ist als ein anderes, hier wechselfreudig zu sein ist grundsätzlich kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.</p>
+<p>Es hat sich bereits eine Methode oder ein System zum Aufgaben-, Zeit- oder Selbstmanagement für dich bewährt? Prima – nutze es frohgemut weiter, FlowgencyTM ist kein Ersatz. Denn egal, ob ein Tool besser ist als ein anderes, hier wechselfreudig zu sein ist grundsätzlich kontraproduktiv, da die mentale Gewöhnung an so ein System auch seine Zeit und Konzentration braucht.</p>
 
-<p>Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Du musst also nicht schon wieder persönliche Daten einem Drittanbieter anvertrauen. FlowTiMeter kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« fungiert es als Miniwebserver, der von außerhalb deiner Hardware voreingestellterweise nicht zugreifbar ist.</p>
+<p>Obwohl die Software über den Browser bedient wird, ist es nicht per se einen Webservice oder eine Cloud gebunden. Du musst also nicht schon wieder persönliche Daten einem Drittanbieter anvertrauen. FlowgencyTM kann vollständig auf dem Arbeits-PC betrieben werden. »Hinter den Kulissen« fungiert es als Miniwebserver, der von außerhalb deiner Hardware voreingestellterweise nicht zugreifbar ist.</p>
 
-<h2><a name="kriterien">Welche Größen der Dringlichkeit kennt FlowTiMeter?</a></h2>
+<h2><a name="kriterien">Welche Größen der Dringlichkeit kennt FlowgencyTM?</a></h2>
 
 <h3>a) <a name="prio">Prioritätsgrad</a></h3>
 
-<p>Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« dienen in FlowTiMeter lediglich der verbalen Information. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und du weist einer weiteren Aufgabe B Priorität 3000 zu, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. </p>
+<p>Konventionelle Stufen wie »normal«, »dringlich« und »gelegentlich erledigen« dienen in FlowgencyTM lediglich der verbalen Information. Eigentlich gerechnet wird mit einer positiven Ganzzahl, die beliebig hoch sein kann. Hat zum Beispiel eine Aufgabe A Priorität 5 und du weist einer weiteren Aufgabe B Priorität 3000 zu, dann wird automatisch A, vormals vielleicht »dringend«, ganz bestimmt zurückgestuft auf »gelegentlich erledigen«, zumindest solange B diese hohe Priorität hat und nicht erledigt ist. </p>
 
 <h3>b) <a name="deadline">Zeitliche Nähe zum Fristende</a></h3>
 
@@ -113,7 +113,7 @@ img { width:100%; }
 <ul>
 <li>Solange der Balken von links nach rechts dasselbe Blau hat,
  herrscht perfekter Ausgleich. Diesen Zustand anstreben zu helfen,
- ist der Sinn von FlowTiMeter.</li>
+ ist der Sinn von FlowgencyTM.</li>
 <li>Je kürzer die Aufgabe kommt, umso mehr läuft der Balken von rechts rot an.</li>
 <li>Je mehr dagegen von einer Aufgabe erledigt wurde, als gemäß der
  fortschreitenden Zeit hätte erledigt werden müssen, um so grüner
@@ -138,17 +138,17 @@ img { width:100%; }
 
 <h2><a name="zeitfortschritt">Was verbirgt sich hinter dem Zeitfortschritt?</a></h2>
 
-<p>Kurz: effektiv allein der Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo er herkommt, nämlich in der extrem durchgetakteten Arbeitswelt des industriellen und Informationszeitalters – und nur da sollte das Programm auch verwendet werden. FlowTiMeter hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus Freiphasen in die Arbeitsphasen davor. Betroffene Aufgaben sind also in Freiphasen wie eingefroren, während sie sonst entsprechend schneller dringlich werden.</p>
+<p>Kurz: effektiv allein der Arbeitszeitfortschritt. Wer will schon an Feierabend daran denken, dass Aufgaben und Projekte auch in der Freizeit kontinuierlich dringlicher in der Liste aufsteigen? Sowieso ist Dringlichkeit ein künstlicher, kaum fassbarer Begriff, der am besten da bleibt, wo er herkommt, nämlich in der extrem durchgetakteten Arbeitswelt des industriellen und Informationszeitalters – und nur da sollte das Programm auch verwendet werden. FlowgencyTM hilft, derlei Sorgen den Wind aus den Segeln zu nehmen. Dazu verlagert es schlicht den Dringlichkeitsanstieg rechnerisch aus Freiphasen in die Arbeitsphasen davor. Betroffene Aufgaben sind also in Freiphasen wie eingefroren, während sie sonst entsprechend schneller dringlich werden.</p>
 
 <p>Damit das funktioniert, hinterlegst du in deinem Nutzerdatensatz ein individuelles Zeitmodell. Ob Feierabend, Wochenende, Urlaub oder andere Schichten/Jobs – regelmäßige wie einmalige Abwesenheiten jedweder Art definierst du mit minimalem Eingabeaufwand. Bei Bedarf definierst du mehrere Schienen und verknüpfst sie mit verschiedenen Aufgaben.</p>
 
 <p>Bis die Benutzerschnittstelle die Spezifikation deines Zeitmodells intuitiv und zuverlässig über konventionelle grafische Elemente ermöglicht, bleibt dir nur die direkte Deklaration in Form eines JSON-Strings, der in deinem Nutzerdatensatz gespeichert wird. Dies soll hier aber nicht in allen Details erklärt werden. Bei Interesse siehe <a href="tmodel.de.html">Die Spezifikation des Zeitmodells entzaubert</a>.</p>
 
-<p>Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein solltest du bei der Definition deines Zeitmodells pragmatisch nach der Devise verfahren: <em>So fein wie nötig, aber so grob wie möglich.</em> Selbst wenn die ganze Zeitlogik von FlowTiMeter eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.</p>
+<p>Nun sorgt bekanntlich Komplexität für alles andere als Stressreduktion. Allgemein solltest du bei der Definition deines Zeitmodells pragmatisch nach der Devise verfahren: <em>So fein wie nötig, aber so grob wie möglich.</em> Selbst wenn die ganze Zeitlogik von FlowgencyTM eines Tages in all seinen Funktionen durchgetestet sein wird mit dem Anspruch, dass es auch bei theoretischer voller Ausreizung zuverlässig weiß, welche lokalzeitliche Maschinensekunde bei welchen Aufgaben zur Arbeitszeit oder zur Freizeit gehört.</p>
 
 <p>Abweichungen von derartigen im Voraus geplanten Zeitschienen (rückwirkend zu manipulieren wird nicht empfohlen) sind realiter unvermeidlich und auch nicht weiter schlimm, solange sie sich in Grenzen halten und einander ausgleichen. Je enger du dich an die definierte Zeiteinteilung hältst, umso weniger gleiten die Aufgaben während deiner Freizeit ins Rote.</p>
 
-<p>Mit so konfigurierbaren Zeitmodellen soll FlowTiMeter der zunehmenden Verschmelzung von Arbeit und Freizeit entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Die Sache hat einen Haken: Der Maschine ist es egal, ob dem definierten Zeitmodell intrinsisch oder extrinsische Motivation zugrunde liegt. Das heißt, diktierst du nicht der Maschine deinen Arbeitstakt, sondern hast du vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil. Vielleicht wird dein Chef sagen:</p>
+<p>Mit so konfigurierbaren Zeitmodellen soll FlowgencyTM der zunehmenden Verschmelzung von Arbeit und Freizeit entgegenwirken, die im Verdacht steht, zusammen mit anderen Faktoren arbeitsbedingte Depression (Burn-out) zu begünstigen. Die Sache hat einen Haken: Der Maschine ist es egal, ob dem definierten Zeitmodell intrinsisch oder extrinsische Motivation zugrunde liegt. Das heißt, diktierst du nicht der Maschine deinen Arbeitstakt, sondern hast du vielmehr das Gefühl, dass es umgekehrt läuft, so wird auch der Vorteil zum Nachteil. Vielleicht wird dein Chef sagen:</p>
 
 <blockquote>
   <p>»Zeit ist eben Geld.«</p>
@@ -168,15 +168,15 @@ img { width:100%; }
 
 <p>Schritte auf allen Ebenen können in ihrem Aufwand geschätzt werden. Die Schätzung erfolgt jeweils im Verhältnis zu allen Schritten, zu denen sie hierarchisch in einer Elter/Kind- oder Geschwisterbeziehung stehen.</p>
 
-<p>Anhand dieser Schätzungen berechnet FlowTiMeter, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt treibt.</p>
+<p>Anhand dieser Schätzungen berechnet FlowgencyTM, wie weit ein bestimmtes Erledigthäkchen den Gesamtfortschritt treibt.</p>
 
 <p>Du fragst dich vielleicht, ob das nicht auch einfacher ginge. Man könnte doch einfach eingeben, wieviel Prozent von der gesamten Aufgabe man erledigt hat und das gar nicht weiter von der inneren Struktur der Aufgabe abhängig machen. Dadurch besteht jedoch die Gefahr, dass man über kurz oder lang anfängt sich selbst zu belügen. Durch die beschriebene Kopplung zwischen direkt verwandten Schritten lohnt sich eine spontane Manipulation dagegen nicht mehr, denn sie würde erneut sorgfältiges Austarieren anderer Schritte notwendig machen. </p>
 
 <h2><a name="exkl-zeitzuteilung">Exklusive Zeitzuteilung (to do)</a></h2>
 
-<p>Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. Es geht bei dieser klassischen Terminsicht vor allem darum, zeitliche Konflikte zu vermeiden. FlowTiMeter soll das Konzept weiterentwickeln und sauber in das Ganze integrieren. Hierzu habe ich schon erste Ideen.</p>
+<p>Normalerweise haben Zeitmanagementtools ein Modul, dass dem konventionellen Timer aus Papier nachempfunden ist. Es geht bei dieser klassischen Terminsicht vor allem darum, zeitliche Konflikte zu vermeiden. FlowgencyTM soll das Konzept weiterentwickeln und sauber in das Ganze integrieren. Hierzu habe ich schon erste Ideen.</p>
 
-<p>Viele Aufgaben haben die Eigenschaft, dass du nicht zugleich auch an anderen Aufgaben arbeiten kannst, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen, die du im Büro vorbereitest und erst zum Schluss ausschließlich mit ihnen befasst sind. So kannst du in FlowTiMeter für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.</p>
+<p>Viele Aufgaben haben die Eigenschaft, dass du nicht zugleich auch an anderen Aufgaben arbeiten kannst, mal in der ganzen, mal in einem Teil der zugeteilten Zeit. Ein Beispiel sind Vorträge oder Messepräsenzen, die du im Büro vorbereitest und erst zum Schluss ausschließlich mit ihnen befasst sind. So kannst du in FlowgencyTM für einzelne Aufgaben Arbeitszeitspannen reservieren, während derselben für alle anderen Aufgaben automatisch Freizeit gilt. Meist möchte man von »jetzt«, manchmal ab einem bestimmten Zeitpunkt in der Zukunft, bis Fristende der jeweiligen Aufgabe reservieren.</p>
 
 <p>Auch auf Zeitschienenebene könnten Reservierungen möglich sein. Solche Reservierungen gelten nur im Verhältnis zu Aufgaben anderer Zeitschienen, das heißt, um die so reservierte Zeit konkurrieren alle Aufgaben derselben Zeitschiene.</p>
 
@@ -193,7 +193,7 @@ img { width:100%; }
 <pre><code>  { label: 'abw_messe', from_date: '...', until_date: '...',
      pattern: 'abwesend' }
 </code></pre></li>
-<li><p>FlowTiMeter anweisen, den Zustand zu einem Zeitpunkt in der Zukunft zu betrachten. Welche Aufgaben stehen oben und mit welchen davon steht die Aufgabe, die du eintragen willst, in Konflikt?</p></li>
+<li><p>FlowgencyTM anweisen, den Zustand zu einem Zeitpunkt in der Zukunft zu betrachten. Welche Aufgaben stehen oben und mit welchen davon steht die Aufgabe, die du eintragen willst, in Konflikt?</p></li>
 </ol>
 
 <h2><a name="weitere-kernfunktionen">Weitere Kernfunktionen</a></h2>
@@ -207,19 +207,19 @@ img { width:100%; }
 
 <h2><a name="kritisches">Kritische und andere Bemerkungen</a></h2>
 
-<p>'''FlowTiMeter begünstigt Flowerlebnisse – oder arbeitsbedingte Depression (»Burnout«)'''</p>
+<p>'''FlowgencyTM begünstigt Flowerlebnisse – oder arbeitsbedingte Depression (»Burnout«)'''</p>
 
-<p>FlowTiMeter ist mächtig. Die Mächtigkeit der Software ist zweischneidig. Ob das Werkzeug <em>dir</em> Macht über deine Zeit <em>gibt</em>, oder es Macht über deine Zeit ausübt, du dich getrieben fühlst, hängt sehr davon ab, ob du die Software freiwillig und aus eigenen Stücken verwendest. <em>Musst</em> du sie verwenden, weil dein Vorgesetzter, wenn nicht sogar die ganze Firmenleitung darin einen idealen Leistungsmesser sieht, kann FlowTiMeter dir – und damit deinem Arbeitgeber – großen Schaden zufügen.</p>
+<p>FlowgencyTM ist mächtig. Die Mächtigkeit der Software ist zweischneidig. Ob das Werkzeug <em>dir</em> Macht über deine Zeit <em>gibt</em>, oder es Macht über deine Zeit ausübt, du dich getrieben fühlst, hängt sehr davon ab, ob du die Software freiwillig und aus eigenen Stücken verwendest. <em>Musst</em> du sie verwenden, weil dein Vorgesetzter, wenn nicht sogar die ganze Firmenleitung darin einen idealen Leistungsmesser sieht, kann FlowgencyTM dir – und damit deinem Arbeitgeber – großen Schaden zufügen.</p>
 
-<p>Ein Messer, also das gleichnamige Küchenwerkzeug, lässt sich ja gleichermaßen zum Zubereiten leckerer Speisen verwenden, genauso aber gegen dich. Gibt es Bestrebungen, FlowTiMeter für alle zu verordnen, so ist jeglicher Widerstand dagegen stets in Ordnung. Indem Gruppenzwang entsteht, wird der Segen des Projekts in einen Fluch umschlagen. Die Grenze dürfte fließend sein, aber wenn nur zehn Prozent der beschriebenen Zielgruppe FlowTiMeter verwenden, ist es nach meinem Dafürhalten gerade optimal.</p>
+<p>Ein Messer, also das gleichnamige Küchenwerkzeug, lässt sich ja gleichermaßen zum Zubereiten leckerer Speisen verwenden, genauso aber gegen dich. Gibt es Bestrebungen, FlowgencyTM für alle zu verordnen, so ist jeglicher Widerstand dagegen stets in Ordnung. Indem Gruppenzwang entsteht, wird der Segen des Projekts in einen Fluch umschlagen. Die Grenze dürfte fließend sein, aber wenn nur zehn Prozent der beschriebenen Zielgruppe FlowgencyTM verwenden, ist es nach meinem Dafürhalten gerade optimal.</p>
 
-<p><strong>FlowTiMeter in Überdosis bedeutet über kurz oder lang: <em>BlockTime</em></strong> Es ist wie mit dem Auto, womit man früher, wenn man eines hatte, schnell von A nach B kommen konnte. Je mehr es davon gab, um so größer wuchs das Stauproblem und das Fahrrad ist heute wieder konkurrenzfähig. </p>
+<p><strong>FlowgencyTM in Überdosis bedeutet über kurz oder lang: <em>BlockTime</em></strong> Es ist wie mit dem Auto, womit man früher, wenn man eines hatte, schnell von A nach B kommen konnte. Je mehr es davon gab, um so größer wuchs das Stauproblem und das Fahrrad ist heute wieder konkurrenzfähig. </p>
 
-<p>Auch in anderer Hinsicht ist vor einer Überdosis zu warnen. FlowTiMeter birgt ein gewisses Risiko, davon abhängig zu werden, weil das (allerdings nicht wirklich) natürliche Dringlichkeitsgefühl verkümmert. Dieses Risiko kannst du mindern, indem du FlowTiMeter auch nicht im Privaten verwendest. Leider ist die zunehmende Abhängigkeit von Technologie die Kehrseite jedes technologisch realisierten Komforts. </p>
+<p>Auch in anderer Hinsicht ist vor einer Überdosis zu warnen. FlowgencyTM birgt ein gewisses Risiko, davon abhängig zu werden, weil das (allerdings nicht wirklich) natürliche Dringlichkeitsgefühl verkümmert. Dieses Risiko kannst du mindern, indem du FlowgencyTM auch nicht im Privaten verwendest. Leider ist die zunehmende Abhängigkeit von Technologie die Kehrseite jedes technologisch realisierten Komforts. </p>
 
-<p>Es wird wie zu allem Kritiker und Befürworter geben. Die Kritiker werden meinen, dass FlowTiMeter die Technokratisierung und Beschleunigung der Arbeitswelt noch weiter befeuert, dass man sich noch mehr von der Maschine abhängig macht etc. Lass dir ihre Argumente gerne durch den Kopf gehen. </p>
+<p>Es wird wie zu allem Kritiker und Befürworter geben. Die Kritiker werden meinen, dass FlowgencyTM die Technokratisierung und Beschleunigung der Arbeitswelt noch weiter befeuert, dass man sich noch mehr von der Maschine abhängig macht etc. Lass dir ihre Argumente gerne durch den Kopf gehen. </p>
 
-<p>FlowTiMeter lässt sich rein technisch natürlich auch privat im Haushalt verwenden, denn auch im Privaten gibt es Fristen im Überblick zu behalten. Achte dann umso mehr auf echte Freizeiten, in denen laut FlowTiMeter keine Aufgaben aktiv sind. Besser ist es jedoch, wenn die Verwendung auf die gewerbliche Arbeit beschränkt bleibt.</p>
+<p>FlowgencyTM lässt sich rein technisch natürlich auch privat im Haushalt verwenden, denn auch im Privaten gibt es Fristen im Überblick zu behalten. Achte dann umso mehr auf echte Freizeiten, in denen laut FlowgencyTM keine Aufgaben aktiv sind. Besser ist es jedoch, wenn die Verwendung auf die gewerbliche Arbeit beschränkt bleibt.</p>
 
 <p>Es ist bei niedrigpriorisierten Aufgaben vollkommen in Ordnung, Fristen eigenmächtig nach hinten zu verschieben, um sie wieder ins logoblaue Gleichgewicht zu bringen. Bei Aufgaben mittlerer Priorität ist es ebenfalls in Ordnung, fallweise solltest du dies dem Auftraggeber bzw. deinem Vorgesetzten mitteilen. Fristen von Aufgaben hoher Priorität können ebenfalls verschoben werden, wenngleich bewusst nur im Bearbeitungsmodus.</p>
 </body></html>

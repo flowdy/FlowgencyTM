@@ -1,4 +1,4 @@
-FlowTiMeter – An innovative time and task management software tool: Concept
+FlowgencyTM – An innovative time and task management software tool: Concept
 =========================================================================
 
 Origins
@@ -8,7 +8,7 @@ In office, a multitude of tasks often have to be kept in the head, and done, at 
 
 This being not enough, another "URGENT"-flagged mail would pop up in your inbox every now and then, the  phone would ring and someone come in your office asking for a favour you could kindly do on the go. Mind this the status quo, as being as it should be, multitasking ideology everywhere, a work culture spinning around itself. There have been surveys and studies: It takes many minutes to restore concentration nearly to the extent like it was before an interruption and a bit longer each time when repeated.
 
-FlowTiMeter will be an open-source software tool that supports in dealing with this situation. It is intended to sustain your capacity to concentrate and the resilience shield against interrupts. In development, two conflicting challenges have to be brought into agreement: On the one hand simplicity and user-friendliness, flexibility on the other in that the application adapts to the user's working manner.
+FlowgencyTM will be an open-source software tool that supports in dealing with this situation. It is intended to sustain your capacity to concentrate and the resilience shield against interrupts. In development, two conflicting challenges have to be brought into agreement: On the one hand simplicity and user-friendliness, flexibility on the other in that the application adapts to the user's working manner.
 
 Basically the program shall:
 
@@ -18,15 +18,15 @@ Basically the program shall:
 
   * **remedy interblends of work and life** by moving the urgency increase of registered tasks out of the leisure time into the working time, just on the basis of the figures. For this to achieve the user is required, exercised, motivated at least, to plan in advance with sufficient precision.
 
-The final and main objective of the FlowTiMeter project is to lead to flow experience in office work by software – hence that name is coined – and to a private life free of business worries. See the tool in the kind of time and task management systems. Other programs of this software category are often too simple or too complex, the medium demand is met too rarely. FlowTiMeter is neither a simple todo list applet nor a professional project management application. It is considered appropriate for small and medium projects one can overview without aid as single items, though not necessarily together. The focus of development shall not be to have it support integration into existing groupware solutions. Rather the disconnection is regarded as an subversive principle. Where there are no nets, there are no interdependencies, there is freedom and concentrated work possible.
+The final and main objective of the FlowgencyTM project is to lead to flow experience in office work by software – hence that name is coined – and to a private life free of business worries. See the tool in the kind of time and task management systems. Other programs of this software category are often too simple or too complex, the medium demand is met too rarely. FlowgencyTM is neither a simple todo list applet nor a professional project management application. It is considered appropriate for small and medium projects one can overview without aid as single items, though not necessarily together. The focus of development shall not be to have it support integration into existing groupware solutions. Rather the disconnection is regarded as an subversive principle. Where there are no nets, there are no interdependencies, there is freedom and concentrated work possible.
 
-FlowTiMeter is realized – already in essential parts – in the Perl programing language. It is free and open source software used under the terms of the GNU General Public License, version 3.
+FlowgencyTM is realized – already in essential parts – in the Perl programing language. It is free and open source software used under the terms of the GNU General Public License, version 3.
 
-Instead of including a native graphical user interface, FlowTiMeter works as a server to leverage the rendering and user interaction capabilities of your favourite Webbrowser. The user interface is realized with HTML5 and Javascript. The server side can either run on a dedicated machine or just as a program on the local system, protected against access from the outer world by default.
+Instead of including a native graphical user interface, FlowgencyTM works as a server to leverage the rendering and user interaction capabilities of your favourite Webbrowser. The user interface is realized with HTML5 and Javascript. The server side can either run on a dedicated machine or just as a program on the local system, protected against access from the outer world by default.
 
-The following screenshot shows a draft of the main view of FlowTiMeter. On the left-hand side is the navigation, on the right-hand side the most urgent tasks are listed.
+The following screenshot shows a draft of the main view of FlowgencyTM. On the left-hand side is the navigation, on the right-hand side the most urgent tasks are listed.
 
-![Hauptseite von FlowTiMeter: Aufgabenliste – Prototyp](snapshot-home.png)
+![Hauptseite von FlowgencyTM: Aufgabenliste – Prototyp](snapshot-home.png)
 
 Technical conception
 =====================
@@ -46,7 +46,7 @@ Only five dimensions of urgency I can identify as meaningful and worth comprisin
 
   3. Drift between progresses of time and of your checking steps done
 
-  The slower you proceed in relation to the progressing time, the more urgent a task will get. In the list, you can configure FlowTiMeter to render a smooth colour gradient visualizing that drift, instead of a simple progress bar.
+  The slower you proceed in relation to the progressing time, the more urgent a task will get. In the list, you can configure FlowgencyTM to render a smooth colour gradient visualizing that drift, instead of a simple progress bar.
 
   4. For how long the task has been kept open
 

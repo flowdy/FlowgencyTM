@@ -275,7 +275,7 @@ that gets the respective calender week number. Its return value is expected to b
 
 =cut
 
-Die folgenden Absätze sollen nur in der Dokumentation des FlowTiMeter-Tools erscheinen, nicht jedoch im CPAN-Modul. Ich führe sie hier nur auf im Posting, in der Hoffnung, dass ihr den ursprünglichen Sinn und Zweck des Moduls versteht. 
+Die folgenden Absätze sollen nur in der Dokumentation des FlowgencyTM-Tools erscheinen, nicht jedoch im CPAN-Modul. Ich führe sie hier nur auf im Posting, in der Hoffnung, dass ihr den ursprünglichen Sinn und Zweck des Moduls versteht. 
 
 =begin comment
 
@@ -283,7 +283,7 @@ Die folgenden Absätze sollen nur in der Dokumentation des FlowTiMeter-Tools ers
 
 By a FTM::Time::Track users can specify when they plan to work and when not, thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar. It is merely a chain of FTM::Time::Span instances that serve the purpose of telling apart work and leisure for every portion of every day between two FTM::Time::Point's delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. FTM::Time::Rhythm is what really defines the interior of FTM::Time::Span. It is basically simply a pair of FTM::Time::CalendarWeekCycle instances bound to the same week pattern selector. These instances have to be kept in sync with the FTM::Time::Point instances. While moving through the calendar, they have to deliver for every day the right object that is twice in a year modified because of daylight saving time adjustment (the first covers 23 hours, the second 25).
 
-The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the FTM::Time::Rhythm instance, serving as cache from which FTM::Time::Slice instances are generated to map those portions of a day again to clusters of net or leisure seconds. These slices are then scanned by FTM::Time::Cursor objects associated with a Task object, in order to calculate its net working time progress, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the task's substantive progress. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowTiMeter can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
+The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the FTM::Time::Rhythm instance, serving as cache from which FTM::Time::Slice instances are generated to map those portions of a day again to clusters of net or leisure seconds. These slices are then scanned by FTM::Time::Cursor objects associated with a Task object, in order to calculate its net working time progress, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the task's substantive progress. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowgencyTM can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
 
 =end comment
 
@@ -305,18 +305,18 @@ The day patterns are realized with Bit::Vector, where each bit denotes work (1) 
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

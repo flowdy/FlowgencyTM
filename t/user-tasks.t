@@ -28,7 +28,7 @@ ok $user->isa("FTM::FlowDB::User"), 'User fh created';
 
 $user = FTM::User->new( dbicrow => $user );
 
-ok $user->isa("FTM::User"), 'Wrapped user in a FlowTiMeter User object';
+ok $user->isa("FTM::User"), 'Wrapped user in a FlowgencyTM User object';
 
 my $task = $user->tasks->add({
     name => 'task1',

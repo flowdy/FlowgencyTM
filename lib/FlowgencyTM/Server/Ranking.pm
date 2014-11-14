@@ -1,5 +1,5 @@
-package FlowTiMeter::Server::Ranking;
-use FlowTiMeter;
+package FlowgencyTM::Server::Ranking;
+use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 
 # This action will render a template
@@ -11,12 +11,20 @@ sub list {
       $args{$p_name} = $self->param($p_name);
   }
 
-  my @tasks = FlowTiMeter::user->tasks->list(%args);
+  if ( delete $args{keep} ) {
+      use POSIX qw(strftime);
+      my $now = delete($args{now}) // strftime("Y-m-d H:M:S", localtime time);
+      FTM::Time::Point->now($now);
+  }
+
+  my @tasks = FlowgencyTM::user->tasks->list(%args);
+  $self->res->headers->cache_control('max-age=1, no-cache');
 
   $self->render(
     list => sub {
         my $task = shift @tasks // return;
         _dump_task($task);
+
     },
     timestamp => $tasks[0]->flowrank->_for_ts
   );
@@ -32,6 +40,7 @@ sub _dump_task {
     my $dump = {
         name => $task->name,
         title => $task->title,
+        score => $task->flowrank->score,
         priority => $task->priority,
         progressbar => _progress_bar( $task->progress, $task->flowrank->drift ),
         progress_pc => {
@@ -42,9 +51,10 @@ sub _dump_task {
         due_in_hms => $task->flowrank->due_in_hms,
         active => $task->flowrank->active,
         next_statechange_in_hms => $task->flowrank->next_statechange_in_hms,
-        extended_info => $task->is_open
-            ? { focus => [$task->current_focus] }
-            : undef,
+        open_since => $task->open_since,
+        extended_info => $task->is_open && {
+           focus => [$task->current_focus],
+        },
     };
 
     return $dump;

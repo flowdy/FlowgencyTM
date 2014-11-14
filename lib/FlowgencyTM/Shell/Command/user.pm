@@ -1,16 +1,16 @@
 use strict;
 
-package FlowTiMeter::Shell::Command::user;
-use base 'FlowTiMeter::Shell::Command';
+package FlowgencyTM::Shell::Command::user;
+use base 'FlowgencyTM::Shell::Command';
 use Getopt::Long qw(GetOptionsFromArray);
 use Term::ReadLine;
 
-my $TERM = Term::ReadLine->new("FlowTiMeter, Username input");
+my $TERM = Term::ReadLine->new("FlowgencyTM, Username input");
 
 sub run {
     my ($self, $user) = @_;
     USER_ENTRY: {
-        $user = FlowTiMeter::user($user,1);
+        $user = FlowgencyTM::user($user,1);
         if ( !$user->in_storage ) {
             my $olduser = $user->user_id;
             my $newuser = $TERM->readline(

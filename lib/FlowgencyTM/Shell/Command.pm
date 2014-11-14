@@ -1,7 +1,7 @@
 use strict;
 
-package FlowTiMeter::Shell::Command;
-use FlowTiMeter;
+package FlowgencyTM::Shell::Command;
+use FlowgencyTM;
 use Carp qw(croak carp);
 
 # sub import {} # else Module::Find fail
@@ -35,7 +35,7 @@ sub context_info {
         if ( length $path and my $context = $context_info{'context'} ) {
             $path = join q{=}, $context, $path;
         }
-        return join '@', FlowTiMeter::user->user_id, $path;
+        return join '@', FlowgencyTM::user->user_id, $path;
     }
 }
 1;

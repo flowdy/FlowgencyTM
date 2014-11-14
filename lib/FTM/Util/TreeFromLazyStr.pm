@@ -150,7 +150,7 @@ FTM::Util::TreeFromLazyStr - Deserialize tree structures from quick notated stri
 
 Version 0.001 (i.e. draft/alpha - Please test, but do not use productively)
 
-DRAFT/DELETE: Not ready for, I not even decided if this module should go for CPAN. In fact, it started as a utility module inside the FlowTiMeter project (a time-management tool, so bloody alpha it is not even published yet, consider taskwarrior &co. for the time being) and is maybe not enough generalized for public use.
+DRAFT/DELETE: Not ready for, I not even decided if this module should go for CPAN. In fact, it started as a utility module inside the FlowgencyTM project (a time-management tool, so bloody alpha it is not even published yet, consider taskwarrior &co. for the time being) and is maybe not enough generalized for public use.
 
 =head1 WHAT THIS MODULE PROVIDES 
 
@@ -204,7 +204,7 @@ Basically, the difference between indentation and our approach is that you notat
 The number cannot separate the twigs barely, however, as that would mean you must have no other numbers in the string. It must therefore be prefixed with a certain string easy to remember: L< ;> by default, i.e. space (or more spaces) and semicolon. That prefix is customizable, so you could equally choose the pipe (vertical bar) or whatever. For customization you can either pass the separator as a string, then the module tries to apply a backslash escape point at an apropriate place in front. Or you pass a regex object (L<qr//>), but then you have to make sure you require a space or something in front of your regex object, else it might get ambiguous, error-prone at last. Instead of the prefix you can always prepend the number with one or more newlines.
 
 Behind the number come a colon and/or space and then, up to the next separator, the twig string. You provide a callback (subroutine reference) that bootstraps from that string an object to return. How it does that, even whether the object is a dumb hash-ref or an object you manipulate by methods, whatever, that is completely up to you. The module implements a so-called I<push parser> that will not deal with the current node directly, it just calls the other routines you passed to the parser constructor to get hands dirty on that ominous tree object.
-DRAFT/DELETE: In FlowTiMeter, for instance, that callback routine extracts from the string some essential metadata compactly marked by one non-alphanumerical character, namely the deadline ('!date'), the id or id prefix ('=id'), and tags ('#tag') of the task to create. In a new anonymous hash it then predefines the respective keys and stuffs the rest into 'title' entry. The hash is passed to the FTM::Task constructor in the end.
+DRAFT/DELETE: In FlowgencyTM, for instance, that callback routine extracts from the string some essential metadata compactly marked by one non-alphanumerical character, namely the deadline ('!date'), the id or id prefix ('=id'), and tags ('#tag') of the task to create. In a new anonymous hash it then predefines the respective keys and stuffs the rest into 'title' entry. The hash is passed to the FTM::Task constructor in the end.
 
 When the number of the next separator is equal to the previous, another twig string on the same level and, for n > 0, with the same parent is assumed. When it is incremented by one, the following twig is regarded as first descendent of the previous twig. Is the number incremented by more than one, it is probably a counting error and the parse will fail. By decrementing one or more you can climb up by that many levels and continue adding child nodes there.
 
@@ -244,18 +244,18 @@ Serialization and round-trip safety is not in scope of this module. If you need 
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

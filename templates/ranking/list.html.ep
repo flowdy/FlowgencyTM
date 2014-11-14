@@ -2,21 +2,22 @@
 <ol id="plans">
 % while ( my $task = $list->() ) {
 % my $details = $task->{extended_info};
-<li<%= $details ? ' class=shadow' : '' %> data-id="<%= $task->{name} %>">
-<header><h2 onclick='window.location.href = "/task/<%= $task->{name} %>/open";'><%= $task->{title} %></h2>
+<li<%= $details ? ' class=open' : '' %> data-id="<%= $task->{name} %>">
+<header><h2><%= $task->{title} %></h2>
 % my ($orient, $primary_width, $primary_color, $secondary_color)
 %   = @{$task->{progressbar}}{qw/orientation primary_width primary_color secondary_color/};
-% my $time_progress = sprintf "%.0f%%", $task->{progress_pc}{time} * 100;
-% my $checked_expenditure_progress = sprintf "%.0f%%", $task->{progress_pc}{checked_exp} * 100;
-<div class="progressbar" title="progress: <%= $time_progress %> of time elapsed &sdot;  <%= $checked_expenditure_progress %> of expenditure checked (primary color: <%= $primary_color %>)" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>%;">&nbsp;</span></div>
- <time>Due <%= $task->{duedate} %>, eff. <%= $task->{due_in_hms} %> remaining, <%= $task->{active} ? 'active' : 'paused' %> for <%= $task->{next_statechange_in_hms} %> // <%= $task->{priority} %></time>
+% my $time_progress = int($task->{progress_pc}{time} * 100)."%";
+% my $checked_expenditure_progress = int($task->{progress_pc}{checked_exp} * 100)."%";
+% my $ots = $task->{open_since};
+<div class="progressbar" title="progress: <%= $time_progress %> of time elapsed : <%= $checked_expenditure_progress %> of expenditure checked" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>%;">&nbsp;</span></div>
+<div class="ranking-data" title="<%= $task->{score} %>">Due <time><%= $task->{duedate} %></time>, eff. <%= $task->{due_in_hms} %> remaining, <%= $task->{active} ? 'active' : 'paused' %> for <%= $task->{next_statechange_in_hms} %> // <%= $task->{priority} %><% if ( $ots ) { %>// Opened <time><%= $ots %></time><% } %></div>
 </header>
 % if ( $details ) {
-<div class="extended-info">
-% if ( my $description = $details->{focus}->[-1][1]->description ) {
-<div class="description"><%= $description %></div>
+% if ( !$ots ) {
+<p style="color:red">Error: Task not open</p>
 % }
-%= include template => 'task_editor/open', details => $details, format => 'txt'
+<div class="extended-info">
+%= include template => 'task_editor/open', id => $task->{name}, details => $details
 </div>
 % }
 </li>

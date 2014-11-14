@@ -1,7 +1,7 @@
 use strict;
 
-package FlowTiMeter::Shell::Command::task;
-use base 'FlowTiMeter::Shell::Command';
+package FlowgencyTM::Shell::Command::task;
+use base 'FlowgencyTM::Shell::Command';
 
 sub run {
     my $self = shift;
@@ -13,7 +13,7 @@ sub run {
 my $user = '';
 my $parser;
 sub parser  {
-    my $current_user = FlowTiMeter::user();
+    my $current_user = FlowgencyTM::user();
     if ( $user ne $current_user ) {
         $user = $current_user;
         $parser = $user->tasks->get_tfls_parser;

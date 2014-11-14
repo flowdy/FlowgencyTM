@@ -6,7 +6,7 @@ cat <<HEADER
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>FlowTiMeter – Grundlagen</title>
+<title>FlowgencyTM – Grundlagen</title>
 HEADER
 cat style.css
 echo "</head><body>"

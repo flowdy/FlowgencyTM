@@ -17,6 +17,7 @@ has _cursor => (
         update_cursor           => 'update',
         probe_time_stages       => 'apply_stages',
         timestamp_at_net_second => 'timestamp_of_nth_net_second_since',
+        scan_cursor_between     => 'slicing_between',
         map { $_ => $_ } qw(start_ts due_ts),
     },
 );
@@ -179,14 +180,12 @@ sub is_archived {
 sub open {
     my ($self) = @_;
     $self->store({ step => '', open_since => FTM::Time::Point->now });
-    delete $self->{is_open};
     return;
 }
 
 sub close {
     my ($self) = @_;
     $self->store({ step => '', open_since => undef });
-    delete $self->{is_open};
     return;
 }   
 
@@ -293,6 +292,7 @@ sub store {
 
     $self->_tasks->recalculate_dependencies($self => @to_recalc);
     $self->clear_progress;
+    delete $self->{is_open};
 
     return 1;
 
@@ -622,6 +622,7 @@ sub _normalize_task_data {
     for my $f ( $data->{from_date} // () ) {
         $f = q{}.( FTM::Time::Point->parse_ts($f)->fill_in_assumptions );
     }
+    for my $o ( $data->{open_since} // () ) { $o = $o.q{} }
 
     for my $p ( $data->{priority} // () ) {
         my $num = $self->_tasks->priority_resolver->("n:$p");
@@ -699,18 +700,18 @@ FTM::Task - Binds the database row to dynamic, cached data used for scoring
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

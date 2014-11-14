@@ -86,7 +86,7 @@ sub update {
     if ( $self->version ne $version_hash ) {
         if ( $self->_has_runner ) {
             for ( @timeway ) { $_->ensure_track_coverage; }
-            $old = $self->_runner->($time,0);
+            $old = $self->_runner->($time);
             $self->_clear_runner;
         }
         $self->version($version_hash);
@@ -118,14 +118,18 @@ sub _build__runner {
     my $slices = $self->_timeway->get_slices;
 
     return sub {
-        my ($time) = @_;
+        my ($time, $until) = @_;
 
         my %ret = map { $_ => 0 } qw(elapsed_pres remaining_pres
                                      elapsed_abs  elapsed_abs);
 
-        $_->calc_pos_data($time,\%ret) for @$slices;
-
-        return \%ret;
+        if ( $until ) {
+            return _splicing_between($slices, $time, $until);
+        }
+        else {
+            $_->calc_pos_data($time,\%ret) for @$slices;
+            return \%ret;
+        }
     }
 }
 
@@ -162,6 +166,43 @@ sub timestamp_of_nth_net_second_since {
     );
 }
 
+sub slicing_between {
+    my ($self, $time, $until) = @_;
+
+    $time->fix_order($until) if ref $time && ref $until;
+    if ( ref $time ) { $time = $time->epoch_sec }
+    if ( ref $until ) { $until = $until->last_sec }
+
+    return $self->_runner->( $time, $until );
+}
+
+sub _splicing_between {
+    my ($slices, $time, $until) = @_;
+    my $until_diff = $until - $time;
+    my $start = $slices->[0]->position;
+    my ($end) = map { $_->position + $_->length } $slices->[-1];
+
+    return if $until < $start || $time > $end;
+
+    my $diff = $time - $start;
+    my @sec;
+    if ( $diff < 0 ) {
+        push @sec, $diff;
+        $until_diff += $diff;
+        $diff = 0;
+    }
+    for my $sl ( @$slices ) {
+        my $add = $sl->splice( \$diff, \$until_diff );
+        push @sec, @$add;
+        last if !$until_diff;
+    }
+    if ( $until_diff ) {
+        push @sec, -$until_diff;
+    }
+
+    return \@sec;
+}
+
 __PACKAGE__->meta->make_immutable;
 
 __END__
@@ -184,18 +225,18 @@ FTM::Time::Cursor - Get us working-time progress data at a point after starting 
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

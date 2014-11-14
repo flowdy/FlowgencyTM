@@ -120,22 +120,30 @@ sub absence_in_presence_tail {
     return $abs;
 }
 
-sub split {
-    my ($self, $offset) = @_;
-    my $sl = $self->slicing;
-    my ($i, $lof, $fos) = split_pos($offset, $sl);
-    my @tail = splice @$sl, $i;
-    push @$sl, $lof;
-    $tail[0] = $fos;
-    $self->upd_lengths;
-    return $self, $self->new(
-        slicing => \@tail,
-        position => $self->position + $offset,
-        span => $self->span,
-    );
+sub splice {
+    my ($self, $offset_ref, $len_ref) = @_;
+    my @ret;
+    my @s = $self->slicing;
+    if ( $$offset_ref > $self->length ) {
+        $$offset_ref -= $self->length;
+        return [];
+    }
+    elsif ( $$offset_ref ) {
+        my ($i, $first) = (_split_pos($$offset_ref, \@s))[0,2];
+        @s = splice @s, $i if $i;
+        $s[0] = $first;
+        $$offset_ref = 0;
+    }
+    for my $s ( @s ) {
+        my $sec = min( abs($s), $$len_ref );
+        $$len_ref -= $sec;
+        push @ret, $s / abs($s) * $sec;
+        last if !$$len_ref;
+    }
+    return \@ret;
 }
 
-sub split_pos {
+sub _split_pos {
     my ($offset, $list) = @_;
     croak "negative offset" if $offset < 0;
     my ($i, $lof, $fos) = 0;
@@ -171,18 +179,18 @@ FTM::Time::SlicedInSeconds - chunks of evaluated time rhythms
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

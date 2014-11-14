@@ -105,6 +105,22 @@ sub _bind_tracks {
     }
 }
 
+sub get_available_tracks {
+    my ($self) = @_;
+
+    my $tracks = $self->_time_tracks;
+    my @tracks;
+    while ( my ($name, $track) = each %$tracks ) {
+        if ( my $ts = $track->until_latest ) {
+            next if $ts->is_past;
+        }
+        push @tracks, [$name, $track->label // next];
+    }
+
+    return sort { $a->[1] cmp $b->[1] } @tracks;
+
+}
+
 __PACKAGE__->meta->make_immutable;
 
 __END__
@@ -123,18 +139,18 @@ FTM::Time::Model - collection of (perhaps interdependent) time tracks
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

@@ -1,10 +1,10 @@
 use strict;
 
-package FlowTiMeter {
+package FlowgencyTM {
 our $VERSION = '0.01';
 use Carp qw(croak);
 use FTM::FlowDB;
-use FTM::User; # No, it is rather the user who use FlowTiMeter
+use FTM::User; # No, it is rather the user who use FlowgencyTM
 
 my ($db, %users, $current_user);
 
@@ -61,7 +61,7 @@ __END__
 
 =head1 NAME
 
-FlowTiMeter - Basic entry functions
+FlowgencyTM - Basic entry functions
 
 Not to be used directly, just the commons of the Browser and command line interface and, the script processor, too.
 
@@ -75,18 +75,18 @@ Not to be used directly, just the commons of the Browser and command line interf
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

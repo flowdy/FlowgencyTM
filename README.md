@@ -1,37 +1,31 @@
 README
 ======
 
-What is FlowTiMeter?
---------------------
+What is Flowgency? - Seven key notes
+--------------------------------------
 
-FlowTiMeter is an open-source task and time manager. It tracks the progress and time consumption of tasks that can be structured in steps and substeps to check as soon as done. Its smart urgency calculation covers not only priority but also a couple of criteria that rise continuously with the time – i.e. with the working time, provided that the user has defined an individual time model which should include regular periods of still time as well. 
+ 1. FlowgencyTM is a tool to manage your tasks and their urgencies. It is all about getting things done in the time you have expressedly reserved for work, maybe except things of lower priority. In the rest of the time, i.e. in your free time, you should *not* use FlowgencyTM.
 
-Despite its basic capabilities of teamwork, FlowTiMeter is not and will neither be an enterprise groupware solution because this would contradict its main focus on *individual* management. Once there is a plugin architecture, contributors are welcome to implement common interfaces to existing groupware, though. The GNU General Public License grants the right, under certain conditions, to fork the project in order to elaborate it for enterprise needs.
+ 2. The user interface is implemented in HTML5 and Javascript, so it runs in your favourite web browser.
 
-The user interface runs in the your favourite webbrowser provided it is capable to render HTML5. All popular and modern browsers do so in 2014.
+ 3. The server component is included in the distribution, too. It forms an inherent part of it.  FlowgencyTM is not meant an online service, it is rather preconfigured to run on your local system from which exclusively it accepts requests.
 
-The back-end server component to which the browser sends requests is available free and open, too. You can either install it on your local system so you have exclusive access to your data, or you can host it for others who have a rather lax attitude to privacy and prefer simply clicking a bookmark to additionally installing and starting a little background process on their system, not to forget securing their data on disk against malware.
+ 4. The tasks are ranked by descending urgency. The ranking is updated on click on the Flowgency logo. You decide when any checks are committed and when you are ready for being confronted with other tasks that may become suddenly more urgent than those you have just been working on.
 
-To business guys thinking "Wait, woah, so I could ..."
-------------------------------------------------------
+ 5. Urgency is not priority. Priority is rather just one dimension thereof. There are four other: How near the due date has approached, how much time has elapsed in relation to how much you have done, for how much time you have been keeping the task open and, finally, how much the additional time need will be in relation to what you have originally planned.
 
-Yes; wait and keep reading. Just want to tell you following notices in the hope original FlowTiMeter will not be blamed for negative impacts on society, given the software and/or the overall concept gets famous and criticism cools down. Because by publication of the code I potentially serve bad folks a good idea to pervert, I feel the need to pin some precautions that everyone knows the risks in getting it fame.
+ 6. Those four are time-dependent: They increase with advancing time, but not the system clock time, FlowgencyTM has got its own. Flowgency time considered in urgency calculation only covers the working time that you specify in your time model. In periods of off-time in between, urgency is frozen, affected i.e. pausing tasks are by default even hidden from display.
 
-If you intend to provide a commercial internet service, you're welcome to do that in compliance with the terms of the GNU General Public License, version 3. You might expose yourself to ethical issues, however, depending on the security of the database and your background use of it. 
-
-If you intend to host it for your employees, no matter if your organization is commercial or not, this applies to you particularly. Keep in mind that in doubt I am, as the project initiator, on the side of the local union knocking at your door. Please understand that support or feature requests are refused when suggesting you want to seize time control on others, e.g. performance monitoring and comparation, or by social features like "tell your friends what you do, or should do".
-
-Not everything with a social tag on it is also humane, thus good for society in the long run. Think twice and be nice. And read the late works by Joseph Weizenbaum to understand at least why there is this section and why it in the README file so early. FlowTiMeter is mental feed-back software with all the dangers resulting of that kind of human-machine interaction.
-
+ 7. You can devide tasks into steps, steps again into substeps. You can build arbitrarily deep hierarchies. Steps can have metadata, like a description, but they do not need to. A step can instead be no more than simply a check box of the parent step. Step metadata also covers information on how much they advance the overall progress of the task when checked. 
 
 Essential Do's and Dont's so you profit from it
 ------------------------------------------------
 
 ### Define your personal time model
 
-Your experience of proper urgency-based ranking requires telling the software when you plan to work on the entered tasks and when not. With FlowTiMeter, you are to plan your working time roughly in advance. You can always modify your time model for the future (e.g. for holidays), but to touch the past would lead to false results which is why that would lead to an error message.
+Your experience of proper urgency-based ranking requires telling the software when you plan to work on the entered tasks and when not. With FlowgencyTM, you are to plan your working time roughly in advance. You can always modify your time model for the future (e.g. for holidays), but to touch the past would lead to false results which is why that would lead to an error message.
 
-Don't get it wrong: It is not required (practically it is impossible anyway) to follow your defined time model tightly down to the second. Just the more your actual working times match with what you have planned i.e. with when the color gradients under the task titles are blending to red in order to signal drift between time and checking progress if any, of the more use will be FlowTiMeter for you. This asks of you some discipline. To a certain extent, you will have to let go of spontaneity.
+Don't get it wrong: It is not required (practically it is impossible anyway) to follow your defined time model tightly down to the second. Just the more your actual working times match with what you have planned i.e. with when the color gradients under the task titles are blending to red in order to signal drift between time and checking progress if any, of the more use will be FlowgencyTM for you. This asks of you some discipline. To a certain extent, you will have to let go of spontaneity.
 
 So define: When are you at work? When do you engage in which job or project? And when are you off, absent from work, which means rather fully present for family, friends, hobbies and stuff? When do you want a *computated* reason to let go of worries related to your work organization, business imponderables drawing circles in your mind? Please note, however, that the amount of working time directly relates to how fast urgencies rise.
 
@@ -39,7 +33,7 @@ It is important to reserve explicit regular non-work time despite of the higher 
 
 ### Structure your tasks unless they are simple. Check steps when they are done.
 
-Enter even tasks, even the simple ones. In order to enable FlowTiMeter to calculate and rank their urgencies correctly, make sure to take into consideration the following questions:
+Enter even tasks, even the simple ones. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure to take into consideration the following questions:
 
   * When does a task start if not now, and when is it due?
 
@@ -52,25 +46,25 @@ Enter even tasks, even the simple ones. In order to enable FlowTiMeter to calcul
 
   * Do these steps or groups of steps require to be checked in the given or in random order? Steps for which you must do other steps first, are not displayed. You can have also steps to do occasionally in any order, at the latest after having done all ordered substeps of a step or the overall task, respectively.
 
-  * In your rough estimate, how much does a specific step or substep claim of the time-need that the respective superordinate one claims in all? Indicate that by plain relational integers. In the first time you use FlowTiMeter, you probably will want to leave the default of 1, so checks on all neighbouring steps will drive the progress forward by equal extents. But you can, if you want, make progress calculation more realistic by variations.
+  * In your rough estimate, how much does a specific step or substep claim of the time-need that the respective superordinate one claims in all? Indicate that by plain relational integers. In the first time you use FlowgencyTM, you probably will want to leave the default of 1, so checks on all neighbouring steps will drive the progress forward by equal extents. But you can, if you want, make progress calculation more realistic by variations.
 
   * How many checks shall a specific step/substep get? Setting a number greater than 1 is like assigning substeps to it without writing a description, estimating their expenditure of time and maybe increasing the number of checks.
 
 Once a task is entered with proper data, and it is displayed somewhere below, just forget it and return to the tasks currently on top. Check a step of the tasks at the top right when it is done.
 
-When you want to save the checks and you are mentally prepared to switch to another task that might have become more urgent than what you have been working on: Just deliberately click the FlowTiMeter logo to reorder the tasks by descending urgency as how it is at the time of the click. Tasks of which the associated time track is currently "off" will never raise in urgency while this is the case. In other words, these planned periods of still time are logically identical with the net second before. By default, paused tasks are even hidden from display.
+When you want to save the checks and you are mentally prepared to switch to another task that might have become more urgent than what you have been working on: Just deliberately click the FlowgencyTM logo to reorder the tasks by descending urgency as how it is at the time of the click. Tasks of which the associated time track is currently "off" will never raise in urgency while this is the case. In other words, these planned periods of still time are logically identical with the net second before. By default, paused tasks are even hidden from display.
 
 ### Commit to and appreciate Humane Information Technology (HIT)
 
-Care for where the server is running, where your data is stored. Your time and how you use it is a rather private thing, and thus should be kept private. I, personally, do not consider FlowTiMeter or any other service inspired thereof a good option if provided commercially or "for free" by some internet company, a cloud provider or even by your own employers' IT department. After all, however, the decision is yours. Please understand that FlowTiMeter is, due to its purpose, like a knife that you can prepare a meal with as well as stab someone, or being stabbed. The one whose time is managed should be the only one who is managing it.
+Care for where the server is running, where your data is stored. Your time and how you use it is a rather private thing, and thus should be kept private. I, personally, do not consider FlowgencyTM or any other service inspired thereof a good option if provided commercially or "for free" by some internet company, a cloud provider or even by your own employers' IT department. After all, however, the decision is yours. Please understand that FlowgencyTM is, due to its purpose, like a knife that you can prepare a meal with as well as stab someone, or being stabbed. The one whose time is managed should be the only one who is managing it.
 
-Even if you are a fan of FlowTiMeter, please understand that the method of time management is a private thing, too. There will be many who choose not to use it and there will always be some who even dislike that you do. To persuade others to use it, to push it in your company, let alone to imply or explicitly threaten your employees with negative consequences if they choose not to, would render all the productivity benefits of the software effectively void. Voluntariness, that is, *real* voluntariness is cue.
+Even if you are a fan of FlowgencyTM, please understand that the method of time management is a private thing, too. There will be many who choose not to use it and there will always be some who even dislike that you do. To persuade others to use it, to push it in your company, let alone to imply or explicitly threaten your employees with negative consequences if they choose not to, would render all the productivity benefits of the software effectively void. Voluntariness, that is, *real* voluntariness is key.
 
 
 Wherefore all that, what's the vision?
 ---------------------------------------
 
-On the larger scale, this I hope is what FlowTiMeter will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and could therefore collapse dramatically someday.
+On the larger scale, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and could therefore collapse dramatically someday.
 
 One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic 24/7 dictate is idiotic, it is like having our children say what to do. Keep in mind, too: Your competitors do not sleep since they suffer burn-out ;-).
 
@@ -84,9 +78,9 @@ This is the summary of the concept that you can read in more detail in doc/conce
 Installation
 -------------
 
-FlowTiMeter is a prototype, yet just a proof-of-concept that can work like a smooth or fail badly, for others as likely as for myself. So you are welcome to use FlowTiMeter with test data! Keep in mind that this software is alpha. This means that crashes and a regularly corrupted database are to be expected. So do not yet use it for vital projects or if you do really cannot help doing, backup often! Please file bug-reports, for which I thank you very much in advance.
+FlowgencyTM is a prototype, yet just a proof-of-concept that can work like a smooth or fail badly, for others as likely as for myself. So you are welcome to use FlowgencyTM with test data! Keep in mind that this software is alpha. This means that crashes and a regularly corrupted database are to be expected. So do not yet use it for vital projects or if you do really cannot help doing, backup often! Please file bug-reports, for which I thank you very much in advance.
 
-FlowTiMeter is implemented in the Perl programming language, version 5.14+. Mac OS X and most linux distributions include it ready for use, ensure it is installed by running the command `perl -v`, or search the web how to install the latest version on your system. Windows users are recommended Strawberry Perl, please download from <http://strawberryperl.com/>.
+FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac OS X and most linux distributions include it ready for use, ensure it is installed by running the command `perl -v`, or search the web how to install the latest version on your system. Windows users are recommended Strawberry Perl, please download from <http://strawberryperl.com/>.
 
 Clone the git repository in a directory of your choice. With plain git on Linux enter at a shell prompt:
 
@@ -97,7 +91,7 @@ For other systems, install the Git DVCS and do the according steps.
 Check the dependencies
 -----------------------
 
-Check and install any prerequisites by running inside the FlowTiMeter directory:
+Check and install any prerequisites by running inside the FlowgencyTM directory:
 
   cpanm --installdeps .
 
@@ -207,16 +201,16 @@ Contact Author / Project initiator
 License
 -------
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 

@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 use strict;
 
-package FlowTiMeter::Test::Environment;
+package FlowgencyTM::Test::Environment;
 use Test::More;
 
 # used to eval herein later on by EvalPerl sub parser
 
-package FlowTiMeter::Script::Processor;
-use FlowTiMeter::Script::Parser;
+package FlowgencyTM::Script::Processor;
+use FlowgencyTM::Script::Parser;
 use Moose;
 use Carp qw(croak);
 
@@ -47,7 +47,7 @@ my %SUPPORTED_DIRECTIVES = (
        init => sub {
            my ($parser) = @_;
            return 
-               user_source => sub { FlowTiMeter::get_user(shift) },
+               user_source => sub { FlowgencyTM::get_user(shift) },
                user_ref    => $parser->_current_user_ref
            ;
        },
@@ -66,7 +66,7 @@ my %SUPPORTED_DIRECTIVES = (
     },
     TEST => {
        handler => 'EvalPerl',
-       init => sub { environment => 'FlowTiMeter::Test::Environment' },
+       init => sub { environment => 'FlowgencyTM::Test::Environment' },
     },
     TIMES => {
        handler => 'ManageTimeProfiles',
@@ -97,7 +97,7 @@ sub BUILD {
 
     my $farm = $self->parser_farm;
     while ( my ($dir, $init) = each %SUPPORTED_DIRECTIVES ) {
-        my $class = "FlowTiMeter::Script::".$init->{handler};
+        my $class = "FlowgencyTM::Script::".$init->{handler};
         eval "require $class;" or die $@;
         $init = $init->{init};
         $farm->{$dir} = $class->new( $self->$init() );

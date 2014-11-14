@@ -1,17 +1,17 @@
 use strict;
 use 5.014;
 
-package FlowTiMeter::Shell; 
+package FlowgencyTM::Shell; 
 use File::Temp qw(tempdir);
 use Carp qw(croak carp);
 use Getopt::Long qw(GetOptionsFromArray);
-use FlowTiMeter;
+use FlowgencyTM;
 use Try::Tiny;
 use Cwd qw(abs_path);
 
 use base 'Exporter';
 our @EXPORT = qw(xec); 
-sub xec { # so call: perl [-I...] -MFlowTiMeter::Shell -exec $func_or_shell [ARGS]
+sub xec { # so call: perl [-I...] -MFlowgencyTM::Shell -exec $func_or_shell [ARGS]
           #   -or-   perl .../FlowTime/Shell.pm $func_or_shell [ARGS]  
     no strict 'refs';
     my ($func,@args) = @ARGV;
@@ -90,7 +90,7 @@ sub listen_to_fifo {
     _init_commands;
 
     # Just ensure the database is deployed and ready.
-    FlowTiMeter::database; 
+    FlowgencyTM::database; 
 
     print "DONE.\nNow ensuring the database contains a user entity ... ";
     
@@ -106,7 +106,7 @@ sub listen_to_fifo {
           # 0 = success or 1-255 = error as is shell convention:
             $retval eq '1' ? 0 : !$retval ? 1 : $retval,
           # the context string for the shell prompt:
-            FlowTiMeter::Shell::Command::context_info() || "NO_CONTEXT"
+            FlowgencyTM::Shell::Command::context_info() || "NO_CONTEXT"
             ;
 
         # Now, let's pass foreground control back to the shell that
@@ -124,7 +124,7 @@ sub listen_to_fifo {
     
         my $input_sep = <$cmd_source>; # blocking until a command arrives
 
-        $input_sep =~ s{ \A FlowTiMeter\/INPUT_SEPARATOR \s* \W \s* (?=\d{5}) }{}xms
+        $input_sep =~ s{ \A FlowgencyTM\/INPUT_SEPARATOR \s* \W \s* (?=\d{5}) }{}xms
             or die "Could not recognize preamble containing the input ",
                    "separator: $input_sep"
             ;
@@ -234,15 +234,15 @@ sub _std_define_shellvars {
 sub welcome { chomp( my $msg = <<'WELCOME' ); $msg }
 
   /=======================================================================\
-  #   FlowTiMeter Shell :: Manage your tasks, your time - and your flow   #
+  #   FlowgencyTM Shell :: Manage your tasks, your time - and your flow   #
   # --------------------------------------------------------------------- #
   #                                                                       #
   # This is a DEVELOPERS' command-line interface of the task and time     #
-  # management tool FlowTiMeter. A web-browser driven GUI and mobile app  #
+  # management tool FlowgencyTM. A web-browser driven GUI and mobile app  #
   # is planned but it follows the implementation and the debugging of the #
   # core logic of the software in my priority list.                       #
   #                                                                       #
-  # WARNING: This shell is not for productive use! Play with FlowTiMeter  #
+  # WARNING: This shell is not for productive use! Play with FlowgencyTM  #
   # and find out what takes our automatic test suite further to comple-   #
   # tion: This is the intended purpose of this shell.                     #
   #                                                                       #
@@ -250,18 +250,18 @@ sub welcome { chomp( my $msg = <<'WELCOME' ); $msg }
   
   (C) 2012-2014 Florian Heß
   
-    FlowTiMeter is free software: you can redistribute it and/or modify
+    FlowgencyTM is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
   
-    FlowTiMeter is distributed in the hope that it will be useful,
+    FlowgencyTM is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
   
     You should have received a copy of the GNU General Public License
-  along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+  along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
   
 
 Initializing FlowTime::Shell ...
@@ -274,7 +274,7 @@ __DATA__
 #CONFIG bash
 
 PS1="FTM:PROMPT_LEFT_UNSET>"
-# Initialize FlowTiMeter::Shell commands
+# Initialize FlowgencyTM::Shell commands
 for i in ##COMMANDS##; do
     alias $i="__delegate_to_flowtimeter_shell $i"
 done
@@ -294,23 +294,23 @@ PERL_BIN=$(which perl)
 
 unset HISTFILE
 
-# FlowTiMeter::Shell and $SHELL communicate by FIFO:
+# FlowgencyTM::Shell and $SHELL communicate by FIFO:
 FINFO=$TMPDIR/command.fifo   ; mkfifo $FINFO
 RETVL=$TMPDIR/shretval       ; > $RETVL # normal file ( tried fifo as well - dead lock )     
 
 PROMPT_COMMAND=__init_interaction # will just be reset at the end of this function:
 __init_interaction () {
-    local FLOWTIMETER_SHELL_PROCESS="/usr/bin/perl -MFlowTiMeter::Shell -${DEBUG2:+d}exec listen_to_fifo $FINFO $RETVL"
+    local FLOWTIMETER_SHELL_PROCESS="/usr/bin/perl -MFlowgencyTM::Shell -${DEBUG2:+d}exec listen_to_fifo $FINFO $RETVL"
     $FLOWTIMETER_SHELL_PROCESS
     # when perl has sent itself the stop signal, continue it in the background
     [ "$(jobs -s)" ] && bg || { # ... or abort and exit with an error message
-        echo FlowTiMeter::Shell could not initialize properly
+        echo FlowgencyTM::Shell could not initialize properly
         exit 1
     } 
     echo
-    echo "FlowTiMeter is initialized and now made continue waiting for input in the background."
+    echo "FlowgencyTM is initialized and now made continue waiting for input in the background."
     echo "Next comes the prompt of your shell that is no ready to serve it" \
-         "all commands implemented in a FlowTiMeter::Shell::Command::* module each."
+         "all commands implemented in a FlowgencyTM::Shell::Command::* module each."
     echo
     echo "Hints concerning configuration of your shell:"
     echo " * Your HOME path is" $HOME
@@ -333,10 +333,10 @@ __update_prompt () {
 
 __delegate_to_flowtimeter_shell () {
     local separator=$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM
-    { echo FlowTiMeter/INPUT_SEPARATOR = $separator
+    { echo FlowgencyTM/INPUT_SEPARATOR = $separator
       for i in "$@"; do
-          echo "$i"
-          echo $separator
+          printf "%s\n" "$i"
+          printf "%s\n" $separator
       done
     } > $FINFO
     { fg %1; bg; } > /dev/null

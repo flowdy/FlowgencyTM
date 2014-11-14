@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 
-package FlowTiMeter::Script::Parser;
+package FlowgencyTM::Script::Parser;
 use Moose;
 use Carp qw(croak);
 

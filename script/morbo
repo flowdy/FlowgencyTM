@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+BEGIN { chdir("$FindBin::Bin/.."); }
+use lib "lib/";
+
+$ENV{FLOWDB_SQLITE_FILE} //= "flow.db";
+$ENV{MOJO_LISTEN} //= "http://127.0.0.1:3000";
+
+# Start command line interface for application
+require Mojo::Server::Morbo;
+Mojo::Server::Morbo->new->run('script/flow_time');

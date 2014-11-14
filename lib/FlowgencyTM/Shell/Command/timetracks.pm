@@ -1,7 +1,7 @@
 use strict;
 
-package FlowTiMeter::Shell::Command::timetracks;
-use base 'FlowTiMeter::Shell::Command';
+package FlowgencyTM::Shell::Command::timetracks;
+use base 'FlowgencyTM::Shell::Command';
 use Getopt::Long qw(GetOptionsFromArray);
 use Encode qw(decode_utf8);
 
@@ -79,7 +79,7 @@ sub run {
         ($base_variation, $tmp_variation_href) = ();
     }
 
-    FlowTiMeter::user->update_time_model(\%to_update);
+    FlowgencyTM::user->update_time_model(\%to_update);
 
     return 1;
 }

@@ -2,7 +2,7 @@ body {
    font-family: "DejaVu Sans", sans-serif;
 }
 
-#logo {
+#logo img {
   /* width:200px; */
 }
 
@@ -24,29 +24,42 @@ body {
    padding: 0.5em;
    color:#4d4d4d;
    font-weight: bold;
-   background-color: #00C0FF;
+   border: 1px solid #00C0FF;
    width:100%;
-   border-top-right-radius:10px;
-   border-bottom-left-radius:10px;
+   border-top-left-radius:10px;
+   border-bottom-right-radius:10px;
+  -moz-box-shadow:    1px 1px 1px 0px #ccc;
+  -webkit-box-shadow: 1px 1px 1px 0px #ccc;
+  box-shadow:         1px 1px 1px 0px #ccc;
 } 
 
 body > header {
    height:120px;
+   position:fixed;
+   background-color:white;
+   border-bottom: 2px solid darkgrey;
+   margin-bottom:1px;
+   overflow:hidden;
+   top:0;
+   width: 100%;
+}
+
+#page {
+   margin-top:130px;
 }
 
 body > header h1 {
-  margin-top:0;
+  margin-top:10px;
   float: left;
 }
 
-body > header p {
+#slogan {
   text-align:center;
   font-size:16pt;
+  margin:1em 0;
   font-style:italic;
   color: darkgrey;
   padding-left:220px;
-  padding-top:1em;
-  border-bottom: 2px solid darkgrey;
   min-height:100px;
 }
 
@@ -66,8 +79,8 @@ body > header p {
   /* margin-left: 215px; */
   padding:0.5em;
   overflow:hidden;
-   border-top-right-radius:25px;
-   border-bottom-left-radius:25px;
+   border-top-left-radius:25px;
+   border-bottom-right-radius:25px;
   
 }
 
@@ -75,7 +88,7 @@ body > header p {
    margin-top:1em;
 }
 
-#plans > li.shadow {
+#plans > li.open {
   -moz-box-shadow:    3px 3px 5px 6px #ccc;
   -webkit-box-shadow: 3px 3px 5px 6px #ccc;
   box-shadow:         3px 3px 5px 6px #ccc;
@@ -83,6 +96,7 @@ body > header p {
 
 #plans header > h2 {
   margin-bottom:1px;
+  cursor:pointer;
 }
 
 #plans .progressbar {
@@ -92,8 +106,7 @@ body > header p {
   background-color: rgba(0,192,255,0.33);
 }
 
-#plans time {
-  display: block;
+#plans .ranking-data {
   text-align:right;
   font-size:small;
 }
@@ -115,4 +128,23 @@ body > header p {
 #plans form.details {
 }
 
+.checks { text-align:right; }
 .checks input { margin:0; padding:0; }
+
+.taskeditor fieldset { display:none; }
+.taskeditor fieldset[id=step-] { display:block; }
+.taskeditor .help { font-size:small; }
+.taskeditor dt { font-weight:bold; margin-top:0.5em; }
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 45%; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.ui-timepicker-rtl{ direction: rtl; }
+.ui-timepicker-rtl dl { text-align: right; padding: 0 5px 0 0; }
+.ui-timepicker-rtl dl dt{ float: right; clear: right; }
+.ui-timepicker-rtl dl dd { margin: 0 45% 10px 10px; }

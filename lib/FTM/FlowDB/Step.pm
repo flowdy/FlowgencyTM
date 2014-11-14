@@ -306,6 +306,27 @@ sub is_within_focus {
 
 }
 
+sub get_flattened_tree {
+    my ($self,$LEVEL) = @_;
+    $LEVEL //= 0;
+    my $ret = { name => $self->name, level => $LEVEL };
+
+    my $substeps = $self->substeps->search(
+        {}, { order_by => { -asc => ['pos'] } }
+    );
+
+    my ($last_pos, @substeps);
+    for my $step ( $substeps->all ) {
+        my @sub = $step->get_flattened_tree($LEVEL+1);
+        my $pos = int( $step->pos // 0 );
+        $sub[0]->{'new_group'} = $pos ? $pos > $last_pos : undef;
+        push @substeps, @sub;
+        $last_pos = $pos;
+    }
+
+    return $ret, @substeps;   
+}
+
 sub is_completed {
     my ($self, $limit ) = shift;
     $limit //= 0;
@@ -380,6 +401,23 @@ sub and_below {
                       $self->substeps->search(@args);
 }
 
+sub dump {
+    my ($self) = @_;
+    my %data = $self->get_columns;
+    if ( my $prow = $self->parent_row ) {
+        $data{parent_id} = $prow->name;
+        $data{link_id} = join ".", map { $_->task, $_->name }
+             $self->link_row // ();
+    }
+    if ( my $srow = $self->subtask_row ) {
+        my $data = $data{subtask_data} = { $srow->get_columns };
+        $data->{timeway} = [
+            map {{ $_->get_columns }} $srow->timestages
+        ], 
+    }
+    return \%data;
+}
+
 1;
 
 __END__
@@ -407,18 +445,18 @@ FTM::FlowDB::Step - Interface to the raw data stored to a task step
 
 =head1 LICENSE
 
-This file is part of FlowTiMeter.
+This file is part of FlowgencyTM.
 
-FlowTiMeter is free software: you can redistribute it and/or modify
+FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FlowTiMeter is distributed in the hope that it will be useful,
+FlowgencyTM is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with FlowTiMeter. If not, see <http://www.gnu.org/licenses/>.
+along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
 
