@@ -14,11 +14,10 @@ sub form {
 }
 
 sub _task_dumper {
-    my ($task, $steps, $step_tree) = shift;
+    my ($task, $steps) = shift;
 
     if ( $task ) {
         $steps = { map { $_->name => $_->dump } $task->main_step_row, $task->steps };
-        $step_tree = [ $task->main_step_row->get_flattened_tree ];
     }
 
     my $priodir = FlowgencyTM::user->get_labeled_priorities;
@@ -27,7 +26,7 @@ sub _task_dumper {
     @{$priodir}{'_max','_avg'} = ($priocol->max, $priocol->func('AVG') );
 
     return
-        steps => $steps, tree => $step_tree, _priodir => $priodir,
+        steps => $steps, _priodir => $priodir,
         tracks => [ FlowgencyTM::user->get_available_time_tracks ],
 }
 
@@ -90,7 +89,7 @@ sub fast_bulk_update {
 sub _get_task {
     my $self = shift;
     my $id = $self->stash('id');
-    return if !length $id;
+    return if !$id;
     return FlowgencyTM::user->tasks->get($id) // croak "No task $id";
 }
 

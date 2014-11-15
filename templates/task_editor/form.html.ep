@@ -8,7 +8,7 @@
 <p><%= $message %></p>
 % }
 
-<form method='post' action="/task/<%= $id %>/post" class="taskeditor">
+<form method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
 
 % for my $step (values %$steps) {
 %     my $name = $step->{name};
@@ -54,20 +54,18 @@
 This value is evaluated in relation to the superordinate step (or task, respectively) and steps both co- and directly subordinate. Do not change it with levity as you might have to adjust the expenditures of other steps, too. If in doubt, just leave the default of 1.</p>
 <p class="input"><input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} %>" /></p>
 </dd>
-<dt>Step progress</dt>
-<dd><p class="input"><input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"><br>
-Number of checks (slider stepping): <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" onchange='this.parentNode.firstChild.max = this.value;'></p></dd>
 <dt>Subordinate steps</dt>
 <dd><p class="help">Substeps chain notation has special syntax:<br><strong>,</strong> comma separates groups. A group is displayed in the list of pending steps once all steps of preceding groups have been completed. Steps can be a group on their own,<br><strong>/</strong> A slash separates steps of the same group, you can make checks in any order,<br><strong>;</strong> a semicolon signals a final special group of steps not depending on any other one. Each is always displayed until completed.</p>
-<p><input type="text" name="substeps" value="<%= $steps->{substeps} %>"></p></dd>
+<p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
+<dt>Step progress</dt>
+<dd><p class="input"><br>
+Number of checks (slider stepping): <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" onchange='this.parentNode.firstChild.max = this.value;'><input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"></p></dd>
 </fieldset>
 % }
 
 <div style="float:left;">Jump to step: <select id="steps-tree" name="step" onchange='$(".taskeditor fieldset").hide(); $("#step-"+this.value).show(); window.scrollTo(0,0); this.blur(); '>
-% for my $step ( @$tree ) {
-% my ($name,$ngr,$level) = @{$step}{qw{ name new_group level }};
-% my ($exp,$done, $checks) = @{ $steps->{$name} }{qw{ expoftime_share done checks }};
-<option value="<%= $name %>"><%== '&nbsp;&nbsp;' x $level %><%== $ngr ? '&#x2022; ' : defined($ngr) ? '&#x25e6; ' : '&nbsp; ' %><strong><%= $name || 'Task '.$id %></strong> (<%= $exp  %> × <%= $steps->{$name}->{done} %> &#x2611; : <%= ($checks - $done) %> &#x2610;)</option>
+% for my $step ( sort keys %$steps ) {
+<option><%= $step %></option>
 % }
 </select></div>
 

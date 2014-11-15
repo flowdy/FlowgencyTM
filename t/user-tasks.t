@@ -105,7 +105,6 @@ is $task2->name, 'kundenmigr', "Created task with steps";
 
 my $parser = $user->tasks->get_tfls_parser( -dry => 0 );
 
-$DB::single = 1;
 my $task3 = parser_test('Simple task parsed with FTM::Util::TreeFromLazyStr', <<'TASK', <<'COMPARE');
 This is an example task =task3 ;pr soon ;from 8-28 ;until 9-4@default
   ;1 a step =foo ;expoftime_share: 3
@@ -243,6 +242,30 @@ is scalar @focus_arefs, 0, "No more steps to do, task completed";
 is $task3->progress, 1, "... progress is at 100% accordingly";
 #diag("Current focus:");
 #$task3->current_focus;
+
+my $task3a = parser_test('A variant of the task with an ordered and an unordered task', <<'TASK', <<'COMPARE');
+This is another example task with an ordered and an unordered step ;pr soon ;from 8-28 ;until 9-4@default
+  ;1 a step =foo ;ord nx
+  ;1 this one is unordered =bar ;ord any
+TASK
+title => 'This is another example task with an ordered and an unordered step',
+from_date => '8-28',
+priority => 'soon',
+steps => {
+    foo => {
+        description => 'a step',
+    },
+    bar => {
+        description => 'this one is unordered',
+    }
+},
+substeps => 'foo;bar',
+timestages => [
+    { track => 'default', until_date => '9-4' }
+],
+COMPARE
+
+$task3a->current_focus;
 
 $user->update_time_model({
     halfwork => {

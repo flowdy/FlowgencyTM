@@ -239,7 +239,8 @@ sub _focus_tree {
     my $substeps = $self->substeps;
     my $opts = { order_by => { -asc => 'pos' } };
     my $max_pos = $substeps->get_column('pos')->max // 1;
-    my (@uncomplete, $pos);
+    my @uncomplete;
+    my $pos = 0;
 
     my $pending_substeps_count = $substeps->count;
 
@@ -306,25 +307,38 @@ sub is_within_focus {
 
 }
 
-sub get_flattened_tree {
-    my ($self,$LEVEL) = @_;
-    $LEVEL //= 0;
-    my $ret = { name => $self->name, level => $LEVEL };
+sub substeps_chain {
+    my ($self) = @_;
 
     my $substeps = $self->substeps->search(
         {}, { order_by => { -asc => ['pos'] } }
     );
 
-    my ($last_pos, @substeps);
+    my (@groups, $unordered, $last_group);
+    if ( $substeps->search({ pos => undef })->count ) {
+        $last_group = $unordered = [];
+    }
+
+    my $last_pos = 0;
     for my $step ( $substeps->all ) {
-        my @sub = $step->get_flattened_tree($LEVEL+1);
         my $pos = int( $step->pos // 0 );
-        $sub[0]->{'new_group'} = $pos ? $pos > $last_pos : undef;
-        push @substeps, @sub;
+        if ( $pos > $last_pos ) {
+            push @groups, $last_group = [];
+        }
+        push @$last_group, $step->name;
         $last_pos = $pos;
     }
 
-    return $ret, @substeps;   
+    for my $group ( @groups, $unordered //= [] ) {
+        $group = join '/', @$group;
+    }
+
+    my $chain = join q{,}, @groups;
+    if ( length $unordered ) {
+        $chain .= q{;} . $unordered; 
+    }
+
+    return $chain;   
 }
 
 sub is_completed {
@@ -415,6 +429,7 @@ sub dump {
             map {{ $_->get_columns }} $srow->timestages
         ], 
     }
+    $data{substeps} = $self->substeps_chain;
     return \%data;
 }
 
