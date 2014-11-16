@@ -395,7 +395,7 @@ sub mustnt_end_sooner { # recursive on successor if any
     my $until_latest = $self->until_latest;
     
     return if ( !$until_latest || $end->until_date == $until_latest )
-           && $tp <= $end->until_date;
+           && $tp->last_sec <= $end->until_date;
         ;
 
     my $tp1 = $tp;
