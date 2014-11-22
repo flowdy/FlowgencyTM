@@ -154,7 +154,7 @@ throws_ok { $step->update({ checks => 0 }) } qr/Checks must be >0/,
 throws_ok { $step->update({ done => 3 }) } qr/than available/,
     "You cannot make more checks than available";
 
-is +($task3->current_focus)[0][2], -1, "blocked link to a row to do after other steps";
+is +($task3->current_focus)[1][2], -1, "blocked link to a row to do after other steps";
 
 check_done($task2, export2csv => 1);
 
@@ -181,12 +181,12 @@ is $step->link_row->checks, 2, "which is independent from linked row";
 @focus_arefs = map { $_->[1] = $_->[1]->name; $_ } $task3->current_focus;
 
 is_deeply \@focus_arefs, [
-    [2, 'export2csv', !1],
-    [1, '', 1],
-    [2, 'copyadapt', !1],
-    [1, 'link2migr', !1],
-    [1, 'foo', !1],
-    [0, '', !1]
+    [1, 'foo', !1],        # 2
+    [2, 'export2csv', !1], # 6
+    [1, '', 1],            # 5
+    [2, 'copyadapt', !1],  # 4
+    [1, 'link2migr', !1],  # 3
+    [0, '', !1],           # 1
 ], "current_focus test 1";
 
 check_done( $task2,
@@ -199,11 +199,11 @@ check_done( $task2,
 
 @focus_arefs = map { $_->[1] = $_->[1]->name; $_ } $task3->current_focus;
 is_deeply \@focus_arefs, [
+    [1, 'foo', !1],
     [2, 'csvinput', !1],
     [1, '', 1],
     [2, 'copyadapt', !1],
     [1, 'link2migr', !1],
-    [1, 'foo', !1],
     [0, '', !1]
 ], "current_focus test 2";
 
@@ -265,7 +265,7 @@ timestages => [
 ],
 COMPARE
 
-$task3a->current_focus;
+is_deeply [ map { $_->[1]->name } +($task3a->current_focus)[0,1] ], [ 'foo', 'bar' ], "... order of substeps retained";
 
 $user->update_time_model({
     halfwork => {
