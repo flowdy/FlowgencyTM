@@ -42,6 +42,7 @@ body > header {
    overflow:hidden;
    top:0;
    width: 100%;
+   z-index:3;
 }
 
 #page {
@@ -127,6 +128,9 @@ body > header h1 {
 #plans .duetime .minutes { font-size:3em; }
 #plans form.details {
 }
+
+.pending-steps li { padding:3px; }
+.pending-steps li:hover { background-color:rgba(0,192,255,0.1); }
 
 .checks { text-align:right; }
 .checks input { margin:0; padding:0; }
