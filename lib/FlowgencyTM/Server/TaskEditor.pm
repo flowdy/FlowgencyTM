@@ -70,7 +70,6 @@ sub fast_bulk_update {
 
         if ( %$data ) {
             $data->{step} = '';
-            warn "Will store: ".encode_json($data);
             $task->store($data);
         }
 
