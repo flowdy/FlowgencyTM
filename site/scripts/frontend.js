@@ -97,7 +97,7 @@ function FlowTiMeter (args) {
                ftm.dynamizechecks(plan);
            });
            plan.addClass("shadow");
-           $(this).click(toggler);
+           $(this).die('click').click(toggler);
        });
    };
 
@@ -128,32 +128,44 @@ function FlowTiMeter (args) {
 
 FlowTiMeter.prototype.dynamizechecks = function (plan) {
    var ftm = this;
-   var checkline = plan.find(".checks");
-   console.log("Open task has a checkline: " + checkline.children().length);
-   var progressor = function () {
-       var check_count,
-           previous = this.previousSibling,
-           next = this.nextSibling
-           ;
-       if ( this.checked ) {
-           while ( previous && !previous.checked ) {
-               previous.checked = true;
-               previous = previous.previousSibling;
+   var checklines = plan.find(".checks");
+   var dyn_checkline = function (checkline) {
+       return function (e) {
+           var check_count,
+               previous = this.previousSibling,
+               next = this.nextSibling
+               ;
+           if ( this.checked ) {
+               while ( previous && !previous.checked ) {
+                   previous.checked = true;
+                   previous = previous.previousSibling;
+               }
            }
-       }
-       else {
-           while ( next && next.checked ) {
-               next.checked = false;
-               next = next.nextSibling;
+           else {
+               while ( next && next.checked ) {
+                   next.checked = false;
+                   next = next.nextSibling;
+               }
            }
-       }
-       check_count = checkline.children(":checked").length;
-       if ( checkline.data('done') == check_count ) check_count = null;
-       ftm.check_done( plan.data('id'), checkline.data('id'), check_count );
+           check_count = checkline.children(":checked").length;
+           if ( checkline.data('done') == check_count ) check_count = null;
+           ftm.check_done( plan.data('id'), checkline.data('id'), check_count );
+       };
    };
-   checkline.children().each(function () {
-       console.log("attaching progressor...");
-       $(this).change(progressor);
+   console.log("Open task has a checkline: " + checklines.length);
+   checklines.each(function () {
+       var checkline = $(this);
+       checkline.children().each(function () {
+           var progressor = dyn_checkline(checkline);
+           console.log("attaching progressor...");
+           $(this).change(progressor);
+       });
+   });
+   plan.find(".pending-steps li").click(function () {
+       $(this).find(":checkbox").not(':checked').first().click();
+   });
+   plan.find(".pending-steps").find("a, :checkbox").click( function (e) {
+       e.stopPropagation();
    });
 };
 
