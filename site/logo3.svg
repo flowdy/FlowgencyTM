@@ -10,12 +10,15 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="210mm"
-   height="297mm"
+   width="625.75745"
+   height="178.5743"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="logo3.svg">
+   sodipodi:docname="logo3.svg"
+   inkscape:export-filename="/home/floh/flowgencytm/site/logo3.png"
+   inkscape:export-xdpi="44"
+   inkscape:export-ydpi="44">
   <defs
      id="defs4">
     <linearGradient
@@ -48,7 +51,7 @@
        x2="652.70715"
        y1="386.64789"
        x1="468.91922"
-       gradientTransform="matrix(0.47257236,0,0,0.47257236,-130.54766,163.24142)"
+       gradientTransform="matrix(0.40849558,0,0,0.40849558,-109.67372,178.22944)"
        gradientUnits="userSpaceOnUse"
        id="linearGradient3038"
        xlink:href="#linearGradient3763"
@@ -61,9 +64,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.83039936"
-     inkscape:cx="536.84101"
-     inkscape:cy="664.71362"
+     inkscape:zoom="0.45"
+     inkscape:cx="514.44135"
+     inkscape:cy="63.70525"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -71,7 +74,11 @@
      inkscape:window-height="780"
      inkscape:window-x="-2"
      inkscape:window-y="-3"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     fit-margin-top="1"
+     fit-margin-left="1"
+     fit-margin-bottom="1"
+     fit-margin-right="1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -87,7 +94,8 @@
   <g
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-22.399662,-272.77951)">
     <path
        sodipodi:type="arc"
        style="opacity:0.56760003;fill:none;stroke:none"
@@ -96,33 +104,24 @@
        sodipodi:cy="463.4086"
        sodipodi:rx="332.32489"
        sodipodi:ry="363.71115"
-       d="M 234.79336,108.87159 A 332.32489,363.71115 0 0 1 490.39679,508.3947"
+       d="m 234.79336,108.87159 c 166.25139,41.65983 276.69855,214.2952 255.60343,399.52311"
        sodipodi:start="4.9374688"
        sodipodi:end="6.4071892"
        sodipodi:open="true" />
     <path
        style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#00c0ff;fill-opacity:1;stroke:none;stroke-width:22.02700043;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
-       d="m 138.17516,273.78215 c 10.60296,0.0759 21.35903,1.74154 31.98326,5.1342 -56.70446,-1.19759 -104.693054,19.7463 -122.558063,73.01317 -16.40878,51.3846 22.746607,93.20421 62.996253,98.43152 40.24964,5.22731 88.84109,-7.81296 87.19578,10.65012 -1.64531,18.46308 -25.11936,12.5208 -59.29768,13.91276 C 38.693033,477.33494 12.347279,406.27106 27.277265,350.66326 39.80908,303.98762 92.228994,273.45315 138.17516,273.78215 z"
+       d="m 122.61258,273.78179 c 9.16529,0.0656 18.46293,1.50541 27.6466,4.43805 -49.01581,-1.03521 -90.497565,17.06887 -105.940231,63.11321 -14.183889,44.41728 19.662361,80.56651 54.454499,85.08504 34.792132,4.51853 76.794992,-6.75359 75.372772,9.20606 -1.42222,15.95964 -21.71339,10.82308 -51.25742,12.02631 C 36.619382,449.73456 13.845888,388.30634 26.751495,340.23848 37.584103,299.89166 82.896324,273.4974 122.61258,273.78179 z"
        id="path3757"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="scczzcss"
        inkscape:export-filename="logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949" />
-    <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 709.57675,352.19599 0,22.5 0,12.53125 0,23.25 0,0.375 c 0,0 13.33742,1.26729 17.18773,-2.58303 3.85032,-3.85031 2.95203,-9.94822 2.95203,-9.94822 l -10.8571,0 0,-11.09375 c 0,0 4.41072,0.91133 7.16706,-1.84502 2.75634,-2.75634 3.69004,-10.68623 3.69004,-10.68623 l -10.8571,0 0,-9.96875 c 0,0 5.12695,0.58871 7.92968,-2.21402 2.80273,-2.80273 3.32103,-10.31723 3.32103,-10.31723 l -11.25071,0 -8.88905,0 z"
-       id="rect3788-7"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccczccczccczcccc"
-       inkscape:export-filename="logo/flowgencytm.png"
-       inkscape:export-xdpi="44"
-       inkscape:export-ydpi="44" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot4425"
        style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
-       transform="matrix(1.2496215,0,-0.01020739,2.4776261,-121.92203,-455.62589)"
+       transform="matrix(1.0801835,0,-0.00882336,2.1416811,-102.21765,-356.72474)"
        inkscape:export-filename="logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949"><flowRegion
@@ -137,7 +136,7 @@
          style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#625353;fill-opacity:1;font-family:Sans;-inkscape-font-specification:Sans Bold">FlowgencyTM</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot4433"
-       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:12px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"><flowRegion
          id="flowRegion4435"><rect
            id="rect4437"
            width="351.71051"
@@ -156,28 +155,11 @@
            x="369.24988"
            y="437.56113"
            style="font-size:14px" /></flowRegion><flowPara
-         id="flowPara4447" /></flowRoot>    <flowRoot
+         id="flowPara4447" /></flowRoot>    <text
        xml:space="preserve"
-       id="flowRoot4449"
-       style="font-size:16px;font-style:italic;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Italic"
-       transform="matrix(1,0,0,1.4658517,-141.23808,8.8548758)"
-       inkscape:export-filename="/tmp/flowtimeter.png"
-       inkscape:export-xdpi="90"
-       inkscape:export-ydpi="90"><flowRegion
-         id="flowRegion4451"><rect
-           id="rect4453"
-           width="515.10364"
-           height="68.561615"
-           x="334.17114"
-           y="419.09863"
-           style="font-size:16px;font-style:italic;fill:#625353;fill-opacity:1;-inkscape-font-specification:Sans Italic" /></flowRegion><flowPara
-         id="flowPara4457">Fit urgency increase into working time. Commit to top-ranked </flowPara><flowPara
-         id="flowPara4459">      tasks only. Check each single step when done. Ready for </flowPara><flowPara
-         id="flowPara4467">      an update of your focus? Well, please click the logo then.</flowPara></flowRoot>    <text
-       xml:space="preserve"
-       style="font-size:29.0874157px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
-       x="300.17227"
-       y="412.16959"
+       style="font-size:25.14340973px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="263.09818"
+       y="388.75897"
        id="text3013"
        sodipodi:linespacing="125%"
        transform="scale(0.87484326,1.1430619)"
@@ -185,12 +167,12 @@
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949"><tspan
          sodipodi:role="line"
-         x="300.17227"
-         y="412.16959"
+         x="263.09818"
+         y="388.75897"
          id="tspan3785">Your personal task &amp; time manager.</tspan></text>
     <path
        style="fill:url(#linearGradient3038);fill-opacity:1;stroke:none"
-       d="m 173.65603,317.40339 c -7.36799,10e-5 -12.74285,1.7616 -16.12653,5.2869 -13.04397,13.61203 -27.23975,31.44086 -42.57581,53.47452 -0.76414,0.97932 -3.61886,4.72781 -4.32832,4.72777 -13.284499,-15.34752 -33.221638,-26.80274 -33.705928,-21.72771 6.649512,7.93168 11.294109,11.72551 16.181819,18.72218 5.89428,8.43754 9.030439,14.77809 12.693919,18.08768 3.87492,10e-6 6.84702,1.56885 10.96019,-1.0104 18.01034,-25.2653 37.54695,-49.25939 58.61374,-71.97868 1.80092,-2.00741 2.7024,-3.34604 2.70252,-4.03163 -1.2e-4,-0.44059 -0.3006,-0.81372 -0.90084,-1.10759 -0.60046,-0.29369 -1.7684,-0.44294 -3.51476,-0.44304 z"
+       d="m 153.28255,311.48837 c -6.36895,8e-5 -11.01503,1.52274 -13.93991,4.57004 -11.27532,11.76635 -23.54627,27.17774 -36.8029,46.22383 -0.66052,0.84653 -3.128168,4.08676 -3.741432,4.08672 -11.483234,-13.26652 -28.717067,-23.16851 -29.135692,-18.78162 5.747895,6.85622 9.762725,10.13564 13.987703,16.18362 5.095066,7.29348 7.805988,12.7743 10.972732,15.63514 3.349514,1e-5 5.918619,1.35613 9.474079,-0.8734 15.56829,-21.83954 32.45591,-42.58023 50.66622,-62.21898 1.55673,-1.73522 2.33598,-2.89235 2.33608,-3.48498 -1e-4,-0.38085 -0.25984,-0.70338 -0.77869,-0.95741 -0.51905,-0.25387 -1.52862,-0.38288 -3.03819,-0.38296 z"
        id="rect2985"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccscccccc"
@@ -199,8 +181,35 @@
        inkscape:export-ydpi="44.058949" />
     <path
        style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 663.93486,288.01658 c 3.73993,-3.73993 10.33214,-2.95203 10.33214,-2.95203 0,0 1.5259,13.60325 -2.21403,17.34318 -3.73992,3.73992 -10.33213,1.84501 -10.33213,1.84501 0,0 -1.52591,-12.49623 2.21402,-16.23616 z"
+       d="m 577.08375,285.29828 c 3.23283,-3.23283 8.93119,-2.55176 8.93119,-2.55176 0,0 1.319,11.75876 -1.91382,14.99159 -3.23282,3.23282 -8.93119,1.59484 -8.93119,1.59484 0,0 -1.319,-10.80185 1.91382,-14.03467 z"
        id="rect3788"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="zczcz"
+       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-xdpi="44"
+       inkscape:export-ydpi="44" />
+    <path
+       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       d="m 632.70752,306.42782 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
+       id="rect3788-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="zczcz"
+       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-xdpi="44"
+       inkscape:export-ydpi="44" />
+    <path
+       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       d="m 632.10934,346.18349 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
+       id="rect3788-4-8"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="zczcz"
+       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-xdpi="44"
+       inkscape:export-ydpi="44" />
+    <path
+       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       d="m 631.91964,382.90886 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
+       id="rect3788-4-2"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="zczcz"
        inkscape:export-filename="logo/flowgencytm.png"
