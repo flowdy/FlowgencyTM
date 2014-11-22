@@ -532,7 +532,7 @@ sub _store_steps_below {
                 
                 }
     
-                $step->{parent_row} = $p_row;
+                $step_row->parent_row($p_row);
                 $step_row->set_columns($step);
 
             }
