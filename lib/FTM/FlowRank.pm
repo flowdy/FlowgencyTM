@@ -313,7 +313,7 @@ sub dump {
     my $comps = $self->_components;
     my %rundata = %{$self->_rundata};
     while ( my ($which, $value) = each %$comps ) {
-        @{$rundata{$which}}{'raw','weighted'} = ($self->$_, $value);
+        @{$rundata{$which}}{'raw','weighted'} = ($self->$which, $value);
     }
 
     return (
