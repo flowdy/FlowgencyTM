@@ -171,21 +171,21 @@ sub current_focus {
     my ($link_substeps_blocked);
 
     ITEM:
-    while ( my $step = pop @tree ) {
+    while ( my $step = shift @tree ) {
 
         $depth[-1]-- or next ITEM;
 
         my $is_link = !1;
         
         if ( ref $step eq 'ARRAY' ) {
-            my $last = $tree[-1];
-            if ( ref($last) eq 'REF' && !$$last->is_within_focus ) {
+            my $next = $tree[0];
+            if ( ref($next) eq 'REF' && !$$next->is_within_focus ) {
                 # If item is an array ref of substeps of a link,
                 # we display them only if the linked row is currently
                 # focussed in the scope of its associated task.
-                next ITEM if $link_substeps_blocked = !$$last->is_completed;
+                next ITEM if $link_substeps_blocked = !$$next->is_completed;
             }
-            push @tree, @$step;
+            unshift @tree, @$step;
             push @depth, scalar @$step;
             next ITEM;
         }
@@ -248,27 +248,22 @@ sub _focus_tree {
 
         INCR_POS:
         until ( ++$pos > $max_pos ) {
-            my $expr = $pos ? { like => $pos.q{.%} } : undef;
+            my $expr = { like => $pos.q{.%} };
             my @substeps = $substeps->search({ pos => $expr }, $opts);
 
-            my @uncmpl_sub;
-
             for my $step ( @substeps ) {
-                push @uncmpl_sub, $step->_focus_tree($limit-1);
-            }
-
-            if ( @uncmpl_sub || !@substeps ) {
-                push @uncomplete, @uncmpl_sub;
-                if ( $pos ) { $pos = 0; redo INCR_POS; }
-                else { last INCR_POS; }
-            }
-            elsif ( !$pos ) {
-                # all substeps have been processed
-                last INCR_POS;
+                push @uncomplete, $step->_focus_tree($limit-1);
             }
 
             $pending_substeps_count -= @substeps;
 
+            last INCR_POS if @uncomplete;
+
+        }
+
+        for my $step ( $substeps->search({ pos => undef }, $opts) ) {
+            push @uncomplete, $step->_focus_tree($limit-1);
+            $pending_substeps_count--;
         }
 
         if ( @uncomplete ) {
@@ -276,9 +271,10 @@ sub _focus_tree {
         }
 
         if ( my $link = $self->link_row ) {
-            if ( my ($l, @steps) = $link->_focus_tree($limit-1) ) {
+            if ( my @steps = $link->_focus_tree($limit-1) ) {
+                my $l = pop @steps;
                 die "linked step not identical with itself" if $l != $link;
-                push @uncomplete, \$l, @steps;
+                unshift @uncomplete, @steps, \$l;
             }
         }
 
@@ -288,7 +284,7 @@ sub _focus_tree {
         $self->future_focus_queue_len($pending_substeps_count);
     }
     if ( @uncomplete || !$self->is_completed ) {
-        unshift @uncomplete, $self;
+        push @uncomplete, $self;
     }
 
     return wantarray ? @uncomplete : \@uncomplete;
