@@ -8,9 +8,8 @@
 <p><%= $message %></p>
 % }
 
-<form method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
-
-% for my $step (values %$steps) {
+% my $render_fieldset = begin
+%     my $step = shift // {};
 %     my $name = $step->{name};
 <fieldset id="step-<%= $name %>">
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
@@ -20,14 +19,14 @@
 <dd class="input"><input type="text" value="<%= $std->{title} %>" name="title" ></dd>
 <dt>Priority level</dt>
 <dd><p class="help">Dedicate the maximum number you ever assigned (currently <%= $prio_max %>, average <%= sprintf '%.2f', $prio_avg %>) for first priority tasks only. Those tasks with that level will be no more first priority once you input an even higher level for this task.</p>
-<p class="input"><% for ( @priorities ) { my ($label, $num) = @$_; %><label><input type="radio" name="priority_suggestion" value="<%= $num %>" <%= $num == $std->{priority} ? 'checked' : '' %>><%= $label %></label><% } %><input type="radio" name="priority_suggestion"><input type="number" min="1" value="<%= $std->{priority} %>" name="priority"></p>
+<p class="input"><% for ( @priorities ) { my ($label, $num) = @$_; %><label><input type="radio" name="priority" value="<%= $num %>" <%= $num == $std->{priority} ? 'checked' : '' %>><%= $label %></label><% } %><input type="radio" name="priority"><input type="number" min="1" value="<%= $std->{priority} %>"></p>
 </dd>
 <dt>Start date</dt>
 <dd><p class="help">If it is now, just leave it empty.</p>
 <p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"></p>
 </dd>
 <dt>Time stages</dt>
-<dd><p class="help">Associate the task to a timetrack (remember, you have defined them in the settings, haven't you yet?) and define the due date. You may also specify points of time when the task shall change the track.</p>
+<dd><p class="help">Associate the task to a time track you can define and modify in the settings,  and specify the due date. You may also specify points of time when the task shall change the track.</p>
 <div class="input">
 <table class="time-stages">
 <tr><th>Time track</th><th>until</th></tr>
@@ -35,11 +34,11 @@
 % my $timeway = $std->{timeway} // [{ track => 'default' }];
 % for my $stage ( @$timeway ) {
 %     $track_cnt++;
-<tr><td><select name="track-<%= $name %>-<%= $track_cnt %>">
+<tr><td><select name="track-<%= $track_cnt %>">
 % for my $track ( @$tracks ) {
 <option value="<%= $track->[0] %>" <%= $stage->{track} eq $track->[0] ? "selected" : '' %>><%= $track->[1] %></option>
 % }
-</td><td><input type="datetime" name="until-<%= $name %>-<%= $track_cnt %>" value="<%= $stage->{until_date} %>"></td>
+</td><td><input type="datetime" name="until-<%= $track_cnt %>" value="<%= $stage->{until_date} %>"></td>
 <td><button>+</button><button>&minus;</button></td>
 </tr>
 % }
@@ -59,11 +58,18 @@ This value is evaluated in relation to the superordinate step (or task, respecti
 <p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
 <dt>Step progress</dt>
 <dd><p class="input"><br>
-Number of checks (slider stepping): <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" onchange='this.parentNode.firstChild.max = this.value;'><input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"></p></dd>
+Number of checks (slider stepping): <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" ><br>
+Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"></p></dd>
 </fieldset>
+% end
+
+<form data-taskid="<%= $id %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
+
+% for my $step (values %$steps) {
+%=    $render_fieldset->($step);
 % }
 
-<div style="float:left;">Jump to step: <select id="steps-tree" name="step" onchange='$(".taskeditor fieldset").hide(); $("#step-"+this.value).show(); window.scrollTo(0,0); this.blur(); '>
+<div style="float:left;">Jump to step: <select id="steps-tree" name="step">
 % for my $step ( sort keys %$steps ) {
 <option><%= $step %></option>
 % }
@@ -76,3 +82,16 @@ Number of checks (slider stepping): <input type="number" name="checks" size="2" 
 <textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
 <input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
 </form>
+
+<script type="text/javascript">
+FlowgencyTM.create_step_for_task = function (task, step_name) {
+    var fieldset = $('<%== join "", split /\n/, $render_fieldset->() %>');
+    fieldset.id += step_name;
+    fieldset.find("legend").text("Describe new step " + step_name); 
+    fieldset.appendTo(".taskeditor:[action^=/task/" + task + "]");
+    FlowgencyTM.dynamize_taskeditor_step_fieldset(fieldset);
+    return;
+};
+</script>
+
+

@@ -1,6 +1,6 @@
-$(document).ready(function () { new FlowTiMeter(); });
+$(document).ready(function () { new FlowgencyTM(); });
 
-function FlowTiMeter (args) {
+function FlowgencyTM (args) {
    
    var nextload = { update_tasks: {} };
 
@@ -22,7 +22,7 @@ function FlowTiMeter (args) {
            if ( !dirty ) {
                $("#slogan").text(
                    "<- Please click the logo to commit your changes "
-                    + "and have an updated ranking."
+                    + "and get an updated ranking."
                );
                dirty = true;
            }
@@ -51,6 +51,7 @@ function FlowTiMeter (args) {
    }).datetimepicker();
 
    $("fieldset .fields").accordion({ header: 'dt', heightStyle: 'content' });
+   $("form.taskeditor").each(FlowgencyTM.dynamize_taskeditor);
 
    this.check_done = function (task, step, done) {
        console.log("Checked: " + done);
@@ -81,7 +82,6 @@ function FlowTiMeter (args) {
        var isOpen = plan.find(".extended-info").length;
        plan.data('isOpen', isOpen);
        ftm.progressbar2canvas(plan.find(".progressbar"));
-       console.log(plan.find('h2').text());
        if ( isOpen ) {
            console.info("Task is already open: "+isOpen);
            ftm.dynamizechecks(plan);
@@ -105,12 +105,26 @@ function FlowTiMeter (args) {
  
    $('#logo').click(function (e) {
        var url = '/';
-       console.log("Submitting changes ...");
-       if ( reg_changes(1) ) {
+       e.preventDefault();
+       var taskeditors = $("form.taskeditor");
+       if ( reg_changes(1) || taskeditors.length ) {
            var params = nextload.update_tasks;
-           Object.getOwnPropertyNames(params).forEach( function (i) {
+           taskeditors.each(function () {
+               var task_name = $(this).data('taskid');
+               var task = params[task_name] = { steps: {} };
+               var changes = $(this).data('changes');
+               var root = changes[""];
+               delete changes[""];
+               Object.keys(changes).forEach(function (i) {
+                    task["steps"][i] = changes[i];
+               });
+               Object.keys(root).forEach(function (i) {
+                    task[i] = root[i];
+               });
+           });
+           Object.keys(params).forEach(function (i) {
                params[i] = JSON.stringify(params[i]);
-           })
+           });
            $.post('/update', params, function () {
                alert("Changes submitted");
                delete nextload.update_tasks;
@@ -120,13 +134,12 @@ function FlowTiMeter (args) {
        else { 
            url += '?' + $.param(nextload);
        }
-       e.preventDefault();
        window.location.href = url;
    });
 
 }
 
-FlowTiMeter.prototype.dynamizechecks = function (plan) {
+FlowgencyTM.prototype.dynamizechecks = function (plan) {
    var ftm = this;
    var checklines = plan.find(".checks");
    var dyn_checkline = function (checkline) {
@@ -169,7 +182,7 @@ FlowTiMeter.prototype.dynamizechecks = function (plan) {
    });
 };
 
-FlowTiMeter.prototype.progressbar2canvas = function (bar) {
+FlowgencyTM.prototype.progressbar2canvas = function (bar) {
 
    var canvas = document.createElement("canvas"),
        ctx = canvas.getContext('2d'),
@@ -228,4 +241,60 @@ FlowTiMeter.prototype.progressbar2canvas = function (bar) {
    ctx.fillRect(0,0,canvas.width, canvas.height);
    $(canvas).attr('title', bar.attr('title') );
    bar.replaceWith(canvas);
+};
+
+FlowgencyTM.dynamize_taskeditor = function () {
+    var te = $(this);
+    te.data('changes', {});
+    te.find('fieldset').each(function () {
+        FlowgencyTM.dynamize_taskeditor_step_fieldset($(this));
+    });
+    $(te.step).change(function () {
+        te.find("fieldset").hide();
+        $("#step-"+this.value).show();
+        window.scrollTo(0,0);
+        this.blur();
+    });
+};
+
+FlowgencyTM.dynamize_taskeditor_step_fieldset = function (fieldset) {
+    var step_name = fieldset.attr('id').replace("step-","");
+    var changes = fieldset.parent().data('changes');
+    var step_changes = changes[step_name];
+    if ( !step_changes ) step_changes = changes[step_name] = {};
+    var update = function (field) {
+        if ( field.defaultValue == field.value )
+            delete step_changes[field.name];
+        else step_changes[field.name] = field.value;
+        console.info("Changed field " + field.name + " for step "
+            + step_name + ". Current updates: " 
+            + JSON.stringify(changes)
+        )
+    };
+    var closure_cache = {};
+    fieldset.find("input[name=priority]").change(function () {
+        var numberfield = $(this).parents(".input").children().last();
+        if ( this.value ) $(numberfield).val(this.value);
+        update(this);
+    });
+    fieldset.find("p.input:has(input[name=priority]) input:last")
+        .focus(function () {
+            this.previousSibling.checked = true;
+        })
+        .change(function () {
+            this.previousSibling.value = this.value;
+            $(this.previousSibling).change();
+        });
+    fieldset.find("input[name=checks]").change( function () {
+        this.parentNode.lastChild.max = this.value;
+        update(this);
+    });
+    // to add: time stages, substeps
+    ['title', 'description', 'done', 'from_date', 'expoftime_share']
+       .forEach(function (field) {
+            console.info("Setting updater for field " + field + "...");
+            fieldset.find("[name="+field+"]").change( function () {
+                update(this);
+            });
+       });
 };
