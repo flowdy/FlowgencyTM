@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="625.75745"
+   width="647.19183"
    height="178.5743"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.5 r10040"
    sodipodi:docname="logo3.svg"
-   inkscape:export-filename="/home/floh/flowgencytm/site/logo3.png"
+   inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
    inkscape:export-xdpi="44"
    inkscape:export-ydpi="44">
   <defs
@@ -64,9 +64,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.45"
-     inkscape:cx="514.44135"
-     inkscape:cy="63.70525"
+     inkscape:zoom="0.5"
+     inkscape:cx="323.59591"
+     inkscape:cy="52.425705"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -181,35 +181,26 @@
        inkscape:export-ydpi="44.058949" />
     <path
        style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 577.08375,285.29828 c 3.23283,-3.23283 8.93119,-2.55176 8.93119,-2.55176 0,0 1.319,11.75876 -1.91382,14.99159 -3.23282,3.23282 -8.93119,1.59484 -8.93119,1.59484 0,0 -1.319,-10.80185 1.91382,-14.03467 z"
-       id="rect3788"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
-       inkscape:export-xdpi="44"
-       inkscape:export-ydpi="44" />
-    <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 632.70752,306.42782 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
-       id="rect3788-4"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
-       inkscape:export-xdpi="44"
-       inkscape:export-ydpi="44" />
-    <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 632.10934,346.18349 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
-       id="rect3788-4-8"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
-       inkscape:export-xdpi="44"
-       inkscape:export-ydpi="44" />
-    <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
-       d="m 631.91964,382.90886 c -3.23283,3.23283 -2.55176,8.93119 -2.55176,8.93119 0,0 11.75876,1.319 14.99159,-1.91382 3.23282,-3.23282 1.59484,-8.93119 1.59484,-8.93119 0,0 -10.80185,-1.319 -14.03467,1.91382 z"
+       d="m 635.10668,382.90886 c -7.17797,3.23283 -5.66576,8.93119 -5.66576,8.93119 0,0 26.10837,1.319 33.28633,-1.91382 7.17794,-3.23282 3.54108,-8.93119 3.54108,-8.93119 0,0 -23.98372,-1.319 -31.16165,1.91382 z"
        id="rect3788-4-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="zczcz"
+       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-xdpi="44"
+       inkscape:export-ydpi="44" />
+    <path
+       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       d="m 635.17704,346.21205 c -7.17797,3.23283 -5.66576,8.93119 -5.66576,8.93119 0,0 26.10837,1.319 33.28633,-1.91382 7.17794,-3.23282 3.54108,-8.93119 3.54108,-8.93119 0,0 -23.98372,-1.319 -31.16165,1.91382 z"
+       id="rect3788-4-2-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="zczcz"
+       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-xdpi="44"
+       inkscape:export-ydpi="44" />
+    <path
+       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       d="m 635.04701,307.13087 c -7.17797,3.23283 -5.66576,8.93119 -5.66576,8.93119 0,0 26.10837,1.319 33.28633,-1.91382 7.17794,-3.23282 3.54108,-8.93119 3.54108,-8.93119 0,0 -23.98372,-1.319 -31.16165,1.91382 z"
+       id="rect3788-4-2-3-1"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="zczcz"
        inkscape:export-filename="logo/flowgencytm.png"
