@@ -60,9 +60,12 @@ sub open {
 sub fast_bulk_update {
     my $self = shift;
 
+    my $log = Mojo::Log->new();
+
     for my $task ( $self->param() ) {
 
         my $data = $self->param($task);
+        $log->info("For task $task update: $data");
         $_ = decode_json $_ for $data;
         $task = FlowgencyTM::user->tasks->get($task);
 
