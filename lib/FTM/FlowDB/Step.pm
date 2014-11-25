@@ -103,6 +103,32 @@ has future_focus_queue_len => (
     is => 'rw', isa => 'Num'
 );
 
+sub markdown_description {
+    my ($self) = @_;
+
+    my $d = $self->description // return;
+
+    if ( eval "require Text::Markdown" ) {
+        return _parse_markdown_description($d, incr_heading_level => 3 );
+    }
+    else {
+        return $d;
+    }
+}
+
+sub _parse_markdown_description {
+    my ($text, %opts) = @_;
+    
+    if ( my $add = $opts{incr_heading_level} ) {
+        my $h = '#' x $add;
+        $text =~ s{ ^ (\#+) }{$h.$1}egxms;
+        $text =~ s{ ^ ([^\n]+) \n ([=-])\2+ }
+                  { $h .( $2 eq '-' ? '##' : '#' ).' '.$1 }egxms;
+    }
+
+    return Text::Markdown::Markdown($text);
+}
+
 before ['insert', 'update'] => sub {
     my ($self, $args) = @_;
     $args //= {};

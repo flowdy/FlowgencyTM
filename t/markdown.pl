@@ -27,6 +27,6 @@ Dies eine zweiten Grades
 
 ### Hier eine dritten Grades
 
-Und hier etwas Text.
+Und hier etwas Text. Er enthält einen Link: <http://www.google.de>
 
 END_MD

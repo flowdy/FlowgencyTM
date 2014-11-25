@@ -1,8 +1,7 @@
 % layout undef;
 % my $focus = $details->{focus};
-% if ( my $description = $focus->[-1][1]->description ) {
-<h3>Description</h3>
-<div class="description"><%= $description %></div>
+% if ( my $description = $focus->[-1][1]->markdown_description ) {
+<div class="description"><%== $description %></div>
 % }
 <h3 style="margin-bottom:0;">Pending steps</h3>
 <p style="font-size:small;margin-top:0;color:gray;">Steps done or depending on these are not displayed.</p>
@@ -10,7 +9,7 @@
 % my $main_step = $focus->[-1][1];
 % foreach my $step ( @$focus ) {
 % $step = $step->[1];
-<li><% if ( $main_step == $step ) { %><em>Complete and archive task <%= $step->task_row->name %><% if ( my $s_name = $step->name ) { %>.<%= $s_name %><% } %>:</em><% } else { %><%= $step->description %> [<%= $step->name %>]<% } %> <div class="checks" data-id="<%= $step->name %>" data-done="<%= $step->done %>"><strong>Done?</strong>
+<li><% if ( $main_step == $step ) { %><em>Complete and archive task <%= $step->task_row->name %><% if ( my $s_name = $step->name ) { %>.<%= $s_name %><% } %>:</em><% } else { %><%== $step->markdown_description %><% } %> <div class="checks" data-id="<%= $step->name %>" data-done="<%= $step->done %>"><strong>Done <%= $step->name || "task" %>?</strong>
 %== join "", (map { '<input type="checkbox" checked="checked">' } 1 .. $step->done), (map { '<input type="checkbox">' }  1 .. ($step->checks - $step->done));
 </div></li>
 % }
