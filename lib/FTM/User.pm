@@ -89,6 +89,13 @@ after update_time_model => sub {
     });
 };
 
+sub dump_time_model {
+    my ($self) = shift;
+
+    return from_json($self->_dbicrow->time_model);
+
+}    
+
 sub _build_tasks {
     my $self = shift;
     FTM::User::Tasks->new({

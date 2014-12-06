@@ -12,18 +12,69 @@ sub ordered {
     my ($dependencies) = @_;
     my $source = Algorithm::Dependency::Source::HoA->new(shift);
     my $ado = Algorithm::Dependency::Ordered->new( source => $source );
-    my $ordered_list = $ado->schedule_all;
-
-    if ( !$ordered_list ) {
-        # Algorithm::Dependency to weed out all items selected in schedule_all
-        # in Algorithm::Dependency::Ordered.
-        croak "There are irresoluble dependencies either because of ",
-              "circularity or because the dependency graph is incomplete";
-    }
-
+    my $ordered_list = $ado->schedule_all // _fail_with_reason($dependencies);
     return wantarray ? @$ordered_list : $ordered_list;
             
 }
+
+sub _fail_with_reason {
+    my $dependencies = shift;
+    my (@stack, @path, $following) = ($dependencies);
+    my %following = map { $_ => {} } keys %$dependencies;
+
+    FROM_STACK:
+    while ( my $subdep = $stack[-1] ) {
+
+        DEPENDENCY:
+        while ( my ($name, $deps) = each %$subdep ) {
+            $following = $following{$name};
+            push @path, $name;
+
+            FOLLOWER:
+            for my $dep_name ( @$deps ) {
+                if ( $following->{$dep_name} ) {
+                    my $path = join ">", @path, $dep_name;
+                    $path =~ s{ \A (.+?) > (?=\Q$dep_name\E>) }{}xms;
+                    FTM::Error::IrresolubleDependency->throw(
+                        "Detected circular dependency: $path"
+                    );
+                }
+                else {
+                    my $fd = $following{$dep_name};
+                    $_++ for @{$fd}{$name, keys %$following};
+                        # Increment to make debugging easier, maybe
+                }
+            }
+            if ( @$deps ) { 
+                my %deps;
+                for my $dep ( @$deps ) {
+                    my $subdeps = $dependencies->{$dep} //
+                        FTM::Error::IrresolubleDependency->throw(
+                            "$dep, required by $name, is not found "
+                              . "in dependency graph"
+                        );
+                    ;
+                    $deps{$dep} = $subdeps;
+                }
+                push @stack, \%deps;
+                next FROM_STACK;
+            }
+            pop @path;
+        }
+        pop @stack;
+    }
+    
+    die "Dunno why ADO could not resolve the dependencies";
+
+}
+
+package FTM::Error::IrresolubleDependency;
+use Moose;
+extends 'FTM::Error';
+
+augment message => sub {
+    return inner() . "(and maybe further dependency problems that may or may not result from this one)"
+};
 
 __END__
 

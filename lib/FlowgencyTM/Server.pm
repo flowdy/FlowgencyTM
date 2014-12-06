@@ -23,7 +23,8 @@ sub startup {
   # Normal route to controller
   $r->get('/')->to('ranking#list')->name('home');
   $r->post('/update')->to('task_editor#fast_bulk_update');
-  $r->get('/newtask')->to('task_editor#form');
+  $r->get('/newtask')->to('task_editor#form', incr_prefix => 1);
+  $r->get('/settings')->to('user_profile#settings', user => FlowgencyTM::user);
   $r->any([qw/GET POST/] => '/task/:id/:action')->to(controller => 'task_editor');
    
 }

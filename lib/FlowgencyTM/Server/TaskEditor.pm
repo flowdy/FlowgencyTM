@@ -1,3 +1,5 @@
+use strict;
+
 package FlowgencyTM::Server::TaskEditor;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
@@ -66,21 +68,17 @@ sub fast_bulk_update {
 
         my $data = $self->param($task);
         $log->info("For task $task update: $data");
+
+        my $is_new = $task =~ s/^_NEW_TASK_\d+$//;
         $_ = decode_json $_ for $data;
-        $task = FlowgencyTM::user->tasks->get($task);
 
-        my $steps = delete $data->{steps};
+        my $method = $is_new ? 'add'
+                   : $data->{incr_name_prefix} ? 'copy'
+                   : 'update';
 
-        if ( %$data ) {
-            $data->{step} = '';
-            $task->store($data);
-        }
+        $data->{step} //= '';
 
-        STEP:
-        while ( my ($step, $data) = each %$steps ) {
-            %$data or next STEP;
-            $task->store( step => $step, %$data );
-        }
+        $task = FlowgencyTM::user->tasks->$method($task || (), $data);
 
     }
 

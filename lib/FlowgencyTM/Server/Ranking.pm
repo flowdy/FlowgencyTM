@@ -1,3 +1,5 @@
+use strict;
+
 package FlowgencyTM::Server::Ranking;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
@@ -37,20 +39,27 @@ my @basecolor = (0,0xC0,0xff);
 
 sub _dump_task {
     my ($task) = shift;
+    my ($due,$next)
+        = map { $task->flowrank->$_ }
+          'due_in_hms', 'next_statechange_in_hms'
+        ;
+    my $is_active = $task->flowrank->active;
     my $dump = {
         name => $task->name,
         title => $task->title,
         score => $task->flowrank->score,
         priority => $task->priority,
-        progressbar => _progress_bar( $task->progress, $task->flowrank->drift ),
+        progressbar => _progress_bar(
+            $task->progress, $task->flowrank->drift, $is_active
+        ),
         progress_pc => {
             checked_exp => $task->progress,
             time => $task->flowrank->time_position,
         },
         duedate => $task->due_ts,
-        due_in_hms => $task->flowrank->due_in_hms,
+        due_in_hms => $due,
         active => $task->flowrank->active,
-        next_statechange_in_hms => $task->flowrank->next_statechange_in_hms,
+        $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
         extended_info => $task->is_open && {
            focus => [$task->current_focus],
@@ -66,16 +75,24 @@ my $blender = FTM::Util::LinearNum2ColourMapper->new({
     '-1' => [51,255,64],
 });
 
+my $grey = [ hex(62), hex(53), hex(53) ]; 
+my $paused_blender = FTM::Util::LinearNum2ColourMapper->new({
+    '1' => $grey,
+    '0' => [127,127,127],
+    '-1' => $grey,
+});
+
 sub _progress_bar {
-    my ($done, $rel_state) = @_;
+    my ($done, $rel_state, $active) = @_;
     my $orient = $rel_state > 0 ? "right" : "left";
     my $other_opacity = 1 - abs($rel_state);
+    my $blender = $active ? $blender : $paused_blender;
     
     return {
         primary_color => scalar $blender->blend($rel_state),
         orientation => $orient,
         primary_width => sprintf("%1.0f%%", ($rel_state > 0 ? 1-$done : $done) * 100),
-        secondary_color => sprintf 'rgba(%d,%d,%d,%f)', @basecolor, $other_opacity,
+        secondary_color => sprintf 'rgba(%d,%d,%d,%f)', $active ? @basecolor : @$grey, $other_opacity,
     }
 
 }

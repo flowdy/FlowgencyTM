@@ -76,6 +76,7 @@ RETURN:
 
 sub parse_ts {
     my ($class, $ts, $year, $month, $day) = @_;
+    if ( lc $ts eq 'now' ) { return $class->now; }
     if (ref $year and my $date = $year) {
         croak "Not a $class object" if !(blessed($date) && $date->isa($class));
         ($year,$month,$day) = ($date->year, $date->month, $date->day);

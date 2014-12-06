@@ -1,145 +1,170 @@
-$(document).ready(function () { new FlowgencyTM(); });
+$(function () {
+    var ftm = new FlowgencyTM.Ranking();
+    $('#logo').data('FlowgencyTM', ftm)
+              .click(function (e) { ftm.rerank(e) })
+              ;
 
-function FlowgencyTM (args) {
-   
-   var nextload = { update_tasks: {} };
-
-   var get = function (task, step) {
-       var task_obj = nextload.update_tasks[task];
-       if ( task_obj === undefined )
-           nextload.update_tasks[task] = task_obj = { steps: {} };
-       if ( step === undefined ) return task_obj;
-       var step_obj = task_obj.steps[step];
-       if ( step_obj === undefined )
-           task_obj.steps[step] = step_obj = {};
-       return step_obj;
-   };
-
-   var reg_changes = (function () {
-       var dirty = false;
-       return function (get_only) {
-           if ( get_only ) return dirty;
-           if ( !dirty ) {
-               $("#slogan").text(
-                   "<- Please click the logo to commit your changes "
-                    + "and get an updated ranking."
-               );
-               dirty = true;
-           }
-       };
-   })();
-
-   var plans = $("#plans");
-
-   $("#list-opts input").each(function () {
-       $(this).click(function () {
-           nextload[this.name] ^= this.value;
-           console.log("New value of " + this.name + " is " + nextload[this.name]);
-       });
-   });
-
-   $("#settime").change(function () {
-       nextload.now = this.time.value;
-       nextload.keep = $(this).find("input[name='keep']:checked").val();
-       console.info("Changed time to " + nextload.now + " (keep: " + nextload.keep + ")");
-   });
-
-   $.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd' });
-
-   $("input[type=datetime]").each(function () {
-       this.placeholder = '[[[[YY]YY-]MM-]DD] HH:MM';
-   }).datetimepicker();
-
-   $("fieldset .fields").accordion({ header: 'dt', heightStyle: 'content' });
-   $("form.taskeditor").each(FlowgencyTM.dynamize_taskeditor);
-
-   this.check_done = function (task, step, done) {
-       console.log("Checked: " + done);
-       step = get(task, step);
-       if ( done === undefined )
-           delete step["done"];
-       else step["done"] = done;
-       reg_changes();
-   };
-
-   var ftm = this;
-
-   var toggler = function () {
-       var plan = $(this);
-       var ext = plan.find(".extended-info");
-       var task = get(plan.data("id"));
-       ext.toggle();
-       plan.toggleClass("shadow");
-       var isShown = !ext.is(":hidden");
-       if ( plan.data("isOpen") != isShown )
-           task["open_since"] = isShown ? 'now' : null;
-       else delete task["open_since"];
-       reg_changes();
-   };
-
-   var prepare_plan = function () {
-       var plan = $(this);
-       var isOpen = plan.find(".extended-info").length;
-       plan.data('isOpen', isOpen);
-       ftm.progressbar2canvas(plan.find(".progressbar"));
-       if ( isOpen ) {
-           console.info("Task is already open: "+isOpen);
-           ftm.dynamizechecks(plan);
-           plan.find("h2").click(toggler.bind(plan));
-       }
-       else plan.find("h2").click(function () {
-           console.info("Open task ...");
-           var ext = $(
-               '<div class=".extended-info" ><em>Loading ...</em></div>'
-           );
-           ext.appendTo(plan);
-           ext.load("/task/" + plan.data("id") + "/open", function () {
-               ftm.dynamizechecks(plan);
-           });
-           plan.addClass("shadow");
-           $(this).die('click').click(toggler);
-       });
-   };
-
-   plans.children().each(prepare_plan);
+    $.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd' });
  
-   $('#logo').click(function (e) {
-       var url = '/';
-       e.preventDefault();
-       var taskeditors = $("form.taskeditor");
-       if ( reg_changes(1) || taskeditors.length ) {
-           var params = nextload.update_tasks;
-           taskeditors.each(function () {
-               var task_name = $(this).data('taskid');
-               var task = params[task_name] = { steps: {} };
-               var changes = $(this).data('changes');
-               var root = changes[""];
-               delete changes[""];
-               Object.keys(changes).forEach(function (i) {
-                    task["steps"][i] = changes[i];
-               });
-               Object.keys(root).forEach(function (i) {
-                    task[i] = root[i];
-               });
-           });
-           Object.keys(params).forEach(function (i) {
-               params[i] = JSON.stringify(params[i]);
-           });
-           $.post('/update', params, function () {
-               alert("Changes submitted");
-               delete nextload.update_tasks;
-               url += '?' + $.param(nextload);
-           });
-       }
-       else { 
-           url += '?' + $.param(nextload);
-       }
-       window.location.href = url;
-   });
+    $("input[type=datetime]").each(function () {
+        this.placeholder = '[[[[YY]YY-]MM-]DD] HH:MM';
+        this.title = 'Alternatives:\n   German date: [DD.[MM.[[YY]YY]]], or\n    "+" or "-", Integer and one of "y" (years), "m" (months), "w" (weeks) or "d" (days). Chainable, subsequent instances may be negative, otherwise omit the plus-sign.';
+    }).datetimepicker();
+ 
+    var toggler = function () {
+        var plan = $(this),
+            ext = plan.find(".extended-info"),
+            task = ftm.get(plan.data("id")),
+            ots = plan.data("openSince");
+        if ( ots && !confirm(
+            "NOTE: This task has been opened " + ots + ". Are you sure you "
+          + "want to close it, possibly loosing the ranking boost arising from "
+          + "how long it is open now?"
+        ) ) return;
+        ext.toggle();
+        plan.toggleClass("open");
+        var isShown = !ext.is(":hidden");
+        if ( plan.data("isOpen") != isShown )
+            task.open_since = isShown ? 'now' : null;
+        else task.drop("open_since");
+        console.log("open_since = " + task.open_since);
+        ftm.reg_changes();
+    };
+
+    $('#plans').children().each(function () {
+        var plan = $(this);
+        var isOpen = plan.find(".extended-info").length;
+        plan.data('isOpen', isOpen);
+        ftm.progressbar2canvas(plan.find(".progressbar"));
+        if ( isOpen ) {
+            console.info("Task is already open: "+isOpen);
+            ftm.dynamizechecks(plan);
+            plan.find("h2").click(toggler.bind(plan));
+        }
+        else plan.find("h2").click(function () {
+            var header = $(this),
+                ext = $(
+                    '<div class="extended-info" ><em>Loading ...</em></div>'
+                );
+            console.info("Open task ...");
+            ext.appendTo(plan);
+            ext.load("/task/" + plan.data("id") + "/open", function () {
+                ftm.dynamizechecks(plan);
+            });
+            plan.addClass("open");
+            plan.data('isOpen', true);
+            header.unbind("click").click(toggler.bind(plan));
+        });
+    });
+
+    $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
+ 
+    $("#list-opts input").each(function () {
+        $(this).click(function () {
+            ftm.nextload[this.name] ^= this.value;
+            console.log(
+                "New value of " + this.name + " is " + ftm.nextload[this.name]
+            );
+        });
+    });
+
+    $("#settime").change(function () {
+        ftm.nextload.now = this.time.value;
+        ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
+        console.info(
+            "Changed time to " + ftm.nextload.now
+            + " (keep: " + ftm.nextload.keep + ")"
+        );
+    });
+
+    $("body").click(function (e) {
+       if ( e.target.nodeName == "BODY" ) window.scroll(0,0);
+    });
+
+});
+
+var FlowgencyTM = (function namespace() {
+
+function Ranking (args) {
+    
+    var nextload = { update_tasks: {} };
+
+    var nl = {};
+    ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming']
+        .forEach(function (i) {
+            Object.defineProperty(nl, i, {
+                get: function () { return nextload[i] },
+                set: function (v) { nextload[i] = v },
+            });
+        });
+    nl.json_task_updates = function (task) {
+        var obj = nextload.update_tasks;
+        if ( task === undefined )
+            return JSON.stringify(obj);
+        else return JSON.stringify(obj[task]);
+    };
+    this.nextload = Object.freeze(nl);
+         
+    this.get = function (task, step) {
+        var task_obj = nextload.update_tasks[task];
+        if ( task_obj === undefined )
+            nextload.update_tasks[task] = task_obj = { steps: {} };
+        if ( step == null )
+            return new TaskStepCacheProxy(task, task_obj, true);
+        else {
+            var step_obj = task_obj.steps[step];
+            if ( step_obj === undefined )
+                task_obj.steps[step] = step_obj = {};
+            return new TaskStepCacheProxy(task + "." + step, step_obj); 
+        }
+    };
+
+    this.reg_changes = (function () {
+        var dirty = false;
+        return function (get_only) {
+            if ( get_only ) return dirty;
+            if ( !dirty ) {
+                $("#slogan").text(
+                    "\u2b03 Please click the logo to submit your changes "
+                     + "and to return to the refreshed ranking."
+                );
+                dirty = true;
+            }
+        };
+    })();
+
+    this.check_done = function (task, step, done) {
+        if ( step.length == 0 ) step = null;
+        step = this.get(task, step);
+        if ( done == null ) step.drop("done");
+        else step.done = done;
+        console.log("Checked: " + step.done);
+        this.reg_changes();
+    };
+
+    this.rerank = function (e) {
+        var url = '/';
+        e.preventDefault();
+        if ( this.reg_changes(1) ) {
+            var params = nextload.update_tasks;
+            Object.keys(params).forEach(function (i) {
+                params[i] = JSON.stringify(params[i]);
+            });
+            $.post('/update', params, function () {
+                alert("Changes submitted");
+                delete nextload.update_tasks;
+                url += '?' + $.param(nextload);
+            });
+        }
+        else { 
+            url += '?' + $.param(nextload);
+        }
+        window.location.href = url;
+    };
 
 }
 
-FlowgencyTM.prototype.dynamizechecks = function (plan) {
+Ranking.prototype.dynamizechecks = function (plan) {
    var ftm = this;
    var checklines = plan.find(".checks");
    var dyn_checkline = function (checkline) {
@@ -182,7 +207,7 @@ FlowgencyTM.prototype.dynamizechecks = function (plan) {
    });
 };
 
-FlowgencyTM.prototype.progressbar2canvas = function (bar) {
+Ranking.prototype.progressbar2canvas = function (bar) {
 
    var canvas = document.createElement("canvas"),
        ctx = canvas.getContext('2d'),
@@ -243,58 +268,160 @@ FlowgencyTM.prototype.progressbar2canvas = function (bar) {
    bar.replaceWith(canvas);
 };
 
-FlowgencyTM.dynamize_taskeditor = function () {
-    var te = $(this);
-    te.data('changes', {});
+Ranking.prototype.dynamize_taskeditor = function (te) {
+    var ftm = this, parent_of = {};
+    te.submit(function () { $("#logo").click(); return false; });
     te.find('fieldset').each(function () {
-        FlowgencyTM.dynamize_taskeditor_step_fieldset($(this));
+        var fieldset = $(this);
+        var id = fieldset.data('stepid');
+        fieldset.find(":input[name=substeps]").val().split(/\W+/).forEach(
+            function (child) { if (!child) return; parent_of[child] = id; }
+        );
+        ftm.dynamize_taskeditor_step_fieldset(fieldset);
     });
-    $(te.step).change(function () {
+    $('#steps-tree').change(function () {
         te.find("fieldset").hide();
         $("#step-"+this.value).show();
         window.scrollTo(0,0);
         this.blur();
-    });
+    }).data("parent_of", parent_of);
 };
 
-FlowgencyTM.dynamize_taskeditor_step_fieldset = function (fieldset) {
+Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
+    var ftm = this;
     var step_name = fieldset.attr('id').replace("step-","");
-    var changes = fieldset.parent().data('changes');
-    var step_changes = changes[step_name];
-    if ( !step_changes ) step_changes = changes[step_name] = {};
-    var update = function (field) {
-        if ( field.defaultValue == field.value )
-            delete step_changes[field.name];
-        else step_changes[field.name] = field.value;
+    if (step_name == '') step_name = null;
+    var step = ftm.get(
+         fieldset.parent().data("taskid"),
+         step_name
+    );
+    function update (field) {
+        if ( field.type == "radio" || field.type == "checkbox"
+            ? field.defaultChecked == field.checked
+            : field.defaultValue == field.value
+           ) step.drop(field.name);
+        else step[field.name] = field.value;
         console.info("Changed field " + field.name + " for step "
-            + step_name + ". Current updates: " 
-            + JSON.stringify(changes)
-        )
+            + step.name + " to " + step[field.name]
+        );
+        ftm.reg_changes();   
     };
-    var closure_cache = {};
+
     fieldset.find("input[name=priority]").change(function () {
         var numberfield = $(this).parents(".input").children().last();
         if ( this.value ) $(numberfield).val(this.value);
         update(this);
+    }).parents(".input").children("input:last").focus(function () {
+        this.previousSibling.checked = true;
+    }).change(function () {
+        this.previousSibling.value = this.value;
+        $(this.previousSibling).change();
     });
-    fieldset.find("p.input:has(input[name=priority]) input:last")
-        .focus(function () {
-            this.previousSibling.checked = true;
-        })
-        .change(function () {
-            this.previousSibling.value = this.value;
-            $(this.previousSibling).change();
-        });
+
     fieldset.find("input[name=checks]").change( function () {
         this.parentNode.lastChild.max = this.value;
         update(this);
     });
+
     // to add: time stages, substeps
-    ['title', 'description', 'done', 'from_date', 'expoftime_share']
-       .forEach(function (field) {
-            console.info("Setting updater for field " + field + "...");
-            fieldset.find("[name="+field+"]").change( function () {
-                update(this);
+    // fieldset.find("select[name^=track]").css({ width: '20em' });
+    fieldset.find(".time-stages").each(function () {
+        var table = $(this),
+            input_selector = ":input:not([disabled],button)",
+            use_datepicker;
+        function used_datepicker () { use_datepicker = true; }
+        function ts_updater (e) {
+            if ( use_datepicker ) return;
+            var stages = [];
+            table.find("tr").each(function () {
+                var stage = {}, i = 0;
+                $(this).find(input_selector).each(function () {
+                    console.log("timestage " + i + ": name="
+                        + this.name + ", value=" + this.value);
+                    stage[this.name] = this.value;
+                    i++;
+                });
+                if ( i ) stages.push(stage);
             });
-       });
+            update({ defaultValue: {}, value: stages, name: 'timestages' });
+        }
+        var dp_modifier = function () {
+            $(this).datepicker( "option", "onClose", function () {
+                use_datepicker = false;
+                ts_updater();
+            })
+            .datepicker( "option", "onSelect", used_datepicker)
+            .datepicker( "option", "onChangeMonthYear", used_datepicker)
+            .change(ts_updater);
+        };
+        table.find("input[type=datetime]").each(dp_modifier);
+        table.on('click', '.add-btn', function (e) {
+            var myrow = $(this).parents("tr").first();
+            var added = myrow.clone().insertAfter(myrow);
+            added.find("input").removeAttr("id").removeClass("hasDatepicker")
+                .datetimepicker().each(dp_modifier).val("");
+            added.find("option:selected").removeAttr("selected");
+            return false;
+        });
+        table.on("click", '.drop-btn', function (e) {
+            $(this).parents("tr").first().remove();
+            ts_updater(e);
+            return false;
+        });
+    });
+
+    var remaining_fields = [
+        'incr_name_prefix', 'title', 'description', 'done', 'from_date',
+        'expoftime_share'
+    ];
+
+    var default_change_handler = function () { update(this); };
+    remaining_fields.forEach(function (field) {
+        console.info("Setting updater for field " + field + "...");
+        fieldset.find("[name="+field+"]").change(default_change_handler);
+    });
+    var dl = fieldset.children(".fields")
+        .accordion({ header: 'dt', heightStyle: 'content' }),
+        acc_length = dl.find("dt").length;
+    dl.children("dd").find(":input:last").blur(function (e) {
+        var current = dl.accordion("option", "active"),
+            next = current + 1 === acc_length ? 0 : current + 1;
+            // dl.accordion("activate",next); // pre jQuery UI 1.10
+        dl.accordion("option", "active", next);
+        dl.find(".ui-accordion-header-active").focus();
+        e.preventDefault();
+    });
 };
+
+function TaskStepCacheProxy (name, obj, extended) {
+    var fields = [
+        'description', 'expoftime_share', 'checks', 'done', 'substeps'
+    ];
+
+    var my = this;
+
+    if ( extended )
+        fields.push(
+            'incr_name_prefix','title','priority','timestages','from_date',
+            'open_since', 'archived_because'
+           );
+
+    fields.forEach(function (i) {
+        Object.defineProperty(my, i, {
+            get: function () { return obj[i]; },
+            set: function (v) { obj[i] = v; },
+            configurable: false,
+            enumerable: true
+        });
+    });
+
+    my.drop = function (field) { delete obj[field]; };
+    my.name = name;
+    my.fields = fields;
+
+    Object.freeze(my);
+};
+
+return {
+    Ranking: Ranking
+}; })(); /* END of FlowgencyTM namespace */

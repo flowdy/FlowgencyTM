@@ -17,8 +17,8 @@
    inkscape:version="0.48.5 r10040"
    sodipodi:docname="logo3.svg"
    inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
-   inkscape:export-xdpi="44"
-   inkscape:export-ydpi="44">
+   inkscape:export-xdpi="41.93"
+   inkscape:export-ydpi="41.93">
   <defs
      id="defs4">
     <linearGradient
@@ -46,16 +46,6 @@
          offset="1"
          style="stop-color:#ff264c;stop-opacity:1;" />
     </linearGradient>
-    <linearGradient
-       y2="386.64789"
-       x2="652.70715"
-       y1="386.64789"
-       x1="468.91922"
-       gradientTransform="matrix(0.40849558,0,0,0.40849558,-109.67372,178.22944)"
-       gradientUnits="userSpaceOnUse"
-       id="linearGradient3038"
-       xlink:href="#linearGradient3763"
-       inkscape:collect="always" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -65,7 +55,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.5"
-     inkscape:cx="323.59591"
+     inkscape:cx="983.99073"
      inkscape:cy="52.425705"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -87,7 +77,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -114,7 +104,7 @@
        id="path3757"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="scczzcss"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949" />
     <flowRoot
@@ -122,7 +112,7 @@
        id="flowRoot4425"
        style="font-size:40px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#625353;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
        transform="matrix(1.0801835,0,-0.00882336,2.1416811,-102.21765,-356.72474)"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949"><flowRegion
          id="flowRegion4427"><rect
@@ -163,7 +153,7 @@
        id="text3013"
        sodipodi:linespacing="125%"
        transform="scale(0.87484326,1.1430619)"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949"><tspan
          sodipodi:role="line"
@@ -171,21 +161,21 @@
          y="388.75897"
          id="tspan3785">Your personal task &amp; time manager.</tspan></text>
     <path
-       style="fill:url(#linearGradient3038);fill-opacity:1;stroke:none"
+       style="fill:#00c0ff;fill-opacity:1;stroke:none"
        d="m 153.28255,311.48837 c -6.36895,8e-5 -11.01503,1.52274 -13.93991,4.57004 -11.27532,11.76635 -23.54627,27.17774 -36.8029,46.22383 -0.66052,0.84653 -3.128168,4.08676 -3.741432,4.08672 -11.483234,-13.26652 -28.717067,-23.16851 -29.135692,-18.78162 5.747895,6.85622 9.762725,10.13564 13.987703,16.18362 5.095066,7.29348 7.805988,12.7743 10.972732,15.63514 3.349514,1e-5 5.918619,1.35613 9.474079,-0.8734 15.56829,-21.83954 32.45591,-42.58023 50.66622,-62.21898 1.55673,-1.73522 2.33598,-2.89235 2.33608,-3.48498 -1e-4,-0.38085 -0.25984,-0.70338 -0.77869,-0.95741 -0.51905,-0.25387 -1.52862,-0.38288 -3.03819,-0.38296 z"
        id="rect2985"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccscccccc"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44.058949"
        inkscape:export-ydpi="44.058949" />
     <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       style="fill:#33ff40;fill-opacity:1;stroke:none"
        d="m 635.10668,382.90886 c -7.17797,3.23283 -5.66576,8.93119 -5.66576,8.93119 0,0 26.10837,1.319 33.28633,-1.91382 7.17794,-3.23282 3.54108,-8.93119 3.54108,-8.93119 0,0 -23.98372,-1.319 -31.16165,1.91382 z"
        id="rect3788-4-2"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44"
        inkscape:export-ydpi="44" />
     <path
@@ -194,16 +184,16 @@
        id="rect3788-4-2-3"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44"
        inkscape:export-ydpi="44" />
     <path
-       style="fill:#00c0ff;fill-opacity:0.94117647;stroke:none"
+       style="fill:#ff264c;fill-opacity:1;stroke:none"
        d="m 635.04701,307.13087 c -7.17797,3.23283 -5.66576,8.93119 -5.66576,8.93119 0,0 26.10837,1.319 33.28633,-1.91382 7.17794,-3.23282 3.54108,-8.93119 3.54108,-8.93119 0,0 -23.98372,-1.319 -31.16165,1.91382 z"
        id="rect3788-4-2-3-1"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="zczcz"
-       inkscape:export-filename="logo/flowgencytm.png"
+       inkscape:export-filename="/home/floh/flowgencytm/site/logo/flowgencytm.png"
        inkscape:export-xdpi="44"
        inkscape:export-ydpi="44" />
   </g>

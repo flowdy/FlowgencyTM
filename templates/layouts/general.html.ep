@@ -20,7 +20,7 @@
 <body>
   <header>
     <h1><a id="logo" href="/"><img src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
-    <p id="slogan">Version <%= $get_version->() %>, released under GNU General Public License.<br>Proof of concept, please use with play data only.<br>&copy; 2012-2014 Florian Heß, hopefully et al. someday</p>
+    <p id="slogan">This place is reserved for a FlowgencyTM extension widget of user's choice<br>(e.g. a Pomodoro alarm clock).</p>
   </header>
 
 <nav id="leftnav">
@@ -47,7 +47,7 @@
 </ul>
 
 <ul>
-<li>Settings</li>
+<li><a href="/settings">Settings</a></li>
 </ul>
 
 </nav>

@@ -261,13 +261,10 @@ sub store {
         continue { $step = $parent; }
     }
 
-    my $steps_aref; # list all upper steps before their lower levels
-    if ( my $s = delete $args{substeps} ) {
-        $steps_aref = _ordered_step_hrefs( $root, $s, %$steps );
-    }
-    else {
-        $steps_aref = [];
-    }
+    # list all upper steps before their lower levels
+    my $steps_aref = _ordered_step_hrefs(
+        $root, delete $args{substeps}, %$steps
+    );
 
     $self->dbicrow->result_source->storage->txn_do( sub {
         $self->_store_root_step(\%args);
@@ -358,7 +355,7 @@ sub _ordered_step_hrefs {
         
     }; # end of $sequencer definition
 
-    $sequencer->($root_name => $top_sequence);
+    $sequencer->($root_name => $top_sequence) if $top_sequence;
 
     while ( my ($step,$md) = each %steps ) {
         $md->{oldname} = $step;
@@ -371,16 +368,14 @@ sub _ordered_step_hrefs {
         shift @$ordered_steps;
         delete $steps{''};
     }
+
     for my $step ( @$ordered_steps ) {
         $step = delete $steps{$step};
     }
 
-    if ( my @orphans = keys %steps ) {
-        FTM::Error::Task::InvalidDataToStore->throw(
-             "Some steps of which the data provided in {steps}"
-            ." are not hooked in any {substeps} order chain: "
-            . join q{, }, @orphans
-        );
+    for my $orphan ( values %steps ) {
+        if ( $orphan->{_skip} ) { unshift @$ordered_steps, $orphan; }
+        else { push @$ordered_steps, $orphan; }
     }
     
     return $ordered_steps;
@@ -492,18 +487,20 @@ sub _store_steps_below {
             if $step->{_skip};
 
         my $name = delete $step->{oldname};
-        $step->{name} //= $name;
 
         my $step_row  = $steps_rs->find({ name => $name });
 
         if ( %$step ) {
+            $step->{name} //= $name;
             my ($parent, $is_parent, $link)
                 = delete @{$step}{ 'parent', 'is_parent', 'link_id' };
-            die "Substep $name is missing its parent" if !defined $parent;
+            # Commented out that since steps hash can contain data to store
+            # without there being hierarchical reorganisation:
+            # die "Substep $name is missing its parent" if !defined $parent;
 
-            my $p_row = length $parent
-                      ? $rows_tmp{$parent}
-                      : $steps_rs->find({ name => '' })
+            my $p_row = length $parent  ? $rows_tmp{$parent}
+                      : defined $parent ? $steps_rs->find({ name => '' })
+                      : undef
                       ;
 
             if ( $step_row ) {
@@ -532,17 +529,26 @@ sub _store_steps_below {
                 
                 }
     
-                $step_row->parent_row($p_row);
+                $step_row->parent_row($p_row) if defined $p_row;
                 $step_row->set_columns($step);
 
             }
 
-            else { 
+            elsif ( $p_row )  { 
+                $rows_tmp{ $name } = $step_row
+                    = $p_row->new_related(substeps => $step);
+            }
+
+            else {
+
+                FTM::Error::Task::InvalidDataToStore->throw(
+                    "step $name has no parent, i.e. is not included in a"
+                   ."substeps chain of another step"
+                ) if !defined $parent;
+
                 FTM::Error::Task::InvalidDataToStore->throw(
                     "Didn't cache parent $parent for step $name"
                 ) if !defined $p_row;
-                $rows_tmp{ $name } = $step_row
-                    = $p_row->new_related(substeps => $step);
                 
             }
 
@@ -566,11 +572,11 @@ sub _store_steps_below {
             my $inhier;
             while ( $ar = $ar->parent_row ) {
                 next if !($inhier = $in_hierarchy{ $ar->name });
-                $inhier->{$step} or $step_row->delete;
+                $inhier->{$name} or $step_row->delete;
                 last;
             }
             continue {
-                $step = $ar->name;
+                $name = $ar->name;
             }
             
         }

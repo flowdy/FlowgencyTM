@@ -19,6 +19,12 @@ body {
    padding-left:0;
 }
 
+#leftnav a {
+   display:block;
+   text-decoration:none;
+   color:inherit;
+}
+
 #leftnav > ul > li {
    margin-bottom: 0.5em;
    padding: 0.5em;
@@ -36,13 +42,13 @@ body {
 body > header {
    height:120px;
    position:fixed;
-   background-color:white;
+   background-color:rgba(255,255,255,0.9);
    border-bottom: 2px solid darkgrey;
    margin-bottom:1px;
    overflow:hidden;
    top:0;
    width: 100%;
-   z-index:3;
+   z-index:1;
 }
 
 #page {
@@ -56,12 +62,13 @@ body > header h1 {
 
 #slogan {
   text-align:center;
-  font-size:16pt;
+  font-size:1.1em;
   margin:1em 0;
-  font-style:italic;
+  border:1px dashed darkgrey;
   color: darkgrey;
-  padding-left:220px;
-  min-height:100px;
+  padding: 10px 0;
+  margin-left:320px;
+  margin-right:10px;
 }
 
 #page {
@@ -93,6 +100,11 @@ body > header h1 {
   -moz-box-shadow:    3px 3px 5px 6px #ccc;
   -webkit-box-shadow: 3px 3px 5px 6px #ccc;
   box-shadow:         3px 3px 5px 6px #ccc;
+}
+
+#plans > li.paused {
+  color:#625353;
+  border-color:darkgrey;
 }
 
 #plans header > h2 {
@@ -135,10 +147,16 @@ body > header h1 {
 .checks { text-align:right; }
 .checks input { margin:0; padding:0; }
 
-.taskeditor fieldset { display:none; }
+.taskeditor input[name=title], .taskeditor textarea { width: 100%; }
+.taskeditor fieldset { display:none; border: 0; }
 .taskeditor fieldset[id=step-] { display:block; }
 .taskeditor .help { font-size:small; }
 .taskeditor dt { font-weight:bold; margin-top:0.5em; }
+.taskeditor textarea { font-size:initial; font-family: monospace; }
+.taskeditor .time-stages { width: 100%; }
+.taskeditor .time-stages .until { width: 7em; }
+.ui-widget { font-size: initial }
+.ui-accordion-header { font-size: 1.1em; }
 
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }

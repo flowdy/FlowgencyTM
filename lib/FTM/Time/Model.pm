@@ -15,7 +15,7 @@ has _time_tracks => (
     isa => 'HashRef[FTM::Time::Track]',
     traits => [ 'Hash' ],
     default => sub { {} },
-    handles => { get_track => 'get', register_track => 'set' },
+    handles => { get_track => 'get', register_track => 'set', get_all_timetracks => 'kv' },
 );
 
 sub from_json {
