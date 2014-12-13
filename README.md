@@ -41,18 +41,22 @@ How best to benefit from using FlowgencyTM
 
 ### Define your personal time model
 
+User profiles are created with a default 24/7 time model. This is to avoid tasks to vanish at times, thus confusing the user. It is not meant at all to promote the idea that workoholism is of any good.
+
 Your experience of proper urgency-based ranking requires telling the software beforehand when you plan to work on the entered tasks and when not. With FlowgencyTM, you are to plan your working time roughly in advance. You can always modify your time model for the future (e.g. for holidays), but to touch the past would lead to false results which is why that would lead to an error message.
 
-Don't get it wrong: It is not required (practically it is impossible anyway) to follow your defined time model tightly down to the second. Just the more your actual working times match with what you have planned, of the more use will be FlowgencyTM for you. This asks of you some discipline. To a certain extent, you will have to let go of spontaneity, you have to plan your day and to stick.
+Don't get that wrong: It is not required (practically it is impossible anyway) to follow your defined time model tightly down to the second. Just the more your actual working times match with what you have planned, of the more use will be FlowgencyTM for you. This asks of you some discipline. To a certain extent, you will have to let go of spontaneity, you have to plan your day and to stick. When you have to go no matter what your plans say, you can have a glance into a future state of your urgency ranking left alone till then, so there will be no nasty surprise when you return.
 
-So define: When are you at work? When do you engage in which job or project? And when are you off, absent from work, which means rather fully present for family, friends, hobbies and stuff? When do you want a *computated* reason to let go of worries related to your work organization, business imponderables drawing circles in your mind? Please note, however, that the amount of working time directly relates to how fast urgencies rise during them.
+So define: When are you at work? When do you engage in which job or project? And when are you off, absent from work, which means rather fully present for family, friends, hobbies and stuff? When do you want a *computated* reason to let go of worries related to your work organization, business imponderables drawing circles in your mind? Please note, however, that the amount of working time directly relates to how fast urgencies rise along the way.
 
 The time model system is very flexible in order to allow for hopefully everyone's preferences. For example, when you define a variation (a rhythm bound to a given time span) inside a time track, you can have that variation shared with other tracks specified in the track definition. So you need to define holidays only once in a master track, all subordinate "slave" tracks can automatically adopt them and future changes to them as well.
+
+But then there is a risk of overcomplicating your time model. If you don't understand why task X is unlisted as paused suddenly, this is unfavourable and can reduce your productivity by turning your focus back to time management instead of the tasks themselves. Keep it simple and stupid, and do not tune it all the time. Best change it only to add next holidays or when you are imposed / have agreed upon job structure changes.
 
 
 ### Structure your tasks unless they are simple. Check steps when they are done.
 
-Enter all tasks, before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
+Enter tasks before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
 
   * When does a task start if not now, and when is it due?
 
@@ -70,7 +74,7 @@ Enter all tasks, before you do them. Enter even simple ones unless you are certa
 
   * How many checks shall a specific step/substep get? Setting a number greater than 1 is like assigning substeps to it without writing a description, estimating their expenditure of time and maybe increasing the number of checks.
 
-Once a task is entered with proper data, and it is displayed somewhere below, just forget it and return to the tasks currently on top. Check a step of the tasks at the top right when it is done.
+Once a task is entered with proper data, and it is displayed somewhere below in the ranking, just forget it and return to the tasks currently on top. Check a step of the tasks at the top right when it is done.
 
 When you want to save the checks and you are mentally prepared to switch to another task that might have become more urgent than what you have been working on: Just deliberately click the FlowgencyTM logo to reorder the tasks by descending urgency as how it is at the time of the click. Tasks of which the associated time track is currently "off" will never raise in urgency while this is the case. In other words, these planned periods of still time are logically identical with the net second before. By default, paused tasks are even hidden from display.
 
@@ -84,9 +88,9 @@ Even if you are a fan of FlowgencyTM, please understand that the method of time 
 Wherefore all that, what's the vision?
 ---------------------------------------
 
-On the larger scale, if the software is even more successfull than I expect, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and could therefore collapse dramatically someday.
+On the larger scale, if the software is used by many, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and could therefore collapse dramatically someday.
 
-One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic 24/7 dictate is idiotic, it is like having our children say what to do. Keep in mind, too: Your competitors do not sleep maybe since they suffer burn-out ;-).
+One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic 24/7 dictate is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
 
 I hope you get more flow experience – hence the name –, because you can focus better on your work as you can focus better on your life. 
 
@@ -104,14 +108,14 @@ FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac 
 
 Clone the git repository in a directory of your choice. With plain git on Linux enter at a shell prompt:
 
-   git clone <https://github.com/flowdy/FlowgencyTM>
+   git clone <https://github.com/flowdy/FlowgencyTM.git>
 
 For other systems, install the Git DVCS and do the according steps (cf. manual).
 
 Check the dependencies
 -----------------------
 
-Check and install any prerequisites by running inside the FlowgencyTM directory:
+Check and install any prerequisites by running inside the FlowgencyTM directory, provided cpanm tool is installed on your system:
 
   cpanm --installdeps .
 
@@ -138,7 +142,7 @@ Contact Author / Project initiator
 
 (Address split up for the sake of spam protection. Just glue it together and apply the "@" sign replacing "at".)
 
-    flories at arcor. de
+    fhess at mailbox. org
 
 
 License
