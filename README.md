@@ -142,6 +142,19 @@ Copyleft and credits
 
 Advisory in logo design: Laura Heß
 
+### Credits to other Open source projects used
+
+  * Perl – yes, you can program in Perl so that others can understand the code
+     * you can also obfuscate English, which does not make it a weird language, does it?
+     * I like it because of the linguistic principles its structure underlies
+  * Moose.pm – A Modern Object system for Perl
+     * Perl's own legacy object orientation support is not to call a strength of Perl
+     * but due to its low level and flexibility it makes Moose possible
+  * Date::Calc – Time-related calculations
+  * SQLite, DBIx::Class – Database Model
+  * Mojolicious – so you have your own server and need not expose any data
+  * Firefox – for testing and using FlowgencyTM (+ various other browsers)
+
 Contact Author / Project initiator
 -----------------------------------
 
