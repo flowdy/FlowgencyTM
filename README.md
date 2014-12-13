@@ -1,6 +1,8 @@
 README
 ======
 
+![Logo](site/logo/flowgencytm.png)
+
 What is FlowgencyTM? - Seven key-notes
 --------------------------------------
 
