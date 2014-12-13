@@ -28,11 +28,14 @@ What is FlowgencyTM? - Seven key-notes
 
  7. It is open source software licensed under the General Public License, version 3 or any later version. It resides on GitHub (URL: https://github.com/flowdy/FlowgencyTM) for you to download and use, or to fork it.
 
+This is how FlowgencyTM looks like on your screen:
+
+![Screenshot](doc/snapshot-home.png)
 
 What it is not
 --------------
 
-I, the project initiator and maintainer, *think* I have put some quite revolutionary nowhere-else-seen concepts into it, but just my ego believes it is the next big thing. At least it is realized in the hope that it is useful for someone.
+I, the project initiator and maintainer, *think* I have put into it some quite revolutionary nowhere-else-seen concepts, but really just my ego believes it is the next big thing. At least it is realized in the hope that it is useful for someone.
 
 However, it is not all meant for more than small-scale project management, ignoring management of costs, assets, risks etc. Neither as an enterprise-level groupware solution. But you are welcome to enhance it with interfaces to groupware products for tasks import or the propagation of those done.
 
