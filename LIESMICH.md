@@ -99,7 +99,7 @@ Ich hoffe, du bekommst durch FlowgencyTM mehr Flow-Erlebnisse – daher der Name
 Das Konzept im Detail
 ---------------------
 
-Dies ist eine Zusammenfassung der Datei <doc/konzept.de.md>.
+Dies ist eine Zusammenfassung. Siehe die [ausführliche Fassung](doc/konzept.de.md).
 
 Installation
 ------------

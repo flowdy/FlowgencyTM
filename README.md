@@ -100,7 +100,7 @@ I hope you get more flow experience – hence the name –, because you can focu
 The concept in detail
 ---------------------
 
-This is the summary of the concept that you can read in more detail in <doc/concept.en.md>. Those who have got a good command of German might prefer <doc/concept.de.md> as it is at times more up-to-date than the english translation.
+This is the summary of the concept that you can read [in more detail](doc/concept.en.md). Those who have got a good command of German might prefer [that version](doc/concept.de.md) as it is at times more up-to-date than the english translation.
 
 Installation
 -------------
