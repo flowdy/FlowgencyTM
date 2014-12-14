@@ -8,7 +8,7 @@ Was ist FlowgencyTM? - Die sieben wichtigsten Punkte
 
  1. FlowgencyTM ist ein Tool, um Aufgaben zu planen und zu verwalten, ihre Dringlichkeiten, Fortschritte und etwaige Abhängigkeiten. Es geht im Wesentlichen darum, Sachen in der vorher ausdrücklich für die Arbeit reservierten Zeit zu erledigen, abgesehen vielleicht von denen mit der geringsten Priorität. In einer Geschäftswelt, die vom Aberglaube des Multitasking besessen ist, hilft es, Aufgaben in einer festen Reihenfolge abzuarbeiten, denn so ist ein Flowerlebnis wahrscheinlicher.
 
- 2. Die Benutzeroberfläche ist mit HTML5 und Javascript realisiert. Sie läuft also im Webbrowser deiner Wahl. Die Serverkomponente ist ebenfalls fester Bestandteil der Distribution. FlowgencyTM ist nicht als Online-Service gedacht, sondern sogar so voreingestellt, dass du es auf deinem System lokal installieren kannst, und ausschließlich von diesem akzeptiert es Anfragen vom Browser.
+ 2. Die Benutzeroberfläche ist mit HTML5 und Javascript realisiert. Sie läuft also im Webbrowser deiner Wahl. Die Serverkomponente ist ebenfalls fester Bestandteil der Distribution. Sie ist so voreingestellt, dass du es auf deinem System lokal installieren kannst, und ausschließlich von diesem akzeptiert es Anfragen vom Browser.
 
  3. Die Aufgaben werden nach Dringlichkeit absteigend angezeigt. Die Liste wird aktualisiert, wann immer du auf das FlowgencyTM-Logo in der rechten oberen Ecke klickst. Du entscheidest, wann du deine angehakten, weil erledigten Schritte speichern willst und wann du bereit dafür bist, zu Aufgaben umzuschalten, die in der Zwischenzeit ggf. dringlicher geworden sind.
 
@@ -37,11 +37,9 @@ So sieht Flowgency auf dem Bildschirm aus:
 Was es nicht ist
 ----------------
 
-Ich, der Initiator und Hauptentwickler des Projektes, *denke*, dass ich mit FlowgencyTM einige vollkommen neue, noch nirgendwo gesehene Konzepte entwickelt habe, aber nur mein Ego glaubt, dass sei das nächste große Ding. Zumindest soll es, so meine Hoffnung, für jemanden von Nutzen sein.
+FlowgencyTM ist es nicht gedacht zum Management komplexerer Projekte. Kosten-, Asset- und Risikomanagement finden keine Berücksichtigung. Es ist keine Groupwarelösung für ganze Unternehmen, obgleich grundlegende Funktionen wie Delegation geplant sind. Du bist natürlich willkommen, Schnittstellen für solche Lösungen beizutragen, etwa über die sich Aufgaben importieren oder Erledigtstatus zurückmelden lassen.
 
-Jedoch ist es nicht gedacht zum Management komplexerer Projekte. Kosten-, Asset- und Risikomanagement finden keine Berücksichtigung. Es ist keine Groupwarelösung für ganze Unternehmen. Du bist natürlich willkommen, Schnittstellen für solche Lösungen beizutragen, über die sich Aufgaben importieren oder Erledigtstatus zurückmelden lassen.
-
-FlowgencyTM ist kein weiteres soziales Zeug. Es gibt nix zu teilen, du musst auch keinem Netzwerk beitreten. Es erfüllt seinen Zweck, indem es dir allein hilft. Zum sozial sein sollte niemand auf Computer oder das Internet angewiesen sein, denn beides pervertiert den Umgang miteinander.
+FlowgencyTM ist *nicht harmlos*. Die Serverkomponente für andere zu betreiben, damit sie nur einen Link klicken und sich anmelden brauchen, erfordert ethisches Verantwortungsbewusstsein. Falsch verwendet, kann sie Unternehmen wirtschaftlichen Schaden zufügen und möglicherweise sogar ganze Gesellschaften schädigen – sprich, sie leistet das Gegenteil dessen, wozu sie eigentlich programmiert wurde. Die Verwendung muss vor allem freiwillig sein, der/die Einzelne darf durch die Entscheidung dagegen keine negativen Folgen erleiden und sei dies dadurch, dass die Anwendung für andere mit einer Begünstigung verbunden ist.
 
 
 Wie FlowgencyTM am ergiebigsten zu benutzen ist
@@ -60,6 +58,10 @@ Lege also fest: Wann arbeitest du? Wann befasst du dich ggf. mit welchem Job ode
 Das Zeitmodellsystem ist sehr flexibel, um für die Bedürfnisse hoffentlich vieler Benutzer gewappnet zu sein. Zum Beispiel kannst du auf einer Zeitschiene Variationen definieren, also vom Grundrhythmus abweichende Rhythmen zwischen zwei definierten Zeitpunkten, und zwar so, dass sie sich automatisch auf andere, verknüpfte Zeitschinen ebenfalls niederschlagen. Urlaubstage brauchen so etwa nur für die oberste Schiene definiert werden, andere übernehmen sie dann automatisch, und damit auch etwaige spätere Änderungen an ihnen.
 
 Das hat allerdings seinen Preis: Es besteht das Risiko, dass du dein Zeitmodell unwillkürlich allmählich verkomplizierst und irgendwann nicht mehr verstehst, warum eine Aufgabe X plötzlich pausiert und aus der Liste verschwindet. Das ist ungünstig, reduziert deine Produktivität, weil es deine Aufmerksamkeit auf dein Zeitmanagement lenkt, weg von den Aufgaben selbst. Halte es also möglichst einfach. Schraube nicht fortwährend daran, ändere es am besten nur um genehmigten Urlaub einzutragen und wenn du deine Arbeit inhaltlich umstrukturierst bzw. du von Umstrukturierungen betroffen bist.
+
+### Schätze deine Auszeiten
+
+Aus heißt nicht Bereitschaft. Du brauchst nicht hin und wieder FlowgencyTM anzuklicken. Das wäre wie den Kühlschrank zu öffnen nur um zu kontrollieren, dass es darin dunkel ist.
 
 ### Strukturiere deine Aufgaben, es sei denn, sie sind einfach.<br>Setze entsprechend Häkchen, wenn einzelne Schritte erledigt sind.
 
@@ -84,27 +86,20 @@ Ist die Aufgabe (bzw. ggf. mehrere Aufgaben in einem Schwung) richtig eingetrage
 Immer wenn du deine gesetzten Häkchen speichern willst und mental bereit bist, ggf. mit neuen, plötzlich dringenderen Schritten konfrontiert zu werden, klicke auf das Logo. So wird die Liste auf den aktuellen Stand der Dringlichkeiten gebracht. Aufgaben, deren aktuelle Zeitschiene gerade eine Pause durchläuft, erscheinen nicht in der Liste oder ausgegraut, falls die entsprechende Anzeigeoption links gesetzt ist. Sie steigen nicht auf, fallen eher, indem sie von anderen, aktiven Aufgaben überklettert werden.
 
 
-### Lege Wert auf eine menschliche, ethisch saubere Informationstechnologie
-
-Kümmere dich darum, wo der Server steht, wo deine Daten gespeichert sind – und wie sicher. Deine Zeit und wie du sie verwendest ist deine private Angelegenheit, und sie sollte privat bleiben. Ich persönlich betrachte FlowgencyTM oder davon abgeleitete oder inspirierte, kommerzielle wie sogenannte »Gratis«-Angebote von Dritten nicht als geeignete Option, wenn ich zur Nutzung derselben ihnen Wissen über meinen Umgang mit Zeit anvertrauen müsste. Dies gilt auch und insbesondere, wenn der dritte hier der Arbeitgeber ist. Die Entscheidung muss natürlich jeder für sich treffen. FlowgencyTM ist aufgrund der diesem Tool innewohnenden Missbrauchspotenziale einem Messer in der Küchenschublade vergleichbar. Man kann damit ein leckeres Mal zubereiten, genauso wie jemanden damit zu verletzen oder selbst damit verletzt zu werden. Derjenige, dessen Zeit(nutzung) damit verwaltet, also kontrolliert wird, sollte zugleich der sein, der verwaltet und kontrolliert.
-
-Wenn du ein Fan von FlowgencyTM bist, hoffe ich du verstehst, dass auch die Verwendung einer bestimmten Zeitmanagement-Methode eine private Angelegenheit ist. Es wird viele geben, die FlowgencyTM nicht verwenden möchten, denen es vielleicht sogar missfällt, dass du es tust. Andere davon zu überzeugen, die Verwendung im eigenen Unternehmen oder im eigenen Team durchzusetzen, gar Angestellte mit negativen Konsequenzen bei Nichtverwendung zu drohen oder auch nur solche zu implizieren, all das wird etwaige Produktivitätsvorteile durch FlowgencyTM vernichten.Der Schlüssel ist die wirklich freiwillige, möglichst eigeninitiative Anwendung zum persönlichen Zweck. Die Verantwortlichkeit von Arbeitgebern liegt darin begründet, dass ihre Angestellte die vereinbarten Arbeitszeiten einhalten und währenddessen die ihnen zugetragenen Aufgaben bei vernünftiger Fristsetzung erledigen.Überlasse ihnen die Wahl, ob sie ein bestimmtes Tool oder eine bestimmte Methode dafür verwenden, FlowgencyTM ist nur eine Möglichkeit und hat viele, im Einzelfall womöglich geeignetere Alternativen.
-
-
 Wofür das alles, was ist die Vision?
 ------------------------------------
 
 In einem größeren Maßstab, falls die Software von vielen verwendet wird, ist meine Hoffnung, dass FlowgencyTM als feedbackgesteuerter »Schrittmacher« in der Gesellschaft regelmäßige, gesunde Rhythmen von Ent- und Anspannung fördert. Ohne diesen droht ihr bald ein Kollaps. Entschleunigung und Rerhythmisierung tut not.
 
-Es ist Zweifel daran angebracht, ob eine Software das leisten kann. In einer Ära quasireligiöser Verehrung der Informationstechnologie im Allgemeinen (Der Computerpioneer und zuletzt Technologiekritiker Joseph Weizenbaum lehrte mich, das zu hinterfragen), ist es jedoch an der Zeit, Computern beizubringen, dass seine »Schöpfer« den regelmäßigen Nichtumgang mit ihnen brauchen. Die sitzen übrigens am längeren Hebel, schließlich versorgen sie die Computer letztlich mit Energie. Versuche, sich auf ihren agnostischen pausenlosen GHz-Rhythmus einzustimmen, sind idiotisch. Das ist wie sich vom eigenen Kind sagen zu lassen, was zu tun ist. Behalte auch die Weisheit im Hinterkopf: Die Konkurrenz schläft nicht, denn sie leidet unterm Burnout-Syndrom ;-).
+Es ist Zweifel daran angebracht, ob eine Software das leisten kann. In einer Ära quasireligiöser Verehrung der Informationstechnologie im Allgemeinen (Der Computerpioneer und zuletzt Technologiekritiker Joseph Weizenbaum lehrte mich, das zu hinterfragen), ist es jedoch an der Zeit, Computern beizubringen, dass seine »Schöpfer« regelmäßige Auszeiten brauchen. Die sitzen übrigens am längeren Hebel, schließlich versorgen sie die Computer letztlich mit Energie. Versuche, sich auf ihren agnostischen pausenlosen GHz-Rhythmus einzustimmen, sind idiotisch. Das ist wie sich vom eigenen Kind sagen zu lassen, was zu tun ist. Behalte auch im Hinterkopf: Die Konkurrenz schläft nicht. Sie leidet unterm Burnout-Syndrom ;-).
 
-Ich hoffe, du bekommst durch FlowgencyTM mehr Flow-Erlebnisse – daher der Name – denn du lernst dich besser zu fokussieren, auf gerade anliegende Aufgaben im Beruf genauso wie auf die Herausforderungen des Lebens außerhalb.
+Ich hoffe, du bekommst durch FlowgencyTM mehr Flow-Erlebnisse – daher der Name – denn du lernst dich besser zu fokussieren, auf gerade anliegende Aufgaben im Beruf genauso wie auf das Lebens außerhalb.
 
 
-The concept in detail
+Das Konzept im Detail
 ---------------------
 
-Dies ist eine Zusammenfassung der Datei <doc/konzept.de.txt>.
+Dies ist eine Zusammenfassung der Datei <doc/konzept.de.md>.
 
 Installation
 ------------
@@ -137,25 +132,12 @@ Am Shell-Prompt führe bitte im FlowgencyTM-Verzeichnis das folgende Kommando au
 
 Bitte schließe nicht das Terminalfenster, weil es ggf. hilfreiche Meldungen ausgibt, wenn etwas schief läuft. Öffne nun den am Ende angezeigten Link in deinem Lieblings-Browser. Falls du eine lokale Firewall installiert hast, ist es nicht auszuschließen, dass diese Zugriffe von innerhalb des Systems verhindert, warum auch immer. Sieh im Handbuch deiner Firewall-Software nach, wie du entsprechende Ausnahmen konfigurierst, um HTTP-Zugriffe von und auf dein eigenes System zuzulassen (noch besser, kontaktiere deinen Administrator, falls vorhanden).
  
-Copyleft
----------------------
-
-(C) 2012, 2013, 2014 Florian Heß
 
 Welche anderen Open Source-Projekte verwendet werden
 ----------------------------------------------------
 
-  * Perl – ja, man kann in Perl so programmieren, dass andere den Code verstehen
-      * man kann ebenfalls Deutsch verhunzen, das macht aus Deutsch noch keine
-        schlechte Sprache.
-      * Ich mag Perl wegen der linguistischen Prinzipien, auf denen seine 
-        Struktur aufbaut.
-  * Moose.pm – Ein modernes Objectsystem für Perl, das sogar im Kern von Perl6
-      aufgeht
-     * Perls eigene Unterstützung des objektorientierten Paradigmas ist nicht
-       gerade zu den Stärken von Perl zu zählen.
-     * Aber gerade wegen seiner primitiven Umsetzung und Flexibilität macht es
-       Moose erst möglich.
+  * Perl – die für die Serverkomponente verwendete Programmiersprache
+  * Moose.pm – Ein modernes Objektsystem für Perl
   * Date::Calc – Zeitbezogene Berechnungen
   * SQLite, DBIx::Class – Datenbankschema
   * Mojolicious – für die Serverseite verantwortlich, so behältst du die volle
@@ -170,8 +152,10 @@ Autor / Projektinitiator kontaktieren
 
     fhess bei mailbox. org
 
-Lizenz
--------
+Copyleft und Lizenz
+---------------------
+
+(C) 2012, 2013, 2014 Florian Heß
 
 FlowgencyTM ist freie Software. Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren Version.
 
