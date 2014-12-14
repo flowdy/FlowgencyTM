@@ -22,7 +22,7 @@ Was ist FlowgencyTM? - Die sieben wichtigsten Punkte
 
    * wann die Aufgabe eingedenk deiner Arbeitsgeschwindigkeit komplett erledigt sein wird im Verhältnis zum aktuellen Fristende.
 
-Alle Dimensionen kannst du nach deinem Dafürhalten wichten. Per Voreinstellung fließen alle in gleichem Maße in die Dringlichkeitsberechnung ein.
+   Alle Dimensionen kannst du nach deinem Dafürhalten wichten. Per Voreinstellung fließen alle in gleichem Maße in die Dringlichkeitsberechnung ein.
 
  5. Diese vier weiteren Dimensionen steigern sich mit der fortschreitenden Zeit. Damit ist jedoch nicht die übliche Systemuhrzeit gemeint, sondern die FlowgencyTM-eigene, die abhängig von deinem definierten Zeitmodell läuft oder stillsteht. Wenn sie steht, ist die Dringlichkeit sozusagen gefroren. Pausierende Aufgaben werden per Voreinstellung nicht in der Liste aufgeführt.
 
