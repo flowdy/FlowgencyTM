@@ -24,7 +24,7 @@ What is FlowgencyTM? - Seven key-notes
 
    * how much will the additional time need be compared to what you have originally planned, considering your working speed.
 
-You can weight all dimensions as you find appropriate. By default, all five are weighted equally (1).
+   You can weight all dimensions as you find appropriate. By default, all five are weighted equally (1).
 
  5. These four dimensions aforementioned increase with the passage of time. Here, however, "time" is not directly what the system clock measures. FlowgencyTM has got its own that runs or stands still depending on your time model. In the latter periods, urgency is frozen. Affected i.e. pausing tasks are by default even hidden from display.
 
