@@ -1,5 +1,5 @@
-README
-======
+LIESMICH
+========
 
 ![Logo](site/logo/flowgencytm.png)
 
@@ -125,7 +125,6 @@ Prüfe und installiere die vorausgesetzten Drittmodule, indem du im FlowgencyTM-
 Das Programm ausführen
 -----------------------
 
-At a shell prompt, under the FlowgencyTM directory, run the command
 Am Shell-Prompt führe bitte im FlowgencyTM-Verzeichnis das folgende Kommando aus:
 
     script/morbo
