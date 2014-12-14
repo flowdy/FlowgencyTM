@@ -1,3 +1,5 @@
+(Jump to [German version](LIESMICH.md))
+
 README
 ======
 
@@ -6,7 +8,7 @@ README
 What is FlowgencyTM? - Seven key-notes
 --------------------------------------
 
- 1. FlowgencyTM is a tool to plan and to manage tasks, their urgencies, progresses and dependencies, just for yourself. It is all about getting things done, maybe except those of lowest priority, within the time that you have expressedly reserved for work. In a business world that is fallen for the multitasking illusion, it helps maintaining to-dos in a sequential order and sticking to it, so flow experience is liklier to come.
+ 1. FlowgencyTM is a tool to plan and to manage tasks, their urgencies, progresses and also dependencies if any, just for yourself. It is all about getting things done, maybe except those of lowest priority, within the time that you have expressedly reserved for work. In a business world that is fallen for the multitasking illusion, it helps maintaining to-dos in a sequential order and sticking to it, so flow experience is liklier to come.
 
  2. The user interface is implemented in HTML5 and Javascript, so it runs in your favourite web browser. The server component is included in the distribution, too. It forms an inherent part of it. FlowgencyTM is not meant an online service, it is rather preconfigured to run on your local system from which it exclusively accepts requests.
 
@@ -22,9 +24,11 @@ What is FlowgencyTM? - Seven key-notes
 
    * how much will the additional time need be compared to what you have originally planned, considering your working speed.
 
- 5. These four increase with advancing time, but not the system clock, FlowgencyTM has got its own that only covers the working time you specify in your time model. In periods of off-time in between, urgency is frozen. Affected i.e. pausing tasks are by default even hidden from display.
+You can weight all dimensions as you find appropriate. By default, all five are weighted equally (1).
 
- 6. You can devide tasks into steps, steps again into substeps. You can build arbitrarily deep hierarchies. Sometimes tasks or steps have substeps you find ridiculous to describe because they go without saying. Then you can instead specify that the software is to provide how many checks ever for them, one for each substep just thought.
+ 5. These four dimensions aforementioned increase with the passage of time. Here, however, "time" is not directly what the system clock measures. FlowgencyTM has got its own that runs or stands still depending on your time model. In the latter periods, urgency is frozen. Affected i.e. pausing tasks are by default even hidden from display.
+
+ 6. You can divide tasks into steps, steps again into substeps. You can build arbitrarily deep hierarchies. Sometimes tasks or steps have substeps you find ridiculous to describe because they go without saying. Then you can instead specify that the software is to provide how many checks ever for them, one for each substep just thought.
 
  7. It is open source software licensed under the General Public License, version 3 or any later version. It resides on GitHub (URL: https://github.com/flowdy/FlowgencyTM) for you to download and use, or to fork it.
 
@@ -35,11 +39,11 @@ This is how FlowgencyTM looks like on your screen:
 What it is not
 --------------
 
-I, the project initiator and maintainer, *think* I have put into it some quite revolutionary nowhere-else-seen concepts, but really just my ego believes it is the next big thing. At least it is realized in the hope that it is useful for someone.
+I, the project initiator and maintainer, *think* I have put into it some quite revolutionary nowhere-else-seen concepts, but in fact just my ego believes it is the next big thing. At least it is realized in the hope that it is useful for someone.
 
 However, it is not all meant for more than small-scale project management, ignoring management of costs, assets, risks etc. Neither as an enterprise-level groupware solution. But you are welcome to enhance it with interfaces to groupware products for tasks import or the propagation of those done.
 
-
+FlowgencyTM is neither some piece of "social" stuff. There is nothing to share, you need not join some network. It serves its purpose by helping you alone. Nobody must be imposed to socialize by computer and the internet, that way socializing gets perverted.
 
 How best to benefit from using FlowgencyTM
 ------------------------------------------
@@ -59,23 +63,22 @@ The time model system is very flexible in order to allow for hopefully everyone'
 But then there is a risk of overcomplicating your time model. If you don't understand why task X is unlisted as paused suddenly, this is unfavourable and can reduce your productivity by turning your focus back to time management instead of the tasks themselves. Keep it simple and stupid, and do not tune it all the time. Best change it only to add next holidays or when you are imposed / have agreed upon job structure changes.
 
 
-### Structure your tasks unless they are simple. Check steps when they are done.
+### Structure your tasks unless they are simple.<br>Check steps when they are done.
 
 Enter tasks before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
 
   * When does a task start if not now, and when is it due?
 
   * If you have more than one time track, on which do you want to do it?
-    That is, when shall they be active and bubbling up in the list in need to be checked?
-    Shall they change the time track at given points in time? Even that is possible.
+    That is, when shall they be active and bubbling up in the list in need to be checked? Shall they change the time track at given points in time? Even that is possible, but mind the cost (complexity) versus benefit.
 
   * Which priorities do they have?
 
   * Can they be divided into steps and which of those further into substeps perhaps? The hierarchy of steps and substeps can be arbitrarily deep.
 
-  * Do these steps or groups of steps require to be checked in the given or in random order? Steps for which you must do other steps first, are not displayed. You can have also steps to do occasionally in any order, at the latest after having done all ordered steps of a superordinate one or the overall task, respectively.
+  * Do these steps require to be checked in the given or in random order? You can restrict random order to certain subsets of steps. Steps for which you must do other steps first, are not displayed, nor would be those done. You can have also steps to do occasionally in any order, at the latest after having done all ordered steps of a superordinate one or the overall task, respectively.
 
-  * In your rough estimate, how much does a specific step or substep claim of the time-need that the respective superordinate one claims in all? Indicate that by plain relational integers. In the first time you use FlowgencyTM, you probably will want to leave the default of 1, so checks on all neighbouring steps will drive the progress forward by equal extents. But you can, if you want, make progress calculation more realistic by adjusting the expenditure of time shares.
+  * *For advanced users only:* What is the relative expenditure of time of a step compared to other steps surrounding in the hierarchy? The default is 1 and there will not be often a need of adjustment. Do that only when you are certain about it.
 
   * How many checks shall a specific step/substep get? Setting a number greater than 1 is like assigning substeps to it without writing a description, estimating their expenditure of time and maybe increasing the number of checks.
 
@@ -87,7 +90,7 @@ When you want to save the checks and you are mentally prepared to switch to anot
 
 Care for where the server is running, where your data is stored. Your time and how you use it is a rather private thing, and thus should be kept private. I, for one, do not consider FlowgencyTM or any other service inspired thereof a good option if provided commercially or "for free" by some internet company, a cloud provider or even by your own employers' IT department. After all, however, the decision is yours. FlowgencyTM is, due to its purpose, like a knife in your kitchen drawer that you can prepare a meal with as well as stab someone, or being stabbed. The one whose time is managed should be the only one who is managing it.
 
-Even if you are a fan of FlowgencyTM, please understand that the method of time management is a private thing, too. There will be many who choose not to use it and there will always be some who even dislike that you do. To persuade others to use it, to push it in your company, let alone to imply or explicitly threaten your employees with negative consequences if they choose not to, would render all the productivity benefits of the software effectively void. Voluntariness, that is, *real* voluntariness is key. As an employer, you are responsible for having your staff comply with any working hours agreed upon and do the given tasks until any reasonable due dates. Leave them the choice of whether or not to use some time management tool or method, with FlowgencyTM just being an instance of many.
+Even if you are a fan of FlowgencyTM, I hope you understand that the method of time management is a private thing, too. There will be many who choose not to use it and there will always be some who even dislike that you do. To persuade others to use it, to push it in your company, let alone to imply or explicitly threaten your employees with negative consequences if they choose not to, would render all the productivity benefits of the software effectively void. Voluntariness, that is, *real* voluntariness is key. As an employer, you are responsible for having your staff comply with any working hours agreed upon and do the given tasks until any reasonable due dates. Leave them the choice of whether or not to use some time management tool or method, with FlowgencyTM just being an instance of many.
 
 
 Wherefore all that, what's the vision?
@@ -97,7 +100,7 @@ On the larger scale, if the software is used by many, this I hope is what Flowge
 
 One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic 24/7 dictate is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
 
-I hope you get more flow experience – hence the name –, because you can focus better on your work as you can focus better on your life. 
+I hope you get more flow experience – hence the name –, because you can focus better on tasks in your work as you can focus better on challenges in your life. 
 
 The concept in detail
 ---------------------
@@ -140,8 +143,6 @@ Copyleft and credits
 
 (C) 2012, 2013, 2014 Florian Heß
 
-Advisory in logo design: Laura Heß
-
 ### Credits to other Open source projects used
 
   * Perl – yes, you can program in Perl so that others can understand the code
@@ -152,7 +153,8 @@ Advisory in logo design: Laura Heß
      * but due to its low level and flexibility it makes Moose possible
   * Date::Calc – Time-related calculations
   * SQLite, DBIx::Class – Database Model
-  * Mojolicious – so you have your own server and need not expose any data
+  * Mojolicious – so you have your own server and need not expose any data, and
+     you need not rely on the availability of a third party
   * Firefox – for testing and using FlowgencyTM (+ various other browsers)
 
 Contact Author / Project initiator
