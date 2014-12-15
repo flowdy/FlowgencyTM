@@ -165,6 +165,7 @@ Welche anderen Open Source-Projekte verwendet werden
 Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkzeuge. Meinen herzlichen Dank gilt den jeweiligen Entwicklern:
 
   * Perl – die für die Serverkomponente verwendete Programmiersprache
+  * JQuery, JQueryUI – dynamisches, ansprechendes Verhalten im Webbrowser
   * Moose.pm – Ein modernes Objektsystem für Perl
   * Date::Calc – Zeitbezogene Berechnungen
   * SQLite, DBIx::Class – Datenbankschema
@@ -172,6 +173,8 @@ Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkz
      Kontrolle über deine Daten und bist nicht auf die Verfügbarkeit Dritter
      angewiesen
   * Firefox – zum Testen und Benutzen von FlowgencyTM (+ andere Browser)
+  * VIM – zwar keine IDE, aber als Editor wahnsinnig leistungsfähig
+  * git – verteiltes Versionskontrollsystem
 
 Autor / Projektinitiator kontaktieren
 -------------------------------------
@@ -183,7 +186,7 @@ Autor / Projektinitiator kontaktieren
 Copyleft und Lizenz
 ---------------------
 
-(C) 2012, 2013, 2014 Florian Heß
+Copyright (C) 2012, 2013, 2014 Florian Heß
 
 FlowgencyTM ist freie Software. Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren Version.
 
