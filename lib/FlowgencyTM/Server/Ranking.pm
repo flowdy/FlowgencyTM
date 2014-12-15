@@ -13,22 +13,25 @@ sub list {
       $args{$p_name} = $self->param($p_name);
   }
 
+  my $now;
   if ( delete $args{keep} ) {
       use POSIX qw(strftime);
-      my $now = delete($args{now}) // strftime("Y-m-d H:M:S", localtime time);
+      $now = delete($args{now}) || strftime("%Y-%m-%d %H:%M:%S", localtime time);
       FTM::Time::Point->now($now);
   }
+  else { $now = $args{now} }
 
   my @tasks = FlowgencyTM::user->tasks->list(%args);
   $self->res->headers->cache_control('max-age=1, no-cache');
 
+  $now //= FTM::Time::Point->now();
   $self->render(
     list => sub {
         my $task = shift @tasks // return;
         _dump_task($task);
 
     },
-    timestamp => $tasks[0]->flowrank->_for_ts
+    timestamp => @tasks ? $tasks[0]->flowrank->_for_ts : $now
   );
 }
 

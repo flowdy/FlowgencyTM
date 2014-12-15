@@ -128,7 +128,7 @@ sub parse_ts {
     $ret{min} = $2 if defined $2;
     $ret{sec} = $3 if defined $3;
 
-    croak 'No date and/or time found in string (expecting one at its front)'
+    croak "No date and/or time found in string '$ts' (expecting one at its front)"
         if !defined( $ret{year} || $ret{month} || $ret{day} || $ret{hour} );
 
     $ret{remainder} = $ts;

@@ -57,6 +57,26 @@ $(function () {
         });
     });
 
+    var new_task_count;
+    $("a[href$='/newtask']").click(function (e) {
+        e.preventDefault();
+        var newtask = $('<li>'),
+            header = $('<header><h2>').appendTo(newtask).get(0).firstChild;
+        $('<div>Loading form for new task ...</div>').appendTo(newtask)
+          .load(this.href + "?bare=1", function () {
+            var te = newtask.find(".taskeditor"),
+                id = te.data('taskid') + (++new_task_count);
+            newtask.attr('id', 'task-' + id);
+            te.data('taskid', id);
+            ftm.dynamize_taskeditor(te);
+            te.find(":input[name=title]").first().change(function () {
+                header.text(this.value);
+            });
+        });
+        plans.prepend(newtask);
+        return false;
+    });
+
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
  
     $("#list-opts input").each(function () {
@@ -269,22 +289,21 @@ Ranking.prototype.progressbar2canvas = function (bar) {
 };
 
 Ranking.prototype.dynamize_taskeditor = function (te) {
-    var ftm = this, parent_of = {};
+    var ftm = this, parent_of = {}, taskname = te.data("taskid"),
+        steptree = new StepTree(taskname );
     te.submit(function () { $("#logo").click(); return false; });
     te.find('fieldset').each(function () {
         var fieldset = $(this);
         var id = fieldset.data('stepid');
-        fieldset.find(":input[name=substeps]").val().split(/\W+/).forEach(
-            function (child) { if (!child) return; parent_of[child] = id; }
-        );
+        steptree.register_substeps(fieldset.find(":input[name=substeps]"), id);
         ftm.dynamize_taskeditor_step_fieldset(fieldset);
     });
-    $('#steps-tree').change(function () {
+    steptree.select.change(function () {
         te.find("fieldset").hide();
-        $("#step-"+this.value).show();
-        window.scrollTo(0,0);
+        $("#step-"+taskname+"-"+this.value).show();
+        te.scrollTop();
         this.blur();
-    }).data("parent_of", parent_of);
+    }).data("manager", steptree);
 };
 
 Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
@@ -370,6 +389,10 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         });
     });
 
+    fieldset.find(":input[name=substeps]").each(function () { /*
+        make object "before" and "after"
+
+    */ });
     var remaining_fields = [
         'incr_name_prefix', 'title', 'description', 'done', 'from_date',
         'expoftime_share'
@@ -393,6 +416,110 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     });
 };
 
+function StepTree (taskname) {
+    var select = $('#steps-for-' + taskname + '-tree'),
+        proto_fieldset = $("#step-" + taskname + "-_NEW_STEP_").detach();
+    proto_fieldset.attr(proto_fieldset.attr().replace('_NEW_STEP_', ''));
+    this.proto_fieldset = proto_fieldset;
+    this.parent_of = {};
+    this.select = select;
+    this.taskname = taskname;
+}
+
+StepTree.prototype.register_substeps = function (field, parent) {
+    var self = this;
+    field.val().split(/\W+/).forEach(
+        function (child) { if (!child) return; self.parent_of[child] = parent; }
+    );
+    var before;
+    field.focus(function () {
+        if (before) return true;
+        before = {};
+        this.value.replace(/\w+/g, function (str, val) { before[val] = true; });
+    });
+    field.change(function () {
+        if (!before) return true;
+        var diff = {}, fallthrough;
+        this.value.replace(/\w+/g, function (str, val) {
+            if ( before[val] ) return; diff[val] = true;
+        });
+        this.value.replace(/\s+/g, '');
+        Object.keys(before).forEach(function () {
+            if ( before[this] && !diff[this] ) diff[this] = false;
+        });
+        Object.keys(diff).forEach(function () {
+            if (!fallthrough)
+                self.create_or_reparent(this, diff[this] && parent)
+                    || fallthrough++;
+        });
+        if (fallthrough) field.focus();
+        else before = undefined;
+    });
+};
+
+StepTree.prototype.create_or_reparent = function (step, parent) {
+    var oldparent = this.parent_of[step];
+    if ( parent === false ) {
+        if (!confirm("Do you want to DROP substep " + step + "?")) return false;
+        this.select.find("option[value="+step+"]").attr('disabled','disabled');
+        this.parent_of[step] = null;
+    }
+    else if ( oldparent == null ) {
+        if ( oldparent !== undefined ) {
+            if (!confirm("Do you want to ADOPT dropped substep " + step + "?"))
+                return false;
+            parent_of[step] = parent;
+            this.select.find("option[value="+step+"]").removeAttr('disabled');
+        }
+        else if ( confirm("Do you want to CREATE substep " + step + "?") ) {
+            var new_fieldset = this.proto_fieldset.clone();
+            new_fieldset.id += step;
+            new_fieldset.find("legend").text("Describe new step " + step); 
+            new_fieldset.appendTo("li#task-" + this.taskname + " .taskeditor");
+            this.register_substeps(new_fieldset.find(":input[name=substeps]"));
+            FlowgencyTM.dynamize_taskeditor_step_fieldset(new_fieldset);
+            /* Following code insp. by http://stackoverflow.com/questions/45888/ */
+            var selector = $(this.select);
+            var my_options = selector.find("option");
+            var selected = selector.val();
+                 /* preserving original selection, step 1 */
+            
+            my_options.push($('<option>', { value: step, text: step + ' (new)' }));
+            my_options.sort(function(a,b) {
+                if (a.text > b.text) return 1;
+                else if (a.text < b.text) return -1;
+                else return 0
+            })
+            
+            selector.empty().append( my_options );
+            selector.val(selected); /* preserving original selection, step 2 */
+            return;
+        }
+        else return false;
+    }
+    else if ( oldparent != parent ) {
+        if (!confirm("Do you want to ADOPT substep "
+            + step + (oldparent ? " from " + oldparent : '') + "?"
+        )) return false;
+        var other_substeps
+            = $("#step-" + this.taskname + "-" +oldparent)
+            .find(":input[name=substeps]");
+        var re = new Regexp( "/(^|[,;|\/])" + step + "([,;|\/]|$)/" );
+        other_substeps.val(
+            other_substeps.val().replace(re, function (str) {
+                return str.length <= step.length + 1 ? ""
+                     : str.indexOf(";") > -1         ? ";"
+                     : str.indexOf(",") > -1         ? ","
+                     :                                 "/"
+                     ;
+            })
+        );
+        other_substeps.change();
+        this.parent_of[step] = parent;
+    }
+    return true;
+}
+            
 function TaskStepCacheProxy (name, obj, extended) {
     var fields = [
         'description', 'expoftime_share', 'checks', 'done', 'substeps'
