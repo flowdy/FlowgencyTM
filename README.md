@@ -109,7 +109,8 @@ FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac 
 
 Clone the git repository in a directory of your choice. With plain git on Linux enter at a shell prompt:
 
-   git clone <https://github.com/flowdy/FlowgencyTM.git>
+    $ git clone https://github.com/flowdy/FlowgencyTM.git
+    $ cd FlowgencyTM/
 
 For other systems, install the Git DVCS and do the according steps (cf. manual).
 
@@ -121,26 +122,56 @@ Check and install any prerequisites by running inside the FlowgencyTM directory,
   cpanm --installdeps .
 
 
-Run the program
-----------------
+Bootstrap flow.db database file and run the program
+----------------------------------------------------
 
-At a shell prompt, under the FlowgencyTM directory, run the command
+FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to bootstrap it with the development shell in the distribution, i.e. create a user and also a time model if you do not want to work 24/7 ;-):
 
-   script/morbo
+    $ script/flow.sh -d flow.db
+    Configuring sub-shell ...                                                            
+    Now exec()'ing bash with the compiled rcfile instead of the default one ...          
+    /bin/bash starting on behalf of FlowgencyTM::Shell ...                               
+    # Welcome information and license note
+    
+    Initializing FlowTime::Shell ...Deploying new database in /tmp/FlowgencyTM/flow.db
+    DONE.
+    Press Enter to confirm new user floh OR change the name: floh
+    Now ensuring the database contains a user entity ... User created. Don't forget to set up a time_model before you enter any tasks.
+    [1]+ $FLOWGENCYTM_SHELL_PROCESS &
+    
+    # [Further information ...]
+    
+    FTM::~> timetracks default --week-pattern 'Mo-Th@9-16,Fr@7-14' -l 'Bureau'
+       # [Note full hours: '-16' = effectively 16:59:59, '-14' eff. 14:59:59
+       #  For *your* week pattern see doc/konzept.en.md for other examples]
+    
+    [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
+    FTM::~> bye
+    exit
+    Cleaned up.
 
-Please do not close the terminal window, it will output diagnostics if things go wrong. Then open, in your favourite browser, the link it displays at the end. If you have a local firewall installed, this might not work because of any weird restrictions imposed. Refer to the manual of your firewall software how to make exceptions so that it does let you access your own system via HTTP (better contact your system administrator, if any).
+Second, run the command
+
+    script/morbo
+
+Please keep the terminal window open as it will output diagnostics if things go wrong. Then load the link it displays at the end in your webbrowser. If you have a local firewall installed, this might not work because of any rare and weird restrictions imposed. Refer to the manual of your firewall software how to make exceptions so that it does let you access your own system via HTTP (better contact your system administrator, if any).
 
 
 Credits to other Open source projects used
 ------------------------------------------
 
+FlowgencyTM could not even be thought of without the following Open source tools used. My acknowledgements to the respective developers:
+
   * Perl – The programing language used for the server-side
+  * JQuery, JQueryUI – used for the client-side
   * Moose.pm – A Modern Object system for Perl
   * Date::Calc – Time-related calculations
   * SQLite, DBIx::Class – Database Model
   * Mojolicious – so you have your own server and need not expose any data, and
      you need not rely on the availability of a third party
-  * Firefox – for testing and using FlowgencyTM (+ various other browsers)
+  * Firefox – for testing and using FlowgencyTM (& various other browsers)
+  * VIM – it's not an IDE, but what amazing power an editor can have!
+  * git – distributed version control system
 
 Contact Author / Project initiator
 -----------------------------------
@@ -153,7 +184,7 @@ Contact Author / Project initiator
 Copyleft and License
 --------------------
 
-(C) 2012, 2013, 2014 Florian Heß
+Copyright (C) 2012, 2013, 2014 Florian Heß
 
 FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

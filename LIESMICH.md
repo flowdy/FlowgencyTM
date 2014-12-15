@@ -110,7 +110,8 @@ FlowgencyTM ist in der Programmiersprache Perl implementiert, Version ab 5.14. M
 
 Klone das git-Repository in ein beliebiges Verzeichnis. Unter Linux genügt dazu der folgende Befehl:
 
-    git clone <https://github.com/flowdy/FlowgencyTM.git>
+    $ git clone https://github.com/flowdy/FlowgencyTM.git
+    $ cd FlowgencyTM/
 
 Für andere Systeme stelle sicher, das Git installiert ist und führe die entsprechenden Schritte durch (s. Manual).
 
@@ -122,10 +123,36 @@ Prüfe und installiere die vorausgesetzten Drittmodule, indem du im FlowgencyTM-
     cpanm --installdeps .
 
 
-Das Programm ausführen
------------------------
+Die Datenbank initialisieren und das Programm ausführen
+-------------------------------------------------------
 
-Am Shell-Prompt führe bitte im FlowgencyTM-Verzeichnis das folgende Kommando aus:
+FlowgencyTM funktioniert noch nicht gleich nach der Installation im Webbrowser. Erst muss die Datenbank und ein Nutzer erstellt werden, zusätzlich ein Zeitmodell, wenn die Software nicht annehmen soll, dass du Tag und Nacht arbeitest ;-):
+
+    $ script/flow.sh -d flow.db
+    Configuring sub-shell ...                                                            
+    Now exec()'ing bash with the compiled rcfile instead of the default one ...          
+    /bin/bash starting on behalf of FlowgencyTM::Shell ...                               
+    # [Willkommens-Informationen]
+    
+    Initializing FlowTime::Shell ...Deploying new database in /tmp/FlowgencyTM/flow.db
+    DONE.
+    Press Enter to confirm new user floh OR change the name: floh
+    Now ensuring the database contains a user entity ... User created. Don't forget to set up a time_model before you enter any tasks.
+    [1]+ $FLOWGENCYTM_SHELL_PROCESS &
+    
+    # [Weitere Informationen ...]
+    
+    FTM::~> timetracks default --week-pattern 'Mo-Th@9-16,Fr@7-14' -l 'Bureau'
+       # [Beachte: '-16' = effectiv bis 16:59:59, '-14' eff. bis 14:59:59
+       #  Sie doc/konzept.de.md mit weiteren Beispielen.]
+    
+    [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
+    FTM::~> bye
+    exit
+    Cleaned up.
+
+
+Dann am normalen Shell-Prompt führe bitte das folgende Kommando aus:
 
     script/morbo
 
@@ -134,6 +161,8 @@ Bitte schließe nicht das Terminalfenster, weil es ggf. hilfreiche Meldungen aus
 
 Welche anderen Open Source-Projekte verwendet werden
 ----------------------------------------------------
+
+Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkzeuge. Meinen herzlichen Dank gilt den jeweiligen Entwicklern:
 
   * Perl – die für die Serverkomponente verwendete Programmiersprache
   * Moose.pm – Ein modernes Objektsystem für Perl
