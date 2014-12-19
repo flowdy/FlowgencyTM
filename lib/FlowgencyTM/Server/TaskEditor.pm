@@ -11,7 +11,7 @@ sub form {
     my $self = shift;
     my $task = $self->_get_task;
 
-    $self->render( _task_dumper($task) );
+    $self->render( _task_dumper($task), bare => $self->param('bare') );
 
 }
 

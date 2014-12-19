@@ -3,7 +3,7 @@
 % while ( my $task = $list->() ) {
 % my $details = $task->{extended_info};
 % my $classes = join " ", $details ? 'open' : (), $task->{active} ? () : 'paused';
-<li class="<%= $classes %>" data-id="<%= $task->{name} %>" <% if ( my $ots = $task->{open_since} ) { %>data-open-since="<%= $ots %>" <% } %>>
+<li class="<%= $classes %>" data-id="<%= $task->{name} %>" <% if ( my $ots = $task->{open_since} ) { %>data-open-since="<%= $ots %>" <% } %>id="task-<%= $task->{name} %>">
 <header><h2><%= $task->{title} %></h2>
 % my ($orient, $primary_width, $primary_color, $secondary_color)
 %   = @{$task->{progressbar}}{qw/orientation primary_width primary_color secondary_color/};

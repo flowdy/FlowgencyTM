@@ -6,10 +6,7 @@ $(function () {
 
     $.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd' });
  
-    $("input[type=datetime]").each(function () {
-        this.placeholder = '[[[[YY]YY-]MM-]DD] HH:MM';
-        this.title = 'Alternatives:\n   German date: [DD.[MM.[[YY]YY]]], or\n    "+" or "-", Integer and one of "y" (years), "m" (months), "w" (weeks) or "d" (days). Chainable, subsequent instances may be negative, otherwise omit the plus-sign.';
-    }).datetimepicker();
+    $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
  
     var toggler = function () {
         var plan = $(this),
@@ -55,26 +52,42 @@ $(function () {
             plan.data('isOpen', true);
             header.unbind("click").click(toggler.bind(plan));
         });
+    }).end().on('click', '.edit-btn', function (e) {
+        e.preventDefault();
+        var url = this.href;
+        $(this).parents(".extended-info").load(url + '?bare=1', function () {
+            ftm.dynamize_taskeditor($(this).find(".taskeditor"));
+        });
+        return false;
     });
 
-    var new_task_count;
+    var new_task_count = 0;
     $("a[href$='/newtask']").click(function (e) {
-        e.preventDefault();
+        ++new_task_count;
         var newtask = $('<li>'),
-            header = $('<header><h2>').appendTo(newtask).get(0).firstChild;
+            header = $('<header><h2>').appendTo(newtask)
+                .children().first().text("New task #" + new_task_count);
         $('<div>Loading form for new task ...</div>').appendTo(newtask)
           .load(this.href + "?bare=1", function () {
             var te = newtask.find(".taskeditor"),
-                id = te.data('taskid') + (++new_task_count);
+                id = te.data('taskid') + new_task_count;
             newtask.attr('id', 'task-' + id);
             te.data('taskid', id);
+            te.find('fieldset').each(function () {
+                var new_id = $(this).attr('id').replace('_-','_'+new_task_count+'-');
+                console.log("New step id: " + new_id);
+                $(this).attr( 'id', new_id );
+            });
+            $("#steps-for-_NEW_TASK_-tree").attr(
+               "id", "steps-for-" + id + "-tree"
+            );
             ftm.dynamize_taskeditor(te);
             te.find(":input[name=title]").first().change(function () {
-                header.text(this.value);
+                $(header).text(this.value);
             });
         });
-        plans.prepend(newtask);
-        return false;
+        $('#plans').prepend(newtask);
+        e.preventDefault();
     });
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
@@ -171,7 +184,6 @@ function Ranking (args) {
                 params[i] = JSON.stringify(params[i]);
             });
             $.post('/update', params, function () {
-                alert("Changes submitted");
                 delete nextload.update_tasks;
                 url += '?' + $.param(nextload);
             });
@@ -289,14 +301,15 @@ Ranking.prototype.progressbar2canvas = function (bar) {
 };
 
 Ranking.prototype.dynamize_taskeditor = function (te) {
-    var ftm = this, parent_of = {}, taskname = te.data("taskid"),
-        steptree = new StepTree(taskname );
+    var ftm = this, parent_of = {}, taskname = te.data("taskid");
+    var steptree = new StepTree(taskname);
     te.submit(function () { $("#logo").click(); return false; });
     te.find('fieldset').each(function () {
         var fieldset = $(this);
         var id = fieldset.data('stepid');
-        steptree.register_substeps(fieldset.find(":input[name=substeps]"), id);
+        steptree.register_substeps(fieldset.find("input[name=substeps]"), id);
         ftm.dynamize_taskeditor_step_fieldset(fieldset);
+ 
     });
     steptree.select.change(function () {
         te.find("fieldset").hide();
@@ -304,16 +317,15 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         te.scrollTop();
         this.blur();
     }).data("manager", steptree);
+    te.find('select').last().change();
 };
 
 Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
-    var ftm = this;
-    var step_name = fieldset.attr('id').replace("step-","");
+    var ftm = this,
+        task_name = fieldset.parent().data("taskid");
+    var step_name = fieldset.attr('id').replace("step-" + task_name + "-","");
     if (step_name == '') step_name = null;
-    var step = ftm.get(
-         fieldset.parent().data("taskid"),
-         step_name
-    );
+    var step = ftm.get( task_name, step_name );
     function update (field) {
         if ( field.type == "radio" || field.type == "checkbox"
             ? field.defaultChecked == field.checked
@@ -389,13 +401,9 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         });
     });
 
-    fieldset.find(":input[name=substeps]").each(function () { /*
-        make object "before" and "after"
-
-    */ });
     var remaining_fields = [
         'incr_name_prefix', 'title', 'description', 'done', 'from_date',
-        'expoftime_share'
+        'expoftime_share', 'substeps'
     ];
 
     var default_change_handler = function () { update(this); };
@@ -414,12 +422,16 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         dl.find(".ui-accordion-header-active").focus();
         e.preventDefault();
     });
+
+    fieldset.find("input[type=datetime]").each(DateTimePicker);
 };
 
 function StepTree (taskname) {
-    var select = $('#steps-for-' + taskname + '-tree'),
+    var select_id = '#steps-for-' + taskname + '-tree', select = $(select_id),
         proto_fieldset = $("#step-" + taskname + "-_NEW_STEP_").detach();
-    proto_fieldset.attr(proto_fieldset.attr().replace('_NEW_STEP_', ''));
+    proto_fieldset.attr('id',
+        $(proto_fieldset).attr('id').replace('_NEW_STEP_', '')
+    );
     this.proto_fieldset = proto_fieldset;
     this.parent_of = {};
     this.select = select;
@@ -431,29 +443,33 @@ StepTree.prototype.register_substeps = function (field, parent) {
     field.val().split(/\W+/).forEach(
         function (child) { if (!child) return; self.parent_of[child] = parent; }
     );
+    console.log("substeps-tree: " + JSON.stringify(self.parent_of));
     var before;
-    field.focus(function () {
+    field.focus(function (e) {
         if (before) return true;
         before = {};
-        this.value.replace(/\w+/g, function (str, val) { before[val] = true; });
-    });
-    field.change(function () {
+        this.value.replace(/\w+/g, function (str) { before[str] = true; });
+        console.log("substeps-before: " + JSON.stringify(before));
+    }).change(function (e) {
         if (!before) return true;
         var diff = {}, fallthrough;
-        this.value.replace(/\w+/g, function (str, val) {
-            if ( before[val] ) return; diff[val] = true;
+        this.value.replace(/\w+/g, function (str) {
+            if ( before[str] ) return; diff[str] = true;
         });
-        this.value.replace(/\s+/g, '');
-        Object.keys(before).forEach(function () {
-            if ( before[this] && !diff[this] ) diff[this] = false;
+        var substeps = this.value = this.value.replace(/\s+/g, '');
+        Object.keys(before).forEach(function (step) {
+            if ( before[step] && substeps.indexOf(step) == -1 )
+                diff[step] = false;
         });
-        Object.keys(diff).forEach(function () {
+        Object.keys(diff).forEach(function (step) {
             if (!fallthrough)
-                self.create_or_reparent(this, diff[this] && parent)
+                self.create_or_reparent(step, diff[step] && parent)
                     || fallthrough++;
         });
         if (fallthrough) field.focus();
         else before = undefined;
+        console.log("substeps-diff: " + JSON.stringify(diff));
+        return true;
     });
 };
 
@@ -468,16 +484,22 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
         if ( oldparent !== undefined ) {
             if (!confirm("Do you want to ADOPT dropped substep " + step + "?"))
                 return false;
-            parent_of[step] = parent;
+            this.parent_of[step] = parent;
             this.select.find("option[value="+step+"]").removeAttr('disabled');
         }
         else if ( confirm("Do you want to CREATE substep " + step + "?") ) {
             var new_fieldset = this.proto_fieldset.clone();
-            new_fieldset.id += step;
-            new_fieldset.find("legend").text("Describe new step " + step); 
-            new_fieldset.appendTo("li#task-" + this.taskname + " .taskeditor");
+            var target = "li#task-" + this.taskname + " .taskeditor";
+            new_fieldset.attr("id", 'step-' + this.taskname + "-" + step)
+                        .data("stepid", step)
+                        .prependTo(target)
+                        .find("legend")
+                        .text("Describe new step " + step) 
+                        ;
             this.register_substeps(new_fieldset.find(":input[name=substeps]"));
-            FlowgencyTM.dynamize_taskeditor_step_fieldset(new_fieldset);
+            $("#logo").data('FlowgencyTM').dynamize_taskeditor_step_fieldset(
+                new_fieldset
+            );
             /* Following code insp. by http://stackoverflow.com/questions/45888/ */
             var selector = $(this.select);
             var my_options = selector.find("option");
@@ -491,7 +513,9 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
                 else return 0
             })
             
-            selector.empty().append( my_options );
+            selector.empty();
+            my_options.each(function () { selector.append( this ); });
+            console.log("Number of options: " + my_options.length);
             selector.val(selected); /* preserving original selection, step 2 */
             return;
         }
@@ -549,6 +573,16 @@ function TaskStepCacheProxy (name, obj, extended) {
     Object.freeze(my);
 };
 
+function DateTimePicker () {
+    this.placeholder = '[[[[YY]YY-]MM-]DD] HH:MM';
+    this.title = 'Alternatives:\n   German date: [DD.[MM.[[YY]YY]]], or\n    '
+        + '"+" or "-", Integer and one of "y" (years), "m" (months), "w" '
+        + '(weeks) or "d" (days). Chainable, subsequent instances may be '
+        + 'negative, otherwise omit the plus-sign.';
+    $(this).datetimepicker();
+}
+
 return {
-    Ranking: Ranking
+    Ranking: Ranking,
+    DateTimePicker: DateTimePicker,
 }; })(); /* END of FlowgencyTM namespace */

@@ -1,5 +1,7 @@
 % my $input = stash 'input';
 % my $id = stash 'id';
+% my $bare_mode = stash 'bare';
+% layout undef if $bare_mode;
 % my $tree = stash('tree') // [];
 % my $incr_prefix = stash 'incr_prefix';
 % my ($prio_max, $prio_avg) = delete @{$_priodir}{'_max', '_avg'};
@@ -14,7 +16,7 @@
 % my $render_fieldset = begin
 %     my $step = shift // {};
 %     my $name = $step->{name};
-<fieldset id="step-<%= $name %>" data-stepid="<%= $name %>">
+<fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>">
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
 <dl class="fields">
 % if ( my $std = $step->{subtask_data} ) {
@@ -62,44 +64,37 @@ To estimate this value right, imagine the expenditure of time used by the supero
 <p class="input">Allocate: <input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} %>" /> piece of superordinate time share</p>
 </dd>
 <dt>Subordinate steps</dt>
-<dd><p class="help">Substeps chain notation has special syntax:<br><strong>,</strong> comma separates groups. A group is displayed in the list of pending steps once all steps of preceding groups have been completed. Steps can be a group on their own,<br><strong>/</strong> A slash separates steps of the same group, you can make checks in any order,<br><strong>;</strong> a semicolon signals a final special group of steps not depending on any other one. Each is always displayed until completed.</p>
+<dd><p class="help">In the substeps chain notation, there are three distinct separators:<br>Use <strong>/</strong> (slash) or <strong>|</strong> (vertical bar) to group steps among which the order of completion is irrelevant.<br>Separate steps or step groups by <strong>,</strong> (comma) to indicate that the order does matter.<br><strong>;</strong> (semicolon) instead of comma signals a final special group of steps not depending on any other one. Each is always displayed until completed.</p>
 <p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
 <dt>Step progress</dt>
 <dd><p class="input"><br>
-Number of checks (slider stepping): <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" ><br>
+Number of checks: <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" ><br>
 Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"></p></dd>
 </fieldset>
 % end
 
-<form data-taskid="<%= $id // "_NEW_TASK_0" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
+<form data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
 
 % for my $step (values %$steps) {
 %=    $render_fieldset->($step);
 % }
 
-<div style="float:left;">Jump to step: <select id="steps-tree" name="step">
+%= $render_fieldset->({ name => '_NEW_STEP_' });
+
+<div style="float:left;">Jump to step: <select id="steps-for-<%= $id // "_NEW_TASK_" %>-tree" name="step">
 % for my $step ( sort keys %$steps ) {
-<option><%= $step %></option>
+<option value="<%= $step %>"><%= $step %></option>
 % }
 </select></div>
 
+% if ( !$bare_mode ) {
 <div style="text-align:right;"><input type="submit" name="parse_json" value="Send"></div>
+% }
 
 <p>Create or edit a task:</p>
 
 <textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
 <input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
 </form>
-
-<script type="text/javascript">
-FlowgencyTM.create_step_for_task = function (task, step_name) {
-    var fieldset = $('<%== join "", split /\n/, $render_fieldset->() %>');
-    fieldset.id += step_name;
-    fieldset.find("legend").text("Describe new step " + step_name); 
-    fieldset.appendTo(".taskeditor:[action^=/task/" + task + "]");
-    FlowgencyTM.dynamize_taskeditor_step_fieldset(fieldset);
-    return;
-};
-</script>
 
 

@@ -14,4 +14,4 @@
 </div></li>
 % }
 </ul>
-<p><a href="/task/<%= $id %>/form">Edit</a></p>
+<p><a class="edit-btn" href="/task/<%= $id %>/form">Edit</a></p>
