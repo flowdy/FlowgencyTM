@@ -67,6 +67,7 @@ sub test_multitrack_cursor {
                      );
 
     my $track1 = FTM::Time::Track->new({ name => 'First', week_pattern => 'Mo-Fr@9-17,!12' });
+
     my $track2 = FTM::Time::Track->new({
         name => 'Second',
         week_pattern => 'Mo-Fr@9-12',
@@ -80,12 +81,12 @@ sub test_multitrack_cursor {
         my $week_end = sprintf "%d-%02d-%02d", Day_of_Week(@date)>5 ? @date
                                              : Add_Delta_Days(@monday, 5)
                                              ;
-        (undef, my @friday1_md) = Add_Delta_Days(@monday, 4);
-        (undef, my @friday2_md) = Add_Delta_Days(@monday, 18); # 2 wk track 2
+        my @friday1_md = Add_Delta_Days(@monday, 4);
+        my @friday2_md = Add_Delta_Days(@monday, 18); # 2 wk track 2
 
         my $monday = sprintf "%4d-%02d-%02d",@monday;
         my ($friday, $fr_plus2w)
-            = map { sprintf("%02d-%02d", @$_) } \@friday1_md, \@friday2_md
+            = map { sprintf("%4d-%02d-%02d", @$_) } \@friday1_md, \@friday2_md
         ;
 
         my $fr_plus1w = sprintf "%4d-%02d-%02d", Add_Delta_Days(@monday, 11);
