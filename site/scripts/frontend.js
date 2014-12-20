@@ -24,7 +24,6 @@ $(function () {
         if ( plan.data("isOpen") != isShown )
             task.open_since = isShown ? 'now' : null;
         else task.drop("open_since");
-        console.log("open_since = " + task.open_since);
         ftm.reg_changes();
     };
 
@@ -34,7 +33,6 @@ $(function () {
         plan.data('isOpen', isOpen);
         ftm.progressbar2canvas(plan.find(".progressbar"));
         if ( isOpen ) {
-            console.info("Task is already open: "+isOpen);
             ftm.dynamizechecks(plan);
             plan.find("h2").click(toggler.bind(plan));
         }
@@ -43,7 +41,6 @@ $(function () {
                 ext = $(
                     '<div class="extended-info" ><em>Loading ...</em></div>'
                 );
-            console.info("Open task ...");
             ext.appendTo(plan);
             ext.load("/task/" + plan.data("id") + "/open", function () {
                 ftm.dynamizechecks(plan);
@@ -75,7 +72,6 @@ $(function () {
             te.data('taskid', id);
             te.find('fieldset').each(function () {
                 var new_id = $(this).attr('id').replace('_-','_'+new_task_count+'-');
-                console.log("New step id: " + new_id);
                 $(this).attr( 'id', new_id );
             });
             $("#steps-for-_NEW_TASK_-tree").attr(
@@ -222,12 +218,10 @@ Ranking.prototype.dynamizechecks = function (plan) {
            ftm.check_done( plan.data('id'), checkline.data('id'), check_count );
        };
    };
-   console.log("Open task has a checkline: " + checklines.length);
    checklines.each(function () {
        var checkline = $(this);
        checkline.children().each(function () {
            var progressor = dyn_checkline(checkline);
-           console.log("attaching progressor...");
            $(this).change(progressor);
        });
    });
@@ -367,8 +361,6 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
             table.find("tr").each(function () {
                 var stage = {}, i = 0;
                 $(this).find(input_selector).each(function () {
-                    console.log("timestage " + i + ": name="
-                        + this.name + ", value=" + this.value);
                     stage[this.name] = this.value;
                     i++;
                 });
@@ -408,7 +400,6 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
 
     var default_change_handler = function () { update(this); };
     remaining_fields.forEach(function (field) {
-        console.info("Setting updater for field " + field + "...");
         fieldset.find("[name="+field+"]").change(default_change_handler);
     });
     var dl = fieldset.children(".fields")
@@ -443,13 +434,11 @@ StepTree.prototype.register_substeps = function (field, parent) {
     field.val().split(/\W+/).forEach(
         function (child) { if (!child) return; self.parent_of[child] = parent; }
     );
-    console.log("substeps-tree: " + JSON.stringify(self.parent_of));
     var before;
     field.focus(function (e) {
         if (before) return true;
         before = {};
         this.value.replace(/\w+/g, function (str) { before[str] = true; });
-        console.log("substeps-before: " + JSON.stringify(before));
     }).change(function (e) {
         if (!before) return true;
         var diff = {}, fallthrough;
@@ -468,7 +457,6 @@ StepTree.prototype.register_substeps = function (field, parent) {
         });
         if (fallthrough) field.focus();
         else before = undefined;
-        console.log("substeps-diff: " + JSON.stringify(diff));
         return true;
     });
 };
@@ -515,7 +503,6 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
             
             selector.empty();
             my_options.each(function () { selector.append( this ); });
-            console.log("Number of options: " + my_options.length);
             selector.val(selected); /* preserving original selection, step 2 */
             return;
         }
@@ -527,8 +514,8 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
         )) return false;
         var other_substeps
             = $("#step-" + this.taskname + "-" +oldparent)
-            .find(":input[name=substeps]");
-        var re = new Regexp( "/(^|[,;|\/])" + step + "([,;|\/]|$)/" );
+              .find("input[name=substeps]");
+        var re = new RegExp( "(^|[,;|\/])" + step + "([,;|\/]|$)" );
         other_substeps.val(
             other_substeps.val().replace(re, function (str) {
                 return str.length <= step.length + 1 ? ""

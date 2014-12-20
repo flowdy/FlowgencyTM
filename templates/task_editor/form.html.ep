@@ -89,12 +89,12 @@ Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:9
 
 % if ( !$bare_mode ) {
 <div style="text-align:right;"><input type="submit" name="parse_json" value="Send"></div>
-% }
 
 <p>Create or edit a task:</p>
 
 <textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
 <input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
 </form>
+% }
 
 
