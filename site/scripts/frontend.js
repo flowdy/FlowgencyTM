@@ -173,21 +173,23 @@ function Ranking (args) {
 
     this.rerank = function (e) {
         var url = '/';
+        function rerank () {
+            url += '?' + $.param(nextload);
+            window.location.href = url;
+        }
         e.preventDefault();
         if ( this.reg_changes(1) ) {
             var params = nextload.update_tasks;
             Object.keys(params).forEach(function (i) {
                 params[i] = JSON.stringify(params[i]);
             });
-            $.post('/update', params, function () {
+            $.post('/update', params).done(function () {
                 delete nextload.update_tasks;
-                url += '?' + $.param(nextload);
-            });
+                rerank();
+            }).fail(function () { alert("Couldn't post changed data!"); });
         }
-        else { 
-            url += '?' + $.param(nextload);
-        }
-        window.location.href = url;
+        else rerank();
+        return false;
     };
 
 }
