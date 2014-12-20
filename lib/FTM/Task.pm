@@ -531,11 +531,12 @@ sub _store_steps_below {
     
                 $step_row->parent_row($p_row) if defined $p_row;
                 $step_row->set_columns($step);
+                $rows_tmp{$name} = $step_row;
 
             }
 
             elsif ( $p_row )  { 
-                $rows_tmp{ $name } = $step_row
+                $rows_tmp{$name} = $step_row
                     = $p_row->new_related(substeps => $step);
             }
 
