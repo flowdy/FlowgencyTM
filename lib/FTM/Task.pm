@@ -609,7 +609,7 @@ sub check_timestructure {
 }
 
 my %SUBTASK_EXT = map { $_ => 1 } FTM::FlowDB::Task->list_properties;
-delete @SUBTASK_EXT{'name'};
+delete $SUBTASK_EXT{'name'};
 sub _handle_subtask_data_of {
     my ($self, $step) = @_;
     my %subtask_row;
