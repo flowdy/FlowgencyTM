@@ -1,0 +1,11 @@
+$ git clone https://github.com/flowdy/FlowgencyTM.git
+$ cd FlowgencyTM/
+$ cd script/
+$ ls
+$ ./gather_check_dependencies 
+$ cd ..
+$ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3
+$ sudo apt-get install cpanminus
+$ sudo cpanm Mojolicious
+$ prove -rl t                      
+$ FLOWTIME_USER=floh MOJO_LISTEN="http://<IP of Raspi>:3000/" script/morbo

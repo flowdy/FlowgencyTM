@@ -146,7 +146,7 @@ sub _build__runner {
                 }
                 $ret{span} = \@rfn;
             }
-            $_ = abs for $ret{seconds_until_switch};
+            $_ = abs for $ret{seconds_until_switch} // ();
             return \%ret;
         }
     }
