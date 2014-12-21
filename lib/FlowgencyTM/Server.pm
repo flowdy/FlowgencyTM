@@ -14,7 +14,7 @@ sub startup {
   $self->defaults( layout => 'general', get_version => sub { $FlowgencyTM::VERSION } );
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
-  my $username = $ENV{FLOWTIME_USER} // getpwuid($<);
+  my $username = $ENV{FLOWGENCYTM_USER} // getpwuid($<);
   FlowgencyTM::user($username) or die "No user $username";
 
   # Router
