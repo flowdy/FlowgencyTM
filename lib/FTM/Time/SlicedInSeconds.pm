@@ -93,12 +93,13 @@ sub calc_pos_data {
                 $len -= $sec;
                 $$s  -= $$s / abs($$s) * $sec;
             }
-            continue { shift @s if !$$s; next PART if !$len; }      
+            continue { shift @s if !$$s; next PART if !$len; }
         }
         continue {
-            last if !@loop; # so block is run only once between iter. 1 + 2
+            last if !@loop; # execute only once between iter. 1 + 2
             $store->{span} = $self->span;
-            $store->{seconds_until_switch} = abs($$s);
+            $store->{seconds_until_switch} = $$s;
+            $store->{reach_for_next} = @s <= 1;
             $store->{state} = ($$s || (ref $s[0] ? $s[1] : $s[0])) > 0 || 0;
         } 
     }

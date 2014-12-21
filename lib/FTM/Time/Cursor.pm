@@ -127,7 +127,26 @@ sub _build__runner {
             return _splicing_between($slices, $time, $until);
         }
         else {
-            $_->calc_pos_data($time,\%ret) for @$slices;
+            my $i = 0;
+            for ( @$slices ) {
+                $_->calc_pos_data($time,\%ret);
+                $i++ if !$ret{reach_for_next};
+            }
+            if ( delete $ret{reach_for_next}
+              && $ret{remaining_pres} > $ret{seconds_until_switch}
+            ) {
+                my @rfn = ($ret{span});
+                my $sus = \$ret{seconds_until_switch};
+                while ( my $next = $slices->[++$i] ) {
+                    my $nsl = $next->slicing;
+                    last if ($$sus < 0) xor ($nsl->[0] < 0);
+                    $$sus += $nsl->[0];
+                    push @rfn, $next->span;
+                    last if @$nsl > 1;
+                }
+                $ret{span} = \@rfn;
+            }
+            $_ = abs for $ret{seconds_until_switch};
             return \%ret;
         }
     }
