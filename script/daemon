@@ -1,0 +1,48 @@
+#!/bin/sh
+
+cd ~/FlowgencyTM
+export FLOWGENCYTM_USER=floh
+export MOJO_LISTEN=http://192.168.1.50:3000
+PIDFILE=server.pid
+LOG=server.log
+[ -e "$PIDFILE" ] && read PID < "$PIDFILE"
+
+case "$1" in
+start)	if [ -z "$PID" ]; then
+            rm "$LOG"
+            nohup script/server daemon > $LOG 2>&1 &
+            echo $! > $PIDFILE
+            echo -n "Starting server "
+            until [ -s "$LOG" ]; do echo -n "."; sleep 1; done
+            echo " done"
+            cat "$LOG"
+        else echo "Server was running and yet is" 1>&2
+        fi
+	;;
+stop)	if [ -n "$PID" ]; then
+            kill $PID
+            RETVAL=$?
+            [ $RETVAL -eq 0 ] && [ -e "$PIDFILE" ] && rm -f $PIDFILE
+            echo "Server stopped"
+        else echo "Server did not run" 1>&2
+        fi
+        ;;
+restart)
+        $0 stop
+        $0 start
+        ;;
+update) if [ "$PID" ]; then $0 stop && git pull && $0 start
+        else git pull
+        fi
+        ;;
+status)
+        if [ "$PID" ]; then
+            echo "Server runs for user $FLOWGENCYTM_USER and" \
+                 "listens to $MOJO_LISTEN"
+            ps u -p "$PID" --no-headers
+        else echo "Server is not running"
+        fi
+        exit 2
+        ;;
+esac
+exit 0

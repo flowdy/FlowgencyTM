@@ -6,6 +6,9 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 
+$ENV{FLOWDB_SQLITE_FILE} //= "flow.db";
+$ENV{MOJO_LISTEN} //= "http://127.0.0.1:3000";
+
 # Start command line interface for application
 require Mojolicious::Commands;
 my $app = Mojolicious::Commands->start_app('FlowgencyTM::Server');
