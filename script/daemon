@@ -1,17 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
-cd ~/FlowgencyTM
-export FLOWGENCYTM_USER=floh
-export MOJO_LISTEN=http://192.168.1.50:3000
-PIDFILE=server.pid
-LOG=server.log
+# Find out the directory in which we reside
+cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
+source local.rc
+export FLOWGENCYTM_USER MOJO_LISTEN
 [ -e "$PIDFILE" ] && read PID < "$PIDFILE"
 
 case "$1" in
 start)	if [ -z "$PID" ]; then
-            rm "$LOG"
-            nohup script/server daemon > $LOG 2>&1 &
-            echo $! > $PIDFILE
+            [ -e "$LOG" ] && rm "$LOG"
+            nohup script/$COMMAND > $LOG 2>&1 &
+            echo $! > "$PIDFILE"
             echo -n "Starting server "
             until [ -s "$LOG" ]; do echo -n "."; sleep 1; done
             echo " done"
@@ -19,10 +18,8 @@ start)	if [ -z "$PID" ]; then
         else echo "Server was running and yet is" 1>&2
         fi
 	;;
-stop)	if [ -n "$PID" ]; then
-            kill $PID
-            RETVAL=$?
-            [ $RETVAL -eq 0 ] && [ -e "$PIDFILE" ] && rm -f $PIDFILE
+stop)	if [ -n "$PID" && kill "$PID" ]; then
+            [ -e "$PIDFILE" ] && rm -f $PIDFILE
             echo "Server stopped"
         else echo "Server did not run" 1>&2
         fi
