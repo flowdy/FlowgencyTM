@@ -18,7 +18,7 @@ start)	if [ -z "$PID" ]; then
         else echo "Server was running and yet is" 1>&2
         fi
 	;;
-stop)	if [ -n "$PID" && kill "$PID" ]; then
+stop)	if [ -n "$PID" ] && kill "$PID"; then
             [ -e "$PIDFILE" ] && rm -f $PIDFILE
             echo "Server stopped"
         else echo "Server did not run" 1>&2
