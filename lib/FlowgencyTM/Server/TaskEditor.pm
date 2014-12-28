@@ -4,7 +4,7 @@ package FlowgencyTM::Server::TaskEditor;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Try::Tiny;
-use Mojo::JSON qw(decode_json encode_json);
+use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
 
 sub form {
@@ -70,7 +70,7 @@ sub fast_bulk_update {
         $log->info("For task $task update: $data");
 
         my $is_new = $task =~ s/^_NEW_TASK_\d+$//;
-        $_ = decode_json $_ for $data;
+        $_ = from_json $_ for $data;
 
         my $method = $is_new ? 'add'
                    : $data->{incr_name_prefix} ? 'copy'
