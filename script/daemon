@@ -10,22 +10,28 @@ case "$1" in
 start)	if [ -z "$PID" ]; then
             [ -e "$LOG" ] && rm "$LOG"
             nohup script/$COMMAND > $LOG 2>&1 &
-            echo $! > "$PIDFILE"
+            PID=$!
             echo -n "Starting server "
             until [ -s "$LOG" ]; do echo -n "."; sleep 1; done
             echo " done"
             cat "$LOG"
-        else echo "Server was running and yet is" 1>&2
+            if kill -0 $PID 2> /dev/null; then
+                echo $PID > "$PIDFILE"
+            else echo "Server died early."
+                exit 1
+            fi
+        else echo "Server was running and yet is." 1>&2
         fi
 	;;
 stop)	if [ -n "$PID" ] && kill "$PID"; then
             [ -e "$PIDFILE" ] && rm -f $PIDFILE
-            echo "Server stopped"
-        else echo "Server did not run" 1>&2
+            echo "Server stopped."
+        else echo "Server did not run." 1>&2
         fi
         ;;
 restart)
         $0 stop
+        sleep 0.5
         $0 start
         ;;
 update) if [ "$PID" ]; then $0 stop && git pull && $0 start
@@ -35,8 +41,10 @@ update) if [ "$PID" ]; then $0 stop && git pull && $0 start
 status)
         if [ "$PID" ]; then
             echo "Server runs for user $FLOWGENCYTM_USER and" \
-                 "listens to $MOJO_LISTEN"
+                 "listens to $MOJO_LISTEN."
             ps u -p "$PID" --no-headers
+            echo "The 20 most recent lines of log file"
+            tail -20 "$LOG"
         else echo "Server is not running"
         fi
         exit 2
