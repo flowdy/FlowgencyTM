@@ -6,7 +6,7 @@ use Carp qw(croak);
 use FTM::Time::Model;
 use FTM::User::Tasks;
 use FTM::FlowRank;
-use JSON qw(from_json);
+use JSON qw(from_json to_json);
 
 has _dbicrow => (
     is => 'ro',
@@ -78,8 +78,27 @@ sub get_labeled_priorities {
     return $ret;
 }
 
-sub store_weights {
-    my ($self) = @_;
+sub modify_weights {
+    my ($self,%weights) = @_;
+    my $w = $self->weights;
+    while ( my ($key, $value) = each %weights ) {
+        die "Unknown key: $key" if !exists $w->{$key};
+        die "Not an integer: $key = $value" if $value !~ /^-?\d+$/;
+        $w->{$key} = $value;
+    }
+    return $self->_dbicrow->update({ weights => to_json($w) });
+}
+
+sub remap_priorities {
+    my ($self,@priorities) = @_;
+    my (%p);
+    while ( my ($key, $value) = splice @priorities, 0, 2 ) {
+        die "Multiple labels for priority = $value" if exists $p{$value};
+        die "Not an integer: $key = $value" if $value !~ /^-?\d+$/;
+        $p{$key} = $value;
+    }
+    delete $self->{_priorities};
+    return $self->_dbicrow->update({ priorities => to_json(\%p) });
 }
 
 after update_time_model => sub {

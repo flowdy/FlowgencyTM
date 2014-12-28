@@ -1,30 +1,41 @@
 <h2>Change your User Profile settings</h2>
 <p>Jump to: <a href="#set-weights">Weights of ranking criteria</a> &bull; <a href="#set-priorities">Priority levels<a> &bull; <a href="#configure-time-model">Time Model (work times / shifts / multijobbing & freelancing)</a></p>
-<form method="post">
-<fieldset disabled="disabled" id="password-email" style="color:#625353">
+<form method="POST">
+<fieldset id="authentication">
 <legend>Password / E-Mail / Authentification</legend>
-As the server runs on your own system, you probably will not need this. If it doesn't, please note that original FlowgencyTM, that is neither commercial nor social or what not, is not specifically developed for multi-user mode, what relieves us from ethical and privacy-related issues.</fieldset> 
+<p class="info">If you run the server locally, as is recommended because time use is highly private, you do not need to input anything here.</p>
+<label>E-Mail: <input type="text" name="email"></label>
+<label>Password: <input type="password" name="password"></label>
 </fieldset>
 <fieldset id="set-weights">
 <legend>Weights of the ranking criteria</legend>
 % my %weights = $user->weights;
 <p>The FlowgencyTM ranking score is mathematically just a simple product comprising the following dimensions of urgency. By default, they are equally weighted, but you may adjust that to your liking. Please note it is of no use changing it too often. The mind needs some time to get accustomed.</p>
-<ul>
-% my %hints = ( priority => "cf. Priority levels", due => "Note: Should be negative because the remaining net seconds are counted: The less are available, the more urgent is the task", drift => "Drift between time progress and progress of your expenditure checking", open => "If and for how long the task has been open", timeneed => "According to your average working speed, when will the task be done by estimation, compared to when you planned it should be done");
-% for my $key ( qw(priority due drift open timeneed) ) {
+<table>
+% my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your expenditure checking", open => "If and for how long the task has been open", timeneed => "Inferring from your average working speed, when will the task be done as compared to when you planned it should be done");
+% while ( my ($key, $hint) = splice @hints, 0, 2 ) {
 %   my $value = $weights{$key};
-    <li><label><strong><%= $key %>:</strong> <input style="width:2.5em;" name="weight-<%= $key %>" type="number" min="1" value="<%= $value %>"></label> : <%= $hints{$key} %></li>
+    <tr><th><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> type="number" value="<%= $value %>"></td><td><%= $hint %></li>
 % }
-</ul>
+</table>
 </fieldset>
 
 <fieldset id="set-priorities">
 <legend>Priority levels</legend>
+<p>Separate the priority labels by comma. You may chain commas to indicate that the next labeled priority is more than one level higher than the last. You can still assign an unlabeled priority by number. Count up from left to right, start at 1.</p>
 % my $priorities = $user->get_labeled_priorities;
-<ul>
+% my @chain;
 % while ( my ($label, $number) = each %$priorities ) {
-    <li><label><%= $label %>: <input name="priority-<%= $label %>" type="number" min="1" value="<%= $number %>"></label></li>
+%   $chain[$number] = $label;
 % }
+% shift @chain;
+% for my $l ( @chain ) {
+%     next if defined $l;
+%     $l = '';
+% }
+% my $value = join ",", @chain;
+<input type="text" name="priorities" value="<%= $value %>">
+%
 </fieldset>
 
 <fieldset id="configure-time-model">
@@ -32,6 +43,10 @@ As the server runs on your own system, you probably will not need this. If it do
 % my $tm = $user->dump_time_model;
 % while ( my ($name, $track) = each %$tm ) {
 <h2><%= $track->{label} %></h2>
+<button onclick='$(this).next().show().end().detach(); return false;'>Commit changes to track "<%= $name %>" in JSON format.</button>
+<div style="display:none;">
+<textarea placeholder="Your changes in JSON format ..." name="timetrack[<%= $name %>]" style="width:95%"><%= stash 'timetrack['.$name.']' %></textarea>
+</div>
 <table>
 % my $variations = delete $track->{variations};
 % while ( my ($key, $value) = each %$track ) {
@@ -47,6 +62,11 @@ As the server runs on your own system, you probably will not need this. If it do
 %# <textarea name="track-<%= $name %>" cols="60">...</textarea>
 % }
 
+<h2 id="create-new-tracks">New tracks</h2>
+<button onclick='$("#create-new-tracks").after("<textarea name=\"timetrack[]\" placeholder=\"Define data of new track in JSON key-value pairs\" style=\"width:95%\">"); return false;'>Create ...</button>
+
 </fieldset>
 
+<input type="submit" value="Change Profile">
+<input type="reset" value="Discard changes">
 </form> 
