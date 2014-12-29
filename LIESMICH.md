@@ -6,13 +6,13 @@ LIESMICH
 Was ist FlowgencyTM? - Die sieben wichtigsten Punkte
 ----------------------------------------------------
 
- 1. FlowgencyTM ist ein Tool, um Aufgaben zu planen und zu verwalten, ihre Dringlichkeiten, Fortschritte und etwaige Abhängigkeiten. Es geht im Wesentlichen darum, Sachen in der vorher ausdrücklich für die Arbeit reservierten Zeit zu erledigen, abgesehen vielleicht von denen mit der geringsten Priorität. In einer Geschäftswelt, die vom Aberglaube des Multitasking besessen ist, hilft es, Aufgaben in einer festen Reihenfolge abzuarbeiten, denn so ist ein Flowerlebnis wahrscheinlicher.
+ 1. FlowgencyTM ist ein Tool, um Aufgaben zu planen und zu verwalten, ihre Dringlichkeiten, Fortschritte und etwaige Abhängigkeiten. In einer Geschäftswelt, die vom Aberglaube des Multitasking besessen ist, ist es wichtig, Aufgaben strukturiert also Einzelschritte in einer bestimmten Reihenfolge zu erledigen, damit am Ende alle Aufgaben bis zu ihren Fristenden getan sind. Das nur im Kopf zu tun kostet unnötig viel Aufmerksamkeit und ist anfällig für leichtfertige, impulsive Korrekturen. Delegiere die Überlegung, welche Aufgabe aktuell am dringensten deiner Zuwendung bedarf, besser an den Computer. Sind die Eingaben richtig, so kommst du umso wahrscheinlicher in den Genuss von Flowerlebnissen und deine Arbeit wird gesünder und nachhaltiger.
 
  2. Die Benutzeroberfläche ist mit HTML5 und Javascript realisiert. Sie läuft also im Webbrowser deiner Wahl. Die Serverkomponente ist ebenfalls fester Bestandteil der Distribution. Sie ist so voreingestellt, dass du es auf deinem System lokal installieren kannst, und ausschließlich von diesem akzeptiert es Anfragen vom Browser.
 
  3. Die Aufgaben werden nach Dringlichkeit absteigend angezeigt. Die Liste wird aktualisiert, wann immer du auf das FlowgencyTM-Logo in der rechten oberen Ecke klickst. Du entscheidest, wann du deine angehakten, weil erledigten Schritte speichern willst und wann du bereit dafür bist, zu Aufgaben umzuschalten, die in der Zwischenzeit ggf. dringlicher geworden sind.
 
- 4. In Flowgency gilt die Priorität einer Aufgabe nur als eine von fünf Dimensionen der Dringlichkeit, wenn auch die einzige, die du händisch angibst. Die anderen vier hängen von der Zeit ab:
+ 4. In FlowgencyTM gilt die Priorität einer Aufgabe nur als eine von fünf Dimensionen der Dringlichkeit, wenn auch die einzige, die du händisch angibst. Die anderen vier hängen von der Zeit ab:
 
    * Wie nah das Fristende liegt,
 
@@ -24,13 +24,13 @@ Was ist FlowgencyTM? - Die sieben wichtigsten Punkte
 
    Alle Dimensionen kannst du nach deinem Dafürhalten wichten. Per Voreinstellung fließen alle in gleichem Maße in die Dringlichkeitsberechnung ein.
 
- 5. Diese vier weiteren Dimensionen steigern sich mit der fortschreitenden Zeit. Damit ist jedoch nicht die übliche Systemuhrzeit gemeint, sondern die FlowgencyTM-eigene, die abhängig von deinem definierten Zeitmodell läuft oder stillsteht. Wenn sie steht, ist die Dringlichkeit sozusagen gefroren. Pausierende Aufgaben werden per Voreinstellung nicht in der Liste aufgeführt.
+ 5. Diese vier weiteren Dimensionen steigern sich mit der fortschreitenden Zeit. Damit ist jedoch nicht die übliche Systemuhrzeit gemeint, sondern die FlowgencyTM-eigene, die abhängig von deinem definierten Zeitmodell läuft oder stillsteht. Dein Zeitmodell kann regelmäßige und einmalige Arbeits- und Auszeitrhythmen gleichermaßen umfassen und verschiedene Typen von Aufgaben berücksichtigen. Pausierende Aufgaben werden per Voreinstellung nicht in der Liste aufgeführt.
 
  6. Du kannst Aufgaben in Schritte unterteilen und diese wiederum bei Bedarf in Unterschritte. Du kannst beliebig tiefe Strukturen erzeugen. Manchmal haben Aufgaben/Schritte selbstverständliche Unterteilungen, sie explizit aufzuführen und zu beschreiben wäre lächerlich. Wenn du möchtest, kannst du stattdessen einfach die Anzahl von Häkchen definieren, diese bilden also lediglich gedachte Unterschritte.
 
  7. Es ist freie, offene Software lizensiert unter der General Public License, Version 3 oder einer späteren Version. Du kannst die Software kostenlos von GitHub herunterladen (URL: https://github.com/flowdy/FlowgencyTM), um sie zu verwenden. Gern kannst du auch ein eigenes Softwareprojekt davon ableiten.
 
-So sieht Flowgency auf dem Bildschirm aus:
+So sieht FlowgencyTM auf dem Bildschirm aus:
 
 ![Screenshot](doc/snapshot-home.png)
 

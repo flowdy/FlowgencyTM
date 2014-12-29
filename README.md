@@ -6,7 +6,7 @@ README (or the [german version](LIESMICH.md))
 What is FlowgencyTM? - Seven key-notes
 --------------------------------------
 
- 1. FlowgencyTM is a tool to plan and to manage tasks, their urgencies, progresses and also dependencies if any, just for yourself. It is all about getting things done, maybe except those of lowest priority, within the time that you have expressedly reserved for work. In a business world that is fallen for the multitasking illusion, it helps maintaining to-dos in a sequential order and sticking to it, so flow experience is liklier to come.
+ 1. FlowgencyTM is a tool to plan and to manage tasks, their urgencies, progresses and also dependencies if any, just for yourself. In a business world that is fallen for the multitasking illusion, it is essential to maintain atomic steps in a sequential order that allows for completing all of your tasks in time. Doing this all in mind wastes attentiveness and is prone to airy and impulsive revisioning. Better delegate consideration of which tasks deserve your attention most, by right now, to the computer. Provided the data you enter is appropriate, flow experience is then liklier to come, your working gets healthier and more sustainable.
 
  2. The user interface is implemented in HTML5 and Javascript, so it runs in your favourite web browser. The server component is included in the distribution, too. It is preconfigured to run on your local system from which it exclusively accepts requests.
 
@@ -14,7 +14,7 @@ What is FlowgencyTM? - Seven key-notes
 
  4. In FlowgencyTM terms, priority is just one of several urgency dimensions, albeit the only that is directly entered and adjustable afterwards. The software distinguishes four other that depend on time:
 
-   * How near the due date has approached,
+   * How close the due date has approached,
 
    * how much time has elapsed in relation to how much expenditure you have checked as done,
 
@@ -24,7 +24,7 @@ What is FlowgencyTM? - Seven key-notes
 
    You can weight all dimensions as you find appropriate. By default, all five are weighted equally (1).
 
- 5. These four dimensions aforementioned increase with the passage of time. Here, however, "time" is not directly what the system clock measures. FlowgencyTM has got its own that runs or stands still depending on your time model. In the latter periods, urgency is frozen. Affected i.e. pausing tasks are by default even hidden from display.
+ 5. These four dimensions aforementioned increase with the passage of time. Here, however, "time" is not directly what the system clock measures. FlowgencyTM has got its own that runs or stands still depending on your time model specified in advance. The time model can include both regular and once-only periods of working or off-time and can also distinguish different types of tasks. Pausing tasks are by default even hidden from display.
 
  6. You can divide tasks into steps, steps again into substeps. You can build arbitrarily deep hierarchies. Sometimes tasks or steps have substeps you find ridiculous to describe because they go without saying. Then you can instead specify that the software is to provide how many checks ever for them, one for each substep just thought.
 
