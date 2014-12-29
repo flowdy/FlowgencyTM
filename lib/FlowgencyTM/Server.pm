@@ -11,7 +11,16 @@ sub startup {
 
   # Documentation browser under "/perldoc"
   $self->plugin('PODRenderer');
-  $self->defaults( layout => 'general', get_version => sub { $FlowgencyTM::VERSION } );
+
+  $self->defaults(
+      layout => 'general',
+      revision => {
+          version => $FlowgencyTM::VERSION,
+          commit_id => qx{git rev-list -1 HEAD},
+          changes => qx{git diff-index --shortstat HEAD},
+          server_started => scalar localtime(time),
+     }
+  );
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
   my $username = $ENV{FLOWGENCYTM_USER} // getpwuid($<);

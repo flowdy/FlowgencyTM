@@ -6,6 +6,14 @@ body {
   /* width:200px; */
 }
 
+#ftm_revision {
+  color:lightgrey;
+  font-size:smaller;
+  position:absolute;
+  bottom:0;
+  right:5px;
+}
+
 #leftnav {
   clear:left;
   float: left;

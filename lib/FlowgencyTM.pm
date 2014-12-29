@@ -1,7 +1,7 @@
+use 5.014;
 use strict;
 
-package FlowgencyTM {
-our $VERSION = '0.01';
+package FlowgencyTM 0.6 {
 use Carp qw(croak);
 use FTM::FlowDB;
 use FTM::User; # No, it is rather the user who use FlowgencyTM
@@ -13,7 +13,7 @@ my %DEFAULT_USER_DATA = (
     password => '',
     priorities => q[{"pile":1,"whentime":2,"soon":3,"urgent":5}], 
     weights => q[{"priority":1,"drift":1,"due":-1,"open":1,"timeneed":1}],
-    time_model => q[{"default":{"label":"24/7 workaholic? Please define a healthy time model","week_pattern":"Mo-So@0-23"},"private":{"label":"Task shall sleep, i.e. its urgency be frozen","week_pattern":"Mo-So@!0-23"}}],
+    time_model => q[{"default":{"label":"Default track not yet configured (hence 24/7)","week_pattern":"Mo-So@0-23"},"private":{"label":"Off, i.e. urgency frozen","week_pattern":"Mo-So@!0-23"}}],
 );
 
 sub database () {

@@ -15,12 +15,16 @@
   <script src="/scripts/jquery-1.9.1.min.js"></script>
   <script src="/scripts/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
   <script src="/scripts/jquery-ui-1.11.2.custom/jquery-ui-timepicker-addon.js"></script>
-  <script src="/scripts/frontend.js"></script>
+% my $scripts = stash 'addScripts';
+% for my $script ( 'frontend', @$scripts ) {
+  <script src="/scripts/<%= $script %>.js"></script>
+% }
 </head>
 <body>
   <header>
     <h1><a id="logo" href="/"><img src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
     <p id="slogan">This place is reserved for a FlowgencyTM extension widget of user's choice<br>(e.g. a Pomodoro alarm clock).</p>
+    <span id="ftm_revision">Version: <%== sprintf '%s, <span title="%2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></span>
   </header>
 
 <nav id="leftnav">

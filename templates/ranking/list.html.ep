@@ -1,3 +1,4 @@
+% stash addScripts => ['ranking'];
 <p>The following ranking has been generated at: <%= $timestamp %></p>
 <ol id="plans">
 % while ( my $task = $list->() ) {
