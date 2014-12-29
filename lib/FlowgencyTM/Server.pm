@@ -17,7 +17,8 @@ sub startup {
       revision => {
           version => $FlowgencyTM::VERSION,
           commit_id => qx{git rev-list -1 HEAD},
-          changes => qx{git diff-index --shortstat HEAD},
+          changes => qx{git diff-index --shortstat HEAD}
+                         || 'without uncommitted changes',
           server_started => scalar localtime(time),
      }
   );
