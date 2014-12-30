@@ -16,7 +16,7 @@ sub settings {
         next if !length $data;
         $change_model{$tt} = from_json('{'.$data.'}');
     }
-    for my $newtt ( @{ $self->param('timetrack[]') // [] } ) {
+    for my $newtt ( @{ $self->every_param('timetrack[]') // [] } ) {
         next if !length $newtt;
         my $data = from_json('{'.$newtt.'}');
         my $name = $data->{name};
