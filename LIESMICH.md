@@ -37,10 +37,37 @@ So sieht FlowgencyTM auf dem Bildschirm aus:
 Was es nicht ist
 ----------------
 
-FlowgencyTM ist es nicht gedacht zum Management komplexerer Projekte. Kosten-, Asset- und Risikomanagement finden keine Berücksichtigung. Es ist keine Groupwarelösung für ganze Unternehmen, obgleich grundlegende Funktionen wie Delegation geplant sind. Du bist natürlich willkommen, Schnittstellen für solche Lösungen beizutragen, etwa über die sich Aufgaben importieren oder Erledigtstatus zurückmelden lassen.
+### FlowgencyTM ist keine Groupware
 
-FlowgencyTM ist *nicht harmlos*. Die Serverkomponente für andere zu betreiben, damit sie nur einen Link klicken und sich anmelden brauchen, erfordert ethisches Verantwortungsbewusstsein. Falsch verwendet, kann sie Unternehmen wirtschaftlichen Schaden zufügen und möglicherweise sogar ganze Gesellschaften schädigen – sprich, sie leistet das Gegenteil dessen, wozu sie eigentlich programmiert wurde. Die Verwendung muss vor allem freiwillig sein, der/die Einzelne darf durch die Entscheidung dagegen keine negativen Folgen erleiden und sei dies dadurch, dass die Anwendung für andere mit einer Begünstigung verbunden ist.
+Es ist nicht gedacht zum Management komplexerer Projekte. Kosten-, Asset- und Risikomanagement finden keine Berücksichtigung. Es ist keine Groupwarelösung für ganze Unternehmen, obgleich grundlegende Funktionen wie Delegation geplant sind. Du bist natürlich willkommen, Schnittstellen für solche Lösungen beizutragen, etwa über die sich Aufgaben importieren oder Erledigtstatus zurückmelden lassen.
 
+### FlowgencyTM hat keine offizielle Smartphone-App
+
+Es gibt im offiziellen FlowgencyTM-Paket keine Smartphone-App, weil ich kein Smartphone habe (und meist auch nicht misse) und eine App natürlich nicht entwickeln könnte ohne laufende Tests. Den clientseitigen HTML5/Javascript-Code auf mobile Geräte abzustimmen, hat derzeit eine niedrige Priorität. Es ist möglich, dass Apps zur Kommunikation mit einem FlowgencyTM-Server eines Tages von Dritten entwickelt und über einen Store zu irgendeinem Preis angeboten wird. Bitte kontaktiere mich, falls du bei einer solchen App etwaige GPL-Lizenzverstöße entdeckst.
+
+### FlowgencyTM ist nicht unbedenklich, so die Serverkomponente von Dritten betrieben wird
+
+Bedingt durch seine Architektur ist es technisch möglich, einen FlowgencyTM-Dienst im Netz anzubieten, so dass andere nur ein Lesezeichen im Browser einrichten und anklicken brauchen. Auf diesem Nutzungsszenario liegt das Augenmerk der Entwicklung gerade nicht. Vielmehr wird der Anwender ermutigt, einen eigenen FlowgencyTM-Server für sich allein zu betreiben, um seine Daten zu schützen und subtiler Kontrolle zu entgehen. Überhaupt ist ein Server nämlich nichts anderes als ein Programm, das mit einem anderen Programm über eine Netzwerkschnittstelle kommuniziert, die auch einfach `localhost` (IP 127.0.0.1) sein kann. Durch sie ist gewährleistet, dass Client und Server auf derselben Maschine laufen und ihre Kommunikation insofern sicher ist, dass niemand darauf zugreifen kann, der sich nicht sowieso direkten Zugriff auf die SQLite-Datenbank der Software wie zu jeder anderen Datei auf dem System verschaffen könnte.
+
+
+FlowgencyTM Demo-Dienste (geplant)
+----------------------------------
+
+Es mag wie ein Wiederspruch klingen, aber ich ermutige jeden (und plane dies selbst), einen FlowgencyTM-Demo-Service für alle Interessen anzubieten, damit sie ohne Installation der Software prüfen können, ob das Flowgency-Aufgaben-/Zeitmanagement-Konzept überhaupt für ihre individuelle Arbeitsweise taugt.
+
+### Verfügbare Demo-Dienste
+
+(Leider noch keine Sites verfügbar. Wenn du eine Instanz unter den folgenden Bedingungen betreibst und sobald FlowgencyTM überhaupt den dafür nach deinem Dafürhalten nötigen Multi-User-Support mitbringt, zögere nicht und schicke mir bitte den Link.)
+
+### Bedingungen für den Eintrag in die offizielle Liste
+
+Jede offizielle FlowgencyTM-Demo-Instanz ("System") muss den folgenden Anforderungen hinsichtlich seiner Nutzungsbedingungen genügen:
+
+ 1. Das System erlaubt die Benutzung unter der ausdrücklichen Einschränkung, dass nur fingierte Daten übermittelt werden dürfen. Fingierte Daten benötigen weder Datenschutz noch -sicherheit, für die zu gewährleisten FlowgencyTM in erster Linie nicht ausgelegt ist. Die Übermittlung von Daten, die dem Betriebsgeheimnis oder einer sonstigen Verschwiegenheitserklärung unterliegen oder Rechte dritter verletzen oder verletzen könnten, ist ausdrücklich zu verbieten. Es ist darauf hinzuweisen, dass der Datenbestand auf dem System unverschlüsselt vorliegt und vom Betreiber jederzeit eingesehen werden kann.
+
+ 2. Zur Kenntnis nehmen müssen Benutzer des Systems auch, dass sie das System nicht mehr verwenden sollen, sobald sie sich entscheiden, FlowgencyTM für reelle, produktive Daten zu verwenden. Sie können sich stattdessen einen eigenen Server aufsetzen oder ihn von jemandem Kundigen hosten lassen, den sie persönlich kennen und dem sie vertrauen.
+
+ 3. Außerdem müssen sie ausdrücklich akzeptieren, dass ihr Konto und alle dazu gespeicherten Daten eines Tages ohne Benachrichtigung gelöscht sein könnten. Du kannst eine Begrenzung der Zahl von Benutzerkonten festlegen und jederzeit und nach deinem Dafürhalten den verfügbaren Serverressourcen anpassen.
 
 Wie FlowgencyTM am ergiebigsten zu benutzen ist
 -----------------------------------------------

@@ -14,7 +14,7 @@ What is FlowgencyTM? - Seven key-notes
 
  4. In FlowgencyTM terms, priority is just one of several urgency dimensions, albeit the only that is directly entered and adjustable afterwards. The software distinguishes four other that depend on time:
 
-   * How close the due date has approached,
+   * How close the due-date has approached,
 
    * how much time has elapsed in relation to how much expenditure you have checked as done,
 
@@ -37,9 +37,37 @@ This is how FlowgencyTM looks like on your screen:
 What it is not
 --------------
 
-It is not all meant for more than small-scale project management, ignoring management of costs, assets, risks etc. Neither as an enterprise-level groupware solution, inspite of its (planned) basic delegation features. But you are welcome to enhance it with interfaces to groupware products e.g. for tasks import or the propagation of those done.
+### FlowgencyTM is no groupware
 
-FlowgencyTM is *not harmless*. To run the server component for others, so they need only to click a link and to sign up, requires a quite sense for ethical responsibility. Used in a wrong way, it can lead to economical and even social damage – frankly, in contrary to what it has been realized for. Particularly, use must not be solicited, so nobody is to suffer any negative consequence by choosing against, even if by only seeing others get promotive benefits from its use.
+It is not meant for more than small-scale project management, ignoring management of costs, assets, staff, risks etc. Neither as an enterprise-level groupware solution, albeit basic delegation features are planned. You are, however, welcome to enhance it with interfaces to groupware products e.g. for tasks import or the propagation of those done.
+
+### FlowgencyTM has no official smart-phone app
+
+There is no smartphone app in the official FlowgencyTM distribution, because smartphones I personally consider on the downgrade and closed-source mobile technology of not much good after all. Hence, to make the official HTML5/Javascript mobile-ready is lowest priority. FlowgencyTM apps you might find someday in your app-store are offered by third parties for any price. Please contact me if you find any GPL v3 violations in a mobile app available in a store, for free or not.
+
+### FlowgencyTM is not unproblematic if served by a third party
+
+Due to its architecture, it is technically possible to provide a FlowgencyTM service for others to click a bookmark and to sign up easily. However, this scenario is not specifically in focus of development. Users of FlowgencyTM are rather encouraged to run their own server to ensure privacy and to elude subtle control. After all a server is simply a program that communicates with other programs via a network interface, which can just as well be `localhost` (IP 127.0.0.1) to ensure that server and client are actually running on the same machine, provided by any system that could likewise communicate with a remote machine via the internet. That way, a FlowgencyTM server listening to a localhost port is as safe against third-party access as the underlying SQLite database and any other file.
+
+FlowgencyTM demo (planned)
+--------------------------
+
+It sounds like a contradiction to what is said above, but I encourage everyone who can (and plan myself) to host a FlowgencyTM demo service to let people find out, without having to install software, if the Flowgency tasks & time management concept sufficiently matches their individual working style.
+
+### Available demo sites
+
+(No sites available, yet. If you have deployed an instance to be used under the terms below and you find FlowgencyTM has sufficient multi-user support in place: Just don't hesitate, please send me a link.)
+
+### Conditions of entry in the official list
+
+Every official test and demo site of FlowgencyTM (the "system") must comply to the following conditions:
+
+ 1. The system allows use under the explicit restriction that *only fake data may be submitted*, because fake data does not need any privacy or security FlowgencyTM is not designed for ensuring in the first place. To submit data held as a trade secret or underlying some non-disclosure-agreement as well as data that violates or might violate other's rights must be expressedly disallowed. Also point out that all data is stored unencrypted and subject to being viewed and evaluated by the provider.
+
+ 2. Users must accept that once they decide for using FlowgencyTM with real and productive data, they have to stop using the system and either install their own server locally if they can, or use a service hosted by someone of competence whom they know and trust personally.
+
+ 3. Users must know that their accounts and all associated data are subject to being deleted without notice someday. You can configure a limit of user accounts and adapt it at any time and at your discretion considering server resources to spare.
+
 
 How best to benefit from using FlowgencyTM
 ------------------------------------------
