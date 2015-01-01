@@ -67,6 +67,17 @@ has _priorities => (
     },
 );
 
+has appendix => (
+    is => 'rw',
+    isa => 'Num',
+    lazy => 1,
+    default => sub { shift->_dbicrow->appendix },
+    trigger => sub {
+        my ($self, $value) = @_;
+        $self->_dbicrow->update({ appendix => $value });
+    },
+);
+
 sub get_labeled_priorities {
     my ($self) = @_;
     my $p = $self->_priorities;
@@ -127,6 +138,7 @@ sub _build_tasks {
         priority_resolver => sub {
             $self->_priorities->{ +shift };
         },
+        appendix => sub { $self->appendix },
         task_rs => scalar $self->_dbicrow->tasks,
     });
 }

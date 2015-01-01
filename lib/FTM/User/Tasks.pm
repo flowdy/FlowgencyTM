@@ -22,14 +22,8 @@ has cache => (
     default => sub {{}},
 );
 
-has ['track_finder', 'flowrank_processor', 'priority_resolver' ] => (
+has ['track_finder', 'flowrank_processor', 'priority_resolver', 'appendix' ] => (
     is => 'rw', isa => 'CodeRef', required => 1,
-);
-
-has appendix => (
-    is => 'ro',
-    isa => 'Num',
-    default => 0.1,
 );
 
 sub _build_task_obj {
@@ -448,12 +442,12 @@ sub list {
 
     if ( !$tray ) {
         if ( my $last_on_desk = $on_desk[-1] ) {
-            my $first_score = $on_desk[0]->flowrank->score;
-            my $last_score  = $last_on_desk->flowrank->score;
-            my $appendix = $first_score ? $last_score
-                         * (1 - ($first_score - $last_score)
-                              / ($first_score * $self->appendix)
-                           ) 
+            my $top_score = $on_desk[0]->flowrank->score;
+            my $lowest_score  = $last_on_desk->flowrank->score;
+            my $appendix = $top_score ? $lowest_score - (
+                             ( $top_score - $lowest_score )
+                               * $self->appendix->()
+                           )
                          : - 1;
             for ( @in_tray ) {
                  $_->flowrank->score > $appendix or next;
@@ -461,8 +455,9 @@ sub list {
             }
         }
         else {
-            # Because there are no open tasks on desk yet, let's present all closed task
-            # so the user can select the next task to open
+            # Because there are no open tasks on desk yet,
+            # let's present all closed tasks so the user can
+            # select the next task to open
             @on_desk = @in_tray;
         }
     }

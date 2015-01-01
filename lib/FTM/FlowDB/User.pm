@@ -11,6 +11,11 @@ __PACKAGE__->add_columns(qw/
     weights time_model priorities
 /);
 
+__PACKAGE__->add_column('appendix' => {
+    data_type => 'FLOAT',
+    default_value => 0.1
+});
+
 __PACKAGE__->set_primary_key('user_id');
 
 __PACKAGE__->has_many(tasks => 'FTM::FlowDB::Task',

@@ -45,6 +45,9 @@ sub settings {
     }
     $user->modify_weights(%weights) if %weights;
 
+    if ( defined(my $appendix = $self->param("appendix")) ) {
+        $user->appendix($appendix);
+    }
 }
 
 1;
