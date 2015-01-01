@@ -43,7 +43,7 @@ It is not meant for more than small-scale project management, ignoring managemen
 
 ### FlowgencyTM has no official smart-phone app
 
-There is no smartphone app in the official FlowgencyTM distribution, because smartphones I personally consider on the downgrade and closed-source mobile technology of not much good after all. Hence, to make the official HTML5/Javascript mobile-ready is lowest priority. FlowgencyTM apps you might find someday in your app-store are offered by third parties for any price. Please contact me if you find any GPL v3 violations in a mobile app available in a store, for free or not.
+There is no smartphone app in the official FlowgencyTM distribution, because I do not have such a device (seldom missing it) but would need it for testing in development. Hence, to make the official HTML5/Javascript mobile-ready is lowest priority. FlowgencyTM apps you might find someday in your app-store are offered by third parties for any price. Please contact me if you find any GPL v3 violations in a mobile app available in a store, for free or not.
 
 ### FlowgencyTM is not unproblematic if served by a third party
 
