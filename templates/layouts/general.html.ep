@@ -24,7 +24,7 @@
   <header>
     <h1><a id="logo" href="/"><img src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
     <p id="slogan">This place is reserved for a FlowgencyTM extension widget of user's choice<br>(e.g. a Pomodoro alarm clock).</p>
-    <span id="ftm_revision">Version: <%== sprintf '%s, <span title="%2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></span>
+    <div id="ftm_revision">Version: <%== sprintf '%s, rev. <span title="full git commit identifier: %2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></div>
   </header>
 
 <nav id="leftnav">

@@ -7,11 +7,9 @@ body {
 }
 
 #ftm_revision {
-  color:lightgrey;
+  color:darkgrey;
   font-size:smaller;
-  position:absolute;
-  bottom:0;
-  right:5px;
+  text-align:center;
 }
 
 #leftnav {
