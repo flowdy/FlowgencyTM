@@ -36,7 +36,7 @@ has tasks => (
     isa => 'FTM::User::Tasks',
     init_arg => undef,
     builder => '_build_tasks',
-    handles => { 'get_task' => 'get' },
+    handles => { 'get_task' => 'get', 'search_tasks' => 'search' },
     lazy => 1,
 );
 

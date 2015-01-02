@@ -1,79 +1,97 @@
 % stash addScripts => ['ranking'];
+% my $section = begin
+%     my $task = shift;
+%     my ($orient, $primary_width, $primary_color, $secondary_color)
+%       = @{$task->{progressbar}}{qw/orientation primary_width primary_color secondary_color/};
+%     my $time_progress = int($task->{progress_pc}{time} * 100)."%";
+%     my $checked_expenditure_progress = int($task->{progress_pc}{checked_exp} * 100)."%";
+      <div class="progressbar" title="progress: <%= $time_progress %> of time elapsed : <%= $checked_expenditure_progress %> of expenditure checked" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>;">&nbsp;</span></div>
+      <div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %> // Urgency score: <%= sprintf("~%.3f", $task->{score}) %></div>
+%     end
+% my $upcoming_section = begin
+%     my $task = shift;
+      <hr style="height:8px;background-color:<%= $task->{progressbar}{secondary_color} %>" ><div class="ranking-data">Approaching task to do from <%= $task->{startdate} %> until <%= $task->{duedate} %></div>
+% end
+% my $archived_section = begin
+%     my $task = shift;
+      <hr style="height:8px;background-color:<%= $task->{progressbar}{secondary_color} %>" ><div class="ranking-data">Task archived at <%= $task->{archiveddate} %>.</div>
+% end
+% my %info = (
+%     upcoming => $upcoming_section,
+%     archived => $archived_section,
+% );
+
 <p>The following ranking has been generated at: <%= $timestamp %></p>
 <ol id="plans">
 % while ( my $task = $list->() ) {
-% my $details = $task->{extended_info};
-% my $classes = join " ", $details ? 'open' : (), $task->{active} ? () : 'paused';
-<li class="<%= $classes %>" data-id="<%= $task->{name} %>" <% if ( my $ots = $task->{open_since} ) { %>data-open-since="<%= $ots %>" <% } %>id="task-<%= $task->{name} %>">
-<header><h2><%= $task->{title} %></h2>
-% my ($orient, $primary_width, $primary_color, $secondary_color)
-%   = @{$task->{progressbar}}{qw/orientation primary_width primary_color secondary_color/};
-% my $time_progress = int($task->{progress_pc}{time} * 100)."%";
-% my $checked_expenditure_progress = int($task->{progress_pc}{checked_exp} * 100)."%";
-<div class="progressbar" title="progress: <%= $time_progress %> of time elapsed : <%= $checked_expenditure_progress %> of expenditure checked" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>;">&nbsp;</span></div>
-<div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %> // Urgency score: <%= sprintf("~%.3f", $task->{score}) %></div>
-</header>
-% if ( $details ) {
-<div class="extended-info">
-%= include template => 'task_editor/open', id => $task->{name}, details => $details
-</div>
-% }
-</li>
+%     if ( !ref $task and my $label = $task ) { $section = $info{$label}; next; }
+%     my $details = $task->{extended_info};
+%     my $classes = join " ", $details ? 'open' : (), $task->{active} ? () : 'paused';
+      <li class="<%= $classes %>" data-id="<%= $task->{name} %>" <% if ( my $ots = $task->{open_since} ) { %>data-open-since="<%= $ots %>" <% } %>id="task-<%= $task->{name} %>">
+      <header><h2><%= $task->{title} %></h2>
+      <%= $section->($task) %>
+      </header>
+%     if ( $details ) {
+          <div class="extended-info">
+%=             include template => 'task_editor/open', id => $task->{name}, details => $details
+          </div>
+%     }
+      </li>
 
 % } if (0) {
-<li class="shadow">
-<header>
-<!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
-<h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
-<div class="progressbar"><span class="erledigt">&nbsp;</span></div>
-<time datetime="2011-10-05 12:00">Frist: Mi 05.10.2011, 12:00 (eff. noch 68:51h, nächste Pause in 4:12h)</time>
-</header>
-<div class="detail description">
-Beschreibung, Hinweise, Notizen für sich selbst
-</div>
-<form class="details">
-<ul class="editable-tags">
-<li><a class="tag-tag1" href="#">tag1</a></li>
-<li><a class="tag-anderes" href="#">anderes</a></li>
-<li><a class="tag-drei" href="#">Drei</a></li>
-</ul>
-<ol>
-<li><input name="step" value="5" id="step-a" type="checkbox"><label for="step-a" class="editable-step">Erster, wenn einziger nur interner Schritt.</li>
-<li><input name="step" value="2" id="step-b" type="checkbox"><label for="step-b" class="editable-step">Der Benutzer kann die Aufgabe gern in mehrere einteilen.</label></li>
-<li><input name="step" value="1" id="step-c" type="checkbox"><label for="step-c" class="editable-step">warten auf [Pmaria] ...</label></li>
-</ol>
-</li>
-<!--                                                                            
-   elapsed:   0.833333333333333                                                 
-   done:      0.666666666666667                                                 
-   rel_state: 0.5                                                               
--->                                                                             
-<li><header><h2>Zeitfortschritt: 5:1 / Erledigt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
-<li><header><h2>Zeitfortschritt: 4/6 / Erledigt: 2/3</h2>
-<div class="progressbar" style="background-color:rgba(0,192,255,1.000000)"><span class="erledigt" style="background-color:#00C0FF;width:67%;">&nbsp;</span></div></header></li>
-
-<!--
-   elapsed:   0.5
-   done:      0.75
-   rel_state: -0.5
--->
-<li><header><h2>Zeitfortschritt: 1/2 / Erledigt: 3:1</h2>
-<div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#19DFA0;width:75%;">&nbsp;</span></div></header></li>
-
-<!--
-   elapsed:   1
-   done:      0
-   rel_state: 1
--->
-<li><header><h2>Zeitfortschritt: 2/2 / Erledigt: 0:1</h2>
-<div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#FF264C;width:100%;">&nbsp;</span></div></header></li>
-
-<!--
-   elapsed:   0
-   done:      1
-   rel_state: -1
--->
-<li><header><h2>Zeitfortschritt: 0/2 / Erledigt: 1:0</h2>
-<div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#33FF40;width:100%;">&nbsp;</span></div></header></li>
+      <li class="shadow">
+      <header>
+      <!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
+      <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
+      <div class="progressbar"><span class="erledigt">&nbsp;</span></div>
+      <time datetime="2011-10-05 12:00">Frist: Mi 05.10.2011, 12:00 (eff. noch 68:51h, nächste Pause in 4:12h)</time>
+      </header>
+      <div class="detail description">
+      Beschreibung, Hinweise, Notizen für sich selbst
+      </div>
+      <form class="details">
+      <ul class="editable-tags">
+      <li><a class="tag-tag1" href="#">tag1</a></li>
+      <li><a class="tag-anderes" href="#">anderes</a></li>
+      <li><a class="tag-drei" href="#">Drei</a></li>
+      </ul>
+      <ol>
+      <li><input name="step" value="5" id="step-a" type="checkbox"><label for="step-a" class="editable-step">Erster, wenn einziger nur interner Schritt.</li>
+      <li><input name="step" value="2" id="step-b" type="checkbox"><label for="step-b" class="editable-step">Der Benutzer kann die Aufgabe gern in mehrere einteilen.</label></li>
+      <li><input name="step" value="1" id="step-c" type="checkbox"><label for="step-c" class="editable-step">warten auf [Pmaria] ...</label></li>
+      </ol>
+      </li>
+      <!--                                                                            
+         elapsed:   0.833333333333333                                                 
+         done:      0.666666666666667                                                 
+         rel_state: 0.5                                                               
+      -->                                                                             
+      <li><header><h2>Zeitfortschritt: 5:1 / Erledigt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
+      <li><header><h2>Zeitfortschritt: 4/6 / Erledigt: 2/3</h2>
+      <div class="progressbar" style="background-color:rgba(0,192,255,1.000000)"><span class="erledigt" style="background-color:#00C0FF;width:67%;">&nbsp;</span></div></header></li>
+      
+      <!--
+         elapsed:   0.5
+         done:      0.75
+         rel_state: -0.5
+      -->
+      <li><header><h2>Zeitfortschritt: 1/2 / Erledigt: 3:1</h2>
+      <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#19DFA0;width:75%;">&nbsp;</span></div></header></li>
+      
+      <!--
+         elapsed:   1
+         done:      0
+         rel_state: 1
+      -->
+      <li><header><h2>Zeitfortschritt: 2/2 / Erledigt: 0:1</h2>
+      <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#FF264C;width:100%;">&nbsp;</span></div></header></li>
+      
+      <!--
+         elapsed:   0
+         done:      1
+         rel_state: -1
+      -->
+      <li><header><h2>Zeitfortschritt: 0/2 / Erledigt: 1:0</h2>
+      <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#33FF40;width:100%;">&nbsp;</span></div></header></li>
 % }
 </ol>

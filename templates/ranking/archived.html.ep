@@ -1,0 +1,8 @@
+<p>Archived tasks: <%= $tasks->count %></p>
+
+<ul>
+% while ( my $task = $tasks->next ) {
+<li><a href="/task/<%= $task->name %>/form"><%= $task->title %></a>: started <%= $task->from_date %>, <%= $task->archived_because %>  <%= $task->archived_ts %></li>
+% }
+</ul>
+

@@ -37,12 +37,11 @@
     <li><label><input type="checkbox" name="drawer" value="1" /> paused as planned</label></li>
     <li><label><input type="checkbox" name="drawer" value="2" /> approaching</label></li>
 </ul></li>
-<li>Search<form id="suche">
+<li>
+<a style="margin-bottom:5px;" href="/task/archive">List archived tasks</a>
+Search all tasks:
 <input placeholder="in title/description/tags">
-</form><ul>
-<li>Done</li>
-<li>Trash</li>
-</ul></li>
+</li>
 <li>Set time<form id="settime">
 <input name="time" type="datetime" style="width:75%"><br>
 <label><input type="radio" name="keep" value="0"> Next ranking only</label><br>

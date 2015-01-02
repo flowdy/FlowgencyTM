@@ -36,6 +36,7 @@ sub startup {
   $r->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $r->any([qw/GET POST/] => '/settings')
     ->to('user_profile#settings', user => FlowgencyTM::user);
+  $r->get('/task/archive')->to("ranking#archived");
   $r->any([qw/GET POST/] => '/task/:id/:action')
     ->to(controller => 'task_editor');
    

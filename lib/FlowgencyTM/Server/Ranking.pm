@@ -35,6 +35,11 @@ sub list {
   );
 }
 
+sub archived {
+    my $self = shift;
+    $self->stash('tasks' => scalar FlowgencyTM::user()->tasks->search({ archived_because => { '!=' => undef }}, { order_by => { -desc => ['archived_ts'] }, rows => 100 }));
+}
+
 use FTM::Util::LinearNum2ColourMapper;
 use List::Util qw(min);
 
@@ -42,26 +47,30 @@ my @basecolor = (0,0xC0,0xff);
 
 sub _dump_task {
     my ($task) = shift;
-    my ($due,$next)
-        = map { $task->flowrank->$_ }
-          'due_in_hms', 'next_statechange_in_hms'
+    return $task if !ref $task;
+    my ($due, $next, $active, $score, $drift, $time_position) = $task->flowrank
+        ? (map { $task->flowrank->$_ } qw(
+              due_in_hms next_statechange_in_hms active score drift time_position
+          ))
+        : ()
         ;
-    my $is_active = $task->flowrank->active;
     my $dump = {
         name => $task->name,
         title => $task->title,
-        score => $task->flowrank->score,
+        score => $score,
         priority => $task->priority,
         progressbar => _progress_bar(
-            $task->progress, $task->flowrank->drift, $is_active
+            $task->progress, $drift, $active
         ),
         progress_pc => {
             checked_exp => $task->progress,
-            time => $task->flowrank->time_position,
+            time => $time_position,
         },
         duedate => $task->due_ts,
+        startdate => $task->start_ts,
+        archiveddate => $task->archived_ts,
         due_in_hms => $due,
-        active => $task->flowrank->active,
+        active => $active,
         $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
         extended_info => $task->is_open && {

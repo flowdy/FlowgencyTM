@@ -13,6 +13,7 @@ has task_rs => (
     is => 'ro',
     isa => 'DBIx::Class::ResultSet',
     required => 1,
+    handles => ['search'],
 );
 
 has cache => (
@@ -416,24 +417,26 @@ sub list {
     my $rs = $self->task_rs;
     $rs->clear_cache;
 
+    my (@on_desk, @in_tray, @upcoming, @in_archive);
+
     for my $task ( $rs->search(\%criteria)->get_column('name')->all ) {
         $task = eval { $self->get($task) }
                 // die "Could not cache task $task: $@";
         next if !($drawer & 2) && $task->start_ts > $now;
-        $processor->( $task, $drawer & 1 );
+        if ( $task->is_archived ) { push @in_archive, $task; }
+        elsif ( $task->start_ts > $now ) {
+            $drawer & 2 or next;
+            push @upcoming, $task;
+        }
+        else { $processor->( $task, $drawer & 1 ); }
     }       
 
     my $list = $processor->();
-
-    my (@on_desk, @in_tray, @upcoming, @in_archive);
 
     for my $task ( @$list ) {
         if ( $task->is_open ) {
             push @on_desk, $desk ? @in_tray : (), $task;
             @in_tray = () if $desk;
-        }
-        elsif ( $task->is_archived ) {
-            push @in_archive, $task;
         }
         else {
             push @in_tray, $task;
@@ -464,7 +467,13 @@ sub list {
  
     return $desk ? @on_desk : (),
            $tray ? @in_tray : (),
-           $archive ? @in_archive : ()
+           @upcoming ? ('upcoming',
+                   sort { $a->start_ts <=> $b->start_ts } @upcoming
+               ) : (),
+           @in_archive ? ('archived',
+                   reverse sort { $a->archived_ts cmp $b->archived_ts }
+                   @in_archive
+               ) : ()
         ;
 
 }
