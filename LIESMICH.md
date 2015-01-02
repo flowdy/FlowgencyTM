@@ -41,13 +41,15 @@ Was es nicht ist
 
 Es ist nicht gedacht zum Management komplexerer Projekte. Kosten-, Asset- und Risikomanagement finden keine Berücksichtigung. Es ist keine Groupwarelösung für ganze Unternehmen, obgleich grundlegende Funktionen wie Delegation geplant sind. Du bist natürlich willkommen, Schnittstellen für solche Lösungen beizutragen, etwa über die sich Aufgaben importieren oder Erledigtstatus zurückmelden lassen.
 
-### FlowgencyTM hat keine offizielle Smartphone-App
+### FlowgencyTM ist keine Smartphone-App
 
-Es gibt im offiziellen FlowgencyTM-Paket keine Smartphone-App, weil ich kein Smartphone habe (und meist auch nicht misse) und eine App natürlich nicht entwickeln könnte ohne laufende Tests. Den clientseitigen HTML5/Javascript-Code auf mobile Geräte abzustimmen, hat derzeit eine niedrige Priorität. Es ist möglich, dass Apps zur Kommunikation mit einem FlowgencyTM-Server eines Tages von Dritten entwickelt und über einen Store zu irgendeinem Preis angeboten wird. Bitte kontaktiere mich, falls du bei einer solchen App etwaige GPL-Lizenzverstöße entdeckst.
+Die Zielgruppe von FlowgencyTM benutzt die Software an einem Arbeitsplatz mit Desktop- oder Tablet-PC/Laptop mit ausreichender Bildschirmgröße und Auflösung. Wenn du in einem Smartphone-App-Store eine FlowgencyTM-App findest, so ist diese nicht offiziell. Außerdem kann es sein, dass sie nicht, soweit anwendbar, allen Bedingungen der GPL gehorcht. Besteht deiner Ansicht nach ein Verdacht, bitte ich dich um einen Hinweis an untenstehende E-Mail-Adresse.
 
-### FlowgencyTM ist nicht unbedenklich, so die Serverkomponente von Dritten betrieben wird
+### FlowgencyTM ist, so von Dritten betrieben, nicht unbedenklich
 
-Bedingt durch seine Architektur ist es technisch möglich, einen FlowgencyTM-Dienst im Netz anzubieten, so dass andere nur ein Lesezeichen im Browser einrichten und anklicken brauchen. Auf diesem Nutzungsszenario liegt das Augenmerk der Entwicklung gerade nicht. Vielmehr wird der Anwender ermutigt, einen eigenen FlowgencyTM-Server für sich allein zu betreiben, um seine Daten zu schützen und subtiler Kontrolle zu entgehen. Überhaupt ist ein Server nämlich nichts anderes als ein Programm, das mit einem anderen Programm über eine Netzwerkschnittstelle kommuniziert, die auch einfach `localhost` (IP 127.0.0.1) sein kann. Durch sie ist gewährleistet, dass Client und Server auf derselben Maschine laufen und ihre Kommunikation insofern sicher ist, dass niemand darauf zugreifen kann, der sich nicht sowieso direkten Zugriff auf die SQLite-Datenbank der Software wie zu jeder anderen Datei auf dem System verschaffen könnte.
+Bedingt durch seine Architektur ist es technisch möglich, einen FlowgencyTM-Dienst im Netz anzubieten, so dass andere nur ein Lesezeichen im Browser einrichten und anklicken brauchen. Auf diesem Nutzungsszenario liegt das Augenmerk der Entwicklung gerade nicht. Vielmehr wird der Anwender ermutigt, einen eigenen FlowgencyTM-Server für sich allein zu betreiben, um seine Daten zu schützen und subtiler Kontrolle zu entgehen. 
+
+Überhaupt ist ein Server nämlich nichts anderes als ein Programm, das mit einem anderen Programm über eine Netzwerkschnittstelle kommuniziert, die auch einfach `localhost` (IP 127.0.0.1) sein kann. Durch diese sogenannte Rückkopplung ist gewährleistet, dass Client und Server auf derselben Maschine laufen und ihre Kommunikation genauso sicher vor unbefugtem Zugriff ist wie die SQLite-Datenbank der Software oder jede andere Datei auf dem System.
 
 
 FlowgencyTM Demo-Dienste (geplant)
@@ -116,11 +118,13 @@ Immer wenn du deine gesetzten Häkchen speichern willst und mental bereit bist, 
 Wofür das alles, was ist die Vision?
 ------------------------------------
 
-In einem größeren Maßstab, falls die Software von vielen verwendet wird, ist meine Hoffnung, dass FlowgencyTM als feedbackgesteuerter »Schrittmacher« in der Gesellschaft regelmäßige, gesunde Rhythmen von Ent- und Anspannung fördert. Ohne diesen droht ihr bald ein Kollaps. Entschleunigung und Rerhythmisierung tut not.
+Ich habe mich bewusst gegen einen geschlossenen, zentralen Online-Dienst entschieden. Damit verzichte ich möglicherweise auf gutes Geld. Es steht nämlich zu fragen, ob dieses Geld wirklich gut wäre, falls ich dafür die Abhängigkeit von Leuten von Maschinen nur weiter stärke.
 
-Es ist Zweifel daran angebracht, ob eine Software das leisten kann. In einer Ära quasireligiöser Verehrung der Informationstechnologie im Allgemeinen (Der Computerpioneer und zuletzt Technologiekritiker Joseph Weizenbaum lehrte mich, das zu hinterfragen), ist es jedoch an der Zeit, Computern beizubringen, dass seine »Schöpfer« regelmäßige Auszeiten brauchen. Die sitzen übrigens am längeren Hebel, schließlich versorgen sie die Computer letztlich mit Energie. Versuche, sich auf ihren agnostischen pausenlosen GHz-Rhythmus einzustimmen, sind idiotisch. Das ist wie sich vom eigenen Kind sagen zu lassen, was zu tun ist. Behalte auch im Hinterkopf: Die Konkurrenz schläft nicht. Sie leidet unterm Burnout-Syndrom ;-).
+In einem größeren Maßstab, falls die Software von vielen verwendet wird, ist meine Hoffnung, dass FlowgencyTM dank seiner Zeitlogik als feedbackgesteuerter »Schrittmacher« in der Gesellschaft regelmäßige, gesunde Rhythmen von Ent- und Anspannung fördert. Entschleunigung und Rerhythmisierung tut not, um einen tiefgreifenden Kollaps zu verhindern.
 
-Ich hoffe, du bekommst durch FlowgencyTM mehr Flow-Erlebnisse – daher der Name – denn du lernst dich besser zu fokussieren, auf gerade anliegende Aufgaben im Beruf genauso wie auf das Lebens außerhalb.
+Es ist Zweifel daran angebracht, ob eine Software das leisten kann. In einer Ära quasireligiöser Verehrung der Informationstechnologie im Allgemeinen (Der Computerpioneer und zuletzt Technologiekritiker Joseph Weizenbaum lehrte mich, das zu hinterfragen), ist es jedoch an der Zeit, Computern beizubringen, dass seine »Schöpfer« regelmäßige Auszeiten brauchen. Die sitzen übrigens am längeren Hebel, schließlich versorgen sie die Computer letztlich mit Energie. Versuche, sich auf ihren agnostischen pausenlosen GHz-Rhythmus einzustimmen, sind idiotisch. Das ist wie sich vom eigenen Kind sagen zu lassen, was zu tun ist. Behalte auch im Hinterkopf: Die Konkurrenz schläft nicht. Sie leidet vielleicht unterm Burnout-Syndrom ;-).
+
+Ich hoffe, du erlebst durch FlowgencyTM zumindest mehr Flow – daher der Name – denn du lernst dich besser zu fokussieren, auf gerade anliegende Aufgaben im Beruf genauso wie auf das Leben außerhalb. Auch dein Chef sollte nicht dagegen sein, wenn er einen guten Teil der von Studien bestätigten 20 Minuten effektiv zurückgewinnt, die durch jede unerwartete Unterbrechung verloren gehen, weil der Beschäftigte mental zur gerade bearbeiteten Aufgabe zurückfinden, die zuvor bestandene Konzentration wiedererlangen bzw. konzentrationsmangelbedingte Fehler korrigieren muss.
 
 
 Das Konzept im Detail
@@ -142,16 +146,27 @@ Klone das git-Repository in ein beliebiges Verzeichnis. Unter Linux genügt dazu
 
 Für andere Systeme stelle sicher, das Git installiert ist und führe die entsprechenden Schritte durch (s. Manual).
 
-Überprüfung der Abhängigkeiten
-------------------------------
+### Überprüfung der Abhängigkeiten
 
 Prüfe und installiere die vorausgesetzten Drittmodule, indem du im FlowgencyTM-Verzeichnis folgenden Befehl ausführst (wiederum nötig dafür ist der cpanm Installer):
 
     cpanm --installdeps .
 
+Vielleicht ziehst du die Pakete vor, die deine Linux-Distribution bereitstellt. Zum Beispiel, wenn du FlowgencyTM auf deinem Raspberry Pi (Raspbian) installieren möchtest, was ich aufgrund der Langsamkeit nicht gerade empfehlen kann:
 
-Die Datenbank initialisieren und das Programm ausführen
--------------------------------------------------------
+    $ git clone https://github.com/flowdy/FlowgencyTM.git
+    $ cd FlowgencyTM/
+    $ cd script/
+    $ ls
+    $ ./gather_check_dependencies 
+      # analyze output for missing modules ...
+    $ cd ..
+    $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3 cpanminus
+    $ sudo cpanm Mojolicious # Neuere Version, denn die im Repo ist veraltet
+    $ prove -rl t                      
+
+
+### Die Datenbank initialisieren
 
 FlowgencyTM funktioniert noch nicht gleich nach der Installation im Webbrowser. Erst muss die Datenbank und ein Nutzer erstellt werden, zusätzlich ein Zeitmodell, wenn die Software nicht annehmen soll, dass du Tag und Nacht arbeitest ;-):
 
@@ -169,31 +184,72 @@ FlowgencyTM funktioniert noch nicht gleich nach der Installation im Webbrowser. 
     
     # [Weitere Informationen ...]
     
-    FTM::~> timetracks default --week-pattern 'Mo-Th@9-16,Fr@7-14' -l 'Bureau'
-       # [Beachte: '-16' = effectiv bis 16:59:59, '-14' eff. bis 14:59:59
-       #  Sie doc/konzept.de.md mit weiteren Beispielen.]
+    FTM::~> timetracks default --week-pattern 'Mo-Do@9-16,Fr@7-14' -l 'Bureau'
+
+Beachte: '-16' = effektiv bis 16:59:59, '-14' eff. bis 14:59:59. Siehe [das Konzept](doc/konzept.de.md) mit weiteren Beispielen. Um die voreingestellte Schiene zu behalten und eine zusätzliche zu erstellen, gib ihr einen anderen Namen als "default".
+
+Du kannst Auszeitstunden(-bereiche) mit einem vorangestellten '!' markieren:
+
+    FTM::~> [...] -w 'Mo-Fr@9-18,!12-13'
+
+Damit hast du eine lange Mittagspause 12:00-13:59. Folgendes ist aber ebenso möglich, schreib, wie du es möchtest (`-w` ist übrigens die Kurzform von `--week-pattern`):
+
+    FTM::~> [...] -w 'Mo-Fr@9-11,14-18'
+
+So trägst du evtl. geplanten Urlaub dazu:
+
+    FTM::~> [...] -v holidayname --week-pattern-of-track private \
+            --from '2.5. 12' --until +4d # vier Tage
+
+Oder so:
+
+    FTM::~> [...] --week-pattern 'Mo-So@!0-23'
     
     [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
+
+Beende die FlowgencyTM::Shell nun mit
+
     FTM::~> bye
     exit
     Cleaned up.
 
+### Den lokalen Server starten
 
-Dann am normalen Shell-Prompt führe bitte das folgende Kommando aus:
+Bitte führe eines der folgenden Kommandos aus:
 
-    script/morbo
+    script/morbo # Startet automatisch neu, wenn du eine beobachtete Datei änderst
+    script/server daemon # beobachtet keine Dateien
+    script/server help   # listet weitere Modi und Funktionen
 
 Bitte schließe nicht das Terminalfenster, weil es ggf. hilfreiche Meldungen ausgibt, wenn etwas schief läuft. Öffne nun den am Ende angezeigten Link in deinem Lieblings-Browser. Falls du eine lokale Firewall installiert hast, ist es nicht auszuschließen, dass diese Zugriffe von innerhalb des Systems verhindert, warum auch immer. Sieh im Handbuch deiner Firewall-Software nach, wie du entsprechende Ausnahmen konfigurierst, um HTTP-Zugriffe von und auf dein eigenes System zuzulassen (noch besser, kontaktiere deinen Administrator, falls vorhanden).
  
+Um den Server zu beenden, benutze die Tastenkombination Strg-C. Hast du kein Terminal für reines Logging zur Verfügung, kannst du den Server auch im Hintergrund ausführen:
+
+    $ cat > local.rc <<'EOF' # einmalig
+    FLOWGENCYTM_USER=$(whoami)
+    MOJO_LISTEN=http://127.0.0.1:3000
+    PIDFILE=flowgencytm.pid
+    LOG=server.log
+    COMMAND=morbo    # oder 'server daemon', 'server prefork', usw.
+    EOF
+    $ script/daemon start
+      # beendet, sobald die Startinformation in die Logdatei geschrieben ist
+      # Du beendest den Hintergrundprozess mit 'stop'
+    $ script/daemon status # bei Bedarf
+      # Prozessinfo und letzte Logzeilen
+    $ script/daemon restart|update|stop # 'update' = 'restart'
+                                        # mit `git pull` dazwischen
+
+
 
 Welche anderen Open Source-Projekte verwendet werden
 ----------------------------------------------------
 
-Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkzeuge. Meinen herzlichen Dank gilt den jeweiligen Entwicklern:
+Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkzeuge. Mein Dank gilt den jeweiligen Entwicklern:
 
   * Perl – die für die Serverkomponente verwendete Programmiersprache
   * JQuery, JQueryUI – dynamisches, ansprechendes Verhalten im Webbrowser
-  * Moose.pm – Ein modernes Objektsystem für Perl
+  * Moose.pm – ein modernes Objektsystem für Perl
   * Date::Calc – Zeitbezogene Berechnungen
   * SQLite, DBIx::Class – Datenbankschema
   * Mojolicious – für die Serverseite verantwortlich, so behältst du die volle
@@ -202,20 +258,21 @@ Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkz
   * Firefox – zum Testen und Benutzen von FlowgencyTM (+ andere Browser)
   * VIM – zwar keine IDE, aber als Editor wahnsinnig leistungsfähig
   * git – verteiltes Versionskontrollsystem
+  * InkScape – mit diesem Programm wurde das Logo erstellt.
 
 Autor / Projektinitiator kontaktieren
 -------------------------------------
 
-(Adresse aufgesplittet, um Spam zu verhindern. Einfach zusammensetzen und "@" als Ersatz für "bei".)
+(Adresse aufgesplittet, um Spam zu verhindern. Einfach zusammensetzen und "bei" durch "@" ersetzen.)
 
-    fhess bei mailbox. org
+    flowgencytm-dev bei mailbox. org
 
 Copyleft und Lizenz
 ---------------------
 
 Copyright (C) 2012, 2013, 2014 Florian Heß
 
-FlowgencyTM ist freie Software. Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder (nach Ihrer Option) jeder späteren Version.
+FlowgencyTM ist freie Software. Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder nach Ihrer Wahl jeder späteren Version.
 
 Die Veröffentlichung von FlowgencyTM erfolgt in der Hoffnung, daß es Ihnen von Nutzen sein wird, aber OHNE IRGENDEINE GARANTIE, sogar ohne die implizite Garantie der MARKTREIFE oder der VERWENDBARKEIT FÜR EINEN BESTIMMTEN ZWECK. Details finden Sie in der GNU General Public License.
 

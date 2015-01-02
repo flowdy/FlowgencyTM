@@ -41,13 +41,15 @@ What it is not
 
 It is not meant for more than small-scale project management, ignoring management of costs, assets, staff, risks etc. Neither as an enterprise-level groupware solution, albeit basic delegation features are planned. You are, however, welcome to enhance it with interfaces to groupware products e.g. for tasks import or the propagation of those done.
 
-### FlowgencyTM has no official smart-phone app
+### FlowgencyTM is not a smart-phone app
 
-There is no smartphone app in the official FlowgencyTM distribution, because smartphones I personally consider on the downgrade and closed-source mobile technology of not much good after all. Hence, to make the official HTML5/Javascript mobile-ready is lowest priority. FlowgencyTM apps you might find someday in your app-store are offered by third parties for any price. Please contact me if you find any GPL v3 violations in a mobile app available in a store, for free or not.
+The target group of FlowgencyTM uses the software at their work-place equipped with a desktop computer, laptop or tablet of reasonable screen size and resolution. If you find in your smart-phone app store a FlowgencyTM app, it is not official. Plus, there may be issues with GPLv3 license compliance. If you suspect any terms are violated (as applicable), please use the e-mail below to notify me.
 
 ### FlowgencyTM is not unproblematic if served by a third party
 
-Due to its architecture, it is technically possible to provide a FlowgencyTM service for others to click a bookmark and to sign up easily. However, this scenario is not specifically in focus of development. Users of FlowgencyTM are rather encouraged to run their own server to ensure privacy and to elude subtle control. After all a server is simply a program that communicates with other programs via a network interface, which can just as well be `localhost` (IP 127.0.0.1) to ensure that server and client are actually running on the same machine, provided by any system that could likewise communicate with a remote machine via the internet. That way, a FlowgencyTM server listening to a localhost port is as safe against third-party access as the underlying SQLite database and any other file.
+Due to its architecture, it is technically possible to provide a FlowgencyTM service for others to click a bookmark and to sign up easily. However, this scenario is specifically not in focus of development. Users of FlowgencyTM are rather encouraged to run their own server to ensure privacy and to elude subtle control.
+
+After all a server is simply a program that communicates with other programs via a network interface, which can just as well be `localhost` (IP 127.0.0.1) to ensure that server and client are actually running on the same machine. Such so-called loopback interface is provided by any system that could likewise communicate with a remote machine via the internet. That way, a FlowgencyTM server listening to a localhost port is as safe against unauthorized access as the underlying SQLite database and any other locally stored file is.
 
 FlowgencyTM demo (planned)
 --------------------------
@@ -117,11 +119,13 @@ Check a step right when it is done. When you want to save the checks and you are
 Wherefore all that, what's the vision?
 ---------------------------------------
 
-On the larger scale, if the software is used by many, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and could therefore collapse dramatically someday.
+I decided conciously to not make from FlowgencyTM yet another online site that is closed and central. Thus, maybe, I forgo earning good money with it. The question is if it were really good, considering the risk of only further strengthening people's dependency on machines.
 
-One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic 24/7 dictate is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
+On the larger scale, if the software is used by many, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and therefore likely to collapse thoroughly someday.
 
-I hope you get more flow experience – hence the name –, because you can focus better on tasks in your work as you can focus better on challenges in your life. 
+One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic nonstop GHz-rhythm is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
+
+At least I hope you get more flow experience – hence the name –, because you can focus better on tasks in your work as you can focus better on challenges in your life. Your employer would not say no if he effectively regains individual working time of up to twenty minutes that, according to studies, are regularly lost in average because you need them to refocus – and to fix errors due to lacking attention – after each unexpected interruption. 
 
 The concept in detail
 ---------------------
@@ -140,20 +144,30 @@ Clone the git repository in a directory of your choice. With plain git on Linux 
     $ git clone https://github.com/flowdy/FlowgencyTM.git
     $ cd FlowgencyTM/
 
-For other systems, install the Git DVCS and do the according steps (cf. manual).
+For other systems, install the Git DVCS and do the according steps (cf. manual). All commands below are tested on a Debian 8 (stable) system. With another system, you may have to vary them.
 
-Check the dependencies
------------------------
+### Check the dependencies
 
 Check and install any prerequisites by running inside the FlowgencyTM directory, provided cpanm tool is installed on your system:
 
   cpanm --installdeps .
 
+You might prefer installing the packages that your linux distribution repository provides. E.g. if you want to install FlowgencyTM on your Raspbian-driven Pi which I do not quite recommend because it is rather slow:
 
-Bootstrap flow.db database file and run the program
-----------------------------------------------------
+    $ git clone https://github.com/flowdy/FlowgencyTM.git
+    $ cd FlowgencyTM/
+    $ cd script/
+    $ ls
+    $ ./gather_check_dependencies 
+      # analyze output for missing modules ...
+    $ cd ..
+    $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3 cpanminus
+    $ sudo cpanm Mojolicious # newer version, that one in the repo is deprecated
+    $ prove -rl t                      
 
-FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to bootstrap it with the development shell in the distribution, i.e. create a user and also a time model if you do not want to work 24/7 ;-):
+### Bootstrap flow.db database file
+
+FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to bootstrap it with the development shell in the distribution, i.e. create a database, a user and also modify the time model unless you want to work 24/7:
 
     $ script/flow.sh -d flow.db
     Configuring sub-shell ...                                                            
@@ -170,20 +184,60 @@ FlowgencyTM does not yet work right from the box in a webbrowser. First, you nee
     # [Further information ...]
     
     FTM::~> timetracks default --week-pattern 'Mo-Th@9-16,Fr@7-14' -l 'Bureau'
-       # [Note full hours: '-16' = effectively 16:59:59, '-14' eff. 14:59:59
-       #  For *your* week pattern see doc/konzept.en.md for other examples]
+
+Note full hours: '-16' = effectively 16:59:59, '-14' eff. 14:59:59. To retain default as preset, choose another name instead in order to create an additional track. You can flag exceptional private hours or hour ranges by prepending '!':
+
+    FTM::~> [...] -w 'Mo-Fr@9-18,!12-13'
+
+This creates a long lunch break from 12:00 to 13:59. But you can write just as well, whatever you may prefer:
+
+    FTM::~> [...] -w 'Mo-Fr@9-11,14-18'
+
+If you want to have the system respect future holidays:
+
+    FTM::~> [...] -v holidayname --week-pattern-of-track private \
+            --from '05-02 12' --until '+4d' # four holidays
+
+Or write: 
+
+    --week-pattern 'Mo-So@!0-23'
     
     [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
+
+Now quit the program:
+
     FTM::~> bye
     exit
     Cleaned up.
 
-Second, run the command
+### Start the local server
 
-    script/morbo
+Please run one of the commands:
+
+    script/morbo # restart automatically if any watched file is changed
+    script/server daemon # does not watch files
+    script/server prefork # s. Mojolicious documentation for this or other modes
 
 Please keep the terminal window open as it will output diagnostics if things go wrong. Then load the link it displays at the end in your webbrowser. If you have a local firewall installed, this might not work because of any rare and weird restrictions imposed. Refer to the manual of your firewall software how to make exceptions so that it does let you access your own system via HTTP (better contact your system administrator, if any).
 
+To quit the service (so subsequent requests go into the void), just type CTRL-C.
+
+If you do not have a terminal to spare for logging, use a background process:
+
+    $ cat > local.rc <<'EOF' # do that once for setup
+    FLOWGENCYTM_USER=$(whoami)
+    MOJO_LISTEN=http://127.0.0.1:3000
+    PIDFILE=/var/lock/flowgencytm.pid
+    LOG=server.log
+    COMMAND=morbo    # or 'server daemon', 'server prefork'
+    EOF
+    $ script/daemon start
+      # waits for the first log line printed to file, then exits
+      # server process in the background runs until 'stop' command
+    $ script/daemon status # whenever you want
+      # status info and most recent log lines
+    $ script/daemon restart|update|stop # 'update' = 'restart'
+                                        # with `git pull` in between
 
 Credits to other Open source projects used
 ------------------------------------------
@@ -200,19 +254,20 @@ FlowgencyTM could not even be thought of without the following Open source tools
   * Firefox – for testing and using FlowgencyTM (& various other browsers)
   * VIM – it's not an IDE, but what amazing power an editor can have!
   * git – distributed version control system
+  * InkScape – logo design
 
 Contact Author / Project initiator
 -----------------------------------
 
 (Address split up for the sake of spam protection. Just glue it together and apply the "@" sign replacing "at".)
 
-    fhess at mailbox. org
+    flowgencytm-dev at mailbox. org
 
 
 Copyleft and License
 --------------------
 
-Copyright (C) 2012, 2013, 2014 Florian Heß
+Copyright (C) 2012, 2013, 2014, 2015 Florian Heß
 
 FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
