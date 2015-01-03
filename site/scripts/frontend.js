@@ -75,10 +75,11 @@ function Ranking (args) {
         e.preventDefault();
         if ( this.reg_changes(1) ) {
             var params = nextload.update_tasks;
+            var str_params = {};
             Object.keys(params).forEach(function (i) {
-                params[i] = JSON.stringify(params[i]);
+                str_params[i] = JSON.stringify(params[i]);
             });
-            $.post('/update', params).done(function () {
+            $.post('/update', str_params).done(function () {
                 delete nextload.update_tasks;
                 rerank();
             }).fail(function () { alert("Couldn't post changed data!"); });
