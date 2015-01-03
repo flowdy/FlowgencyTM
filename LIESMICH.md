@@ -92,6 +92,8 @@ Das hat allerdings seinen Preis: Es besteht das Risiko, dass du dein Zeitmodell 
 
 Aus heißt nicht Bereitschaft. Du brauchst nicht hin und wieder FlowgencyTM anzuklicken. Das wäre wie den Kühlschrank zu öffnen nur um zu kontrollieren, dass es darin dunkel ist.
 
+Der Sinn von FlowgencyTM steht in Frage, wenn du auf regelmäßige Zeiten verzichtest, in denen alle definierten Zeitschienen inaktiv sind, also richtige freie Zeiten für Muße und Erholung.
+
 ### Strukturiere deine Aufgaben, es sei denn, sie sind einfach.<br>Setze entsprechend Häkchen, wenn einzelne Schritte erledigt sind.
 
 Trage Aufgaben ein, bevor du sie angehst. Trage auch einfache Aufgaben ein, wenn du dir nicht sicher bist, dass dies mehr Zeit beansprucht als sie gleich zu erledigen. Um FlowgencyTM deine Aufgaben richtig ordnen zu lassen, berücksichtige in deiner Planung folgende Punkte:

@@ -92,6 +92,8 @@ But then there is a risk of overcomplicating your time model. If you don't under
 
 Off does not mean stand-by. You do not need to load and look at FlowgencyTM every now and then. This would be like opening the fridge just to convince yourself that it is dark in there.
 
+The use of FlowgencyTM is questionable if you have no regular periods of time with all inactive time tracks, that is, periods of real private, non-work and unorganized time.
+
 ### Structure your tasks unless they are simple.<br>Check steps when they are done.
 
 Enter tasks before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
