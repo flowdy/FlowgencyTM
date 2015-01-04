@@ -10,7 +10,7 @@
 %     end
 % my $upcoming_section = begin
 %     my $task = shift;
-      <hr style="height:8px;background-color:<%= $task->{progressbar}{secondary_color} %>" ><div class="ranking-data">Approaching task to do from <%= $task->{startdate} %> until <%= $task->{duedate} %></div>
+      <hr style="height:8px;background-color:<%= $task->{progressbar}{primary_color} %>" ><div class="ranking-data">Approaching task to do from <%= $task->{startdate} %> until <%= $task->{duedate} %></div>
 % end
 % my $archived_section = begin
 %     my $task = shift;

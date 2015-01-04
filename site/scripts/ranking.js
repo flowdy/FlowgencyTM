@@ -1,10 +1,5 @@
 $(function () {
-    var ftm = new FlowgencyTM.Ranking();
-    $('#logo').data('FlowgencyTM', ftm)
-              .click(function (e) { ftm.rerank(e) })
-              ;
-
-    $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
+    var ftm = $('#logo').data('FlowgencyTM');
  
     var toggler = function () {
         var plan = $(this),
@@ -86,28 +81,9 @@ $(function () {
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
  
-    $("#list-opts input").each(function () {
-        $(this).click(function () {
-            ftm.nextload[this.name] ^= this.value;
-            console.log(
-                "New value of " + this.name + " is " + ftm.nextload[this.name]
-            );
-        });
-    });
-
-    $("#settime").change(function () {
-        ftm.nextload.now = this.time.value;
-        ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
-        console.info(
-            "Changed time to " + ftm.nextload.now
-            + " (keep: " + ftm.nextload.keep + ")"
-        );
-    });
-
     $("body").click(function (e) {
        if ( e.target.nodeName == "BODY" ) window.scroll(0,0);
     });
 
 });
-
 

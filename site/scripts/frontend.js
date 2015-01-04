@@ -464,3 +464,30 @@ return {
     DateTimePicker: DateTimePicker,
     ObjectCacheProxy: ObjectCacheProxy
 }; })(); /* END of FlowgencyTM namespace */
+
+$(function () {
+    var ftm = new FlowgencyTM.Ranking();
+    $('#logo').data('FlowgencyTM', ftm)
+              .click(function (e) { ftm.rerank(e) });
+
+    $("#settime").change(function () {
+        ftm.nextload.now = this.time.value;
+        ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
+        console.info(
+            "Changed time to " + ftm.nextload.now
+            + " (keep: " + ftm.nextload.keep + ")"
+        );
+    });
+
+    $("#list-opts input").each(function () {
+        $(this).click(function () {
+            ftm.nextload[this.name] ^= this.value;
+            console.log(
+                "New value of " + this.name + " is " + ftm.nextload[this.name]
+            );
+        });
+    });
+
+    $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
+
+}); 

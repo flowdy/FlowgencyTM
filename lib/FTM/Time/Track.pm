@@ -787,6 +787,8 @@ sub timestamp_of_nth_net_second_since {
     my ($next_stage, $signal_slice, $last_sec) = do {
         if ( $early_pass and my $p = $early_pass->() ) {
             my $slice = $p->pass_after_slice;
+            # TO FIX error: after storing data to a task that has been previously
+            # given multiple time-track segments, cursor cannot fully restore here? 
             $p, $slice, $slice->position + $slice->length;
         }
         else { undef, undef, undef; }

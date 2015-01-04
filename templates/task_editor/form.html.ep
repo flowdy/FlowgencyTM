@@ -1,3 +1,4 @@
+% stash addScripts => ['taskeditor'];
 % my $input = stash 'input';
 % my $id = stash 'id';
 % my $bare_mode = stash 'bare';
