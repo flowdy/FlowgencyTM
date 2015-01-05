@@ -63,7 +63,11 @@ sub version {
     my @until = reverse split //, $until->last_sec =~ s/0*$//r;
     my $version = $track->version;
     my $tail    = join "", map { $_ // 0 } zip @from, @until; 
-    return "$version.$tail"+0; 
+    return "$version.$tail" + 1/$_[0]; # by adding the reciprocal of the address
+                                       # in memory, replacement of stages will force
+                                       # regeneration of cursor's runner.
+                                       # But why the reciprocal?
+                                       #   Not to loose precision.
 }
 
 sub _onchange_from {
