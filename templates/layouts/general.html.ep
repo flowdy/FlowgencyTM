@@ -65,8 +65,9 @@
 <p>You should have received a copy of the GNU General Public License
 along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
 
-<p>FlowgencyTM is alpha, that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you.  Stay up-to-date by regular <code>git pull</code> from inside the repository directory.</p></div>
+<p>FlowgencyTM is currently "alpha", that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you.  Stay up-to-date by regular <code>git pull</code> from inside the repository directory.</p>
 
+<p>Fork FlowgencyTM on GitHub: <a href="https://github.com/flowdy/FlowgencyTM">https://github.com/flowdy/FlowgencyTM</a></p></div>
 </div>
 
 </body>
