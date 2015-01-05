@@ -43,9 +43,10 @@ status)
             echo "Server runs for user $FLOWGENCYTM_USER and" \
                  "listens to $MOJO_LISTEN."
             ps u -p "$PID" --no-headers
-            echo "The 20 most recent lines of log file"
-            tail -20 "$LOG"
-        else echo "Server is not running"
+            LINES=${2:-20}
+            echo "The $LINES most recent lines of log file:"
+            tail -$LINES "$LOG"
+        else echo "Server is not running."
         fi
         exit 2
         ;;
