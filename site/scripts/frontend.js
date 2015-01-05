@@ -303,13 +303,17 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     var dl = fieldset.children(".fields")
         .accordion({ header: 'dt', heightStyle: 'content' }),
         acc_length = dl.find("dt").length;
-    dl.children("dd").find(":input:last").blur(function (e) {
-        var current = dl.accordion("option", "active"),
-            next = current + 1 === acc_length ? 0 : current + 1;
-            // dl.accordion("activate",next); // pre jQuery UI 1.10
-        dl.accordion("option", "active", next);
-        dl.find(".ui-accordion-header-active").focus();
-        e.preventDefault();
+    dl.children("dd").not(":last").find(":input:last").each(function () {
+        var link = $('<a href="#" class="focus-passing"></a>');
+        $(this).after(link);
+        link.focus(function (e) {
+            var current = dl.accordion("option", "active"),
+                next = current + 1 === acc_length ? 0 : current + 1;
+                // dl.accordion("activate",next); // pre jQuery UI 1.10
+            dl.accordion("option", "active", next);
+            dl.find(".ui-accordion-header-active").focus();
+            e.preventDefault();
+        });
     });
 
     fieldset.find("input[type=datetime]").each(DateTimePicker);
