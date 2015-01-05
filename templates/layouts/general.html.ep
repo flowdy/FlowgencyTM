@@ -32,15 +32,15 @@
 <li><a href="/newtask">New entry</a></li>
 <li>List tasks
 <ul id="list-opts" style="list-style-type:none;padding-left:0;">
-    <li><input type="checkbox" disabled="disabled" checked="checked"> to do right now</li>
-    <li><label><input type="checkbox" name="tray" value="1" /> active but closed</label></li>
-    <li><label><input type="checkbox" name="drawer" value="1" /> paused as planned</label></li>
+    <li><lable><input type="checkbox" checked="checked" name="desk" value="0"> urgent or open</label></li>
+    <li><label><input type="checkbox" name="tray" value="1" /> below threshold</label></li>
+    <li><label><input type="checkbox" name="drawer" value="1" /> currently inactive</label></li>
     <li><label><input type="checkbox" name="drawer" value="2" /> approaching</label></li>
 </ul></li>
 <li>
-<a style="margin-bottom:5px;" href="/task/archive">List archived tasks</a>
-Search all tasks:
-<input placeholder="in title/description/tags">
+<a style="margin-bottom:5px;" href="/task/archive">Archive</a>
+<!-- Search all tasks:
+<input placeholder="in title/description/tags"> -->
 </li>
 <li>Set time<form id="settime">
 <input name="time" type="datetime" style="width:75%"><br>
@@ -57,6 +57,16 @@ Search all tasks:
 
 <div id="page">
 <%= content %>
+<div id="alpha-note">
+<hr style="margin-top:2em;">
+<p>FlowgencyTM is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+
+<p>FlowgencyTM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+
+<p>FlowgencyTM is alpha, that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you.  Stay up-to-date by regular <code>git pull</code> from inside the repository directory.</p></div>
+
 </div>
 
 </body>
