@@ -150,7 +150,7 @@ sub _calc_slice {
     my ($start, $slice);
     if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {
         $start = $span_start;
-        if ( my $s = $self->{slice} ) { return $s }
+        if ( my $s = $self->{slice} ) { return scalar $self->next, $s }
         $slice = $rhythm->sliced($start, $span_end);
     }
     else {
@@ -158,7 +158,7 @@ sub _calc_slice {
         $slice = $rhythm->sliced($start, min($span_end, $cursor_end));
     }
 
-    return $cursor_end > $span_end ? $self->next // undef : undef,
+    return $cursor_end > $span_end ? scalar $self->next : undef,
            FTM::Time::SlicedInSeconds->new(
                span => $self,
                position => $ts_null + $start,
