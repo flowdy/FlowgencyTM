@@ -31,7 +31,7 @@ sub list {
         _dump_task($task);
 
     },
-    timestamp => @tasks ? $tasks[0]->flowrank->_for_ts : $now
+    timestamp => ref($tasks[0]) ? $tasks[0]->flowrank->_for_ts : $now
   );
 }
 
@@ -73,7 +73,7 @@ sub _dump_task {
         active => $active,
         $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
-        extended_info => $task->is_open && {
+        extended_info => !$task->archived_ts && $task->is_open && {
            focus => [$task->current_focus],
         },
     };

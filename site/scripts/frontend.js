@@ -14,7 +14,7 @@ function Ranking (args) {
     );
 
     var nl = {};
-    ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming']
+    ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming', 'query']
         .forEach(function (i) {
             Object.defineProperty(nl, i, {
                 get: function () { return nextload[i] },
@@ -490,6 +490,13 @@ $(function () {
                 "New value of " + this.name + " is " + ftm.nextload[this.name]
             );
         });
+    });
+
+    $("#query").change(function (e) {
+        ftm.nextload[this.name] = this.value;
+        console.log(
+            "New value of " + this.name + " is " + ftm.nextload[this.name]
+        );
     });
 
     $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);

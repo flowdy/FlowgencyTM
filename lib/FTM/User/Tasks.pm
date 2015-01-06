@@ -389,6 +389,22 @@ sub _finish_step_data {
     return;
 }
 
+my %MAP_FIELDS = (
+    'name' => ['me.name','steps.name'],
+    '*' => [qw[me.name title steps.name steps.description]],
+    description => [ 'steps.description' ],
+    title => [ 'title' ],
+    stepname => [ 'steps.name' ],
+);
+
+for my $f ( keys %MAP_FIELDS ) {
+    my $fields = $MAP_FIELDS{$f};
+    while ( substr $f, -1, 1, "" ) {
+        if ( delete $MAP_FIELDS{ $f } ) { next; }
+        $MAP_FIELDS{$f} = $fields;
+    }
+}
+
 sub list {
     my ($self, %criteria) = @_;
     
@@ -399,15 +415,30 @@ sub list {
     if ( %criteria ) {
         $tray //= 1;
         $drawer //= 3;
-        $archive //= ['done', 'cancelled', 'paused'];
+        $archive //= { -not_in => [] };
     }
     else { $drawer //= 0 }
 
-    $criteria{archived_because}
-        = ref $archive eq 'ARRAY' ? { -in => $archive }
-        : ref $archive ? croak "archive: not an array reference"
-        : $archive
-        ;
+    $archive = ref $archive eq 'ARRAY' ? { -in => $archive }
+             : ref $archive !~ m{^($|HASH)} ?
+                   croak "archive: neither ARRAY nor HASH reference"
+             : $archive
+             ;
+
+    my @and_search = ({ archived_because => $archive });
+
+    for my $hash ( _query( delete $criteria{query} // q{} ) ) {
+        @criteria{ keys %$hash } = values %$hash;
+    }
+
+    while ( my ($field, $value) = each %criteria ) {
+        my $fields = $MAP_FIELDS{$field} //
+            croak "No field $field supported (shortened ambiguously?)";
+        for my $term ( ref $value ? @$value : $value ) {
+            $term = { -like => "%$term%" };
+            push @and_search, [ map {{ $_ => $term }} @$fields ];
+        }
+    }
 
     $now = $now ? FTM::Time::Point->parse_ts( $now )->fill_in_assumptions
                 : FTM::Time::Point->now;
@@ -419,7 +450,10 @@ sub list {
 
     my (@on_desk, @in_tray, @upcoming, @in_archive);
 
-    for my $task ( $rs->search(\%criteria)->get_column('name')->all ) {
+    my %cond = ( -and => \@and_search );
+    my $opts = { join => 'steps', distinct => '1' };
+
+    for my $task ( $rs->search(\%cond,$opts)->get_column('name')->all ) {
         $task = eval { $self->get($task) }
                 // die "Could not cache task $task: $@";
         next if !($drawer & 2) && $task->start_ts > $now;
@@ -477,6 +511,63 @@ sub list {
         ;
 
 }
+
+sub _query {
+    my ($text) = @_;
+    my %query;
+    my ($QUOTES, $ANY) = (q{"'}, q{*});
+    my $field = $ANY;
+    my $fld_single;
+    while ( length $text ) {
+
+        my $unquoted = q{};
+
+        if ( $text =~ m{(?<!\\)[$QUOTES]}g ) {
+            $unquoted = substr $text, 0, pos($text)-1, q{};
+        }
+        else {
+            $unquoted = $text;
+            $text = '';
+        }
+        $unquoted =~ s{\\([$QUOTES])}{$1}g;
+
+        for my $part ( split /(?<=\s)(?=\S)/, $unquoted ) {
+
+            if ( $part =~ s{\A (\w+): }{}xms ) {
+                $field = $1;
+                $fld_single = 1;
+            }
+
+            if ( $part =~ m{(\S+)} ) {
+                push @{$query{$field}}, $part;
+                $field = $ANY if $fld_single;
+            }
+            elsif ( length $part ) {
+                $fld_single = 0;
+            }
+
+        }
+            
+        last if !length $text;
+
+        pos($text) = 0;
+
+        if ( my $quoted = extract_delimited($text, $QUOTES) ) {
+            substr $quoted, $_, 1, q{} for 0, -1;
+            push @{$query{$field}}, $quoted;
+            $field = $ANY if $fld_single;
+            $fld_single = 0;
+        }
+        else {
+            die "Syntax error in query string ($text): Mismatching quote pairs";
+        }
+
+    }
+
+    return \%query;
+
+}
+
 
 __PACKAGE__->meta->make_immutable();
 

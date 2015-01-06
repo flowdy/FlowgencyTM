@@ -39,8 +39,7 @@
 </ul></li>
 <li>
 <a style="margin-bottom:5px;" href="/task/archive">Archive</a>
-<!-- Search all tasks:
-<input placeholder="in title/description/tags"> -->
+<input id="query" name="query" placeholder="Search ALL tasks">
 </li>
 <li>Set time<form id="settime">
 <input name="time" type="datetime" style="width:75%"><br>
