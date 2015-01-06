@@ -111,7 +111,7 @@
 
 <fieldset id="appendix">
 <legend>Urgency threshold for closed tasks</legend>
-<p>Unless the list option "all closed" is checked, closed task are listed only if their <nobr><var title="urgency score of a closed task">uₜ</var> &gt; <var title="minimum urgency score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum urgency score among open tasks">ǔₒ</var> &minus; <var title="maximum urgency score among listed tasks">û</var>)</nobr>. Your current <var>c</var> = <strong id="coefficient-c-value"><%= $user->appendix %></strong>.
+<p>Unless you checked the list option "below threshold", and there is at least one open task, closed tasks are listed only if the following inequation holds true: <pre style="font-size:125%;text-align:center;"><var title="urgency score of a closed task">uₜ</var> &gt; <var title="minimum urgency score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum urgency score among open tasks">ǔₒ</var> &minus; <var title="maximum urgency score among listed tasks">û</var>)</pre> (<var>uₜ</var>: urgency score of a closed track, <var>ǔₒ</var>: minimum urgency score among open tasks, <var>c</var>: coefficient that you can set here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>, <var>û</var>: maximum urgency score among listed tasks).
 <input style="width:95%" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>
 </fieldset>
 <input type="submit" value="Change Profile">
