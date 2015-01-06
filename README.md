@@ -92,7 +92,7 @@ But then there is a risk of overcomplicating your time model. If you don't under
 
 Off does not mean stand-by. You do not need to load and look at FlowgencyTM every now and then. This would be like opening the fridge just to convince yourself that it is dark in there.
 
-The use of FlowgencyTM is questionable if you have no regular periods of time with all inactive time tracks, that is, periods of real private, non-work and unorganized time.
+The use of FlowgencyTM is questionable if you end up having no regular periods of time when all time tracks are inactive, all tasks are suspended, that is, periods of real private, non-work and unorganized time.
 
 ### Structure your tasks unless they are simple.<br>Check steps when they are done.
 
@@ -120,8 +120,6 @@ Check a step right when it is done. When you want to save the checks and you are
 
 Wherefore all that, what's the vision?
 ---------------------------------------
-
-I decided conciously to not make from FlowgencyTM yet another online site that is closed and central. Thus, maybe, I forgo earning good money with it. The question is if it were really good, considering the risk of only further strengthening people's dependency on machines.
 
 On the larger scale, if the software is used by many, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and therefore likely to collapse thoroughly someday.
 

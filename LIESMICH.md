@@ -92,7 +92,7 @@ Das hat allerdings seinen Preis: Es besteht das Risiko, dass du dein Zeitmodell 
 
 Aus heißt nicht Bereitschaft. Du brauchst nicht hin und wieder FlowgencyTM anzuklicken. Das wäre wie den Kühlschrank zu öffnen nur um zu kontrollieren, dass es darin dunkel ist.
 
-Der Sinn von FlowgencyTM steht in Frage, wenn du auf regelmäßige Zeiten verzichtest, in denen alle definierten Zeitschienen inaktiv sind, also richtige freie Zeiten für Muße und Erholung.
+Der Sinn von FlowgencyTM steht in Frage, wenn du auf regelmäßige Zeiten verzichtest, in denen alle definierten Zeitschienen inaktiv sind und damit keine Aufgabe dringlicher wird, also richtige freie Zeiten für Muße und Erholung.
 
 ### Strukturiere deine Aufgaben, es sei denn, sie sind einfach.<br>Setze entsprechend Häkchen, wenn einzelne Schritte erledigt sind.
 
@@ -119,8 +119,6 @@ Immer wenn du deine gesetzten Häkchen speichern willst und mental bereit bist, 
 
 Wofür das alles, was ist die Vision?
 ------------------------------------
-
-Ich habe mich bewusst gegen einen geschlossenen, zentralen Online-Dienst entschieden. Damit verzichte ich möglicherweise auf gutes Geld. Es steht nämlich zu fragen, ob dieses Geld wirklich gut wäre, falls ich dafür die Abhängigkeit von Leuten von Maschinen nur weiter stärke.
 
 In einem größeren Maßstab, falls die Software von vielen verwendet wird, ist meine Hoffnung, dass FlowgencyTM dank seiner Zeitlogik als feedbackgesteuerter »Schrittmacher« in der Gesellschaft regelmäßige, gesunde Rhythmen von Ent- und Anspannung fördert. Entschleunigung und Rerhythmisierung tut not, um einen tiefgreifenden Kollaps zu verhindern.
 
