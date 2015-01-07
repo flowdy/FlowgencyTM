@@ -76,6 +76,7 @@ sub fast_bulk_update {
                    : $data->{incr_name_prefix} ? 'copy'
                    : 'update';
 
+        $data->{from_date} //= 'now' if $is_new;
         $data->{step} //= '';
 
         $task = FlowgencyTM::user->tasks->$method($task || (), $data);
