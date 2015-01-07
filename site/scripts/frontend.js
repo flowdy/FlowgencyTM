@@ -303,9 +303,9 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     var dl = fieldset.children(".fields")
         .accordion({ header: 'dt', heightStyle: 'content' }),
         acc_length = dl.find("dt").length;
-    dl.children("dd").not(":last").find(":input:last").each(function () {
+    dl.children("dd").not(":last").each(function () {
         var link = $('<a href="#" class="focus-passing"></a>');
-        $(this).after(link);
+        $(this).append(link);
         link.focus(function (e) {
             var current = dl.accordion("option", "active"),
                 next = current + 1 === acc_length ? 0 : current + 1;
