@@ -32,7 +32,7 @@
 <li><a href="/newtask">New entry</a></li>
 <li>List tasks
 <ul id="list-opts" style="list-style-type:none;padding-left:0;">
-    <li><lable><input type="checkbox" checked="checked" name="desk" value="0"> urgent or open</label></li>
+    <li><label><input type="checkbox" checked="checked" name="desk" value="0"> urgent or open</label></li>
     <li><label><input type="checkbox" name="tray" value="1" /> below threshold</label></li>
     <li><label><input type="checkbox" name="drawer" value="1" /> currently inactive</label></li>
     <li><label><input type="checkbox" name="drawer" value="2" /> approaching</label></li>
