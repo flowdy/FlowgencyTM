@@ -18,7 +18,7 @@ sub run {
                 $olduser
             );
             chomp $newuser;
-            if ($newuser eq $olduser) {
+            if ( !$newuser || $newuser eq $olduser ) {
                 $user->insert;
                 print "User created. Don't forget to set up a "
                     . "time_model before you enter any tasks.\n"
