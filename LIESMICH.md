@@ -10,7 +10,7 @@ Was ist FlowgencyTM? - Die sieben wichtigsten Punkte
 
  2. Die Benutzeroberfläche ist mit HTML5 und Javascript realisiert. Sie läuft also im Webbrowser deiner Wahl. Die Serverkomponente ist ebenfalls fester Bestandteil der Distribution. Sie ist so voreingestellt, dass du es auf deinem System lokal installieren kannst, und ausschließlich von diesem akzeptiert es Anfragen vom Browser.
 
- 3. Die Aufgaben werden nach Dringlichkeit absteigend angezeigt. Die Liste wird aktualisiert, wann immer du auf das FlowgencyTM-Logo in der rechten oberen Ecke klickst. Du entscheidest, wann du deine angehakten, weil erledigten Schritte speichern willst und wann du bereit dafür bist, zu Aufgaben umzuschalten, die in der Zwischenzeit ggf. dringlicher geworden sind.
+ 3. Die Aufgaben werden nach Dringlichkeit absteigend angezeigt. Die Liste wird aktualisiert, wann immer du auf das FlowgencyTM-Logo in der linken oberen Ecke klickst. Du entscheidest, wann du deine angehakten, weil erledigten Schritte speichern willst und wann du bereit dafür bist, zu Aufgaben umzuschalten, die in der Zwischenzeit ggf. dringlicher geworden sind.
 
  4. In FlowgencyTM gilt die Priorität einer Aufgabe nur als eine von fünf Dimensionen der Dringlichkeit, wenn auch die einzige, die du händisch angibst. Die anderen vier hängen von der Zeit ab:
 
