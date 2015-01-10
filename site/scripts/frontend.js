@@ -31,10 +31,11 @@ function Ranking (args) {
          
     this.get = function (task, step) {
         var task_obj = nextload.update_tasks[task];
-        if ( task_obj === undefined )
+        if ( task_obj === undefined ) 
             nextload.update_tasks[task] = task_obj = { steps: {} };
-        if ( step == null )
+        if ( step == null ) {
             return new ObjectCacheProxy(task, task_obj, taskFields);
+        }
         else {
             var step_obj = task_obj.steps[step];
             if ( step_obj === undefined )
@@ -77,7 +78,15 @@ function Ranking (args) {
             var params = nextload.update_tasks;
             var str_params = {};
             Object.keys(params).forEach(function (i) {
-                str_params[i] = JSON.stringify(params[i]);
+                var changes = params[i], steps = changes.steps,
+                    manager = $("#steps-for-" + i + "-tree").data("manager")
+                    ;
+                if ( manager ) for ( var step in steps ) {
+                    if ( manager.parent_of[step] == null )
+                        delete steps[step];
+                }
+                else { alert("no manager found for " + i); }
+                str_params[i] = JSON.stringify(changes);
             });
             $.post('/update', str_params).done(function () {
                 delete nextload.update_tasks;
@@ -193,7 +202,7 @@ Ranking.prototype.progressbar2canvas = function (bar) {
 };
 
 Ranking.prototype.dynamize_taskeditor = function (te) {
-    var ftm = this, parent_of = {}, taskname = te.data("taskid");
+    var ftm = this, taskname = te.data("taskid");
     var steptree = new StepTree(taskname);
     te.submit(function () { $("#logo").click(); return false; });
     te.find('fieldset').each(function () {
