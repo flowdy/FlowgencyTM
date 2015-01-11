@@ -74,6 +74,8 @@ RETURN:
 
 }}
 
+sub now_as_string { return __PACKAGE__->now($TS)->get_qm_timestamp; }
+
 sub parse_ts {
     my ($class, $ts, $year, $month, $day) = @_;
     if ( lc $ts eq 'now' ) { return $class->now; }
