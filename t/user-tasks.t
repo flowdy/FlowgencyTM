@@ -285,6 +285,10 @@ ok $task->step('a') && $task->step('b'), 'Update with substeps';
 $task->store({ substeps => 'a', steps => { a => { substeps => 'b' } } });
 is $task->step('b')->parent_row->name, 'a', 'Reparent step b';
 
+$task2->store( step => '', substeps => "export2csv,csvinput,webapp" );
+ok !$task2->step("dbsetup") , "deleted step dbsetup";
+ok !$task2->step("crtables"), " ... affecting subordinates, too";
+
 done_testing();
 
 sub check_done {

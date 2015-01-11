@@ -237,7 +237,8 @@ sub store {
     $args{oldname} = $root;
 
     my $steps = delete $args{steps} // {};
-    my $steps_rs = $self->dbicrow->steps_rs;
+    my $row = $self->dbicrow;
+    my $steps_rs = $row->steps_rs;
     my $root_step = $root && (
         $steps_rs->find({ name => $root })
             // FTM::Error::Task::InvalidDataToStore->throw(qq{No step '$root'})
@@ -246,25 +247,33 @@ sub store {
     # As we want to be able to mention known steps in {substeps}
     # without declaring them manually in {steps} hash ...
     $steps->{ $_->name } //= {}
-        for $root ? $root_step->and_below({}, { columns => ['name', 'step_id', 'task_id' ] })
-                  : $steps_rs->search(    {}, { columns => ['name'] })
+        for $root ? $root_step->and_below({}, {
+                        columns => ['name', 'step_id', 'task_id' ]
+                    })
+                  : $steps_rs->search({}, { columns => ['name'] })
         ;
 
-    if ( $root_step ) {
-        my $step = $root_step;
+    if ( my $step = $root_step ) {
         for my $parent ( $step->ancestors_upto() ) {
             $steps->{ $step->name } = {
                 _skip => "because it is above our hierarchy",
-                 row => $step, parent => $parent->name,
+                 row => $step,
+                 parent => $parent->name,
             };
         }
         continue { $step = $parent; }
     }
+    $steps->{''} = {
+        _skip => 'because it is always needed',
+        row => $row,
+    };
+
+    if ( my $substeps = delete $args{substeps} ) {
+        $steps->{$root_step}{substeps} = $substeps;
+    }
 
     # list all upper steps before their lower levels
-    my $steps_aref = _ordered_step_hrefs(
-        $root, delete $args{substeps}, %$steps
-    );
+    my $steps_aref = _ordered_step_hrefs($root, %$steps);
 
     $self->dbicrow->result_source->storage->txn_do( sub {
         $self->_store_root_step(\%args);
@@ -290,13 +299,14 @@ sub store {
     $self->_tasks->recalculate_dependencies($self => @to_recalc);
     $self->clear_progress;
     delete $self->{is_open};
+    delete $steps->{$root_step};
 
     return 1;
 
 }
 
 sub _ordered_step_hrefs {
-    my ($root_name, $top_sequence, %steps) = @_;
+    my ($root_name, %steps) = @_;
 
     # Let's protect incoming data from our changes
     $_ = { %$_ } for values %steps;
@@ -323,10 +333,11 @@ sub _ordered_step_hrefs {
             for my $step_name ( @cluster ) {
                     
                 if ( my $dep = $dependencies{$step_name} ) {
+                    $dep = $dep->[0];
                     FTM::Error::Task::InvalidDataToStore->throw(
                         qq{Step $step_name can't have parent $parent_name }
-                      . qq{since it is subordinated to $dep->[0]}
-                    );
+                      . qq{since it is subordinated to $dep}
+                    ) if defined $dep;
                 }
 
                 my $step = $steps{$step_name}
@@ -355,19 +366,20 @@ sub _ordered_step_hrefs {
         
     }; # end of $sequencer definition
 
-    $sequencer->($root_name => $top_sequence) if $top_sequence;
-
     while ( my ($step,$md) = each %steps ) {
         $md->{oldname} = $step;
-        $sequencer->( $step => $md->{substeps} // next );
+        #$dependencies{ length $step ? $step : $ROOTID } //= [];
+        $sequencer->( $step => $md->{substeps} // next);
     }
 
     my $ordered_steps = ordered(\%dependencies);
 
-    if ( $ordered_steps->[0] eq $ROOTID ) {
-        shift @$ordered_steps;
-        delete $steps{''};
-    }
+    $_ = $_ eq $ROOTID ? '' : $_ for $ordered_steps->[0];
+
+    #if ( $ordered_steps->[0] eq $ROOTID ) {
+    #    shift @$ordered_steps;
+    #    delete $steps{''};
+    #}
 
     for my $step ( @$ordered_steps ) {
         $step = delete $steps{$step};
@@ -457,6 +469,26 @@ sub _store_steps_below {
     my ($self, $root_name, $steps_aref) = @_;
     my $steps_rs = $self->dbicrow->steps_rs; # update resultset
 
+    my %in_hierarchy;
+    for my $step ( @$steps_aref ) {
+        my ($name, $row) = ($step->{oldname}, $step->{row});
+        my $substeps = delete $step->{substeps} // do {
+            if ( $row ) { join q{,}, $row->substeps->get_column('name')->all }
+            else { next; }
+        };
+        $step->{is_parent} = 1 if $substeps =~ /\w/;
+
+        # avoid breaks in hierarchy chain:
+        next if $name && !defined $step->{parent}; 
+
+        my %substeps = map { $_ => 1 } split /[,;|\/]\s*/, $substeps;
+        FTM::Error::Task::InvalidDataToStore->throw(
+           qq{$root_name can't be substep of $name }
+            . q{(circular dependency)}
+        ) if !$row && $substeps{$root_name};
+        $in_hierarchy{ $step->{oldname} } = \%substeps;
+    }
+
     my %rows_tmp;
     while ( @$steps_aref ) {
         last if !$steps_aref->[0]{_skip};
@@ -464,23 +496,6 @@ sub _store_steps_below {
         $rows_tmp{$name} = $step;
     }
 
-    my %in_hierarchy;
-    for my $step ( @$steps_aref ) {
-        my $name = $step->{oldname};
-        my $substeps = delete($step->{substeps}) // next;
-        $step->{is_parent} = 1 if $substeps =~ /\w/;
-        next if !defined $step->{parent}; # avoid breaks in hierarchy chain
-        my %substeps = map { $_ => 1 } split /[,;|\/\s]+/, $substeps;
-        FTM::Error::Task::InvalidDataToStore->throw(
-           qq{$root_name can't be substep of $name }
-            . q{(circular dependency)}
-        ) if $substeps{$root_name};
-        $in_hierarchy{ $step->{oldname} } = \%substeps;
-    }
-
-    # Why not fuse the for-loops to one pass?
-    #   Because we do not know if steps missing in the parent/substeps
-    #   dependency graph come always last in @$steps_aref.
     for my $step ( @$steps_aref ) {
 
         die q{Oops, did not expect "_skip"ped steps here:}, $step->{oldname}
@@ -536,6 +551,7 @@ sub _store_steps_below {
             }
 
             elsif ( $p_row )  { 
+                $step->{task_row} = $rows_tmp{''};
                 $rows_tmp{$name} = $step_row
                     = $p_row->new_related(substeps => $step);
             }
@@ -565,15 +581,21 @@ sub _store_steps_below {
             $self->_update_subtask_if_any($step_row);
         }
 
-        else {
+        elsif ( my $ar = $step_row ) {
             # Even neither {parent} nor {pos} exist, so forget all substeps
             # unmentioned in the hierarchy given that DBIx::Class will delete
             # their descendents (cascade_delete => 1 set if not implied).
-            my $ar = $step_row;
             my $inhier;
             while ( $ar = $ar->parent_row ) {
                 next if !($inhier = $in_hierarchy{ $ar->name });
-                $inhier->{$name} or $step_row->delete;
+                if ( !$inhier->{$name} ) {
+                    #warn "Delete step ", $step_row->name, " as it is not",
+                    #     " found in current step hierarchy\n";
+                    eval { $step_row->delete };
+                    if ( $@ ) {
+                        warn "Deletion failed for $name: $@\n"
+                    }
+                }
                 last;
             }
             continue {
@@ -668,13 +690,16 @@ sub step { shift->steps->find({ name => shift }) }
 
 sub archive_if_completed {
     my ($self) = @_;
-    if ( !$self->steps({ done => { '<' => \'checks' } }) || $self->current_focus ) {
+    my $uncompleted_own_steps = $self->steps({
+        done => { '<' => { -ident => 'checks' } }
+    });
+    if ( !$uncompleted_own_steps || $self->current_focus ) {
         $self->dbicrow->update({ archived_because => undef, archived_ts => undef });
     }
     else {
         $self->dbicrow->update({
             archived_because => 'done',
-            archived_ts => FTM::Time::Point->now,
+            archived_ts => FTM::Time::Point->now_as_string(),
         });
     }
 }

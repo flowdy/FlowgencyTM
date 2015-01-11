@@ -29,7 +29,7 @@ __PACKAGE__->set_primary_key("step_id");
 
 __PACKAGE__->belongs_to(
     parent_row => 'FTM::FlowDB::Step',
-    { 'foreign.step_id' => 'self.parent_id' }
+    { 'foreign.step_id' => 'self.parent_id' },
 );
 
 __PACKAGE__->belongs_to(
@@ -55,7 +55,7 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->has_many(
     substeps => 'FTM::FlowDB::Step',
     { 'foreign.parent_id' => 'self.step_id',
-      'foreign.task_id' => 'self.task_id'
+      # 'foreign.task_id' => 'self.task_id'
     },
     { cascade_copy => 0 }
 );
@@ -142,6 +142,11 @@ before ['insert', 'update'] => sub {
         if !$checks && !($self->link_row || $self->is_parent);
     croak "Step cannot have more checks done than available"
         if $done > $checks;
+};
+
+before add_to_substeps => sub {
+    my ($self, $data) = @_;
+    $data->{task_row} //= $self->task_row;
 };
 
 sub calc_progress {
