@@ -85,7 +85,6 @@ function Ranking (args) {
                     if ( manager.parent_of[step] == null )
                         delete steps[step];
                 }
-                else { alert("no manager found for " + i); }
                 str_params[i] = JSON.stringify(changes);
             });
             $.post('/update', str_params).done(function () {
@@ -386,7 +385,10 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
             this.parent_of[step] = parent;
             this.select.find("option[value="+step+"]").removeAttr('disabled');
         }
-        else if ( confirm("Do you want to CREATE substep " + step + "?") ) {
+        else if ( confirm(
+            "Do you want to CREATE substep " + step
+            + (parent.length ? (" for parent " + parent) : "") + "?"
+        ) ) {
             var new_fieldset = this.proto_fieldset.clone();
             var target = "li#task-" + this.taskname + " .taskeditor";
             new_fieldset.attr("id", 'step-' + this.taskname + "-" + step)
@@ -395,7 +397,11 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
                         .find("legend")
                         .text("Describe new step " + step) 
                         ;
-            this.register_substeps(new_fieldset.find(":input[name=substeps]"));
+            this.parent_of[step] = parent
+            this.register_substeps(
+                new_fieldset.find(":input[name=substeps]"),
+                step
+            );
             $("#logo").data('FlowgencyTM').dynamize_taskeditor_step_fieldset(
                 new_fieldset
             );
