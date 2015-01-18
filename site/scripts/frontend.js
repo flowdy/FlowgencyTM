@@ -301,9 +301,15 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     var remaining_fields = [
         'incr_name_prefix', 'title', 'description', 'done', 'from_date',
         'expoftime_share' // , 'substeps' (see below)
-    ];
+    ], block_continuation = false;
 
-    var default_change_handler = function (e) { update(this); };
+    function default_change_handler (e) {
+        if (!e) {
+           block_continuation = true;
+           return false;
+        }
+        return update(this);
+    };
     remaining_fields.forEach(function (field) {
         fieldset.find("[name="+field+"]").change(default_change_handler);
     });
@@ -314,6 +320,10 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         var link = $('<a href="#" class="focus-passing"></a>');
         $(this).append(link);
         link.focus(function (e) {
+            if ( block_continuation ) {
+                this.blur();
+                return block_continuation = false;
+            }
             var current = dl.accordion("option", "active"),
                 next = current + 1 === acc_length ? 0 : current + 1;
                 // dl.accordion("activate",next); // pre jQuery UI 1.10
@@ -372,13 +382,10 @@ StepTree.prototype.register_substeps = function (field, parent) {
                     || fallthrough++;
         });
         if (fallthrough) {
-            alert(
-               "Current value is not processed. You'll need to revise it."
-             + "\n(TODO: returning focus to the field somehow)"
-            );
             e.preventDefault();
             e.stopPropagation();
-            this.focus();
+            change_handler(false);
+            setTimeout(function () { field.focus(); }, 0);
             return false;
         }
         else before = undefined;
@@ -386,6 +393,7 @@ StepTree.prototype.register_substeps = function (field, parent) {
         if ( !jQuery.isEmptyObject(diff) ) {
             alert("Substeps affected by change: "
                    + Object.keys(diff).join(", ")
+                   + "\nPlease find them in 'Jump to step' select menu."
             );
             return change_handler.call(this, e);
         }
@@ -418,7 +426,7 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
                         .data("stepid", step)
                         .prependTo(target)
                         .find("legend")
-                        .text("Describe new step " + step) 
+                        .html("Describe step <strong>" + step + "</strong>:")
                         ;
             this.parent_of[step] = parent
             this.register_substeps(
@@ -450,7 +458,7 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
     }
     else if ( oldparent != parent ) {
         if (!confirm("Do you want to ADOPT substep "
-            + step + (oldparent ? " from " + oldparent : '') + "?"
+            + step + (oldparent ? " from step " + oldparent : '') + "?"
         )) return false;
         var other_substeps
             = $("#step-" + this.taskname + "-" +oldparent)
