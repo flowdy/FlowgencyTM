@@ -209,7 +209,6 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         var id = fieldset.data('stepid');
         steptree.register_substeps(fieldset.find("input[name=substeps]"), id);
         ftm.dynamize_taskeditor_step_fieldset(fieldset);
- 
     });
     steptree.select.change(function () {
         te.find("fieldset").hide();
@@ -301,10 +300,10 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
 
     var remaining_fields = [
         'incr_name_prefix', 'title', 'description', 'done', 'from_date',
-        'expoftime_share', 'substeps'
+        'expoftime_share' // , 'substeps' (see below)
     ];
 
-    var default_change_handler = function () { update(this); };
+    var default_change_handler = function (e) { update(this); };
     remaining_fields.forEach(function (field) {
         fieldset.find("[name="+field+"]").change(default_change_handler);
     });
@@ -324,6 +323,9 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         });
     });
 
+    fieldset.find('input[name=substeps]')
+        .data("acceptChangeHandler")(default_change_handler);
+
     fieldset.find("input[type=datetime]").each(DateTimePicker);
 };
 
@@ -340,34 +342,55 @@ function StepTree (taskname) {
 }
 
 StepTree.prototype.register_substeps = function (field, parent) {
-    var self = this;
+    var self = this,
+        change_handler,
+        before;
     field.val().split(/\W+/).forEach(
         function (child) { if (!child) return; self.parent_of[child] = parent; }
     );
-    var before;
+    field.data("acceptChangeHandler", function (handler) {
+        change_handler = handler;
+    });
     field.focus(function (e) {
         if (before) return true;
         before = {};
         this.value.replace(/\w+/g, function (str) { before[str] = true; });
-    }).change(function (e) {
+    }).blur(function (e) {
         if (!before) return true;
-        var diff = {}, fallthrough;
+        var diff = {}, fallthrough = 0;
         this.value.replace(/\w+/g, function (str) {
             if ( before[str] ) return; diff[str] = true;
         });
         var substeps = this.value = this.value.replace(/\s+/g, '');
         Object.keys(before).forEach(function (step) {
-            if ( before[step] && substeps.indexOf(step) == -1 )
-                diff[step] = false;
+            var missing = substeps.search('\\b' + step + '\\b') == -1;
+            if ( before[step] && missing ) diff[step] = false;
         });
         Object.keys(diff).forEach(function (step) {
             if (!fallthrough)
                 self.create_or_reparent(step, diff[step] && parent)
                     || fallthrough++;
         });
-        if (fallthrough) field.focus();
+        if (fallthrough) {
+            alert(
+               "Current value is not processed. You'll need to revise it."
+             + "\n(TODO: returning focus to the field somehow)"
+            );
+            e.preventDefault();
+            e.stopPropagation();
+            this.focus();
+            return false;
+        }
         else before = undefined;
-        return true;
+
+        if ( !jQuery.isEmptyObject(diff) ) {
+            alert("Substeps affected by change: "
+                   + Object.keys(diff).join(", ")
+            );
+            return change_handler.call(this, e);
+        }
+        else return;
+
     });
 };
 
@@ -421,7 +444,7 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
             selector.empty();
             my_options.each(function () { selector.append( this ); });
             selector.val(selected); /* preserving original selection, step 2 */
-            return;
+            return true;
         }
         else return false;
     }
