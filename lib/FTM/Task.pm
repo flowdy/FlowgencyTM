@@ -234,7 +234,7 @@ sub store {
                delete $args{step} // ''
              ; 
 
-    $args{oldname} = $root;
+    $args{_oldname} = $root;
 
     my $steps = delete $args{steps} // {};
     my $row = $self->dbicrow;
@@ -246,15 +246,24 @@ sub store {
 
     # As we want to be able to mention known steps in {substeps}
     # without declaring them manually in {steps} hash ...
-    $steps->{ $_->name } //= {}
-        for $root ? $root_step->and_below({}, {
-                        columns => ['name', 'step_id', 'task_id' ]
-                    })
-                  : $steps_rs->search({}, { columns => ['name'] })
-        ;
+    my @substep_hierarchy_fill = 
+        $root ? $root_step->and_below({}, {
+                    columns => ['name', 'step_id', 'task_id', 'parent_id']
+                })
+              : $steps_rs->search({}, {
+                    columns => ['name', 'parent_id' ]
+                })
+              ;
+    for my $step ( @substep_hierarchy_fill ) {
+        my $name = $step->name;
+        my $p;
+        if ( $p = $step->parent_row ) { $p = $p->name }
+        $steps->{ $name }->{_oldparent} = $p;
+    }
 
-    if ( my $step = $root_step ) {
-        for my $parent ( $step->ancestors_upto() ) {
+    if ( $root_step ) {
+        my ($step, @ancestors) = $root_step->ancestors_upto();
+        for my $parent ( @ancestors ) {
             $steps->{ $step->name } = {
                 _skip => "because it is above our hierarchy",
                  row => $step,
@@ -268,8 +277,9 @@ sub store {
         row => $row,
     };
 
-    if ( my $substeps = delete $args{substeps} ) {
-        $steps->{$root_step}{substeps} = $substeps;
+    if ( defined( my $substeps = delete $args{substeps} ) ) {
+        my $step = $root_step ? $root_step->name : '';
+        $steps->{$step}{substeps} = $substeps;
     }
 
     # list all upper steps before their lower levels
@@ -281,7 +291,7 @@ sub store {
         my @touched_timestructure;
         for my $step ( $root_step ? \%args : (), @$steps_aref ) {
             next if !grep { defined } @{$step}{'from_date','timestages'};
-            push @touched_timestructure, $step->{name} // $step->{oldname};
+            push @touched_timestructure, $step->{name} // $step->{_oldname};
         }
         if ( @touched_timestructure ) {
             $self->check_timestructure(@touched_timestructure);
@@ -322,7 +332,7 @@ sub _ordered_step_hrefs {
         my ($parent_name, $sequence) = @_;
 
         my ($defined_pos, $undefined_pos) = split m{\s*;\s*}x, $sequence, 2;
-        my  @defined_pos                  = split m{   ,\s*}x, $defined_pos;
+        my @defined_pos                   = split m{,\s*}x, $defined_pos//q{};
         my $order_num;
 
         for ( $undefined_pos, @defined_pos ) {
@@ -367,9 +377,18 @@ sub _ordered_step_hrefs {
     }; # end of $sequencer definition
 
     while ( my ($step,$md) = each %steps ) {
-        $md->{oldname} = $step;
-        #$dependencies{ length $step ? $step : $ROOTID } //= [];
-        $sequencer->( $step => $md->{substeps} // next);
+        $md->{_oldname} = $step;
+        if ( defined( my $substeps = $md->{substeps} ) ) {
+            $sequencer->( $step => $substeps );
+        }
+        else { next; }
+    }
+
+    while ( my ($step,$md) = each %steps ) {
+        next if !length($step) || $dependencies{$step};
+        my $p = $md->{_oldparent};
+        $p = $ROOTID if !length $p;
+        $dependencies{ $step } = [ $p ];
     }
 
     my $ordered_steps = ordered(\%dependencies);
@@ -383,6 +402,7 @@ sub _ordered_step_hrefs {
 
     for my $step ( @$ordered_steps ) {
         $step = delete $steps{$step};
+        delete $step->{_oldparent};
     }
 
     for my $orphan ( values %steps ) {
@@ -398,7 +418,7 @@ sub _store_root_step {
     my ($self, $data) = @_;
     my $row = $self->dbicrow;
     my $steps_rs = $row->steps;
-    my $root_name = delete $data->{oldname};
+    my $root_name = delete $data->{_oldname};
 
     my $store_mode = length($root_name) ? 'step' : 'task';
 
@@ -471,12 +491,12 @@ sub _store_steps_below {
 
     my %in_hierarchy;
     for my $step ( @$steps_aref ) {
-        my ($name, $row) = ($step->{oldname}, $step->{row});
+        my ($name, $row) = ($step->{_oldname}, $step->{row});
         my $substeps = delete $step->{substeps} // do {
             if ( $row ) { join q{,}, $row->substeps->get_column('name')->all }
             else { next; }
         };
-        $step->{is_parent} = 1 if $substeps =~ /\w/;
+        $step->{is_parent} = $substeps =~ /\w/ if defined($substeps);
 
         # avoid breaks in hierarchy chain:
         next if $name && !defined $step->{parent}; 
@@ -486,22 +506,22 @@ sub _store_steps_below {
            qq{$root_name can't be substep of $name }
             . q{(circular dependency)}
         ) if !$row && $substeps{$root_name};
-        $in_hierarchy{ $step->{oldname} } = \%substeps;
+        $in_hierarchy{ $step->{_oldname} } = \%substeps;
     }
 
     my %rows_tmp;
     while ( @$steps_aref ) {
         last if !$steps_aref->[0]{_skip};
-        my ($name,$step) = @{ shift @$steps_aref }{'oldname','row'};
+        my ($name,$step) = @{ shift @$steps_aref }{'_oldname','row'};
         $rows_tmp{$name} = $step;
     }
 
     for my $step ( @$steps_aref ) {
 
-        die q{Oops, did not expect "_skip"ped steps here:}, $step->{oldname}
+        die q{Oops, did not expect "_skip"ped steps here:}, $step->{_oldname}
             if $step->{_skip};
 
-        my $name = delete $step->{oldname};
+        my $name = delete $step->{_oldname};
 
         my $step_row  = $steps_rs->find({ name => $name });
 
@@ -571,6 +591,9 @@ sub _store_steps_below {
 
             if ( defined $is_parent ) {
                 $step_row->is_parent($is_parent);
+                if ( !$is_parent && $step_row->in_storage ) {
+                    $step_row->substeps->delete;
+                }
             }
 
             if ( defined $link ) {

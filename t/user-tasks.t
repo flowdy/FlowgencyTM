@@ -289,6 +289,18 @@ $task2->store( step => '', substeps => "export2csv,csvinput,webapp" );
 ok !$task2->step("dbsetup") , "deleted step dbsetup";
 ok !$task2->step("crtables"), " ... affecting subordinates, too";
 
+$task2->store( step => 'csvinput', substeps => 'config', steps => { config => { description => 'Configure CSV extraction' } } );
+is $task2->step('config')->parent_row->name, 'csvinput' => 'Add a substep';
+$task2->store( step => 'csvinput', substeps => '' );
+ok !$task2->step('config'), " ... and delete it again";
+
+$task2->store( step => '', steps => { csvinput => { substeps => 'config' }, config => { description => 'Configure CSV extraction' } });
+is $task2->step('config')->parent_row->name, 'csvinput' => 'Add a substep indirectly';
+$task2->store( step => '', steps => { csvinput => { substeps => '' } });
+ok !$task2->step('config'), " ... and delete it again";
+
+
+
 done_testing();
 
 sub check_done {
