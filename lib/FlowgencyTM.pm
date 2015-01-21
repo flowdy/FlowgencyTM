@@ -6,7 +6,7 @@ use Carp qw(croak);
 use FTM::FlowDB;
 use FTM::User; # No, it is rather the user who use FlowgencyTM
 
-my ($db, %users, $current_user);
+my ($db, %users, @current_users);
 
 my %DEFAULT_USER_DATA = (
     username => 'Yet Unnamed',
@@ -22,7 +22,7 @@ sub database () {
 
 sub user {
     my ($user_id, $create_if_unknown) = @_;
-    return $current_user if !@_;
+    return $users{ $current_users[0] } if !@_;
 
     my $retr = "find";
 
@@ -33,15 +33,36 @@ sub user {
             user_id => $user_id,
             %DEFAULT_USER_DATA,
             ref $new eq 'HASH' ? %$new :
-            $new eq '1' ? ()           :
-            croak "user: 2nd arg is $new. Must be either a hash-ref or 1",
+                $new eq '1' ? ()       :
+                croak "user: 2nd arg is $new. Must be either a hash-ref or 1",
         };
     }
 
-    return $current_user = $users{$user_id} //= FTM::User->new(
+    my $user_obj = $users{$user_id} //= FTM::User->new(
         dbicrow => database->resultset("User")->$retr($data)
                 // croak qq{Could not find a user with id = '$user_id'}
     );
+
+    if ( my $max_users = $ENV{MAX_USERS_CACHED} ) {
+        if ( !$user_obj->in_storage ) {
+            unshift @current_users, $user_obj->user_id;
+        }
+        else {
+            my $i; for ( $i = 0; $i < @current_users; $i++ ) {
+                last if $user_id eq $current_users[$i];
+            }
+            unshift @current_users, splice @current_users, $i, 1;
+        }
+        if ( (my $drop_count = $max_users - @current_users) < 0 ) {
+            delete $users{ splice @current_users, $drop_count };
+        }
+    }
+    else {
+        $current_users[0] = $user_obj->user_id;
+    }
+
+    return $user_obj;
+
 }
 
 sub new_user ($) {
@@ -51,7 +72,7 @@ sub new_user ($) {
             %DEFAULT_USER_DATA, user_id => $username
         })
     );
-    return $current_user = $user;
+    return unshift @current_users, $user;
 }
 
 
