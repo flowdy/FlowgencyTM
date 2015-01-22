@@ -7,7 +7,8 @@ export FLOWGENCYTM_USER MOJO_LISTEN
 [ -e "$PIDFILE" ] && read PID < "$PIDFILE"
 
 case "$1" in
-start)	if [ -z "$PID" ]; then
+start) if [ -z "$PID" ] || (( "$(($(date +%s -r "$PIDFILE") - ($(date +%s) - $(cut -f 1 -d'.' < /proc/uptime))))" < 0 )); then
+           # if there is no $PID or if the $PIDFILE is older than system's uptime
             [ -e "$LOG" ] && rm "$LOG"
             nohup script/$COMMAND > $LOG 2>&1 &
             PID=$!
