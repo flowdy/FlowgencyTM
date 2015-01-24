@@ -12,7 +12,10 @@ has _dbicrow => (
     is => 'ro',
     isa => 'FTM::FlowDB::User',
     required => 1,
-    handles => [qw/ user_id username insert update in_storage /],
+    handles => [qw/
+        user_id username email salted_password password_equals
+        insert update in_storage
+    /],
     init_arg => "dbicrow",
 );
 

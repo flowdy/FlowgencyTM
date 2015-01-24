@@ -22,7 +22,9 @@ sub database () {
 
 sub user {
     my ($user_id, $create_if_unknown) = @_;
-    return $users{ $current_users[0] } if !@_;
+    @_ or $user_id = $current_users[0]
+                  // $ENV{FLOWGENCYTM_USER}
+                  // return;
 
     my $retr = "find";
 

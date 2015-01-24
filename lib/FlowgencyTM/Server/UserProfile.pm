@@ -7,7 +7,40 @@ use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
 sub settings {
     my ($self) = @_;
-    my $user = FlowgencyTM::user();
+    my $user = $self->stash('user');
+    my %errors;
+
+    if ( defined(my $email = $self->param('email')) ) {
+         my $error;
+         my $part = 'account';
+         for ( my ($account, $provider) = split /@/, $email ) {
+             if ( !length ) {
+                 $error = $part.' part is missing';
+             }
+             elsif ( /[^\w.-]/ ) {
+                 $error = $part.' part is malformed or too esoteric';
+               # If needed someday, we could well use Regex::Common, but mind
+               # the number of the dependencies FlowgencyTM already has got.
+             }
+             last if $error;
+         } continue { $part = '@provider' }
+
+         if ( $error ) {
+             $errors{email} = 'Invalid address: '.ucfirst($error);
+         }
+         else {
+             $user->email($email);
+             $user->username($self->param('username'));
+         } 
+    }
+    elsif ( $self->param('update') ) { $user->email(undef); }
+
+    if ( my $password = $self->param('password') ) {
+        if ( $password eq $self->param('passw_confirm') ) {
+            $user->salted_password($password);
+        }
+        else { $errors{password} = 'Passwords do not match' }
+    }
 
     my %change_model;
     my %tracks = map { $_->[0] => 1 } $user->get_available_time_tracks;
@@ -48,6 +81,16 @@ sub settings {
     if ( defined(my $appendix = $self->param("appendix")) ) {
         $user->appendix($appendix);
     }
+
+    $user->update() if $self->param('update');
+
+    if ( $self->param('update') && !%errors ) {
+        $self->redirect_to('home');
+    }
+    else {
+        $self->stash( errors => \%errors );
+    }
+    
 }
 
 1;

@@ -25,7 +25,6 @@ has _cursor => (
 has name => (
     is => 'ro',
     isa => 'Str',
-    lazy => 1,
     default => sub { shift->dbicrow->name },
     init_arg => undef,
 );
@@ -37,9 +36,10 @@ has dbicrow => (
         qw( priority main_step_row steps )
     ],
     required => 1,
+    lazy => 1,
     default => sub { # called after clearer has been called
         my $self = shift;
-        $self->_tasks->tasks_rs->find({ name => $self->name });
+        $self->_tasks->task_rs->find({ name => $self->name });
     },
     clearer => 'uncouple_dbicrow',
 );

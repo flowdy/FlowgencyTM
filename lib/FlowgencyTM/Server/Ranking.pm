@@ -28,8 +28,9 @@ sub list {
   $self->render(
     list => sub {
         my $task = shift @tasks // return;
-        _dump_task($task);
-
+        my $tdata = _dump_task($task);
+        $task->uncouple_dbicrow;
+        return $tdata;
     },
     timestamp => ref($tasks[0]) ? $tasks[0]->flowrank->_for_ts : $now
   );
