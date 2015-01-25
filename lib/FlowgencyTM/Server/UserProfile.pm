@@ -36,10 +36,15 @@ sub settings {
     elsif ( $self->param('update') ) { $user->email(undef); }
 
     if ( my $password = $self->param('password') ) {
-        if ( $password eq $self->param('passw_confirm') ) {
+        if ( !$user->password_equals($self->param('old_password')) ) {
+            $errors{password} = 'Old password is wrong';
+        }
+        elsif ( $password ne $self->param('passw_confirm') ) {
+            $errors{password} = 'Passwords do not match' 
+        }
+        else {
             $user->salted_password($password);
         }
-        else { $errors{password} = 'Passwords do not match' }
     }
 
     my %change_model;

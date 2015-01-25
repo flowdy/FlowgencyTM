@@ -1,6 +1,12 @@
 % stash addScripts => ['user-settings'];
 <h2>Change your User Profile settings</h2>
-<p>Jump to: <a href="#set-weights">Weights of ranking criteria</a> &bull; <a href="#set-priorities">Priority levels<a> &bull; <a href="#configure-time-model">Time Model (work times / shifts / multijobbing & freelancing)</a> &bull; <a href="#appendix">Urgency threshold for closed tasks</a></p>
+<ul>
+<li><a href="#set-weights">Weights of ranking criteria</a></li>
+<li><a href="#set-priorities">Priority levels<a></li>
+<li><a href="#configure-time-model">Time Model (work times / shifts / multijobbing & freelancing)</a></li>
+<li><a href="#appendix">Urgency threshold for closed tasks</a></li>
+<li><a href="#info">For information: Other properties stored in user object</a></li>
+</ul>
 % my %error_fmt = ();
 % my $place_error = begin
 %    my $which = shift;
@@ -21,28 +27,37 @@
 
 <form method="POST">
 <fieldset id="authentication">
-<legend>User <%= $user->user_id %></legend>
+<legend>Basic settings for user account <strong><%= $user->user_id %></strong></legend>
 <p class="info">If you run the server locally, as is recommended because time use is highly private, you do not need to input anything here.</p>
-<label>Password: <input type="password" name="password"></label>
-<label>Confirm: <input type="password" name="passw_confirm"></label>
+
+<label style="display:block;"><input id="change-password" type="checkbox"> Change stored password</label>
+<fieldset id="change-password-fieldset" disabled="disabled" style="display:none">
+<table>
+<tr><th><label for="#old-password">From</label></th><th><label for="#new-password">To</label></th><th><label for="#confirm-password">Confirm<label></th></tr>
+<tr><td><input id="old-password" placeholder="old password" type="password" name="old_password"></label></td>
+<td><input id="new-password" placeholder="new password" type="password" name="password"></td><td><input id="confirm-password" type="password" placeholder="repeat to confirm" name="passw_confirm"></td></tr>
+</table>
 %== $place_error->('password') || q{<p style="font-size:smaller">Leave these fields empty if you want to keep your stored password.</p>}; 
-<label><input type="checkbox" <%= defined($user->email) ? q{checked=checked} : q{} %> onclick="if ( this.checked ) $('#contact').removeAttr('disabled'); else { $('#contact').prop('disabled','disabled'); $('#email').val('(deleted)'); }"> The administrator is allowed to contact me:</label>
+</fieldset>
+
+<label><input type="checkbox" id="set-email" <%= defined($user->email) ? q{checked=checked} : q{} %> > The administrator is allowed to contact me e.g. for notifications on necessary modifications required by updates, and on new or substantially changed or dropped/deactivated features:</label>
 <fieldset id="contact" <%= defined($user->email) ? q{} : q{disabled=disabled} %>>
 <label>E-Mail: <input type="text" id="email" name="email" value="<%= param('email') // $user->email %>"></label>
-%== $place_error->("email");
+
 <label>Name: <input type="text" name="username" value="<%= $user->username %>"></label>
+%== $place_error->("email") || q{<p style="font-size:smaller;">Without the contact information, the account is subject to deletion when, due to updates, it would not work any longer without adjustments.</p>};
 </fieldset>
-<p style="font-size:smaller;">Without the contact information, the account is subject to deletion.</p>
+
 </fieldset>
 <fieldset id="set-weights">
 <legend>Weights of the ranking criteria</legend>
 % my %weights = $user->weights;
 <p>The FlowgencyTM ranking score ("FlowRank") is mathematically just a simple product comprising the following dimensions of urgency. By default, they are equally weighted, but you may adjust that to your liking. Please note: It is of no use changing it too often. The mind will need some time to get accustomed.</p>
 <table>
-% my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your expenditure checking", open => "If and for how long the task has been open", timeneed => "Inferring from your average working speed, when will the task be done as compared to when you planned it should be done");
+% my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your checking steps as done. This is additionally visualized by a variadic colour gradient under the task title.", open => "If and for how long the task has been open", timeneed => "When the task will be done as compared to when you planned it should be done. This is inferred from your average working speed once you make the first check.");
 % while ( my ($key, $hint) = splice @hints, 0, 2 ) {
 %   my $value = $weights{$key};
-    <tr><th><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> type="number" value="<%= $value %>"></td><td><%= $hint %></li>
+    <tr><th><label for="#weight-<%= $key %>"><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" id="weight-<%= $key %>" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> type="number" value="<%= $value %>"></td><td><%= $hint %></li>
 % }
 </table>
 </fieldset>
@@ -68,7 +83,7 @@
 <fieldset id="configure-time-model">
 <legend>Time Model</legend>
 <p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, i.e. when [not] to increase their urgency rank in need of their expenditures' continuously being checked. You can define as many tracks as you find necessary to match how you work. Please note: KISS – Keep it simple and stupid.</p>
-<p>I am developing a user-friendly form functionality for time model modifications (cf. git branch <em>configure-time-model</em>). For the time being, please define changes to a track in JSON syntax. The atomic fields are disabled.</p> 
+<p>I am developing a user-friendly form functionality for time model modifications. For the time being, please define changes to a track in JSON syntax. The atomic fields are disabled.</p> 
 % my @trackfields = qw(week_pattern week_pattern_of_track label parents default_inherit_mode from_earliest successor until_latest);
 % my @varfields = qw(week_pattern week_pattern_of_track section_of_track description ref apply until_date from_date);
 % my $tm = $user->dump_time_model;
@@ -137,9 +152,18 @@
 
 <fieldset id="appendix">
 <legend>Urgency threshold for closed tasks</legend>
-<p>Unless you checked the list option "below threshold", and if there is at least one open task, closed tasks are listed only if the following inequation holds true: <pre style="font-size:125%;text-align:center;"><var title="urgency score of a closed task">uₜ</var> &gt; <var title="minimum urgency score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum urgency score among open tasks">ǔₒ</var> &minus; <var title="maximum urgency score among listed tasks">û</var>)</pre> (<var>uₜ</var>: urgency score of a closed track, <var>ǔₒ</var>: minimum urgency score among open tasks, <var>c</var>: coefficient that you can set here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>, <var>û</var>: maximum urgency score among listed tasks).
+<p>Unless you checked the list option "below threshold", and if there is at least one open task, closed tasks are listed only if the following inequation holds true: <pre style="font-size:125%;text-align:center;"><var title="urgency score of a closed task">uₜ</var> &gt; <var title="minimum urgency score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum urgency score among open tasks">ǔₒ</var> &minus; <var title="maximum urgency score among listed tasks">û</var>)</pre> (<var>uₜ</var>: urgency score of a closed task, <var>ǔₒ</var>: minimum urgency score among open tasks, <var>c</var>: coefficient that you can set here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>, <var>û</var>: maximum urgency score among listed tasks).
 <input style="width:95%" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>
+<p>If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least urgent open task to the most urgent task.</p>
+
 </fieldset>
 <input type="submit" name="update" value="Update Profile">
 <input type="reset" value="Discard changes">
 </form> 
+
+<div id="info">
+<h3>For your information</h3>
+<ul>
+<li>Your account was created <%= $user->created %></li>
+<li>The user object is cached since <%= $user->cached_since_date %>.</li>
+</ul>
