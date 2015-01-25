@@ -4,7 +4,7 @@ package FTM::FlowDB;
 use base qw/DBIx::Class::Schema/;
 use Carp qw/croak/;
 
-__PACKAGE__->load_classes(qw|User Task Step TimeStage|);
+__PACKAGE__->load_classes(qw|User Mailoop Task Step TimeStage|);
 
 sub import {
     my ($class, $dbh_ref, $filename) = @_;
@@ -19,7 +19,7 @@ sub connect {
     my $deploy;
 
     if ( defined( $dsn //= $first_dsn ) ) {
-        $dsn =~ s{ \A (?!DBI:) }{DBI:SQLite:}xms;
+        $dsn =~ s{ \A (?!DBI:) }{DBI:SQLite:}ixms;
         $first_dsn //= $dsn;
         $deploy = delete $args{deploy} // !(-e $_[1]);
     }

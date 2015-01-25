@@ -9,12 +9,13 @@ use FTM::User; # No, it is rather the user who use FlowgencyTM
 my ($db, %users, @current_users);
 
 my %DEFAULT_USER_DATA = (
-    username => 'Yet Unnamed',
     password => '',
     priorities => q[{"pile":1,"whentime":2,"soon":3,"urgent":5}], 
     weights => q[{"priority":1,"drift":1,"due":-1,"open":1,"timeneed":1}],
     time_model => q[{"default":{"label":"Default track not yet configured (hence 24/7)","week_pattern":"Mo-So@0-23"},"private":{"label":"Off, i.e. urgency frozen","week_pattern":"Mo-So@!0-23"}}],
 );
+
+my %ADMINS = map { $_ => 1 } split /\W+/, $ENV{FLOWGENCYTM_ADMIN};
 
 sub database () {
     $db //= FTM::FlowDB->connect($ENV{FLOWDB_SQLITE_FILE});
@@ -42,10 +43,11 @@ sub user {
 
     my $user_obj = $users{$user_id} //= FTM::User->new(
         dbicrow => database->resultset("User")->$retr($data)
-                // croak qq{Could not find a user with id = '$user_id'}
+                // croak(qq{Could not find a user with id = '$user_id'}),
+        can_admin => $ADMINS{$user_id} // 0,
     );
 
-    if ( my $max_users = $ENV{MAX_USERS_CACHED} ) {
+    if ( my $max_users = $ENV{MAX_USERS_IN_CACHE} ) {
         if ( !$user_obj->in_storage ) {
             unshift @current_users, $user_obj->user_id;
         }
@@ -61,6 +63,7 @@ sub user {
     }
     else {
         $current_users[0] = $user_obj->user_id;
+        %users = ( $user_id => $user_obj );
     }
 
     return $user_obj;

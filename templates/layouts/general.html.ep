@@ -41,16 +41,19 @@
 <a style="margin-bottom:5px;" href="/task/archive">Archive</a>
 <input id="query" name="query" placeholder="Search ALL tasks">
 </li>
-<li>Set time<form id="settime">
-<input name="time" type="datetime" style="width:75%"><br>
+<li><form id="settime"><label>Set time:
+<input name="time" type="datetime" style="width:75%"></label><br>
 <label><input type="radio" name="keep" value="0"> Next ranking only</label><br>
 <label><input type="radio" name="keep" value="1"> Continuous update</label>
 </form></li>
 </ul>
 
-<ul>
-<li><a href="/settings">Settings</a></li>
-</ul>
+<ul><li><a href="/user/settings">Account settings</a>
+% my $user = stash 'user';
+%    if ( $user && $user->can_admin ) {
+     <ul><li><a href="/admin">Administration</a></li></ul>
+%    }
+</li></ul>
 
 </nav>
 

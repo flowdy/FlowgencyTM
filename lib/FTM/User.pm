@@ -13,7 +13,7 @@ has _dbicrow => (
     isa => 'FTM::FlowDB::User',
     required => 1,
     handles => [qw/
-        user_id username email salted_password password_equals
+        user_id username email created salted_password password_equals
         insert update in_storage
     /],
     init_arg => "dbicrow",
@@ -41,6 +41,27 @@ has tasks => (
     builder => '_build_tasks',
     handles => { 'get_task' => 'get', 'search_tasks' => 'search' },
     lazy => 1,
+);
+
+has cached_since_date => (
+    is => 'ro',
+    init_arg => undef,
+    default => sub { FTM::Time::Point->now },
+);
+
+has can_admin => (
+    is => 'ro',
+    isa => 'Bool',
+    default => sub { 0 },
+);
+
+has can_login => (
+    is => 'ro', isa => 'Bool',
+    default => sub {
+       my $row = shift->_dbicrow;
+       $row &&= $row->mailoop or return 1;
+       return $row->type ne 'invite';
+    }
 );
 
 has weights => (
