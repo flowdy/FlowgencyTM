@@ -336,7 +336,7 @@ sub _ordered_step_hrefs {
         my $order_num;
 
         for ( $undefined_pos, @defined_pos ) {
-            next if !defined;
+            next if !length;
             my @cluster = split m{ \s* [|/] \s* }xms;
             my $order_plus = 0;
 
@@ -501,7 +501,8 @@ sub _store_steps_below {
         # avoid breaks in hierarchy chain:
         next if $name && !defined $step->{parent}; 
 
-        my %substeps = map { $_ => 1 } split /[,;|\/]\s*/, $substeps;
+        my %substeps = map { length($_) ? ($_ => 1) : () }
+            split /[,;|\/]\s*/, $substeps, -1;
         FTM::Error::Task::InvalidDataToStore->throw(
            qq{$root_name can't be substep of $name }
             . q{(circular dependency)}
