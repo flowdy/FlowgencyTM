@@ -7,6 +7,7 @@ use FTM::Task;
 use FTM::FlowDB::Task; # calling ->columns method
 use FTM::FlowDB::Step; # on DBIx::ResultSources
 use FTM::Util::TreeFromLazyStr;
+use List::Util qw(max);
 use feature "state";
 
 has task_rs => (
@@ -37,16 +38,18 @@ sub _build_task_obj {
 
 sub _next_unused_name {
     my ($self, $prefix) = @_;
-    my $search_expr = $prefix ? { like   => "$prefix%" }
-                    :           { regexp => '^[0-9]+$' }
-                    ;
-    my $name = $self->task_rs->search(
-        { name => $search_expr }, { columns => ['name'] }
-    )->get_column('name')->max() || $prefix || 0;
+    $prefix //= q{};
+    my $min = max(
+        $prefix =~ s{ 0* (\d+) \z }{}xms ? $1 : 0,
+        $self->task_rs->search(
+            [ \qq{rtrim(me.name,"0123456789")=='$prefix'} ],
+            { select => [ \qq{CAST(replace(me.name,'$prefix','') AS INT)} ],
+              as => ['number'],
+            }
+        )->get_column('number')->max() || 0,
+    );
 
-    $name =~ s{ (?<!\d) (\d*) \z }{ ($1||0)+1 }exms;
-
-    return $name;
+    return $prefix.($min+1);
     
 }
 
