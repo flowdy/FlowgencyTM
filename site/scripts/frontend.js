@@ -395,9 +395,8 @@ StepTree.prototype.register_substeps = function (field, parent) {
                    + Object.keys(diff).join(", ")
                    + "\nPlease find them in 'Jump to step' select menu."
             );
-            return change_handler.call(this, e);
         }
-        else return;
+        return change_handler.call(this, e);
 
     });
 };
