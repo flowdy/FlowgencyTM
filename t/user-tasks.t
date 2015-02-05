@@ -294,12 +294,14 @@ is $task2->step('config')->parent_row->name, 'csvinput' => 'Add a substep';
 $task2->store( step => 'csvinput', substeps => '' );
 ok !$task2->step('config'), " ... and delete it again";
 
-$task2->store( step => '', steps => { csvinput => { substeps => 'config' }, config => { description => 'Configure CSV extraction' } });
+$task2->store( step => '', steps => { csvinput => { substeps => 'config/sstfoo' }, config => { description => 'Configure CSV extraction' }, sstfoo => { description => 'substep foo', substeps => 'sstbar' }, sstbar => { description => 'subsubstep bar' } });
 is $task2->step('config')->parent_row->name, 'csvinput' => 'Add a substep indirectly';
-$task2->store( step => '', steps => { csvinput => { substeps => '' } });
-ok !$task2->step('config'), " ... and delete it again";
+is $task2->step('sstfoo')->parent_row->name, 'csvinput' => 'Add another substep ind.';
 
-
+$task2->store( step => '', steps => { csvinput => { substeps => 'sstfoo' } });
+ok !$task2->step('config'), " ... and delete it again, leaving a sibling";
+$task2->store( step => '', steps => { sstfoo => { substeps => '' } } );
+ok !$task2->step('sstbar'), " ... and delete a single child step";
 
 done_testing();
 

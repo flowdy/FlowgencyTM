@@ -402,7 +402,10 @@ sub _ordered_step_hrefs {
 
     for my $step ( @$ordered_steps ) {
         $step = delete $steps{$step};
-        delete $step->{_oldparent};
+        my $op = delete $step->{_oldparent};
+        if ( $step->{substeps} && !defined($step->{parent}) ) {
+            $step->{parent} = $op // next;
+        }
     }
 
     for my $orphan ( values %steps ) {
