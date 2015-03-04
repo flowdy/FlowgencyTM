@@ -27,7 +27,6 @@ sub startup {
 
   # Router
   my $r = $self->routes;
-  $r->get("/user/login")->to("login#form");
   my $auth = $r->under(sub {
       my $c = shift;
 
@@ -48,12 +47,12 @@ sub startup {
 
   });
 
+  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })
       ->get('/admin')->to("admin#dash");
+  $admin->get('/:action')->to(controller => 'admin');
 
-  $r->post('/user/login')->to("login#token");
-  $r->get('/user/:type/:token')->to("user_profile#confirm");
-  $r->post('/user/join')->to("user_profile#create_user");
+  $r->post('/user/join')->to("user#join");
 
   # Normal route to controller
   $auth->get('/')->to('ranking#list')->name('home');
@@ -61,7 +60,7 @@ sub startup {
   $auth->post('/update')->to('task_editor#fast_bulk_update');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $auth->any([qw/GET POST/] => '/user/settings')
-       ->to('user_profile#settings');
+       ->to('user#settings');
   $auth->get('/task/archive')->to("ranking#archived");
   $auth->any([qw/GET POST/] => '/task/:id/:action')
        ->to(controller => 'task_editor');

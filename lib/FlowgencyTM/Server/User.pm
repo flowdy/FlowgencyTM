@@ -1,6 +1,6 @@
 use strict;
 
-package FlowgencyTM::Server::UserProfile;
+package FlowgencyTM::Server::User;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw(from_json encode_json);
@@ -96,6 +96,73 @@ sub settings {
         $self->stash( errors => \%errors );
     }
     
+}
+
+sub join {
+    my ($self) = @_;
+
+    my ($email, $password) = $self->param([ "email", "password" ]);
+
+    if ( !$email or $email !~ m{ \A [\w.-]+ @ [\w.-]+ . \w+ \z }xms ) {
+        croak "Email address passed is invalid";
+    }
+    if ( length($password) < 5 or $password !~ m{ \W }xms ) {
+        croak "Password is empty or too easy: ",
+              "It must be at least five characters long ",
+              "and contain one or more non-alphanumerics"
+        ;
+    }
+
+    my $user = FlowgencyTM::new_user( $self->param("user") => {
+        username => $self->param("username"), email => $email,
+        -invite => 1,
+    });
+    $user->salted_password($password);
+    $user->update;
+
+}
+
+sub login {
+    my $self = shift;
+
+    my $user_id = $self->param('user') // return;
+    my $password = $self->param('password');
+    my $user = FlowgencyTM::database->resultset("User")->find($user_id);
+
+    my $on_success = sub {};
+
+    if ( my $confirm = $self->param('token') ) {
+        $confirm = $user->find_related(
+            mailoop => { token => $confirm }
+        );
+        if ( !$confirm ) { $self->res->code(400); }
+        elsif ( $confirm->type eq 'invite' ) {
+            $on_success = sub { $confirm->delete };
+        }
+        elsif ( $confirm->type eq 'reset_password' ) {
+            $user->password($confirm->value);
+            $on_success = sub { $user->update; $confirm->delete; };
+        }
+        elsif ( $confirm->type eq 'change_email' ) {
+            $user->update({ email => $confirm->value });
+            $on_success = sub { $confirm->delete; };
+        }
+        else {
+            croak "Unknown confirm type: ", $confirm->type;
+        }
+    }
+           
+    if ( $user && $user->password_equals($password) ) {
+        $on_success->();
+        $self->session("user_id" => $user_id);
+        $self->redirect_to("home");
+    }
+    else {
+        $self->render( retry => 1 );
+        return;
+    }
+
+
 }
 
 1;

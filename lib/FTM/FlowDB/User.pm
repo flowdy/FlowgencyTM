@@ -36,8 +36,7 @@ __PACKAGE__->might_have(mailoop => 'FTM::FlowDB::Mailoop', 'user_id');
 sub salted_password {
     my ($self, $password) = @_;
     if ( exists $_[1] ) {
-        my @chars = ( 0..9, "a".."z", "A".."Z" );
-        my $random_string = join q{}, map { $chars[ int rand(62) ] } 1 .. 8;
+        my $random_string = _randomstring(8);
         return $self->password(
             $random_string."//".hmac_sha256_hex($password, $random_string)
         );
@@ -55,4 +54,20 @@ sub password_equals {
     return hmac_sha256_hex($password, $salt) eq $stored_password;
 }
 
+sub invite {
+    my ($self) = @_;
+    my $token = _randomstring(40);
+    return $self->create_related("mailoop", {
+        type => "invite",
+        token => $token,
+        request_date => $self->created,
+    });
+}
+
+my @chars = ( 0..9, "a".."z", "A".."Z" );
+sub _randomstring {
+    my ($length) = @_;
+    return join q{}, map { $chars[ int rand(62) ] } 1 .. $length;
+}
+    
 1;

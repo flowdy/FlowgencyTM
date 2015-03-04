@@ -1,0 +1,16 @@
+<table>
+% my $props = $admined_user->get_columns;
+% while ( my ($field, $value) = each %$props ) {
+<tr><td><%= $field %></td><td><%= $value %></td></tr>
+% }
+</table>
+
+% if ( my $ml = $admined_user ) {
+<table>
+% my $props = $ml->get_columns;
+% while ( my ($field, $value) = each %$props ) {
+<tr><td><%= $field %></td><td><%= $value %></td></tr>
+% }
+</table>
+% }
+

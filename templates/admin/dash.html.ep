@@ -1,14 +1,16 @@
+% stash scripts => ['admindash'];
+
 <h2>Administration dash</h2>
 
 <h3>Mail loop</h3>
 
-<ul>
+<ul id="admin-mailoop-list">
 % while ( my $user = $mailoop->next ) {
 %    my $ml = $user->mailoop;
 %    # if ( $ml->request_date is past and $ml->type eq 'invite') {
 %    #    $user->delete;
 %    #    next;
 %    #}
-<li><a href="/admin/view_user/<%= $user->user_id %>"><%= $user->username // $user->user_id %></a> (mail: <%= $user->email %>) requests <button><%= $ml->type %></button> <button>delete</button></li>
+<li data-userid="<%= $user->user_id %>"><a href="/admin/view_user?id=<%= $user->user_id %>"><%= $user->username || $user->user_id %></a> (mail: <a href="mailto:<%= $user->email %>"><%= $user->email %></a>) requests <button><%= $ml->type %></button> <button>allow w/o mail</button> <button>delete</button> <a href="<%= url_for('/user/login')->query({ token => $ml->token })->to_abs %>">login</a></li>
 % }
 </ul>

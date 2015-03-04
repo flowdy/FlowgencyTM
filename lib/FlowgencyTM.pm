@@ -70,14 +70,21 @@ sub user {
 
 }
 
-sub new_user ($) {
-    my ($username) = @_;
-    my $user = $users{$username} = FTM::User->new(
-        dbicrow => database->resultset("User")->create({
-            %DEFAULT_USER_DATA, user_id => $username
-        })
-    );
-    return unshift @current_users, $user;
+sub new_user {
+    my ($user_id, $data) = @_;
+    $data //= {};
+    my $invite = delete $data->{'-invite'};
+    my $row = database->resultset("User")->create({
+        %DEFAULT_USER_DATA, user_id => $user_id, %$data
+    });
+
+    my $user = $users{$user_id} = FTM::User->new( dbicrow => $row );
+    if ( $invite ) { $row->invite }
+    elsif ( !defined $invite ) {      
+        unshift @current_users, $user->user_id;
+    }
+
+    return $user;
 }
 
 

@@ -27,7 +27,12 @@
     <div id="ftm_revision">Version: <%== sprintf '%s, rev. <span title="full git commit identifier: %2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></div>
   </header>
 
+% my $user = stash 'user';
+
 <nav id="leftnav">
+% if ( $user ) {
+<p>Logged in: <%= $user->user_id %></p>
+% }
 <ul>
 <li><a href="/newtask">New entry</a></li>
 <li>List tasks
@@ -49,7 +54,6 @@
 </ul>
 
 <ul><li><a href="/user/settings">Account settings</a>
-% my $user = stash 'user';
 %    if ( $user && $user->can_admin ) {
      <ul><li><a href="/admin">Administration</a></li></ul>
 %    }

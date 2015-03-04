@@ -1,3 +1,5 @@
+% stash addScripts => [ 'login' ];
+
 <h2>Welcome. Please login:</h2>
 
 <p>This is a live demo of the task and time management tool <em><a href="http://github.com/flowdy/FlowgencyTM">FlowgencyTM</a></em>. It allows you to find out if the concept matches your style of working, without the need to install extra software.</p>
@@ -6,16 +8,21 @@
     <p>Authentication failed: User does not exist or the password was wrong.</p>
 % }
 <form method="post" style="text-align:center;display:block;">
+% if ( my $t = param 'token' ) {
+    <input type="hidden" name="token" value="<%= $t %>">
+% }
     <label>User ID: <input name="user" type="text" value="<%= param('user') %>"></label>
     <label>Password:  <input name="password" type="password"></label>
     <input type="submit" value="log in">
 </form>
 
+<p>See below to get an account.</p>
+
 <h3>Terms of use:</h3>
 
 <ol>
-<li>You are allowed to use this demo service with fake data only. For any data entered and associated to your account, you accept full liability for any accidental leakage or intended disclosure¹ if to someone's claimed disadvantage, since the stored date of account creation. Your password is securely stored in a hashed and salted form. Beyond that, no privacy precautions are met.</li>
-<li style="margin-top:0.5em;">Once you want to use FlowgencyTM with real productive data as it does in fact match your style of working, you are welcome to install your own, private FlowgencyTM server on an appropriate device². Alternatively, you might prefer having it deployed and hosted by some expert you know personally and whom you trust. In your own and our future's interest, please think twice before using such a service if provided by your employer: Once they start to establish means for subtle control and monitoring staff's performance, no matter if in a social or technical or either way, all then-former benefits of FlowgencyTM might endanger your wellbeing.</li>
+<li>You are allowed to use this demo service with fake data only. For any data entered and associated to your account, you accept full liability for any accidental leakage or intended disclosure¹ if to someone's claimed disadvantage, since the stored date of account creation. Your password is securely stored in a hashed and salted form. Beyond that, no privacy precautions are guaranteed.</li>
+<li style="margin-top:0.5em;">When you consider using FlowgencyTM with real productive data, you are welcome to install your own, private FlowgencyTM server on an appropriate device². Alternatively, you might prefer having it deployed and hosted by some expert you know personally and trust. In your own and our all future's interest, please think twice before using such a service if provided by your employer: Once they start to establish means for subtle control and monitoring staff's performance, no matter if in a social or technical or either way, all former benefits of FlowgencyTM might get perverted and endanger your wellbeing.</li>
 <li style="margin-top:0.5em;">Considering their age, all user accounts are increasingly subject to deletion. The provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this intentionally ad-free service that is provided at no charge.</li>
 </ol>
 
