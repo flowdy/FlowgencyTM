@@ -172,7 +172,7 @@ sub calc_slices {
     my ($next, @slices) = ($self);
     while ( $next ) {
         ($next, my $slice) = $next->_calc_slice( $from, $until );
-        push @slices, $slice;
+        push @slices, $slice // ();
     } 
     return @slices;
 }

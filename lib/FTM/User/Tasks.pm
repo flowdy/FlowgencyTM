@@ -423,7 +423,7 @@ sub list {
     else { $drawer //= 0 }
 
     $archive = ref $archive eq 'ARRAY' ? { -in => $archive }
-             : ref $archive !~ m{^($|HASH)} ?
+             : ref($archive) !~ m{^($|HASH)} ?
                    croak "archive: neither ARRAY nor HASH reference"
              : $archive
              ;
@@ -465,7 +465,9 @@ sub list {
             $drawer & 2 or next;
             push @upcoming, $task;
         }
-        else { $processor->( $task, $drawer & 1 ); }
+        else {
+            $processor->( $task, $drawer & 1 );
+        }
     }       
 
     my $list = $processor->();
