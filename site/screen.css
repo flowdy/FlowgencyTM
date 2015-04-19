@@ -225,3 +225,5 @@ ul.formlist li {
    margin: 3px;
 }
 
+/* css for user-settings */
+.week-pattern .wpahead input { width: 2em; }

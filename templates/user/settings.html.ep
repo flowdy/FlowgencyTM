@@ -148,6 +148,10 @@
 </div>
 <button id="create-track-btn">Create time track ...</button>
 
+<div style="border:1px dashed red" id="testing"><h1>Temporary testing area</h1>
+
+<input type="text" id="week-pattern-source" style="width:100%">
+
 </fieldset>
 
 <fieldset id="appendix">
