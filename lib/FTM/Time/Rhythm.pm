@@ -42,10 +42,48 @@ has atoms => (
  
 has hourdiv => ( is => 'ro', isa => 'Int', required => 1 );
 
+sub resolve_decimal_daysequences {
+
+    my %wd; @wd{ 0 .. 6 } = qw/Mo Tu We Th Fr Sa Su/;
+    my $proc = sub {
+
+        my $enum = Bit::Vector->new_Dec(7,shift)->to_Enum();
+    
+        # We want pairs of subsequent days separated by dashes, not commas
+        while ( $enum =~ m{ (\d) , (\d) }xg ) {
+            my $p = --pos($enum);
+            if ( $1 == $2-1 ) {
+                substr $enum, $p - 1, 1, "-";
+            }
+        }
+    
+        # Wrap and compress a week where the monday and the sunday is a work day
+        if ( index($enum,',')>0 && substr($enum, 0, 1) eq 0
+                                && substr($enum,-1, 1) eq 6
+           ) {
+            (my $ini, $enum) = split m{,}, $enum, 2;
+            $enum .= "-$ini";
+            $enum =~ s{-[\w-]+-}{-};
+        } 
+    
+        # Render and display
+        $enum =~ s{(\d)}{$wd{$1}};
+
+        return $enum;
+
+    };
+
+    (my $string = shift) =~ s{ 0*(\d+) (?=@) }{ $proc->($1) }xeg;
+    
+    return $string;
+}
+
 sub from_string {
     my ($class, $week_pattern, $args) = @_;
     
     my $hour_min_rx = qr{ 0*(\d+) (?::0*(\d+))? ([ap]m)? }ixms;
+
+    $_ = resolve_decimal_daysequences($_) for $week_pattern;
 
     my %week_patterns;
     my @week_patterns = split /;/, $week_pattern;
