@@ -54,6 +54,7 @@ $(function () {
     var new_task_count = 0;
     $("a[href$='/newtask']").click(function (e) {
         ++new_task_count;
+        e.preventDefault();
         var newtask = $('<li>'),
             header = $('<header><h2>').appendTo(newtask)
                 .children().first().text("New task #" + new_task_count);
@@ -76,7 +77,6 @@ $(function () {
             });
         });
         $('#plans').prepend(newtask);
-        e.preventDefault();
     });
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });

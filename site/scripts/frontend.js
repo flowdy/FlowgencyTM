@@ -147,8 +147,8 @@ Ranking.prototype.progressbar2canvas = function (bar) {
        orient = bar.css("text-align")
    ;
 
-   var saturcolor = done.css("background-color"),
-       basecolor = bar.css("background-color"),
+   var basecolor = bar.css("background-color"),
+       saturcolor = done.css("background-color") || basecolor,
        middle = orient == 'left' ?      done.outerWidth() / bar.outerWidth()
               : orient == 'right' ? 1 - done.outerWidth() / bar.outerWidth()
               : null

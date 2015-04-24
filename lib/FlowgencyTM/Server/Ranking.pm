@@ -28,6 +28,7 @@ sub list {
   $self->render(
     list => sub {
         my $task = shift @tasks // return;
+        return $task if !ref $task;
         my $tdata = _dump_task($task);
         $task->uncouple_dbicrow;
         return $tdata;
