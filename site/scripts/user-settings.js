@@ -67,11 +67,20 @@ $(function () {
             onUpdateCallback(string);
         }
 
-        definitionString.split(";").forEach(function (ds) {
-            var wpa = new WeekPatternAlternator(ds, update);
+        function addWeekPatternAlternator (ds) {
+            var wpa = new WeekPatternAlternator(ds, update),
+                wpa_tailrow = wpa.tailrow(),
+                button = $("<button>+ Week Pattern Alternator</button>");
             alternators.push(wpa);
-            table.append( wpa.rows.map(function (r) { return r.tr }) );
-        });
+            table.append( wpa.rows.map(function (r) { return r.tr }), wpa_tailrow );
+            wpa_tailrow.find("button").insertAfter(button);
+            button.click(function (e) {
+                e.preventDefault();
+                addWeekPatternAlternator();
+            })
+        }
+
+        definitionString.split(";").forEach(addWeekPatternAlternator);
 
         table.data('alternators', alternators);
         
@@ -141,7 +150,20 @@ $(function () {
                     }
                     else return true;
                 })
-            }   
+            },
+            tailrow: function () {
+                var button = $("<button></button>"),
+                    tr = $("<tr><td colspan='9'>+ Week Pattern Row</td></tr>")
+                          .wrapInner(button);
+                button.click(function (e) {
+                    e.preventDefault();
+                    var rows = self.rows,
+                        newrow = new WeekpatternRow();
+                    rows.push(newrow);
+                    tr.insertBefore(newrow.tr);
+                });
+                return tr;
+            },
         };
 
         function updateWeekSelection () {
