@@ -61,26 +61,45 @@ $(function () {
             ;
 
         function update () {
-            var string = alternators.map(function (a) {
-                 return a.interval ? a.serialize() : undefined;
-            }).filter(function (a) { return a !== undefined }).join(";");
+
+            var string = alternators
+                .map(function (a) {
+                    return a.interval ? a.serialize() : undefined;
+                 })
+                .filter(function (a) { return a !== undefined })
+                .join(";");
+
             onUpdateCallback(string);
+
         }
 
-        function addWeekPatternAlternator (ds) {
+        function addWeekPatternAlternator (ds, baserow) {
+
             var wpa = new WeekPatternAlternator(ds, update),
-                wpa_tailrow = wpa.tailrow(),
+                tailrow = wpa.tailrow(),
+                elements_to_add = $(
+                    wpa.rows.map(function (r) { return r.tr }), tailrow
+                ),
                 button = $("<button>+ Week Pattern Alternator</button>");
+                ;
+
             alternators.push(wpa);
-            table.append( wpa.rows.map(function (r) { return r.tr }), wpa_tailrow );
-            wpa_tailrow.find("button").insertAfter(button);
+
+            if ( baserow === undefined ) table.append( elements_to_add );
+            else baserow.insertAfter( elements_to_add );
+
+            tailrow.find("button").insertAfter(button);
+
             button.click(function (e) {
                 e.preventDefault();
-                addWeekPatternAlternator();
-            })
+                addWeekPatternAlternator("", tailrow);
+            });
+
         }
 
-        definitionString.split(";").forEach(addWeekPatternAlternator);
+        definitionString.split(";").forEach(
+            function (ds) { return addWeekPatternAlternator(ds); }
+        );
 
         table.data('alternators', alternators);
         
