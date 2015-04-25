@@ -7,7 +7,7 @@ use List::Util qw(sum);
 use FTM::Types;
 use Moose;
 use FTM::Time::Cursor::Way;
-use FTM::Time::Point;
+use FTM::Time::Spec;
 
 has _runner => (
     is => 'rw',
@@ -68,9 +68,9 @@ sub apply_stages {
 sub update {
     my ($self, $time) = @_;
 
-    $time //= FTM::Time::Point->now;
+    $time //= FTM::Time::Spec->now;
 
-    if ( ref $time && $time->isa('FTM::Time::Point') ) {
+    if ( ref $time && $time->isa('FTM::Time::Spec') ) {
         $time = $time->epoch_sec;
     }
 
@@ -154,7 +154,7 @@ sub _build__runner {
 
 sub alter_coverage {
     my ($self, $from, $until) = @_;
-    $_ = FTM::Time::Point->parse_ts($_) for $from, $until;
+    $_ = FTM::Time::Spec->parse_ts($_) for $from, $until;
     if ( $from->fix_order($until) ) {
         $self->run_from($from);
         $self->run_until($until);

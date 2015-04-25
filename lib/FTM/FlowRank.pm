@@ -6,7 +6,7 @@ use Moose;
 
 has _time => (
     is  => 'rw',
-    isa => 'FTM::Time::Point',
+    isa => 'FTM::Time::Spec',
 );
 
 has _tasks => (
@@ -77,13 +77,13 @@ sub new_closure {
         # a timestamp to base the time-dynamic scoring criteria on
         elsif ( $self->no_tasks_registered ) {
             my ($t) = @_;
-            if ( $t && ( !ref $t || $t->isa("FTM::Time::Point") ) ) {
-                $t = FTM::Time::Point->from( $t, $self->_time // () );
+            if ( $t && ( !ref $t || $t->isa("FTM::Time::Spec") ) ) {
+                $t = FTM::Time::Spec->from( $t, $self->_time // () );
                 $self->_time( $t );
                 return;
             }
             elsif ( !$self->_time ) {
-                $self->_time(FTM::Time::Point->now)
+                $self->_time(FTM::Time::Spec->now)
             }
         }
 
@@ -169,7 +169,7 @@ use List::Util qw(sum min);
 use Moose;
 
 has _for_ts => (
-    is => 'ro', isa => 'FTM::Time::Point', required => 1
+    is => 'ro', isa => 'FTM::Time::Spec', required => 1
 );
 
 has elapsed_pres => (

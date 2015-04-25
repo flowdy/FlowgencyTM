@@ -443,8 +443,8 @@ sub list {
         }
     }
 
-    $now = $now ? FTM::Time::Point->parse_ts( $now )->fill_in_assumptions
-                : FTM::Time::Point->now;
+    $now = $now ? FTM::Time::Spec->parse_ts( $now )->fill_in_assumptions
+                : FTM::Time::Spec->now;
 
     my $processor = $self->flowrank_processor;
     $processor->($now);

@@ -31,7 +31,7 @@ has fillIn => (
 
 has _lock_time => (
     is => 'rw',
-    isa => 'FTM::Time::Point',
+    isa => 'FTM::Time::Spec',
     predicate => 'is_used',
 );
 
@@ -51,7 +51,7 @@ has ['+start', '+end'] => (
 
 has ['from_earliest', 'until_latest'] => (
     is => 'rw',
-    isa => 'FTM::Time::Point',
+    isa => 'FTM::Time::Spec',
     coerce => 1,
     trigger => sub {
         my $self = shift;
@@ -210,7 +210,7 @@ around couple => sub {
 
     if ( $self->is_used ) {
        my $ref_time = $self->_lock_time;
-       $ref_time = FTM::Time::Point->now if $ref_time->is_future;
+       $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
        if ( $span->from_date > $ref_time ) {
            croak "Span begins in the used coverage of the track.",
                  "You cannot modify the past"
@@ -251,7 +251,7 @@ around couple => sub {
 sub get_section {
     my ($self, $props) = @_;
 
-    my ( $from, $until ) = map { ref $_ or $_ = FTM::Time::Point->parse_ts($_) }
+    my ( $from, $until ) = map { ref $_ or $_ = FTM::Time::Spec->parse_ts($_) }
                                delete @{$props}{ 'from_date', 'until_date' }
                          ;
 
@@ -781,7 +781,7 @@ sub timestamp_of_nth_net_second_since {
     croak 'The number of net seconds may not be negative'
         if $net_seconds < 0;
     croak 'Missing timestamp from when to count (argument #2)'
-        if !( ref($ts) ? blessed($ts) && $ts->isa('FTM::Time::Point') : $ts );
+        if !( ref($ts) ? blessed($ts) && $ts->isa('FTM::Time::Spec') : $ts );
 
     # If correspondent FTM::Time::Cursor method has called us: Get extended data
     my ($next_stage, $signal_slice, $last_sec) = do {
@@ -858,7 +858,7 @@ sub timestamp_of_nth_net_second_since {
 
     else {}
 
-    return FTM::Time::Point->from_epoch(
+    return FTM::Time::Spec->from_epoch(
         $ts->epoch_sec + $net_seconds + $rem_abs, 
     );
 }

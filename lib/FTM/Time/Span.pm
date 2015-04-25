@@ -5,7 +5,7 @@ use utf8;
 package FTM::Time::Span;
 use Moose;
 use FTM::Types;
-use FTM::Time::Point;
+use FTM::Time::Spec;
 use FTM::Time::Rhythm;
 use FTM::Time::SlicedInSeconds;
 use Date::Calc qw(Delta_Days Add_Delta_Days);
@@ -80,13 +80,13 @@ sub from_string {
     my ($dates, $week_pattern) = split /:/, $span, 2;
 
     my ($from_date,$until_date);
-    $from_date = FTM::Time::Point->parse_ts($span);
+    $from_date = FTM::Time::Spec->parse_ts($span);
     $span = $from_date->remainder;
     my $rhythm;
 
     # 1. Handelt es sich bei $dates um ein Anfangs und Enddatum?
     if ( $span =~ s{^\s*--?\s*}{} || $span =~ m{^\s*\+} ) {
-        $until_date = FTM::Time::Point->parse_ts($span,$from_date);
+        $until_date = FTM::Time::Spec->parse_ts($span,$from_date);
         croak "Bis-Datum liegt vor Von-Datum"
             if !$from_date->fix_order($until_date);
 	($rhythm = $until_date->remainder) =~ s{^(:|=>)}{};

@@ -158,7 +158,7 @@ sub _when_put_on_desk {
     my $self = shift;
     my $open_since_ts = $self->dbicrow->open_since;
     return if !$open_since_ts;
-    $_ = FTM::Time::Point->parse_ts($_, $self->start_ts) for $open_since_ts;
+    $_ = FTM::Time::Spec->parse_ts($_, $self->start_ts) for $open_since_ts;
     my %pos = $self->_cursor->update($open_since_ts);
     return $pos{elapsed_pres};
 }
@@ -179,7 +179,7 @@ sub is_archived {
 }
 sub open {
     my ($self) = @_;
-    $self->store({ step => '', open_since => FTM::Time::Point->now });
+    $self->store({ step => '', open_since => FTM::Time::Spec->now });
     return;
 }
 
@@ -676,7 +676,7 @@ sub _normalize_task_data {
     my ($self, $data) = @_;
 
     for my $f ( $data->{from_date} // () ) {
-        $f = q{}.( FTM::Time::Point->parse_ts($f)->fill_in_assumptions );
+        $f = q{}.( FTM::Time::Spec->parse_ts($f)->fill_in_assumptions );
     }
     for my $o ( $data->{open_since} // () ) { $o = $o.q{} }
 
@@ -726,7 +726,7 @@ sub archive_if_completed {
     else {
         $self->dbicrow->update({
             archived_because => 'done',
-            archived_ts => FTM::Time::Point->now_as_string(),
+            archived_ts => FTM::Time::Spec->now_as_string(),
         });
     }
 }

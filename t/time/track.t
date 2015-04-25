@@ -279,7 +279,7 @@ sub test_track_respect_tspan {
         \@expected_state,
         "over-all state after all couplings";
 
-    my $ts0 = FTM::Time::Point->parse_ts('25.10.12 12:00:00');
+    my $ts0 = FTM::Time::Spec->parse_ts('25.10.12 12:00:00');
     subtest_seek_last_net_second_timestamp(
         $tp, $ts0, 19800 => '2012-10-26 13:00:00',
         'first second of work-day at full hour'
@@ -290,7 +290,7 @@ sub test_track_respect_tspan {
     );
     
     my $tspan90 = FTM::Time::Span->from_string('25.:Mo-Su@15');
-    my $ts1 = FTM::Time::Point->parse_ts("14:00")->fill_in_assumptions;
+    my $ts1 = FTM::Time::Spec->parse_ts("14:00")->fill_in_assumptions;
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 1), 3600,
        "count absence before one net seconds";
     is $tspan90->rhythm->count_absence_between_net_seconds($ts1, 3600), 3600,
@@ -302,7 +302,7 @@ sub test_track_respect_tspan {
          '... or, respectively, in the fill-in'
     );
 
-    my $ts2 = FTM::Time::Point->parse_ts("30.10.12 23");
+    my $ts2 = FTM::Time::Spec->parse_ts("30.10.12 23");
     subtest_seek_last_net_second_timestamp(
         $tp, $ts2, 0 => '2012-10-31 00:00:00',
         "leisure seconds equal to next net_second",
@@ -310,7 +310,7 @@ sub test_track_respect_tspan {
 
     
     my $tspan91 =  FTM::Time::Span->from_string('25.:Mo-Su@23-0');
-    my $ts3 = FTM::Time::Point->parse_ts("23:15")->fill_in_assumptions;
+    my $ts3 = FTM::Time::Spec->parse_ts("23:15")->fill_in_assumptions;
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6300), 0,
        "net seconds transition from one day to the other";
     is $tspan91->rhythm->count_absence_between_net_seconds($ts3, 6301), 79200,

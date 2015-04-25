@@ -1,7 +1,7 @@
 #!perl
 use strict;
 
-package FTM::Time::Point;
+package FTM::Time::Spec;
 use Moose;
 use Carp qw(carp croak);
 use Time::Local;
@@ -391,24 +391,24 @@ sub successor {
     my ($self) = @_;
     my $epoch_sec = $self->last_sec + 1;
     my $prec = $self->get_precision;
-    return FTM::Time::Point->from_epoch( $epoch_sec, $prec, $prec);
+    return FTM::Time::Spec->from_epoch( $epoch_sec, $prec, $prec);
 }
 
 sub predecessor {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec - 1;
     my $prec = $self->get_precision;
-    return FTM::Time::Point->from_epoch( $epoch_sec, $prec, $prec);
+    return FTM::Time::Spec->from_epoch( $epoch_sec, $prec, $prec);
 }
 
 sub is_future {
     my ($self) = @_;
-    return $self > FTM::Time::Point->now($TS);
+    return $self > FTM::Time::Spec->now($TS);
 }
 
 sub is_past {
     my ($self) = @_;
-    return $self < FTM::Time::Point->now($TS);
+    return $self < FTM::Time::Spec->now($TS);
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -417,7 +417,7 @@ __END__
 
 =head1 NAME
 
-FTM::Time::Point - Create and compare variably precise point of time specifications
+FTM::Time::Spec - Create and compare variably precise point of time specifications
 
 =head1 SYNOPSIS
 
@@ -430,21 +430,21 @@ FTM::Time::Point - Create and compare variably precise point of time specificati
   my $ts_day       = "2014-04-05";       # represents full day: Minimal precision
 
   # All these variants are digested by timestamp parser
-  $_ = FTM::Time::Point->parse_ts($_) for (
+  $_ = FTM::Time::Spec->parse_ts($_) for (
       $german_date, $iso8601_date, $lazy_date, $ISO8601_daTe,
       $ts_with_sec, $ts_hour, $ts_day
   );
 
   # You may have unspecified parts of a time spec filled according to the current date:
-  my $ts = FTM::Time::Point->parse_ts("04-05")->fill_in_assumptions; # adds 2014
+  my $ts = FTM::Time::Spec->parse_ts("04-05")->fill_in_assumptions; # adds 2014
 
   # You may pass an already created instance as a base time for assumptions:
-  my $base = FTM::Time::Point->parse_ts("2013-11-14");
-  my $ts = FTM::Time::Point->parse_ts("04-05", $base); # fills in assumptions, too
-  my $ts = FTM::Time::Point->parse_ts("04-05", 2013, 11, 14); # as you like
+  my $base = FTM::Time::Spec->parse_ts("2013-11-14");
+  my $ts = FTM::Time::Spec->parse_ts("04-05", $base); # fills in assumptions, too
+  my $ts = FTM::Time::Spec->parse_ts("04-05", 2013, 11, 14); # as you like
 
   # assume unspecified parts so that ts2 is after ts2
-  my $ts = FTM::Time::Point->parse_ts("04-05");
+  my $ts = FTM::Time::Spec->parse_ts("04-05");
   if ( $base->fix_order($ts) ) {
       # $ts->year == 2014
   }
@@ -452,16 +452,16 @@ FTM::Time::Point - Create and compare variably precise point of time specificati
       # $ts->year == 2013 as April is before November
   }
 
-  my $ts = FTM::Time::Point->from_epoch( time, 0, 0); # min and max position: full day
+  my $ts = FTM::Time::Spec->from_epoch( time, 0, 0); # min and max position: full day
   if ( $ts < time && time < $ts ) {
       # Both conditions are met in between the first and the last second of the day:
       # In the first, $ts is the left-hand operand -> first second of denoted coverage
       # In the second, $ts is at the right hand -> last second of denoted coverage
   }
 
-  my $copy_of_now = Time::Point->now();
+  my $copy_of_now = Time::Spec->now();
   
-  Time::Point->now($string_or_unix_epoch_seconds);
+  Time::Spec->now($string_or_unix_epoch_seconds);
       # Set date of now. Caution: assumptions of new instances base on this date!
       # The date advances with the time, second by second.
 

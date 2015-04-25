@@ -134,7 +134,7 @@ sub from_string {
 
                     $h1 = $h1 * $hourdiv + $m1 / $min_unit;
 
-                    $m2 //= 60; # Note: In accordance to FTM::Time::Point logic
+                    $m2 //= 60; # Note: In accordance to FTM::Time::Spec logic
                                 # the lack of minutes in the to-part means: h2+1
                     $h2 = $h2 * $hourdiv + $m2 / $min_unit;
                     $h2 %= $daylength; # so you can input 12pm meaning midnight

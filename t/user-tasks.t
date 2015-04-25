@@ -277,7 +277,7 @@ is_deeply $user->_time_model->get_track('halfwork')->dump, { default_inherit_mod
 
 my $task4 = $parser->('Aufgabe, halbtags ;from 12.9. ;inc todo ;until 5.10.@halfwork ;priority whentime')->{task_obj};
 is $task4->name, "todo1", "task name is automatically todo1";
-my %pos = $task4->update_cursor(FTM::Time::Point->parse_ts('1.10. 15:15')->fill_in_assumptions);
+my %pos = $task4->update_cursor(FTM::Time::Spec->parse_ts('1.10. 15:15')->fill_in_assumptions);
 is $pos{state}, 0, "post-midi off for halfwork tasks";
 
 $task->store({ substeps => 'a/b', steps => { a => { description => 'Substep No. 1' }, b => { description => 'Substep No. 2' } }});

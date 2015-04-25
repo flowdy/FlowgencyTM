@@ -17,14 +17,14 @@ sub list {
   if ( delete $args{keep} ) {
       use POSIX qw(strftime);
       $now = delete($args{now}) || strftime("%Y-%m-%d %H:%M:%S", localtime time);
-      FTM::Time::Point->now($now);
+      FTM::Time::Spec->now($now);
   }
   else { $now = $args{now} }
 
   my @tasks = FlowgencyTM::user->tasks->list(%args);
   $self->res->headers->cache_control('max-age=1, no-cache');
 
-  $now //= FTM::Time::Point->now();
+  $now //= FTM::Time::Spec->now();
   $self->render(
     list => sub {
         my $task = shift @tasks // return;

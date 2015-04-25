@@ -35,10 +35,10 @@ sub _current_user_ref {
     return \$self->{current_user};
 }
 
-require FTM::Time::Point;
+require FTM::Time::Spec;
 has now => (
     is => 'rw',
-    isa => 'FTM::Time::Point',
+    isa => 'FTM::Time::Spec',
 );
 
 my %SUPPORTED_DIRECTIVES = (
@@ -58,7 +58,7 @@ my %SUPPORTED_DIRECTIVES = (
            my ($parser) = @_;
            time_setter => sub {
                my $now = $parser->now;
-               $parser->now(FTM::Time::Point->parse_ts(
+               $parser->now(FTM::Time::Spec->parse_ts(
                    shift, $now && $now->date_components
                ));
            },

@@ -19,17 +19,17 @@ sub test_progressing_cursor {
         ),
     );
     my $cursor = FTM::Time::Cursor->new(
-        start_ts => FTM::Time::Point->parse_ts('27.6.2012'),
+        start_ts => FTM::Time::Spec->parse_ts('27.6.2012'),
         timestages => [{ track => $curprof, until_date => '15.7.' }]
     );
 
     is $cursor->start_ts.q{}, '2012-06-27', 'cursor adjusted from date';
-    my $ts = FTM::Time::Point->parse_ts('7.7.2012');
+    my $ts = FTM::Time::Spec->parse_ts('7.7.2012');
     my $pos = $cursor->update($ts->epoch_sec);
-    $ts = FTM::Time::Point->from_epoch($ts->epoch_sec+43200);
+    $ts = FTM::Time::Spec->from_epoch($ts->epoch_sec+43200);
     my $pos2 = $cursor->update($ts);
     is $pos, $pos2, 'elapsed presence time should not increase until '.$ts;
-    $ts = FTM::Time::Point->from_epoch($ts->epoch_sec+162000);
+    $ts = FTM::Time::Spec->from_epoch($ts->epoch_sec+162000);
     my %pos2 = $cursor->update($ts->epoch_sec);
     is $pos, $pos2{current_pos}, 'it does neither at '.$ts;
     $pos2 = $cursor->update($ts->epoch_sec+1);
@@ -42,8 +42,8 @@ sub test_progressing_cursor {
     is $tspan2->rhythm->atoms->bit_test(63), 1,
        'copied and moved tspan, test 2';
 
-    my $ts2 = FTM::Time::Point->parse_ts('2012-05-21 17:00:00');
-    $cursor->start_ts(FTM::Time::Point->parse_ts('12.5.'));
+    my $ts2 = FTM::Time::Spec->parse_ts('2012-05-21 17:00:00');
+    $cursor->start_ts(FTM::Time::Spec->parse_ts('12.5.'));
     $cursor->update($ts);
     my %pos = $cursor->update($ts2);
     $curprof->couple($tspan);
@@ -56,7 +56,7 @@ sub test_progressing_cursor {
 
     ok !$pos{overdue}, "cursor before due-date";
 
-    %pos = $cursor->update(FTM::Time::Point->parse_ts('5.8.2012'));
+    %pos = $cursor->update(FTM::Time::Spec->parse_ts('5.8.2012'));
     ok $pos{remaining_pres} < 0, "cursor past due-date";
 }
 
@@ -93,18 +93,18 @@ sub test_multitrack_cursor {
         $track2->until_latest($fr_plus1w);
 
         my $cursor = FTM::Time::Cursor->new(
-            start_ts => FTM::Time::Point->parse_ts($monday),
+            start_ts => FTM::Time::Spec->parse_ts($monday),
             timestages => [
                 { track => $track1, until_date => $friday },
                 { track => $track2, until_date => $fr_plus2w },
             ]
         );
 
-        my $pos = $cursor->update( FTM::Time::Point->parse_ts("$week_end 12:00") );
+        my $pos = $cursor->update( FTM::Time::Spec->parse_ts("$week_end 12:00") );
         is $pos, 0.4, "cursor from $monday over a track until $friday, then "
                     . "over another with successor until $fr_plus2w";
 
-        my $wednesday = FTM::Time::Point->parse_ts(
+        my $wednesday = FTM::Time::Spec->parse_ts(
             sprintf "%4d-%02d-%02d 12:30", Add_Delta_Days(@monday, 2)
         );
         my ($wednesday_2w, $wednesday_3w)

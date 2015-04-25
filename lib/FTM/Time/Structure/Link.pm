@@ -10,7 +10,7 @@ requires 'like', 'new_alike';
 
 has from_date => (
      is => 'rw',
-     isa => 'FTM::Time::Point',
+     isa => 'FTM::Time::Spec',
      required => 1,
      trigger => sub {
         my ($self, $date, $old) = @_;
@@ -25,7 +25,7 @@ has from_date => (
 
 has until_date => (
      is => 'rw',
-     isa => 'FTM::Time::Point',
+     isa => 'FTM::Time::Spec',
      required => 1,
      trigger => sub {
         my ($self, $date, $old) = @_;
@@ -62,8 +62,8 @@ around BUILDARGS => sub {
     my $args = $class->$orig(@args);
 
     my ($from, $to) = @{$args}{'from_date','until_date'};
-    $from = $args->{from_date} = FTM::Time::Point->parse_ts($from)      if !ref $from;
-    $args->{until_date}        = FTM::Time::Point->parse_ts($to, $from) if !ref $to;
+    $from = $args->{from_date} = FTM::Time::Spec->parse_ts($from)      if !ref $from;
+    $args->{until_date}        = FTM::Time::Spec->parse_ts($to, $from) if !ref $to;
 
     return $args;
 };
@@ -72,7 +72,7 @@ around 'new_alike' => sub {
     my ($wrapped, $self) = (shift, shift);
 
     my $args = @_ > 1 ? { @_ } : @_ ? shift : {};
-    $_ = ref $_ ? $_ : FTM::Time::Point->parse_ts($_)
+    $_ = ref $_ ? $_ : FTM::Time::Spec->parse_ts($_)
         for grep defined, @{$args}{qw/from_date until_date/};
     $args->{from_date  } //= $self->from_date;
     $args->{until_date} //= $self->until_date;
@@ -85,7 +85,7 @@ sub alter_coverage {
     my ($self, $from_date, $until_date, $fillIn) = @_;
 
     $fillIn //= $self;
-    $_ = FTM::Time::Point->parse_ts($_)
+    $_ = FTM::Time::Spec->parse_ts($_)
         for grep { defined && !ref } $from_date, $until_date;
     if ( $from_date && $until_date ) {
         $from_date->fix_order($until_date)

@@ -46,7 +46,7 @@ has tasks => (
 has cached_since_date => (
     is => 'ro',
     init_arg => undef,
-    default => sub { FTM::Time::Point->now },
+    default => sub { FTM::Time::Spec->now },
 );
 
 has can_admin => (

@@ -1,12 +1,12 @@
 
 package FTM::Types;
 use Moose::Util::TypeConstraints;
-use FTM::Time::Point;
+use FTM::Time::Spec;
 
-coerce 'FTM::Time::Point',
-    from 'Str'      => via { FTM::Time::Point->parse_ts(shift) },
-    from 'Num'      => via { FTM::Time::Point->from_epoch(shift, 3, 3) },
-    from 'ArrayRef' => via { FTM::Time::Point->from(@$_) }
+coerce 'FTM::Time::Spec',
+    from 'Str'      => via { FTM::Time::Spec->parse_ts(shift) },
+    from 'Num'      => via { FTM::Time::Spec->from_epoch(shift, 3, 3) },
+    from 'ArrayRef' => via { FTM::Time::Spec->from(@$_) }
     ;
 
 subtype 'RgbColour',
