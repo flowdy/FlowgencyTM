@@ -226,6 +226,8 @@ If you do not have a terminal to spare for logging, use a background process:
 
     $ cat > local.rc <<'EOF' # do that once for setup
     FLOWGENCYTM_USER=$(whoami)
+    FLOWGENCYTM_ADMIN=$FLOWGENCYTM_USER # to activate new accounts
+    MAX_USERS_IN_CACHE=5                # if multi-user web access permitted
     MOJO_LISTEN=http://127.0.0.1:3000
     PIDFILE=/var/lock/flowgencytm.pid
     LOG=server.log
