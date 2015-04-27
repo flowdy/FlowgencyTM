@@ -77,18 +77,18 @@ $(function () {
 
             var wpa = new WeekPatternAlternator(ds, update),
                 tailrow = wpa.tailrow(),
-                elements_to_add = $(
-                    wpa.rows.map(function (r) { return r.tr }), tailrow
-                ),
+                elements_to_add =
+                    wpa.rows.map(function (r) { return r.tr }),
                 button = $("<button>+ Week Pattern Alternator</button>");
                 ;
 
             alternators.push(wpa);
+            elements_to_add.push(tailrow);
 
             if ( baserow === undefined ) table.append( elements_to_add );
-            else baserow.insertAfter( elements_to_add );
+            else baserow.after( elements_to_add );
 
-            tailrow.find("button").insertAfter(button);
+            tailrow.find("button").after(button);
 
             button.click(function (e) {
                 e.preventDefault();
@@ -98,7 +98,9 @@ $(function () {
         }
 
         definitionString.split(";").forEach(
-            function (ds) { return addWeekPatternAlternator(ds); }
+            function (ds) {
+                addWeekPatternAlternator(ds);
+            }
         );
 
         table.data('alternators', alternators);
@@ -171,15 +173,16 @@ $(function () {
                 })
             },
             tailrow: function () {
-                var button = $("<button></button>"),
-                    tr = $("<tr><td colspan='9'>+ Week Pattern Row</td></tr>")
-                          .wrapInner(button);
-                button.click(function (e) {
+                var tr = $("<tr><td colspan='9'>"
+                    + "<button>+ Week Pattern Row</button>"
+                    + "</td></tr>"
+                );
+                tr.find("button").click(function (e) {
                     e.preventDefault();
                     var rows = self.rows,
-                        newrow = new WeekpatternRow();
+                        newrow = new WeekPatternRow(undefined, onUpdateCallback);
                     rows.push(newrow);
-                    tr.insertBefore(newrow.tr);
+                    tr.before(newrow.tr);
                 });
                 return tr;
             },
@@ -206,9 +209,9 @@ $(function () {
             $(this).val(self[this.className]);
         })
 
-        var defPieces = truncated.match(
+        var defPieces = (truncated.match(
                 /([A-Za-z,-]+@\!?\d[0-9:,!-]*)(?:,|$)/g
-            ).map(function (p) { return p.replace(/,$/, "") })
+            ) || [undefined] ).map(function (p) { return p.replace(/,$/, "") })
             ;
 
         defPieces.forEach(function (s) {
