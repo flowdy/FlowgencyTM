@@ -57,12 +57,12 @@ $(function () {
             + '<th>Times</th>'
             + '</tr></table>'
             ),
-            alternators = []
+            rotators = []
             ;
 
         function update () {
 
-            var string = alternators
+            var string = rotators
                 .map(function (a) {
                     return a.interval ? a.serialize() : undefined;
                  })
@@ -73,16 +73,16 @@ $(function () {
 
         }
 
-        function addWeekPatternAlternator (ds, baserow) {
+        function addWeekPatternRotator (ds, baserow) {
 
-            var wpa = new WeekPatternAlternator(ds, update),
+            var wpa = new WeekPatternRotator(ds, update),
                 tailrow = wpa.tailrow(),
                 elements_to_add =
                     wpa.rows.map(function (r) { return r.tr }),
-                button = $("<button>+ Week Pattern Alternator</button>");
+                button = $("<button>+ Week Pattern Rotator</button>");
                 ;
 
-            alternators.push(wpa);
+            rotators.push(wpa);
             elements_to_add.push(tailrow);
 
             if ( baserow === undefined ) table.append( elements_to_add );
@@ -92,32 +92,32 @@ $(function () {
 
             button.click(function (e) {
                 e.preventDefault();
-                addWeekPatternAlternator("", tailrow);
+                addWeekPatternRotator("", tailrow);
             });
 
         }
 
         definitionString.split(";").forEach(
             function (ds) {
-                addWeekPatternAlternator(ds);
+                addWeekPatternRotator(ds);
             }
         );
 
-        table.data('alternators', alternators);
+        table.data('rotators', rotators);
         
         return table;
 
     }
 
-    function WeekPatternAlternator (definitionString, onUpdateCallback) {
+    function WeekPatternRotator (definitionString, onUpdateCallback) {
 
         var head = $(
             '<tr class="wpahead"><td colspan="9">                            '
-          + '   For the calendar week nos. <strong class="weeks"></strong>   '
-          + '   (i.e. interval <input class="interval" type="number" min="0" '
-          + '   value="1">, shift <input type="number" class="shift" value="0">'
-          + '   ), following pattern(s) apply unless some pattern for a larger'
-          + '   interval or shift supersedes:</td></tr>'
+          + '   To calendar week nos. of interval <input class="interval" '
+          + '   type="number" min="0" value="1"> / shift <input type="number" '
+          + '   class="shift" value="0">, i.e. to nos. <strong class="weeks">'
+          + '   </strong>, the following pattern(s) apply except superseded  '
+          + '   by some pattern of larger interval or shift:</td></tr>'
         );
 
         var self = {
@@ -148,7 +148,8 @@ $(function () {
                         .filter(function (w) {
                             w -= s;
                             return w > 0 && w < 54 && !(w % i);
-                         })
+                         }),
+                    middle
                     ;
 
                 if ( weeks[ weeks.length -1 ] == 53 ) {
@@ -157,7 +158,12 @@ $(function () {
                 }
 
                 if ( weeks.length > 3 ) {
-                    weeks.splice(2, weeks.length - head - tail, "...")
+                    middle = weeks.splice(2, weeks.length - head - tail)
+                        .join(", ")
+                        ;
+                    weeks.splice(
+                        2, 0, '<span title="' + middle + '">...</span>'
+                    );
                 }
 
                 return weeks.join(", ");
@@ -189,7 +195,7 @@ $(function () {
         };
 
         function updateWeekSelection () {
-            head.find(".weeks").text(self.week_selection());
+            head.find(".weeks").html(self.week_selection());
         }
         head.find(":input").on('change', function (e) {
             self[this.className] = parseInt(this.value);
@@ -209,9 +215,10 @@ $(function () {
             $(this).val(self[this.className]);
         })
 
-        var defPieces = (truncated.match(
-                /([A-Za-z,-]+@\!?\d[0-9:,!-]*)(?:,|$)/g
-            ) || [undefined] ).map(function (p) { return p.replace(/,$/, "") })
+        var defPieces = truncated.length
+            ? (truncated.match(/([A-Za-z,-]+@\!?\d[0-9:,!-]*)(?:,|$)/g))
+                .map(function (p) { return p.replace(/,$/, "") })
+            : [undefined]
             ;
 
         defPieces.forEach(function (s) {
@@ -280,7 +287,7 @@ $(function () {
           + '   <td class="times"><input size=10 type="text"></td></tr>   '
         );
 
-        var calculated;
+        var calculated = "";
 
         function normalized_times (work, times) {
             // If work is checked, leave, else invert all exclusions
@@ -350,6 +357,7 @@ $(function () {
         });
 
         (function (str) {
+            tr.data("decimal_dayseq", 0);
             if ( str === undefined ) return;
             var strp = str.split('@'),
                 otimes = strp[1].replace(/(!?)/, ""),
