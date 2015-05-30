@@ -23,7 +23,7 @@
 <body>
   <header>
     <h1><a id="logo" href="/"><img src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
-    <p id="slogan">This place is reserved for a FlowgencyTM extension widget of user's choice<br>(e.g. a Pomodoro alarm clock).</p>
+    <p id="slogan">&larr; Short click submits changes if any and updates the ranking. Long shows navigation and settings</p>
     <div id="ftm_revision">Version: <%== sprintf '%s, rev. <span title="full git commit identifier: %2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></div>
   </header>
 
@@ -33,31 +33,43 @@
 % if ( $user ) {
 <p>Logged in: <%= $user->user_id %></p>
 % }
+ <ul>
+<li><a href="#tabs-new">New task(s)</a></li>
+<li><a href="#tabs-filter">Filter</a></li>
+<li><a href="#tabs-settings">Settings</a></li>
+</ul>
 <ul>
-<li><a href="/newtask">New entry</a></li>
-<li>List tasks
-<ul id="list-opts" style="list-style-type:none;padding-left:0;">
-    <li><label><input type="checkbox" checked="checked" name="desk" value="0"> urgent or open</label></li>
-    <li><label><input type="checkbox" name="tray" value="1" /> below threshold</label></li>
-    <li><label><input type="checkbox" name="drawer" value="1" /> currently inactive</label></li>
-    <li><label><input type="checkbox" name="drawer" value="2" /> approaching</label></li>
-</ul></li>
-<li>
-<a style="margin-bottom:5px;" href="/task/archive">Archive</a>
-<input id="query" name="query" placeholder="Search ALL tasks">
+<div id="tabs-new">
+<textarea style="width:100%" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="5"></textarea>
+<a class="button" href="/newtask">New entry</a>
+</div>
+<ul id="tabs-filter">
+<li id="list-opts">List tasks:<br >
+    <input id="list-desk-tasks" type="checkbox" checked="checked" name="desk" value="0"> <label for="list-desk-tasks">urgent</label>
+    <input id="list-tray-tasks" type="checkbox" name="tray" value="1" /> <label for="list-tray-tasks">later</label>
+    <input id="list-paused-tasks" type="checkbox" name="drawer" value="1" /> <label for="list-paused-tasks">paused</label>
+    <input id="list-future-tasks" type="checkbox" name="drawer" value="2" /> <label for="list-future-tasks">future</label>
 </li>
-<li><form id="settime"><label>Set time:
+<li>Search tasks:<br />
+<input id="query" name="query" placeholder="query terms"><br>
+<span><input id="with-archive" type="checkbox" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/task/archive">archive</a></span> 
+</li>
+<li><form id="settime"><label>Set time:<br />
 <input name="time" type="datetime" style="width:75%"></label><br>
-<label><input type="radio" name="keep" value="0"> Next ranking only</label><br>
-<label><input type="radio" name="keep" value="1"> Continuous update</label>
+<input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
+<input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
 </form></li>
 </ul>
-
-<ul><li><a href="/user/settings">Account settings</a>
+<ul id="tabs-settings">
+<li><a href="/user/settings#authentication">Identity and Authentification</a></li>
+<li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
+<li><a href="/user/settings#set-priorities">Labeled priorities</a></li>
+<li><a href="/user/settings#configure-time-model">Time model</a></li>
 %    if ( $user && $user->can_admin ) {
-     <ul><li><a href="/admin">Administration</a></li></ul>
+     <li><a href="/admin">Service administration</a></li>
 %    }
-</li></ul>
+<li><a href="/user/settings#info">Time model</a></li>
+</ul>
 
 </nav>
 

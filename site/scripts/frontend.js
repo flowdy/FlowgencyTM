@@ -497,15 +497,16 @@ function ObjectCacheProxy (name, obj, fields) {
     Object.freeze(my);
 };
 
-$.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd' });
+$.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd',
+  showOn: 'button' });
  
 function DateTimePicker () {
-    this.placeholder = '[[[[YY]YY-]MM-]DD] HH:MM';
-    this.title = 'Alternatives:\n   German date: [DD.[MM.[[YY]YY]]], or\n    '
+    this.placeholder = '[[[[YY]YY-]MM-]DD] [HH[:MM]]';
+    this.title = 'Date format: [[[[YY]YY-]MM-]DD] or alternative german date: [DD.[MM.[[YY]YY]]], or\n    '
         + '"+" or "-", Integer and one of "y" (years), "m" (months), "w" '
         + '(weeks) or "d" (days). Chainable, subsequent instances may be '
         + 'negative, otherwise omit the plus-sign.';
-    $(this).datetimepicker();
+    $(this).datepicker();
 }
 
 return {
@@ -515,9 +516,30 @@ return {
 }; })(); /* END of FlowgencyTM namespace */
 
 $(function () {
-    var ftm = new FlowgencyTM.Ranking();
+    var ftm = new FlowgencyTM.Ranking(), longpress, timeout;
     $('#logo').data('FlowgencyTM', ftm)
-              .click(function (e) { ftm.rerank(e) });
+              .on("mousedown", function () {
+                  var leftNav = $("#leftnav");
+                  longpress = false;
+                  timeout = window.setTimeout(function () {
+                      leftNav.show("fast");
+                      longpress = true;
+                  }, 500);
+              })
+              .on("mouseup", function () {
+                  window.clearTimeout(timeout);
+              })
+              .click(function (e) {
+                  if ( longpress ) {
+                      e.preventDefault();
+                      return;
+                  }
+                  ftm.rerank(e);
+              });
+
+    $( "#leftnav" ).tabs({
+        event: "mouseover"
+    });
 
     $("#settime").change(function () {
         ftm.nextload.now = this.time.value;
@@ -528,6 +550,7 @@ $(function () {
         );
     });
 
+    $("#list-opts").buttonset();
     $("#list-opts input").each(function () {
         $(this).click(function () {
             ftm.nextload[this.name] ^= this.value;

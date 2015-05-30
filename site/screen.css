@@ -1,5 +1,6 @@
 body {
    font-family: "DejaVu Sans", sans-serif;
+   overflow:hidden;
 }
 
 #logo img {
@@ -13,37 +14,46 @@ body {
 }
 
 #leftnav {
-  clear:left;
-  float: left;
-  width:200px;
+  display: none;
+  width:400px;
+  padding:0 5px;
+  z-index:10;
+  position: absolute;
+  top:120px;
+  left:0;
+  background-color:rgba(255,255,255,0.9);
+  overflow:hidden;
+  border: 2px solid darkgrey;
+  border-width:0 2px 2px 0;
+  border-bottom-right-radius:10px;
 }
 
-#leftnav > ul {
+#leftnav ul[id|=tabs] {
    width:100%;
    list-style-type: none;
+   list-style-position:inside;
    margin-left: 0;
    padding-left:0;
 }
 
-#leftnav ul a {
-   display:block;
-   text-decoration:none;
-   color:inherit;
-}
-
-#leftnav > ul > li {
+#leftnav ul[id|=tabs] > li, a.button {
    margin-bottom: 0.5em;
    padding: 0.5em;
    color:#4d4d4d;
    font-weight: bold;
    border: 1px solid #00C0FF;
-   width:100%;
    border-top-left-radius:10px;
    border-bottom-right-radius:10px;
   -moz-box-shadow:    1px 1px 1px 0px #ccc;
   -webkit-box-shadow: 1px 1px 1px 0px #ccc;
   box-shadow:         1px 1px 1px 0px #ccc;
 } 
+
+#leftnav ul[id|=tabs] > li > a, a.button {
+   display:block;
+   text-decoration:none;
+   color:inherit;
+}
 
 #alpha-note {
    font-size:smaller;
@@ -56,18 +66,24 @@ body {
 
 body > header {
    height:120px;
-   position:fixed;
+   position:absolute;
    background-color:rgba(255,255,255,0.9);
    border-bottom: 2px solid darkgrey;
    margin-bottom:1px;
    overflow:hidden;
    top:0;
+   right:0;
    width: 100%;
-   z-index:1;
 }
 
 #page {
-   margin-top:130px;
+   position: absolute;
+   top: 122px;
+   bottom: 0;
+   left: 0;
+   overflow-y:auto;
+   overflow-x:hidden;
+   width: 100%;
 }
 
 body > header h1 {
@@ -86,14 +102,10 @@ body > header h1 {
   margin-right:10px;
 }
 
-#page {
-    margin-left: 240px;
-    width:700px;
-}
-
 #plans {
    margin-left:0;
    padding-left:0;
+   margin-right:10px;
 }
 
 #plans > li {
