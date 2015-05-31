@@ -211,9 +211,8 @@ around couple => sub {
     if ( $self->is_used ) {
        my $ref_time = $self->_lock_time;
        $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
-       if ( $span->from_date > $ref_time ) {
-           croak "Span begins in the used coverage of the track.",
-                 "You cannot modify the past"
+       if ( $span->from_date <= $ref_time ) {
+           croak "Span cannot begin within the used coverage of the track";
        }
     }
 

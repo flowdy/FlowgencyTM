@@ -3,8 +3,11 @@ use strict;
 
 use FTM::TestUtil qw(run_tests);
 use Test::More;
+use Test::Exception;
 use FTM::Time::Track;
 use FTM::Time::Cursor;
+
+FTM::Time::Spec->now("1.5.12 12:00:00");
 
 run_tests(@ARGV);
 
@@ -48,6 +51,10 @@ sub test_progressing_cursor {
     my %pos = $cursor->update($ts2);
     $curprof->couple($tspan);
     %pos2 = $cursor->update($ts2->epoch_sec+3601);
+
+    throws_ok {
+        $curprof->couple(FTM::Time::Span->from_string('21.12.2011--21.8.12:Mo-Sa@9-14'));
+    } qr/^Span cannot begin within the used coverage/, "We can't manipulate the past";
 
     is $pos{elapsed_pres}, $pos2{elapsed_pres},
        'there is a difference after coupling a new tspan into the timetrack';
