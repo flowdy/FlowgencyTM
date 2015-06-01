@@ -73,6 +73,7 @@ sub add {
     my $task = $self->cache->{$row->name}
              = $self->_build_task_obj($row);
 
+    $md_href->{from_date} //= 'now';
     $task->store($md_href);
     
     return $task;
@@ -114,7 +115,7 @@ sub delete {
     if ( my $task = delete $self->cache->{$name} ) {
         $task->dbirow->delete;
     }
-    elsif ( my $row = $self->task_rs->find($name) ) {
+    elsif ( my $row = $self->task_rs->find({ name => $name }) ) {
         $row->delete;
     }
     else {
@@ -253,7 +254,9 @@ sub get_tfls_parser {
         my ($string, $modifier) = @_;
         @_ > 1 or $modifier = $common_modifier;
         my @tasks;
-        for my $href ( $parser->parse($string) ) {
+        my @defs = wantarray ? scalar $parser->parse($string)
+                 : $parser->parse($string);
+        while ( my $href = shift @defs ) {
             $modifier->() for $href;
             if ($dry_run) { push @tasks, $href; next }
             my ($name, $copy) = @{$href}{'name','copy'};
