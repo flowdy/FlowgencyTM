@@ -7,9 +7,16 @@ use Try::Tiny;
 use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
 
+sub _parser { FlowgencyTM::user->tasks->get_tfls_parser; }
 sub form {
     my $self = shift;
-    my $task = $self->_get_task;
+    my $task; 
+
+    if ( defined( my $lazystr = $self->param('lazystr') ) ) {
+        $task = _parser->($lazystr)->{task_obj};
+        $self->stash( incr_prefix => 0, id => $task->name );
+    }
+    else { $task = $self->_get_task; }
 
     $self->render( _task_dumper($task), bare => $self->param('bare') );
 
@@ -32,14 +39,13 @@ sub _task_dumper {
         tracks => [ FlowgencyTM::user->get_available_time_tracks ],
 }
 
-my $parser = FlowgencyTM::user->tasks->get_tfls_parser;
 sub post {
     my $self = shift;
     my $task = $self->_get_task;
     my $sub = $task ? sub { $_->{oldname} = $task->name } : sub {};
 
     my $tfls = $self->param('tfls');
-    try { $parser->( $tfls, $sub ); }
+    try { _parser->( $tfls, $sub ); }
     catch {
          my $e = shift;
          $self->render(
@@ -76,7 +82,6 @@ sub fast_bulk_update {
                    : $data->{incr_name_prefix} ? 'copy'
                    : 'update';
 
-        $data->{from_date} //= 'now' if $is_new;
         $data->{step} //= '';
 
         $task = FlowgencyTM::user->tasks->$method($task || (), $data);
@@ -109,3 +114,4 @@ sub _markdown {
     return Text::Markdown::Markdown($text);
 }
 
+1;

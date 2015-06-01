@@ -40,7 +40,7 @@
 </ul>
 <ul>
 <div id="tabs-new">
-<textarea style="width:100%" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="5"></textarea>
+<textarea style="width:100%" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="3"></textarea>
 <a class="button" href="/newtask">New entry</a>
 </div>
 <ul id="tabs-filter">

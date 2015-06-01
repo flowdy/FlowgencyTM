@@ -57,9 +57,11 @@ $(function () {
         e.preventDefault();
         var newtask = $('<li>'),
             header = $('<header><h2>').appendTo(newtask)
-                .children().first().text("New task #" + new_task_count);
+                .children().first().text("New task #" + new_task_count),
+            lazystr = $(this).prev("textarea").val() || '';
+        if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         $('<div>Loading form for new task ...</div>').appendTo(newtask)
-          .load(this.href + "?bare=1", function () {
+          .load(this.href + "?bare=1" + lazystr, function () {
             var te = newtask.find(".taskeditor"),
                 id = te.data('taskid') + new_task_count;
             newtask.attr('id', 'task-' + id);
@@ -77,6 +79,7 @@ $(function () {
             });
         });
         $('#plans').prepend(newtask);
+        $('#leftnav').hide();
     });
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
