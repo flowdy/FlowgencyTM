@@ -108,7 +108,7 @@
 %         push @available_trackfields, $key;
 %         next;
 %     };    
-<li><em><%= $key %>:</em> <a class="property" data-key="<%= $key %>" href="javascript:void(0);"><%= $value %></a></li>
+<li><a class="property" href="javascript:void(0);"><%= $key %></a>: <%= $value %></a></li>
 % }
 <li><em>Undefined:</em>
 <%== join ", ", map { '<a class="property" href="javascript:void(0);">'.$_.'</a>' } @available_trackfields %>
@@ -128,7 +128,7 @@
 %         push @available_varfields, $key;
 %         next;
 %     };    
-<li><em><%= $key %>:</em> <a href="javascript:void(0);"><%= $value %></a></li>
+<li><a class="property" href="javascript:void(0);"><%= $key %></a>: <%= $value %></a></li>
 % }
 <li><em>Undefined:</em>
 <%== join ", ", map { '<a class="property" href="javascript:void(0);">'.$_.'</a>' } @available_varfields %>
@@ -155,9 +155,9 @@
 
 <fieldset id="appendix">
 <legend>Urgency threshold for closed tasks</legend>
-<p>Unless you checked the list option "below threshold", and if there is at least one open task, closed tasks are listed only if the following inequation holds true: <pre style="font-size:125%;text-align:center;"><var title="urgency score of a closed task">uₜ</var> &gt; <var title="minimum urgency score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum urgency score among open tasks">ǔₒ</var> &minus; <var title="maximum urgency score among listed tasks">û</var>)</pre> (<var>uₜ</var>: urgency score of a closed task, <var>ǔₒ</var>: minimum urgency score among open tasks, <var>c</var>: coefficient that you can set here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>, <var>û</var>: maximum urgency score among listed tasks).
-<input style="width:95%" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>
-<p>If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least urgent open task to the most urgent task.</p>
+<p>Unless you checked the list option "later", and if at least one of your tasks to do is open, any further closed task is listed only if the following inequation holds true for it: <code style="font-size:125%;background-color:yellow;"><var title="FlowRank score of a closed task">uₜ</var> &gt; <var title="minimum FlowRank score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum FlowRank score among open tasks">ǔₒ</var> &minus; <var title="maximum FlowRank score among listed tasks">û</var>)</code>.</p><ul><li><var>uₜ</var>: FlowRank score of a closed task, <var>ǔₒ</var>: minimum FlowRank score among open tasks, <var>û</var>: maximum FlowRank score among listed tasks,</li><li><var>c</var>: coefficient that you can adjust here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>:
+<input style="vertical-align:middle;margin:0" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>.
+If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least and the most urgent task.</li></ul>
 
 </fieldset>
 <input type="submit" name="update" value="Update Profile">
