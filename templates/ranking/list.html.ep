@@ -23,7 +23,9 @@
 
 <p>The following ranking has been generated at: <%= $timestamp %></p>
 <ol id="plans">
+% my $there_are_tasks_shown;
 % while ( my $task = $list->() ) {
+%     $there_are_tasks_shown++;
 %     if ( !ref $task and my $label = $task ) { $section = $info{$label}; next; }
 %     my $details = $task->{extended_info};
 %     my $classes = join " ", $details ? 'open' : (), $task->{active} ? () : 'paused';
@@ -37,61 +39,20 @@
           </div>
 %     }
       </li>
-
-% } if (0) {
-      <li class="shadow">
-      <header>
-      <!--<div class="duetime"><span class="hours">20</span><span class="minutes">49</span><br />h:min</div>-->
-      <h2 class="editable-title">Dies ist eine Beispielaufgabe.</h2>
-      <div class="progressbar"><span class="erledigt">&nbsp;</span></div>
-      <time datetime="2011-10-05 12:00">Frist: Mi 05.10.2011, 12:00 (eff. noch 68:51h, nächste Pause in 4:12h)</time>
-      </header>
-      <div class="detail description">
-      Beschreibung, Hinweise, Notizen für sich selbst
-      </div>
-      <form class="details">
-      <ul class="editable-tags">
-      <li><a class="tag-tag1" href="#">tag1</a></li>
-      <li><a class="tag-anderes" href="#">anderes</a></li>
-      <li><a class="tag-drei" href="#">Drei</a></li>
-      </ul>
-      <ol>
-      <li><input name="step" value="5" id="step-a" type="checkbox"><label for="step-a" class="editable-step">Erster, wenn einziger nur interner Schritt.</li>
-      <li><input name="step" value="2" id="step-b" type="checkbox"><label for="step-b" class="editable-step">Der Benutzer kann die Aufgabe gern in mehrere einteilen.</label></li>
-      <li><input name="step" value="1" id="step-c" type="checkbox"><label for="step-c" class="editable-step">warten auf [Pmaria] ...</label></li>
-      </ol>
-      </li>
-      <!--                                                                            
-         elapsed:   0.833333333333333                                                 
-         done:      0.666666666666667                                                 
-         rel_state: 0.5                                                               
-      -->                                                                             
-      <li><header><h2>Zeitfortschritt: 5:1 / Erledigt: 2/3</h2>     <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#8073A5;width:33%;">&nbsp;</span></div></header></li>
-      <li><header><h2>Zeitfortschritt: 4/6 / Erledigt: 2/3</h2>
-      <div class="progressbar" style="background-color:rgba(0,192,255,1.000000)"><span class="erledigt" style="background-color:#00C0FF;width:67%;">&nbsp;</span></div></header></li>
-      
-      <!--
-         elapsed:   0.5
-         done:      0.75
-         rel_state: -0.5
-      -->
-      <li><header><h2>Zeitfortschritt: 1/2 / Erledigt: 3:1</h2>
-      <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.500000)"><span class="erledigt" style="background-color:#19DFA0;width:75%;">&nbsp;</span></div></header></li>
-      
-      <!--
-         elapsed:   1
-         done:      0
-         rel_state: 1
-      -->
-      <li><header><h2>Zeitfortschritt: 2/2 / Erledigt: 0:1</h2>
-      <div class="progressbar" style="text-align:right; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#FF264C;width:100%;">&nbsp;</span></div></header></li>
-      
-      <!--
-         elapsed:   0
-         done:      1
-         rel_state: -1
-      -->
-      <li><header><h2>Zeitfortschritt: 0/2 / Erledigt: 1:0</h2>
-      <div class="progressbar" style="text-align:left; background-color:rgba(0,192,255,0.000000)"><span class="erledigt" style="background-color:#33FF40;width:100%;">&nbsp;</span></div></header></li>
 % }
 </ol>
+
+% if ( $there_are_tasks_shown ) {
+<p>Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $user->tasks->count %>) in logo tab "Filter". By clicking the title of a task, you may open or close it.</p>
+% }
+% elsif ( $user->tasks->count ) {
+<p>No tasks match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
+% }
+% else {
+<p>You have not any tasks, yet. Apparently you are a new user of this FlowgencyTM demo instance.</p>
+
+<h2>A warm welcome!</h2><p>There are only three steps to get started:</p>
+
+<ol><li>Configure your <a href="/settings">settings</a>, especially your time model. You may well skip that step, it is not mandatory. But then, FlowgencyTM will expect you are working <em>non-stop</em>, i.e. all tasks will become more urgent over night and may have an impact on your sleep quality.</li><li>Click the logo once, so the logo tabs appear. Click the "New entry" button and fill the form for your task. Repeat that for every task you have to do and do so every time you are put in charge of new ones.</li><li>When having entered several tasks, double-click the logo. Do the tasks, and check every entered step you have just finished. Plus, update the ranking on a roughly regular basis – just double-click the logo once in a while.</li></ol>
+% }
+

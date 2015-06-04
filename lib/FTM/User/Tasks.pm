@@ -14,7 +14,7 @@ has task_rs => (
     is => 'ro',
     isa => 'DBIx::Class::ResultSet',
     required => 1,
-    handles => ['search'],
+    handles => ['search', 'count'],
 );
 
 has cache => (
