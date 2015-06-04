@@ -1,5 +1,6 @@
 package FlowgencyTM::Server::Admin;
 use Mojo::Base 'Mojolicious::Controller';
+use Carp qw(croak);
 
 sub dash {
     my $self = shift;

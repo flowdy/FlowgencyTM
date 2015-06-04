@@ -15,13 +15,6 @@ sub startup {
 
   $self->defaults(
       layout => 'general',
-      revision => {
-          version => $FlowgencyTM::VERSION,
-          commit_id => qx{git rev-list -1 HEAD},
-          changes => qx{git diff-index --shortstat HEAD}
-                         || 'without uncommitted changes',
-          server_started => scalar localtime(time),
-     }
   );
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
@@ -49,7 +42,8 @@ sub startup {
 
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })
-      ->get('/admin')->to("admin#dash");
+      ->get('/admin');
+  $admin->get('/')->to('admin#dash');
   $admin->get('/:action')->to(controller => 'admin');
 
   $r->post('/user/join')->to("user#join");
@@ -57,6 +51,7 @@ sub startup {
   # Normal route to controller
   $auth->get('/')->to('ranking#list')->name('home');
   
+  $auth->get('/info')->to('info#basic');
   $auth->post('/update')->to('task_editor#fast_bulk_update');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $auth->any([qw/GET POST/] => '/user/settings')
