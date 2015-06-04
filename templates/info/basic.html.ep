@@ -1,0 +1,33 @@
+<dl>
+<dt>FlowgencyTM version</dt>
+<dd><%== sprintf '%s, rev. <tt>%s</tt>', $version, $commit_id %>
+<p>Please note: FlowgencyTM is currently "alpha", that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you in advance. Do not forget to stay up-to-date by regularly issuing a <code>git pull</code> from inside your local repository directory, if any.</p>
+</dd>
+% if ( $changes ) {
+<dt>Uncommitted changes</dt>
+<dd><%= $changes %></dd>
+% }
+<dt>Server running since / recently restarted at</dt>
+<dd><%= $server_started %></dd>
+<dt>Currently logged in as</dt>
+<dd>
+% if ( $user ) {
+<%= $user->user_id %>, created <%= $user->created %>, cached since <%= $user->cached_since_date %>
+% }
+<br>(<a href="/user/login">Login</a> | <a href="/user/login#terms">Terms of use</a> | <a href="/user/login#register">Register new user</a>)
+</dl>
+
+<h2>Legal notices</h2>
+
+<p>FlowgencyTM – Your personal task &amp; time management tool.</p>
+<p>&copy; 2011-2015 Florian Heß</p>
+
+<p>FlowgencyTM is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+
+<p>FlowgencyTM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+
+<h2>Fork me</h2>
+
+<p>FlowgencyTM proudly hosted on GitHub: <a href="https://github.com/flowdy/FlowgencyTM">https://github.com/flowdy/FlowgencyTM</a></p></div>

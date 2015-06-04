@@ -516,25 +516,12 @@ return {
 }; })(); /* END of FlowgencyTM namespace */
 
 $(function () {
-    var ftm = new FlowgencyTM.Ranking(), longpress, timeout;
+    var ftm = new FlowgencyTM.Ranking(), leftnav = $("#leftnav");
     $('#logo').data('FlowgencyTM', ftm)
-              .on("mousedown", function () {
-                  var leftNav = $("#leftnav");
-                  longpress = false;
-                  timeout = window.setTimeout(function () {
-                      leftNav.show("fast");
-                      longpress = true;
-                  }, 500);
-              })
-              .on("mouseup", function () {
-                  window.clearTimeout(timeout);
-              })
               .click(function (e) {
-                  if ( longpress ) {
-                      e.preventDefault();
-                      return;
-                  }
-                  ftm.rerank(e);
+                  e.preventDefault();
+                  if ( leftnav.is(":hidden") ) leftnav.show();
+                  else ftm.rerank(e);
               });
 
     $( "#leftnav" ).tabs({

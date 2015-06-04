@@ -7,10 +7,10 @@ body {
   /* width:200px; */
 }
 
-#ftm_revision {
+#header-ext-links {
   color:darkgrey;
   font-size:smaller;
-  text-align:center;
+  text-align:right;
 }
 
 #leftnav {
@@ -21,7 +21,6 @@ body {
   position: absolute;
   top:120px;
   left:0;
-  background-color:rgba(255,255,255,0.9);
   overflow:hidden;
   border: 2px solid darkgrey;
   border-width:0 2px 2px 0;
@@ -55,11 +54,6 @@ body {
    color:inherit;
 }
 
-#alpha-note {
-   font-size:smaller;
-   opacity:0.4;
-}
-
 #alpha-note:hover {
    opacity:1.0;
 }
@@ -81,9 +75,8 @@ body > header {
    top: 122px;
    bottom: 0;
    left: 5px;
+   right: 0;
    overflow-y:auto;
-   overflow-x:hidden;
-   width: 100%;
 }
 
 body > header h1 {

@@ -22,17 +22,15 @@
 </head>
 <body>
   <header>
-    <h1><a id="logo" href="/"><img src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
-    <p id="slogan">&larr; Short click submits changes if any and updates the ranking. Long shows navigation and settings</p>
-    <div id="ftm_revision">Version: <%== sprintf '%s, rev. <span title="full git commit identifier: %2$s">%.8s</span>, %s', @{$revision}{'version','commit_id','changes'} %> &bull; Server running since <%= $revision->{server_started} %></div>
+    <h1><a id="logo" href="/"><img title="Single/First click: Show navigation. Double/Second click: Rerank tasks to do." src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
+    <p id="slogan">Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.</p>
+    <div id="header-ext-links"><a href="/info">Info | About | Contact</a></div>
+</div>
   </header>
 
 % my $user = stash 'user';
 
 <nav id="leftnav">
-% if ( $user ) {
-<p>Logged in: <%= $user->user_id %></p>
-% }
  <ul>
 <li><a href="#tabs-new">New task(s)</a></li>
 <li><a href="#tabs-filter">Filter</a></li>
@@ -68,24 +66,12 @@
 %    if ( $user && $user->can_admin ) {
      <li><a href="/admin">Service administration</a></li>
 %    }
-<li><a href="/user/settings#info">Time model</a></li>
 </ul>
 
 </nav>
 
 <div id="page">
 <%= content %>
-<div id="alpha-note">
-<hr style="margin-top:2em;">
-<p>FlowgencyTM is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
-
-<p>FlowgencyTM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
-<p>You should have received a copy of the GNU General Public License
-along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
-
-<p>FlowgencyTM is currently "alpha", that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you.  Stay up-to-date by regular <code>git pull</code> from inside the repository directory.</p>
-
-<p>Fork FlowgencyTM on GitHub: <a href="https://github.com/flowdy/FlowgencyTM">https://github.com/flowdy/FlowgencyTM</a></p></div>
 </div>
 
 </body>
