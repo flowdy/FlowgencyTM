@@ -21,7 +21,6 @@
 %     archived => $archived_section,
 % );
 
-<p>The following ranking has been generated at: <%= $timestamp %></p>
 <ol id="plans">
 % my $there_are_tasks_shown;
 % while ( my $task = $list->() ) {
@@ -43,16 +42,28 @@
 </ol>
 
 % if ( $there_are_tasks_shown ) {
-<p>Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $user->tasks->count %>) in logo tab "Filter". By clicking the title of a task, you may open or close it.</p>
+<p>The ranking has been generated at: <%= $timestamp %>. Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $user->tasks->count %>) in logo tab "Filter". By clicking the title of a task, you may open or close it.</p>
 % }
 % elsif ( $user->tasks->count ) {
 <p>No tasks match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
 % }
 % else {
-<p>You have not any tasks, yet. Apparently you are a new user of this FlowgencyTM demo instance.</p>
+<h2>Get started</h2>
 
-<h2>A warm welcome!</h2><p>There are only three steps to get started:</p>
+<ol>
+<li>First, take a couple of minutes to <strong>customize the time model</strong> in the <a href="/user/settings#configure-time-model"><img src="images/settings-icon.png" style="height:1em;vertical-align:middle;"> settings, time model section</a>. <p>The default time model, stored in a new user's record to begin with, intentionally takes all the time into account when it comes to calculation of urgency. Tasks would raise and redden in need of progress regardless of when you are at work. Having defined and committed yourself to obey a time model that oscillates in a well-balanced way between working and recreational periods, distinguishing task types or stages where necessary, the ranking of tasks, plus their smart green-blue-red gradient bars indicating progress vs. urgency drift, are accordingly roughly the same when you leave and when you return to work.</p>
 
-<ol><li>Configure your <a href="/settings">settings</a>, especially your time model. You may well skip that step, it is not mandatory. But then, FlowgencyTM will expect you are working <em>non-stop</em>, i.e. all tasks will become more urgent over night and may have an impact on your sleep quality.</li><li>Click the logo once, so the logo tabs appear. Click the "New entry" button and fill the form for your task. Repeat that for every task you have to do and do so every time you are put in charge of new ones.</li><li>When having entered several tasks, double-click the logo. Do the tasks, and check every entered step you have just finished. Plus, update the ranking on a roughly regular basis – just double-click the logo once in a while.</li></ol>
+<p>Thus, shift all urgency increase into working hours, free your private time from stress related to work organization, practice mindfulness at work and help making our world of business a little bit saner.</p></li>
+
+<p>At any time, you can adjust your time model to reflect changes in your schedule. You may not change what is past, though, as this would lead to miscalculation.</p>
+
+<li><p>Then <strong>click the <img src="images/newtask-icon.png" style="height:1em;vertical-align:middle;"> icon and fill in the form</strong>. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in more atomic (sub)steps, that will be rendered not hierarchically but in a flat way that allows for processing the steps rather from top to bottom and from detailed to overall.</p><p>Repeat that for every task to do.</p>
+
+<p><strong>Please note:</strong> Understand that you have to respect the <a href="/user/login#terms">terms of use</a> of the FlowgencyTM service when it is accessible on the net. In particular, some providers of demo services allow use only with fictitious data not protected by copyright or other laws, so they are not to be held liable for any privacy issues. If you want to use the tool practically, you may always – frankly, you better do so in general – install and use the FlowgencyTM server that is core part of the official open source distribution and preconfigured to listen only to the system's loopback interface, so your data is as "safe" as any other document on your disk.</li>
+
+<li><p><strong>Click the FlowgencyTM logo or the Filter icon</strong> to get a ranking sorted by descending "FlowRank", a multi-dimensional urgency score. Prefer the logo to reset any filter options you might have set or kept previously. Keep in mind that you click it again once in a while, because the ranking is not automatically updated in intervals. Best click it to see what tasks are most urgent "now", i.e. when you are disposed to tasks that might have become in the meantime more urgent than the tasks currently in process.</p></li>
+
+<li><p><strong>Check steps when done</strong> to tell tasks they are making progress. Progress and urgency are opponents: The former lets the task fall in the ranking and colours the task gradient indicator in the direction of green over blue and turquoise. The latter lets the task climb in the ranking and colours the indicator in the direction of red over blue and violet. As long as its blue-coloured, work is best.</li>
+</ol>
+
 % }
-
