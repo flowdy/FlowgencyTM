@@ -23,52 +23,48 @@
 <body>
   <header>
     <h1><a id="logo" href="/"><img title="Single/First click: Show navigation. Double/Second click: Rerank tasks to do." src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
-    <p id="slogan">Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.</p>
-    <div id="header-ext-links"><a href="/info">Info | About | Contact</a></div>
+    <nav id="icons-bar">
+    <div class="icon"><a href="javascript:void(0);"><img src="/images/filter-icon.png"></a>
+    <ul class="menu">
+        <li id="list-opts">List tasks:<br >
+% my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
+            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="0"> <label for="list-desk-tasks">urgent</label>
+            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks">later</label>
+            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
+            <input id="list-future-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
+        </li>
+        <li>Search tasks:<br />
+        <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>
+        <span><input id="with-archive" type="checkbox" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/task/archive">archive</a></span> 
+        </li>
+        <li><form id="settime"><label>Set time:<br />
+        <input name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
+        <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
+        <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
+        </form></li>
+    </ul>
 </div>
+    <div class="icon"><a href="/newtask"><img src="/images/newtask-icon.png"></a><ul class="menu">
+        <li><textarea style="width:90%;margin-right:5px;" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="5"></textarea></li>
+        </ul>
+    </div>
+    <div class="icon"><a href="/user/settings"><img src="/images/settings-icon.png"></a>
+    <ul class="menu">
+        <li><a href="/user/settings#authentication">Identity and Authentification</a></li>
+        <li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
+        <li><a href="/user/settings#set-priorities">Labeled priorities</a></li>
+        <li><a href="/user/settings#configure-time-model">Time model</a></li>
+%   if ( $user && $user->can_admin ) {
+        <li><a href="/admin">Service administration</a></li>
+%   }
+    </ul>
+    </div>
+    <div class="icon"><a href="/info"><img src="/images/info-icon.png"></a></div>
+</nav>
+% # Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.
   </header>
 
 % my $user = stash 'user';
-
-<nav id="leftnav">
- <ul>
-<li><a href="#tabs-new">New task(s)</a></li>
-<li><a href="#tabs-filter">Filter</a></li>
-<li><a href="#tabs-settings">Settings</a></li>
-</ul>
-<ul>
-<div id="tabs-new">
-<textarea style="width:100%" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="3"></textarea>
-<a class="button" href="/newtask">New entry</a>
-</div>
-<ul id="tabs-filter">
-<li id="list-opts">List tasks:<br >
-    <input id="list-desk-tasks" type="checkbox" checked="checked" name="desk" value="0"> <label for="list-desk-tasks">urgent</label>
-    <input id="list-tray-tasks" type="checkbox" name="tray" value="1" /> <label for="list-tray-tasks">later</label>
-    <input id="list-paused-tasks" type="checkbox" name="drawer" value="1" /> <label for="list-paused-tasks">paused</label>
-    <input id="list-future-tasks" type="checkbox" name="drawer" value="2" /> <label for="list-future-tasks">future</label>
-</li>
-<li>Search tasks:<br />
-<input id="query" name="query" placeholder="query terms"><br>
-<span><input id="with-archive" type="checkbox" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/task/archive">archive</a></span> 
-</li>
-<li><form id="settime"><label>Set time:<br />
-<input name="time" type="datetime" style="width:75%"></label><br>
-<input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
-<input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
-</form></li>
-</ul>
-<ul id="tabs-settings">
-<li><a href="/user/settings#authentication">Identity and Authentification</a></li>
-<li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
-<li><a href="/user/settings#set-priorities">Labeled priorities</a></li>
-<li><a href="/user/settings#configure-time-model">Time model</a></li>
-%    if ( $user && $user->can_admin ) {
-     <li><a href="/admin">Service administration</a></li>
-%    }
-</ul>
-
-</nav>
 
 <div id="page">
 <%= content %>

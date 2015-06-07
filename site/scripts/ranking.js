@@ -58,7 +58,7 @@ $(function () {
         var newtask = $('<li>'),
             header = $('<header><h2>').appendTo(newtask)
                 .children().first().text("New task #" + new_task_count),
-            lazystr = $(this).prev("textarea").val() || '';
+            lazystr = $(this).next().find("textarea").val() || '';
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         $('<div>Loading form for new task ...</div>').appendTo(newtask)
           .load(this.href + "?bare=1" + lazystr, function () {

@@ -28,6 +28,9 @@ function Ranking (args) {
         else return JSON.stringify(obj[task]);
     };
     this.nextload = Object.freeze(nl);
+    this.resetfilter = function () {
+        nextload = { update_tasks: nextload.update_tasks };
+    }
          
     this.get = function (task, step) {
         var task_obj = nextload.update_tasks[task];
@@ -516,35 +519,46 @@ return {
 }; })(); /* END of FlowgencyTM namespace */
 
 $(function () {
-    var ftm = new FlowgencyTM.Ranking(), leftnav = $("#leftnav");
+    var ftm = new FlowgencyTM.Ranking();
     $('#logo').data('FlowgencyTM', ftm)
               .click(function (e) {
                   e.preventDefault();
-                  if ( leftnav.is(":hidden") ) leftnav.show();
-                  else ftm.rerank(e);
+                  ftm.resetfilter();
+                  ftm.rerank(e);
               });
-
-    $( "#leftnav" ).tabs({
-        event: "mouseover"
+    $( "#icons-bar .icon:first-child a" ).click(function (e) {
+        var menu = $(this).next(".menu:hidden"); 
+        e.preventDefault();
+        if ( menu.get(0) !== undefined ) {
+            console.log("Hidden menu found");
+            menu.addClass("visible");
+            $("header").addClass("backgr-page");
+        }
+        else {
+            console.log("Clicked filter icon");
+            ftm.rerank(e);
+        }
     });
 
-    $("#settime").change(function () {
+    $("#settime").change(function (e) {
         ftm.nextload.now = this.time.value;
         ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
         console.info(
             "Changed time to " + ftm.nextload.now
             + " (keep: " + ftm.nextload.keep + ")"
         );
-    });
+    }).each(function () { if (this.value) $(this).change(); });
 
     $("#list-opts").buttonset();
     $("#list-opts input").each(function () {
-        $(this).click(function () {
+        function update () {
             ftm.nextload[this.name] ^= this.value;
             console.log(
                 "New value of " + this.name + " is " + ftm.nextload[this.name]
             );
-        });
+        }
+        $(this).click(update);
+        if ( this.checked ) update();
     });
 
     $("#query").change(function (e) {
@@ -552,7 +566,7 @@ $(function () {
         console.log(
             "New value of " + this.name + " is " + ftm.nextload[this.name]
         );
-    });
+    }).each(function () { if (this.value) $(this).change(); });
 
     $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
 
