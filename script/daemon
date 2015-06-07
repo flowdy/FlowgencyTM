@@ -32,7 +32,7 @@ stop)	if [ -n "$PID" ] && kill "$PID"; then
         ;;
 restart)
         $0 stop
-        sleep 0.5
+        sleep 1
         $0 start
         ;;
 update) if [ "$PID" ]; then $0 stop && git pull && $0 start
