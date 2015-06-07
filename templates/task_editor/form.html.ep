@@ -65,7 +65,9 @@ To estimate this value right, imagine the expenditure of time used by the supero
 <p class="input">Allocate: <input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} %>" /> piece of superordinate time share</p>
 </dd>
 <dt>Subordinate steps</dt>
-<dd><p class="help">In the substeps chain notation, there are three distinct separators:<br>Use <strong>/</strong> (slash) or <strong>|</strong> (vertical bar) to group steps among which the order of completion is irrelevant.<br>Separate steps or step groups by <strong>,</strong> (comma) to indicate that the order does matter.<br><strong>;</strong> (semicolon) instead of comma signals a final special group of steps not depending on any other one. Each is always displayed until completed.</p>
+<dd><p class="help">For naming steps the following characters are allowed: A-Z,a-z,0-9. If you want multiple steps, separate them by one of the following separators, depending on meaning:
+<ul style="font-size:smaller;">
+<li>Use <strong>/</strong> (slash) or <strong>|</strong> (vertical bar) to group steps among which the order of completion is irrelevant.</li><li>Separate steps or step groups by <strong>,</strong> (comma) to indicate that the order does matter.</li><li><strong>;</strong> (semicolon) instead of comma signals a final special group of steps not depending on any other one. Each is always displayed until completed.</li></ul>
 <p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
 <dt>Step progress</dt>
 <dd><p class="input"><br>
