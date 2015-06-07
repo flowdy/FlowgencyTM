@@ -62,4 +62,8 @@ sub startup {
 
 }
 
+my $started_time;
+BEGIN { $started_time = scalar localtime(); }
+sub get_started_time { $started_time; }
+
 1;
