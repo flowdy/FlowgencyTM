@@ -33,6 +33,7 @@ has _lock_time => (
     is => 'rw',
     isa => 'FTM::Time::Spec',
     predicate => 'is_used',
+    handles => { 'modifiable_after_ts' => 'get_qm_timestamp' },
 );
 
 with 'FTM::Time::Structure::Chain';
@@ -206,20 +207,22 @@ sub calc_slices {
 }
 
 around couple => sub {
-    my ($wrapped, $self, $span, $truncate_if_off) = @_;
+    my ($wrapped, $self, $span, $opts) = @_;
+    $opts //= {};
 
     if ( $self->is_used ) {
        my $ref_time = $self->_lock_time;
        $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
-       if ( $span->from_date <= $ref_time ) {
-           croak "Span cannot begin within the used coverage of the track";
+       if ( !$opts->{ _may_modify_past } && $span->from_date <= $ref_time ) {
+           croak "Span cannot begin within the used coverage of the track ",
+               sprintf("(%s <= %s)", $span->from_date, $ref_time);
        }
     }
 
     my $last = $span->get_last_in_chain;
     my $sts = $self->from_earliest // $span->from_date;
     my $ets = $self->until_latest // $last->until_date;
-    if ( $truncate_if_off ) {
+    if ( $opts->{ trimmable } ) {
         return if $span->from_date > $ets || $sts > $last->until_date;
         if ( $span->from_date < $sts->epoch_sec ) {
             until ( $span->covers_ts($sts) ) { $span = $span->next; }
@@ -233,7 +236,7 @@ around couple => sub {
         }
     }
     else {
-        my $fail = !defined $truncate_if_off;
+        my $fail = !defined $opts->{trimmable};
         ($fail ? croak "Span hits track coverage limits" : return)
             if $span->from_date < $sts->epoch_sec
             || $ets->last_sec < $last->until_date
@@ -317,6 +320,7 @@ sub dump {
 
     my @variations = @{ $self->_variations };
     for my $var ( @variations ) {
+        delete $var->{ _may_modify_past };
         $var = { %$var };
         $_ = $_->name for $var->{week_pattern_of_track} // (),
                           $var->{section_from_track} // ()
@@ -609,6 +613,8 @@ sub apply_variations {
         my ($name, $base, $track, $obj)
             = delete @{$span}{qw( name base section_from_track _span_obj )};
 
+        my $_may_modify_past = $span->{ _may_modify_past };
+
         my $attr = {
             map({
                 exists $span->{$_} ? ($_ => delete $span->{$_}) : ()
@@ -627,7 +633,10 @@ sub apply_variations {
               : $obj   // croak "Not enough data to make span $name"
         ;
 
-        $self->couple( $span, 1 );
+        $self->couple( $span, {
+            trimmable => 1,
+            _may_modify_past => $_may_modify_past,
+        });
 
     }
     
@@ -683,11 +692,15 @@ sub _edit_variations {
         my $variations = $self->_variations;
 
         for my $old_var ( $new_var->{name} ? @$variations : () ) {
-            next if $old_var->{name} ne $new_var->{name};
-            _populate($old_var => $new_var);
-            $old_var = $new_var;
-            $found = 1;
-            last;
+            if ( $old_var->{name} eq $new_var->{name} ) {
+                _populate($old_var => $new_var);
+                $old_var = $new_var;
+                $found = 1;
+            }
+            else {
+                $old_var->{ _may_modify_past } = 1;
+            }
+            
         }
 
         if ( !$found ) {
