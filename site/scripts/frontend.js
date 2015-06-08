@@ -547,7 +547,7 @@ $(function () {
             "Changed time to " + ftm.nextload.now
             + " (keep: " + ftm.nextload.keep + ")"
         );
-    }).each(function () { if (this.value) $(this).change(); });
+    }).each(function () { if (this.time.value) $(this).change(); });
 
     $("#list-opts").buttonset();
     $("#list-opts input").each(function () {
@@ -558,7 +558,7 @@ $(function () {
             );
         }
         $(this).click(update);
-        if ( this.checked ) update();
+        if ( this.checked ) update.apply(this);
     });
 
     $("#query").change(function (e) {

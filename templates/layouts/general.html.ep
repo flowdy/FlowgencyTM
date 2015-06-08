@@ -22,13 +22,13 @@
 </head>
 <body>
   <header>
-    <h1><a id="logo" href="/"><img title="Single/First click: Show navigation. Double/Second click: Rerank tasks to do." src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
+    <h1><a id="logo" href="/"><img title="Clicking the logo is like clicking the filter/reload button but changes to the options, if any, are reset to default" src="/logo/flowgencytm.png" alt="FlowgencyTM" /></a></h1>
     <nav id="icons-bar">
     <div class="icon"><a href="javascript:void(0);"><img src="/images/filter-icon.png"></a>
     <ul class="menu">
         <li id="list-opts">List tasks:<br >
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
-            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="0"> <label for="list-desk-tasks">urgent</label>
+            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
             <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks">later</label>
             <input id="list-paused-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
             <input id="list-future-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
