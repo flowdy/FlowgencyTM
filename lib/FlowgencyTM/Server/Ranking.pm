@@ -9,7 +9,7 @@ sub list {
   my $self = shift;
 
   my %args;
-  for my $p_name ( $self->param ) {
+  for my $p_name (@{ $self->req->params->names }) {
       $args{$p_name} = $self->param($p_name);
   }
 

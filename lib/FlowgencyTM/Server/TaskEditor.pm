@@ -70,7 +70,7 @@ sub fast_bulk_update {
 
     my $log = Mojo::Log->new();
 
-    for my $task ( $self->param() ) {
+    for my $task (@{ $self->req->params->names }) {
 
         my $data = $self->param($task);
         $log->info("For task $task update: $data");

@@ -1,5 +1,6 @@
 package FlowgencyTM::Server;
 use FlowgencyTM;
+use Mojolicious 6.0;
 use Mojo::Base 'Mojolicious';
 
 # use Tie::File;
