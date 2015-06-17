@@ -152,15 +152,12 @@ Prüfe und installiere die vorausgesetzten Drittmodule, indem du im FlowgencyTM-
 
     cpanm --installdeps .
 
-Vielleicht ziehst du die Pakete vor, die deine Linux-Distribution bereitstellt. Zum Beispiel, wenn du FlowgencyTM auf deinem Raspberry Pi (Raspbian) installieren möchtest, was ich aufgrund der Langsamkeit nicht gerade empfehlen kann:
+Aber vielleicht ziehst du die Pakete vor, die deine Linux-Distribution bereitstellt. Zum Beispiel, wenn du FlowgencyTM auf deinem Raspberry Pi (Raspbian) installieren möchtest, was ich aufgrund der Langsamkeit jedoch nicht gerade empfehlen kann:
 
     $ git clone https://github.com/flowdy/FlowgencyTM.git
     $ cd FlowgencyTM/
-    $ cd script/
-    $ ls
-    $ ./gather_check_dependencies 
+    $ script/gather_check_dependencies 
       # analyze output for missing modules ...
-    $ cd ..
     $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3 cpanminus
     $ sudo cpanm Mojolicious # Neuere Version, denn die im Repo ist veraltet
     $ prove -rl t                      
