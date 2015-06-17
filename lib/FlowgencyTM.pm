@@ -1,8 +1,9 @@
 use 5.014;
 use strict;
 
-package FlowgencyTM 0.7 {
+package FlowgencyTM {
 use Carp qw(croak);
+our $VERSION = "0.7";
 use FTM::FlowDB;
 use FTM::User; # No, it is rather the user who use FlowgencyTM
 

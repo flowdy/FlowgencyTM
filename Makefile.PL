@@ -1,8 +1,11 @@
+use utf8;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME              => "FlowTime",
-    VERSION_FROM      => "lib/FlowTime.pm",
+    AUTHOR            => "Florian Heß",
+    NAME              => "FlowgencyTM",
+    ABSTRACT          => 'The task & time manager for a more humanely multitasking business',
+    VERSION_FROM      => "lib/FlowgencyTM.pm",
     PREREQ_PM         => {
         'Algorithm::Dependency' => 0, # OK, 1.110
         'Benchmark' => 0, # OK, 1.15
@@ -11,7 +14,7 @@ WriteMakefile(
         'Date::Calc' => 0, # OK, 6.3
         'FindBin' => 0, # OK, 1.51
         'JSON' => 0, # OK, 2.61
-        'Mojolicious' => 0, # OK, loaded (just version unknown)
+        'Mojolicious' => 6, # OK, loaded (just version unknown)
         'Moose' => 0, # OK, 2.1210
         'POSIX' => 0, # OK, 1.32
         'Scalar::Util' => 0, # OK, 1.27

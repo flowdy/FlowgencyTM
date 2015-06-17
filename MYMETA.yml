@@ -1,18 +1,18 @@
 ---
-abstract: unknown
+abstract: 'The task & time manager for a more humanely multitasking business'
 author:
-  - unknown
+  - 'Florian Heß'
 build_requires:
   ExtUtils::MakeMaker: '0'
 configure_requires:
   ExtUtils::MakeMaker: '0'
 dynamic_config: 0
-generated_by: 'ExtUtils::MakeMaker version 6.66, CPAN::Meta::Converter version 2.142060'
+generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.142690'
 license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
-name: FlowTime
+name: FlowgencyTM
 no_index:
   directory:
     - t
@@ -25,10 +25,11 @@ requires:
   Date::Calc: '0'
   FindBin: '0'
   JSON: '0'
-  Mojolicious: '0'
+  Mojolicious: '6'
   Moose: '0'
   POSIX: '0'
   Scalar::Util: '0'
+  Test::Exception: '0'
   Test::More: '0'
   Time::Local: '0'
-version: '0.01'
+version: '0.7'
