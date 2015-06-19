@@ -16,6 +16,7 @@ sub startup {
 
   $self->defaults(
       layout => 'general',
+      user => undef,
   );
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
@@ -41,7 +42,7 @@ sub startup {
 
   });
 
-  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login");
+  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login" );
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })
       ->get('/admin');
   $admin->get('/')->to('admin#dash');

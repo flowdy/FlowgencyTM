@@ -64,8 +64,6 @@
 % # Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.
   </header>
 
-% my $user = stash 'user';
-
 <div id="page">
 <%= content %>
 </div>
