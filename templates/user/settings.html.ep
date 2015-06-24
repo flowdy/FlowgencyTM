@@ -99,46 +99,42 @@
 <div style="display:none;">
 <textarea placeholder="&quot;field1&quot;:&quot;value1&quot;,&quot;field2&quot;:&quot;value2&quot;,...,&quot;variations&quot;:[&quot;var_field1&quot;:&quot;var_value1&quot;,&quot;var_field2&quot;:&quot;var_value2&quot;,...]" name="timetrack[<%= $name %>]" style="width:95%"><%= stash 'timetrack['.$name.']' %></textarea>
 </div>
-<h3>Basics, Fill-in rhythm (outside variations)</h3>
+<div class="vtab">
+<div class="fill-in">
 % my $variations = delete $track->{variations} // [];
 % my @available_trackfields;
-<ul class="span-properties">
 % while ( my $key = shift @trackfields ) {
 %     my $value = $track->{$key} // do {
 %         push @available_trackfields, $key;
 %         next;
 %     };    
-<li><a class="property" href="javascript:void(0);"><%= $key %></a>: <%= $value %></a></li>
+<fieldset><legend><%= $key %></legend>
+<input type="text" readonly="readonly" value="<%= $value %>">
+</fieldset>
 % }
-<li><em>Undefined:</em>
-<%== join ", ", map { '<a class="property" href="javascript:void(0);">'.$_.'</a>' } @available_trackfields %>
-%#<select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} @available_trackfields %></select>
-</li></ul>
-% if ( @$variations ) {
-<h3>Variations</h3>
-% }
-<dl>
+<fieldset class="undefined"><legend>Undefined</legend>
+<select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} @available_trackfields %></select>
+</fieldset>
+</div>
 % for my $var ( @$variations ) {
 % my @varfields = @varfields;
 % my @available_varfields;
-<dt><%= delete $var->{name} // "[no name]" %><dt>
-<dd><ul class="span-properties">
+<div id="<%= $track->{name} %>-variation-<%= delete $var->{name} // "" %>">
 % while ( my $key = shift @varfields ) {
 %     my $value = $var->{$key} // do {
 %         push @available_varfields, $key;
 %         next;
 %     };    
-<li><a class="property" href="javascript:void(0);"><%= $key %></a>: <%= $value %></a></li>
+<fieldset><legend><%= $key %></legend>
+<input type="text" readonly="readonly" value="<%= $value %>">
+</fieldset>
 % }
-<li><em>Undefined:</em>
-<%== join ", ", map { '<a class="property" href="javascript:void(0);">'.$_.'</a>' } @available_varfields %>
-%#<select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} @available_varfields %></select>
-</li>
-</ul>
-</dd>
+<fieldset class="undefined"><legend>Undefined</legend>
+<select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} @available_varfields %></select>
+</fieldset>
+</div>
 % }
-</dl></div>
-%# <textarea name="track-<%= $name %>" cols="60">...</textarea>
+</div>
 % }
 <h2 style="display:none" id="new-time-track"><span class="title">New time track</span> <em class="name"></em></h2>
 <div>
