@@ -164,72 +164,14 @@ Instead, you might prefer installing the packages that your linux distribution r
 
 ### Bootstrap flow.db database file
 
-FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to bootstrap it with the development shell in the distribution, i.e. create a database, a user and also modify the time model unless you want to work 24/7:
+FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to initialize it, i.e. create a database, a user and also modify the time model unless you want to work 24/7:
 
-    $ script/flow.sh -d flow.db
-    Configuring sub-shell ...                                                            
-    Now exec()'ing bash with the compiled rcfile instead of the default one ...          
-    /bin/bash starting on behalf of FlowgencyTM::Shell ...                               
-    # Welcome information and license note
-    
-    Initializing FlowTime::Shell ...Deploying new database in /tmp/FlowgencyTM/flow.db
-    DONE.
-    Press Enter to confirm new user floh OR change the name: floh
-    Now ensuring the database contains a user entity ... User created. Don't forget to set up a time_model before you enter any tasks.
-    [1]+ $FLOWGENCYTM_SHELL_PROCESS &
-    
-    # [Further information ...]
-    
-    FTM::~> timetracks default --week-pattern 'Mo-Th@9-16,Fr@7-14' -l 'Bureau'
+    $ script/install.sh
 
-Note full hours: '-16' = effectively 16:59:59, '-14' eff. 14:59:59. To retain default as preset, choose another name instead in order to create an additional track. You can flag exceptional private hours or hour ranges by prepending '!':
+This script also writes local.rc file used for script/daemon.
 
-    FTM::~> [...] -w 'Mo-Fr@9-18,!12-13'
+### Start and manage the server:
 
-This creates a long lunch break from 12:00 to 13:59. But you can write just as well, whatever you may prefer:
-
-    FTM::~> [...] -w 'Mo-Fr@9-11,14-18'
-
-If you want to have the system respect future holidays:
-
-    FTM::~> [...] -v holidayname --week-pattern-of-track private \
-            --from '05-02 12' --until '+4d' # four holidays
-
-Or write: 
-
-    --week-pattern 'Mo-So@!0-23'
-    
-    [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
-
-Now quit the program:
-
-    FTM::~> bye
-    exit
-    Cleaned up.
-
-### Start the local server
-
-Please run one of the commands:
-
-    script/morbo # restart automatically if any watched file is changed
-    script/server daemon # does not watch files
-    script/server prefork # s. Mojolicious documentation for this or other modes
-
-Please keep the terminal window open as it will output diagnostics if things go wrong. Then load the link it displays at the end in your webbrowser. If you have a local firewall installed, this might not work because of any rare and weird restrictions imposed. Refer to the manual of your firewall software how to make exceptions so that it does let you access your own system via HTTP (better contact your system administrator, if any).
-
-To quit the service (so subsequent requests go into the void), just type CTRL-C.
-
-If you do not have a terminal to spare for logging, use a background process:
-
-    $ cat > local.rc <<'EOF' # do that once for setup
-    FLOWGENCYTM_USER=$(whoami)
-    FLOWGENCYTM_ADMIN=$FLOWGENCYTM_USER # to activate new accounts
-    MAX_USERS_IN_CACHE=5                # if multi-user web access permitted
-    MOJO_LISTEN=http://127.0.0.1:3000
-    PIDFILE=/var/lock/flowgencytm.pid
-    LOG=server.log
-    COMMAND=morbo    # or 'server daemon', 'server prefork'
-    EOF
     $ script/daemon start
       # waits for the first log line printed to file, then exits
       # server process in the background runs until 'stop' command

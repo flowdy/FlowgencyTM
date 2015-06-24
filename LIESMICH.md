@@ -167,68 +167,14 @@ Aber vielleicht ziehst du die Pakete vor, die deine Linux-Distribution bereitste
 
 FlowgencyTM funktioniert noch nicht gleich nach der Installation im Webbrowser. Erst muss die Datenbank und ein Nutzer erstellt werden, zusätzlich ein Zeitmodell, wenn die Software nicht annehmen soll, dass du Tag und Nacht arbeitest ;-):
 
-    $ script/flow.sh -d flow.db
-    Configuring sub-shell ...                                                            
-    Now exec()'ing bash with the compiled rcfile instead of the default one ...          
-    /bin/bash starting on behalf of FlowgencyTM::Shell ...                               
-    # [Willkommens-Informationen]
-    
-    Initializing FlowTime::Shell ...Deploying new database in /tmp/FlowgencyTM/flow.db
-    DONE.
-    Press Enter to confirm new user floh OR change the name: floh
-    Now ensuring the database contains a user entity ... User created. Don't forget to set up a time_model before you enter any tasks.
-    [1]+ $FLOWGENCYTM_SHELL_PROCESS &
-    
-    # [Weitere Informationen ...]
-    
-    FTM::~> timetracks default --week-pattern 'Mo-Do@9-16,Fr@7-14' -l 'Bureau'
+    $ script/install.sh
 
-Beachte: '-16' = effektiv bis 16:59:59, '-14' eff. bis 14:59:59. Siehe [das Konzept](doc/konzept.de.md) mit weiteren Beispielen. Um die voreingestellte Schiene zu behalten und eine zusätzliche zu erstellen, gib ihr einen anderen Namen als "default".
+Dieses Script schreibt auch local.rc, das von script/daemon vorausgesetzt wird.
 
-Du kannst Auszeitstunden(-bereiche) mit einem vorangestellten '!' markieren:
+### Server starten und managen
 
-    FTM::~> [...] -w 'Mo-Fr@9-18,!12-13'
+Mit folgenden Befehlen bedienst du den Server:
 
-Damit hast du eine lange Mittagspause 12:00-13:59. Folgendes ist aber ebenso möglich, schreib, wie du es möchtest (`-w` ist übrigens die Kurzform von `--week-pattern`):
-
-    FTM::~> [...] -w 'Mo-Fr@9-11,14-18'
-
-So trägst du evtl. geplanten Urlaub dazu:
-
-    FTM::~> [...] -v holidayname --week-pattern-of-track private \
-            --from '2.5. 12' --until +4d # vier Tage
-
-Oder so:
-
-    FTM::~> [...] --week-pattern 'Mo-So@!0-23'
-    
-    [1]+  Stopped              $FLOWGENCYTM_SHELL_PROCESS
-
-Beende die FlowgencyTM::Shell nun mit
-
-    FTM::~> bye
-    exit
-    Cleaned up.
-
-### Den lokalen Server starten
-
-Bitte führe eines der folgenden Kommandos aus:
-
-    script/morbo # Startet automatisch neu, wenn du eine beobachtete Datei änderst
-    script/server daemon # beobachtet keine Dateien
-    script/server help   # listet weitere Modi und Funktionen
-
-Bitte schließe nicht das Terminalfenster, weil es ggf. hilfreiche Meldungen ausgibt, wenn etwas schief läuft. Öffne nun den am Ende angezeigten Link in deinem Lieblings-Browser. Falls du eine lokale Firewall installiert hast, ist es nicht auszuschließen, dass diese Zugriffe von innerhalb des Systems verhindert, warum auch immer. Sieh im Handbuch deiner Firewall-Software nach, wie du entsprechende Ausnahmen konfigurierst, um HTTP-Zugriffe von und auf dein eigenes System zuzulassen (noch besser, kontaktiere deinen Administrator, falls vorhanden).
- 
-Um den Server zu beenden, benutze die Tastenkombination Strg-C. Hast du kein Terminal für reines Logging zur Verfügung, kannst du den Server auch im Hintergrund ausführen:
-
-    $ cat > local.rc <<'EOF' # einmalig
-    FLOWGENCYTM_USER=$(whoami)
-    MOJO_LISTEN=http://127.0.0.1:3000
-    PIDFILE=flowgencytm.pid
-    LOG=server.log
-    COMMAND=morbo    # oder 'server daemon', 'server prefork', usw.
-    EOF
     $ script/daemon start
       # beendet, sobald die Startinformation in die Logdatei geschrieben ist
       # Du beendest den Hintergrundprozess mit 'stop'
