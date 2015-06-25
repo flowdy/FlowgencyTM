@@ -83,9 +83,9 @@ read -e -p '? Default rhythm of time model: ' -i 'Mo-Fr@0-23' TIME_MODEL
 cat <<END_OF_PERL | perl -Ilib -MFlowgencyTM
 my \$user = FlowgencyTM::user('$USER',1);
 \$user->insert;
-if ( length '$TIME_MODEL' ) {
+if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-Fr@0-23' ) {
     \$user->update_time_model({
-       default => { week_pattern => '$TIME_MODEL' }
+       default => { label => 'May mindful work clean breaks from worry', week_pattern => '$TIME_MODEL' }
     });
 }
 END_OF_PERL
