@@ -12,9 +12,11 @@
      href="/scripts/jquery-ui-1.11.2.custom/jquery-ui.min.css" media="screen,projection">
   <link rel="stylesheet" type="text/css"
      href="/screen.css" media="screen,projection">
+  <link rel="stylesheet" type="text/css"
+     href="/anytime.5.1.0.min.css" media="screen,projection">
   <script src="/scripts/jquery-1.9.1.min.js"></script>
   <script src="/scripts/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
-  <script src="/scripts/jquery-ui-1.11.2.custom/jquery-ui-timepicker-addon.js"></script>
+  <script src="/scripts/anytime.5.1.0.min.js"></script>
 % my $scripts = stash 'addScripts';
 % for my $script ( 'frontend', @$scripts ) {
   <script src="/scripts/<%= $script %>.js"></script>
@@ -38,7 +40,7 @@
         <span><input id="with-archive" type="checkbox" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/task/archive">archive</a></span> 
         </li>
         <li><form id="settime"><label>Set time:<br />
-        <input name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
+        <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
         <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
         <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
         </form></li>

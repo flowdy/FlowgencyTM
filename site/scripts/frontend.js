@@ -500,17 +500,37 @@ function ObjectCacheProxy (name, obj, fields) {
     Object.freeze(my);
 };
 
-$.datepicker.setDefaults({ constrainInput: false, dateFormat: 'yy-mm-dd',
-  showOn: 'button' });
- 
+var __dtpCounter = 0;
 function DateTimePicker () {
+    var but = $('<button title="Pick day and time with a widget">D/T?</button>'),
+        input = $(this), eod = input.hasClass('until');
+    if ( input.attr('id') === undefined )
+        input.attr('id', 'timefield-' + (++__dtpCounter));
+    var today = new Date();
+    today = [ today.getFullYear(), today.getMonth()+1, today.getDate() ];
+    
+    for ( var i = 1; i<2; i++ )
+        if(today[i]<10) today[i]='0'+today[i];
+    
+    today = today.join("-") + " " + (eod ? "23:59" : "00:00");
     this.placeholder = '[[[[YY]YY-]MM-]DD] [HH[:MM]]';
     this.title = 'Date format: [[[[YY]YY-]MM-]DD] or alternative german date: [DD.[MM.[[YY]YY]]], or\n    '
         + '"+" or "-", Integer and one of "y" (years), "m" (months), "w" '
         + '(weeks) or "d" (days). Chainable, subsequent instances may be '
         + 'negative, otherwise omit the plus-sign.';
-    $(this).datepicker();
-}
+
+    but.click(function (e) {
+        input.AnyTime_noPicker().AnyTime_picker({
+            askSecond: false, init: today, // Why is init ignored?
+            format: '%Y-%m-%d %H:%i'
+        }).focus();
+        e.preventDefault();
+    });
+    
+    input.after(but);
+
+    return;
+} 
 
 return {
     Ranking: Ranking,

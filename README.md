@@ -189,13 +189,15 @@ FlowgencyTM could not even be thought of without the following Open source tools
   * JQuery, JQueryUI – used for the client-side
   * Moose.pm – A Modern Object system for Perl
   * Date::Calc – Time-related calculations
+  * [Any+Time](http://www.ama3.com/anytime/) – Date/Time picker by Andrew M. Andrews III,
+     licensed under CC BY-NC-SA.
   * SQLite, DBIx::Class – Database Model
   * Mojolicious – so you have your own server and need not expose any data, and
      you need not rely on the availability of a third party
   * Firefox – for testing and using FlowgencyTM (& various other browsers)
   * VIM – it's not an IDE, but what amazing power an editor can have!
   * git – distributed version control system
-  * InkScape – logo design
+  * InkScape – design of logo and icons
 
 Contact Author / Project initiator
 -----------------------------------

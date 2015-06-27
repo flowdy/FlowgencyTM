@@ -194,6 +194,8 @@ Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkz
   * JQuery, JQueryUI – dynamisches, ansprechendes Verhalten im Webbrowser
   * Moose.pm – ein modernes Objektsystem für Perl
   * Date::Calc – Zeitbezogene Berechnungen
+  * [Any+Time](http://www.ama3.com/anytime/) – Date/Time picker von Andrew M. Andrews III,
+     lizensiert unter CC BY-NC-SA.
   * SQLite, DBIx::Class – Datenbankschema
   * Mojolicious – für die Serverseite verantwortlich, so behältst du die volle
      Kontrolle über deine Daten und bist nicht auf die Verfügbarkeit Dritter
@@ -201,7 +203,7 @@ Das FlowgencyTM-Projekt wäre nicht machbar ohne die folgenden Open-Source-Werkz
   * Firefox – zum Testen und Benutzen von FlowgencyTM (+ andere Browser)
   * VIM – zwar keine IDE, aber als Editor wahnsinnig leistungsfähig
   * git – verteiltes Versionskontrollsystem
-  * InkScape – mit diesem Programm wurde das Logo erstellt.
+  * InkScape – mit diesem Programm wurde das Logo und die Symbole erstellt.
 
 Autor / Projektinitiator kontaktieren
 -------------------------------------
