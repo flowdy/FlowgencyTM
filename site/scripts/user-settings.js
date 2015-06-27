@@ -388,5 +388,54 @@ $(function () {
         instance.insertAfter(source);
     });
 
+    var addVariationDialog = $('
+        <div id="dialog" title="Tab data">
+            <form>
+            <fieldset class="ui-helper-reset">
+                <label for="tab_title">Name</label>
+                <input type="text" name="tab_title" id="tab_title" value="Tab Title" class="ui-widget-content ui-corner-all">
+                <label for="tab_content">Content</label>
+                <textarea name="tab_content" id="tab_content" class="ui-widget-content ui-corner-all">Tab content</textarea>
+                </fieldset>
+            </form>
+        </div>
+        <button id="add_tab">Add Tab</button>
+    ');
+
+    $(".vtab").each(function () {
+       var ul = $('<ul>'), dialog;
+       $(this).children("div").each(function () {
+          var id = $(this).attr('id'), name, li = $('<li><a>');
+          if ( id.indexOf("-fill-in") > 0 )
+              name = "MAIN";
+          else name = id.replace(/\w+-variation-/, '');
+          li.children().text(name).attr('href', '#' + id);
+          ul.append(li);
+       });
+       $(this).prepend(ul);
+       $(this).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
+       $(this).find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+
+       var dialog = addVariationDialog.dialog({
+           autoOpen: false,
+           modal: true,
+           buttons: {
+               Add: function() {
+                   addTab();
+                   $( this ).dialog( "close" );
+               },
+               Cancel: function() {
+                   $( this ).dialog( "close" );
+               }
+           },
+           close: function() {
+               form[ 0 ].reset();
+           }
+       }).find( "form" ).submit(function( event ) {
+          addTab();
+          dialog.dialog( "close" );
+          event.preventDefault();
+       });
+    });
 
 });
