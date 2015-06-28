@@ -380,6 +380,7 @@ $(function () {
 
     }
 
+    /*
     $("#week-pattern-source").change(function () {
         function update (string) { source.val(string); }
         var source = $(this), oldtable = source.next(),
@@ -387,55 +388,152 @@ $(function () {
         if ( oldtable ) oldtable.remove();
         instance.insertAfter(source);
     });
+    */
 
-    var addVariationDialog = $('
-        <div id="dialog" title="Tab data">
-            <form>
-            <fieldset class="ui-helper-reset">
-                <label for="tab_title">Name</label>
-                <input type="text" name="tab_title" id="tab_title" value="Tab Title" class="ui-widget-content ui-corner-all">
-                <label for="tab_content">Content</label>
-                <textarea name="tab_content" id="tab_content" class="ui-widget-content ui-corner-all">Tab content</textarea>
-                </fieldset>
-            </form>
-        </div>
-        <button id="add_tab">Add Tab</button>
-    ');
+    var addVariationDialog = $('#add-variation-dialog'),
+        textField = function (f, updater) {
+            f.removeAttr("readonly");
+            f.change(updater);
+        },
+        radioButtons = function (f, updater, values) {
+            var buttons = $("div"), cur;
+            for ( var v = 0; v < values.length; v++ ) {
+                cur = '<label><input type="radio" value="' + values[v]
+                      + '"> ' + values[v] + '</label>';
+                buttons.append(cur);
+                cur.click(updater);
+            }
+            f.replace(buttons);
+        },
+        fieldtypes = {
+            label: textField,
+            description: textField,
+            unmentioned_variations_from: textField,
+            from_date: function (f, updater) {
+                FlowgencyTM.DateTimePicker.apply(f);
+                f.change(updater);
+            },
+            from_earliest: function (f, updater) {
+                FlowgencyTM.DateTimePicker.apply(f);
+                f.change(updater);
+            },
+            until_date: function (f, updater) {
+                f.addClass("until");
+                FlowgencyTM.DateTimePicker.apply(f);
+            },
+            until_latest: function (f, updater) {
+                f.addClass("until");
+                FlowgencyTM.DateTimePicker.apply(f);
+            },
+            successor: textField,
+            week_pattern_of_track: textField,
+            week_pattern: function (f, updater) {
+                var preset = f.val(),
+                    instance = new WeekPattern(preset, updater);
+                f.replace(instance);
+            }
+            section_of_track: textField,
+            apply: function (f, updater) {
+                return radioButtons(f, updater, [ "middle", "bottom", "top" ]);
+            },
+            inherit_mode: function (f, updater) {
+                return radioButtons(f, updater, [ "optional", "suggest", "impose" ]);
+            },
+            default_inherit_mode: function (f, updater) {
+                return radioButtons(f, updater, [ "optional", "suggest", "impose" ]);
+            },
+        },
+        mainFields = [
+            'week_pattern', 'week_pattern_of_track', 'unmentioned_variations_from',
+            'label', 'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
+        ],
+        varFields = [
+            'week_pattern', 'week_pattern_of_track', 'section_of_track', 'description', 'ref', 'apply',
+            'until_date', 'from_date', 'inherit_mode'
+        ],
+        tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>";
+    ;
 
     $(".vtab").each(function () {
-       var ul = $('<ul>'), dialog;
-       $(this).children("div").each(function () {
-          var id = $(this).attr('id'), name, li = $('<li><a>');
-          if ( id.indexOf("-fill-in") > 0 )
+       var vtab = $(this), ul = $('<ul>'), dialog, trackdata = {};
+
+       function dynamize(tab, name, isMain) {
+           var fields = isMain ? mainFields : varFields,
+               properties = {},
+               proxy = new ObjectCacheProxy(properties, name, fields);
+           tab.find("input.property").each(function () {
+               var field = $(this), key = field.data("property");
+               function updater (value) {
+                   if ( value === undefined ) value = this.val();
+                   if ( value === null ) proxy.drop(key);
+                   else proxy[key] = value;
+               }
+               return fieldtypes[ field.data("property") ](field, updater);
+           });
+           if ( isMain ) {
+               properties.variations = [];
+               properties.name = name.split("/")[1];
+               trackdata = properties;
+           }
+           else {
+               trackdata.variations.push(properties);
+           }
+       }
+
+       vtab.children("div").each(function () {
+          var id = $(this).attr('id'), name, li = $('<li><a>'), isMain = false;
+          if ( isMain = id.indexOf("-fill-in") > 0 ) {
               name = "MAIN";
-          else name = id.replace(/\w+-variation-/, '');
+          }
+          else name = id.replace(/(\w+)-variation-/, '');
           li.children().text(name).attr('href', '#' + id);
           ul.append(li);
+          dynamize($(this), isMain ? id.split("-")[0] : Regexp.$1 + "/" + name, isMain);
        });
-       $(this).prepend(ul);
-       $(this).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
-       $(this).find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
 
-       var dialog = addVariationDialog.dialog({
+       vtab.prepend(ul);
+       vtab.tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
+       vtab.find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+
+       function addVariation () {
+           var label = $(#new-variation-name").val(),
+               id = "tabs-" + tabCounter,
+               li = $( tabTemplate.replace( /#\{href\}/g, "#" + id ).replace( /#\{label\}/g, label ) ),
+               new_vtab = addVariationDialog.find(".vtab").clone();
+           dynamize(new_vtab, "/" + label, false);
+           vtab.find( ".ui-tabs-nav" ).append( li );
+           vtab.append( new_vtab );
+           vtab.tabs( "refresh" );
+       }
+ 
+       dialog = addVariationDialog.dialog({
            autoOpen: false,
            modal: true,
            buttons: {
                Add: function() {
-                   addTab();
+                   addVariation();
                    $( this ).dialog( "close" );
                },
                Cancel: function() {
                    $( this ).dialog( "close" );
                }
            },
-           close: function() {
-               form[ 0 ].reset();
-           }
-       }).find( "form" ).submit(function( event ) {
+           close: function () {
+               $(this).find("form").reset();
+           }   
+       });
+       addVariationDialog.find( "form" ).submit(function( event ) {
           addTab();
           dialog.dialog( "close" );
           event.preventDefault();
        });
     });
+    vtab.delegate( "span.ui-icon-close", "click", function() {
+       var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
+       $( "#" + panelId ).remove();
+       trackdata.variations.push({ ref: panelId, apply: false });
+       vtab.tabs( "refresh" );
+    });
+});
 
 });

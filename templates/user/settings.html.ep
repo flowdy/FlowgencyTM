@@ -84,8 +84,8 @@
 <legend>Time Model</legend>
 <p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, i.e. when [not] to increase their urgency rank in need of their expenditures' continuously being checked. You can define as many tracks as you find necessary to match how you work. Please note: KISS – Keep it simple and stupid.</p>
 <p>I am developing a user-friendly form functionality for time model modifications. For the time being, please define changes to a track in JSON syntax. The atomic fields are disabled.</p> 
-% my @trackfields = qw(week_pattern week_pattern_of_track label parents default_inherit_mode from_earliest successor until_latest);
-% my @varfields = qw(week_pattern week_pattern_of_track section_of_track description ref apply until_date from_date);
+% my @trackfields = qw(week_pattern week_pattern_of_track unmentioned_variations_from label default_inherit_mode from_earliest successor until_latest);
+% my @varfields = qw(week_pattern week_pattern_of_track section_of_track description ref apply until_date from_date inherit_mode);
 % my $tm = $user->dump_time_model;
 % my @tracks = sort { $tm->{$a}{label} cmp $tm->{$b}{label} } keys %$tm;
 <div id="track-definitions">
@@ -109,7 +109,7 @@
 %         next;
 %     };    
 <fieldset><legend><%= $key %></legend>
-<input type="text" readonly="readonly" value="<%= $value %>">
+<input type="text" readonly="readonly" class="property" data-property="<%= $key %>" value="<%= $value %>">
 </fieldset>
 % }
 <fieldset class="undefined"><legend>Undefined</legend>
@@ -126,7 +126,7 @@
 %         next;
 %     };    
 <fieldset><legend><%= $key %></legend>
-<input type="text" readonly="readonly" value="<%= $value %>">
+<input type="text" readonly="readonly" class="property" data-property="<%= $key %>" value="<%= $value %>">
 </fieldset>
 % }
 <fieldset class="undefined"><legend>Undefined</legend>
@@ -147,11 +147,31 @@
 <div style="border:1px dashed red" id="testing"><h1>Temporary testing area</h1>
 
 <input type="text" id="week-pattern-source" style="width:100%">
+<div id="add-variation-dialog" title="Add variation">
+            <form>
+            <fieldset class="ui-helper-reset">
+                <label for="new-variation-input">Name</label>
+                <input type="text" placeholder="(optional, but unnamed variations cannot be modified)", name="varname" id="new-variation-name-input" class="ui-widget-content ui-corner-all">
+                </fieldset>
+            </form>
+            <div style="display:none;"><div class="vtab">
+% for my $key (qw(name ref description week_pattern from_date until_date)) {
+            <fieldset>
+                <legend><%= $key %></legend>
+                <input type="text" class="property" data-property="<%= key %>">
+            <fieldset>
+% }
+            <fieldset class="undefined"><legend>Undefined</legend>
+            <select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} qw(week_pattern_of_track section_of_track description ref apply until_date from_date) %></select>
+            </fieldset>
+            </div></div>
+        </div>
+        <button id="add-variation-button">Add variation</button>
 
 </fieldset>
 
 <fieldset id="appendix">
-<legend>Urgency threshold for closed tasks</legend>
+<legend>Flowgency rank threshold for closed tasks</legend>
 <p>Unless you checked the list option "later", and if at least one of your tasks to do is open, any further closed task is listed only if the following inequation holds true for it: <code style="font-size:125%;background-color:yellow;"><var title="FlowRank score of a closed task">uₜ</var> &gt; <var title="minimum FlowRank score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum FlowRank score among open tasks">ǔₒ</var> &minus; <var title="maximum FlowRank score among listed tasks">û</var>)</code>.</p><ul><li><var>uₜ</var>: FlowRank score of a closed task, <var>ǔₒ</var>: minimum FlowRank score among open tasks, <var>û</var>: maximum FlowRank score among listed tasks,</li><li><var>c</var>: coefficient that you can adjust here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>:
 <input style="vertical-align:middle;margin:0" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>.
 If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least and the most urgent task.</li></ul>
