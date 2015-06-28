@@ -3,7 +3,7 @@
 
 export FLOWDB_SQLITE_FILE="${1:-flow.db}"
 
-cat <<'END_OF_SQL' | sqlite3 $FLOWDB_SQLITE_FILE
+sqlite3 $FLOWDB_SQLITE_FILE <<'END_OF_SQL'
 CREATE TABLE task (
   task_id INTEGER PRIMARY KEY NOT NULL,
   user_id ,
@@ -79,11 +79,32 @@ CREATE UNIQUE INDEX token ON mailoop (token);
 END_OF_SQL
 
 USER=$(whoami)
-read -e -p '? Default rhythm of time model: ' -i 'Mo-Fr@0-23' TIME_MODEL
-cat <<END_OF_PERL | perl -Ilib -MFlowgencyTM
+cat <<'END_OF_INFO'
+Now, please define the standard rhythm of default time track.
+Otherwise, if you just hit ENTER, FlowgencyTM expects in urgency calculations that you work non-stop 24/7. There will soon be a convenient time model configuration in the user settings. The "How to get started" screen that already appears to a new user will recommend it as the initial step. But it is being developped, yet. What you see is a prototype only. It waits for JSON input and is not quite intended for wider use. Hence, for the time being you should define it rather now.
+
+Please follow the syntax outlined by the examples below: 
+  * Mo-Fr@9-16
+    --> Traditional work day pattern, "Nine to five"
+     !  Note: Omitted minute part in "until" times implies HH:59
+  * Mo-Fr@9-16,!12
+    --> same with a lunch break from 12 to 12:59
+  * Mo-Di,Do-Sa@...
+    --> Separate also the week days with comma if needed
+     !  Note: Mo-Fr,!We@... wouldn't get parsed, exclusion is supported for the hours only.
+  * Mo-We@9-12,Do-Sa@15-18,Sa@14,!18
+    --> different patterns for the halfs of a week, the specifications for Saturday will get merged.
+     !  Note: When indicating minutes prefer common parts like halfs, thirds or
+        quaters of the hour to save hardware resources (the less parts an hour
+        needs to be split into, the better is memory usage and performance).
+
+END_OF_INFO
+
+read -e -p '? Default rhythm of time model: ' -i 'Mo-So@0-23' TIME_MODEL
+perl -Ilib -MFlowgencyTM <<END_OF_PERL && echo 'Default time track changed. Now you can skip the first step listed in the Get Started screen.'
 my \$user = FlowgencyTM::user('$USER',1);
 \$user->insert;
-if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-Fr@0-23' ) {
+if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-So@0-23' ) {
     \$user->update_time_model({
        default => { label => 'May mindful work clean breaks from worry', week_pattern => '$TIME_MODEL' }
     });
