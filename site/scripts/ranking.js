@@ -88,5 +88,35 @@ $(function () {
        if ( e.target.nodeName == "BODY" ) window.scroll(0,0);
     });
 
+    var reload_date = new Date(),
+        orig_reload_age = 0,
+        block_warnOnFocus = false,
+        minutes = 60; /* TODO: make this a configuration setting */
+
+    function warn_ranking_obsolete (reload_age) {
+        if (confirm("The ranking has been loaded more than " + reload_age + " ago."
+          + " Perhaps it is obsolete as other tasks might have climbed in the meantime,"
+          + " based on their FlowRank."
+          + " Click the logo, the OK button or the filter icon (with options if desired) to"
+          + " update the ranking whenever you have changes to commit or you feel ready for"
+          + " any other tasks currently most urgent.")
+        ) $('#logo').click();
+        else { reload_date = new Date(); minutes = 5; }
+        block_warnOnFocus = false;
+    }
+
+    $(window).focus(function () {
+        if ( block_warnOnFocus ) return;
+        var reload_age = Math.floor(
+            ((new Date).getTime() - reload_date.getTime()) / 60000
+        );
+        orig_reload_age += reload_age;
+        if ( reload_age > minutes  ) {
+            reload_age = orig_reload_age + " minute" + (orig_reload_age > 1 ? "s" : "");
+            block_warnOnFocus = true;
+            setTimeout(function () { warn_ranking_obsolete(reload_age) }, 250);
+        }
+    });
+        
 });
 
