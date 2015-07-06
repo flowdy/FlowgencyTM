@@ -393,17 +393,22 @@ $(function () {
     var addVariationDialog = $('#add-variation-dialog'),
         textField = function (f, updater) {
             f.removeAttr("readonly");
-            f.change(updater);
+            f.change(function () { updater(this.value) });
         },
-        radioButtons = function (f, updater, values) {
-            var buttons = $("div"), cur;
-            for ( var v = 0; v < values.length; v++ ) {
-                cur = '<label><input type="radio" value="' + values[v]
-                      + '"> ' + values[v] + '</label>';
-                buttons.append(cur);
-                cur.click(updater);
+        selectFromMenu = function (f, updater, values) {
+            var menu = $("<select>"), cur, label, selected;
+            for ( var v in values ) {
+                selected = values[v] == f.val() ? 'selected="selected"' : '';
+                $('<option value="' + v + '" '
+                    + selected + '>' + values[v] + '</option>'
+                ).appendTo(menu).click(function () { updater(this.value) });
             }
-            f.replace(buttons);
+            f.replaceWith(menu);
+        },
+        inherit_modes = {
+            "optional": "optional, i.e. ignored unless 'ref'erenced explicitly",
+            "suggest": "suggest, induce between middle and bottom variations",
+            "impose": "impose, induce between middle and top variations"
         },
         fieldtypes = {
             label: textField,
@@ -411,36 +416,47 @@ $(function () {
             unmentioned_variations_from: textField,
             from_date: function (f, updater) {
                 FlowgencyTM.DateTimePicker.apply(f);
-                f.change(updater);
+                f.removeAttr("readonly");
+                f.change(function () { updater(this.value) });
             },
             from_earliest: function (f, updater) {
                 FlowgencyTM.DateTimePicker.apply(f);
-                f.change(updater);
+                f.removeAttr("readonly");
+                f.change(function () { updater(this.value) });
             },
             until_date: function (f, updater) {
                 f.addClass("until");
+                f.removeAttr("readonly");
                 FlowgencyTM.DateTimePicker.apply(f);
+                f.change(function () { updater(this.value) });
             },
             until_latest: function (f, updater) {
                 f.addClass("until");
+                f.removeAttr("readonly");
                 FlowgencyTM.DateTimePicker.apply(f);
+                f.change(function () { updater(this.value) });
             },
             successor: textField,
             week_pattern_of_track: textField,
             week_pattern: function (f, updater) {
                 var preset = f.val(),
                     instance = new WeekPattern(preset, updater);
-                f.replace(instance);
-            }
+                f.replaceWith(instance);
+            },
             section_of_track: textField,
             apply: function (f, updater) {
-                return radioButtons(f, updater, [ "middle", "bottom", "top" ]);
+                return selectFromMenu(f, updater, {
+                    "middle": "in the middle between suggest and imposed inherited variations",
+                    "bottom": "bottom, below suggested variations",
+                    "top":"top, above imposed variations",
+                    "ignore": "ignore variation (delete unless inherited)"
+                });
             },
             inherit_mode: function (f, updater) {
-                return radioButtons(f, updater, [ "optional", "suggest", "impose" ]);
+                return selectFromMenu(f, updater, inherit_modes );
             },
             default_inherit_mode: function (f, updater) {
-                return radioButtons(f, updater, [ "optional", "suggest", "impose" ]);
+                return selectFromMenu(f, updater, inherit_modes );
             },
         },
         mainFields = [
@@ -454,21 +470,41 @@ $(function () {
         tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>";
     ;
 
+    function setup_field(field, proxy) {
+        var key = field.data("property"),
+            fsetLegend = field.closest("fieldset").children("legend");
+        $('<input title="toggle field definition" type="checkbox" checked="checked">')
+            .click(function () {
+                 var fs = $(this).closest("fieldset");
+                 fs.prop("disabled", this.checked ? null : "disabled" );
+            }).appendTo(fsetLegend);
+        fsetLegend.wrapInner("<label>"); 
+        function updater (value) {
+            if ( value === undefined ) value = this.val();
+            if ( value === null ) proxy.drop(key);
+            else proxy[key] = value;
+            console.log("Changed key " + key + " to value " + value);
+        }
+        return fieldtypes[ key ](field, updater);
+    }
+
     $(".vtab").each(function () {
        var vtab = $(this), ul = $('<ul>'), dialog, trackdata = {};
 
        function dynamize(tab, name, isMain) {
            var fields = isMain ? mainFields : varFields,
                properties = {},
-               proxy = new ObjectCacheProxy(properties, name, fields);
-           tab.find("input.property").each(function () {
-               var field = $(this), key = field.data("property");
-               function updater (value) {
-                   if ( value === undefined ) value = this.val();
-                   if ( value === null ) proxy.drop(key);
-                   else proxy[key] = value;
-               }
-               return fieldtypes[ field.data("property") ](field, updater);
+               proxy = new FlowgencyTM.ObjectCacheProxy(properties, name, fields);
+           tab.find("input.property").each(function () { return setup_field( $(this), proxy  ); });
+           tab.find("fieldset.undefined option").click(function () {
+               var option = $(this), fieldname = option.text(),
+                   field = $('<input class="property">'), fieldset;
+               if ( option.attr('value') == "" ) return;
+               $('<fieldset><legend>'+fieldname+'</legend></fieldset>')
+                   .append(field).insertBefore(option.closest(".undefined"));
+               field.data("property", fieldname);
+               setup_field(field, proxy);
+               option.prop("disabled", "disabled");
            });
            if ( isMain ) {
                properties.variations = [];
@@ -488,7 +524,7 @@ $(function () {
           else name = id.replace(/(\w+)-variation-/, '');
           li.children().text(name).attr('href', '#' + id);
           ul.append(li);
-          dynamize($(this), isMain ? id.split("-")[0] : Regexp.$1 + "/" + name, isMain);
+          dynamize($(this), isMain ? id.split("-")[0] : RegExp.$1 + "/" + name, isMain);
        });
 
        vtab.prepend(ul);
@@ -496,7 +532,7 @@ $(function () {
        vtab.find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
 
        function addVariation () {
-           var label = $(#new-variation-name").val(),
+           var label = $("#new-variation-name").val(),
                id = "tabs-" + tabCounter,
                li = $( tabTemplate.replace( /#\{href\}/g, "#" + id ).replace( /#\{label\}/g, label ) ),
                new_vtab = addVariationDialog.find(".vtab").clone();
@@ -528,12 +564,11 @@ $(function () {
           event.preventDefault();
        });
     });
-    vtab.delegate( "span.ui-icon-close", "click", function() {
+    $(".vtab").delegate( "span.ui-icon-close", "click", function() {
        var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
        $( "#" + panelId ).remove();
        trackdata.variations.push({ ref: panelId, apply: false });
        vtab.tabs( "refresh" );
     });
-});
 
 });

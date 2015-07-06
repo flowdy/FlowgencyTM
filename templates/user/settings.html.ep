@@ -158,7 +158,7 @@
 % for my $key (qw(name ref description week_pattern from_date until_date)) {
             <fieldset>
                 <legend><%= $key %></legend>
-                <input type="text" class="property" data-property="<%= key %>">
+                <input type="text" class="property" data-property="<%= $key %>">
             <fieldset>
 % }
             <fieldset class="undefined"><legend>Undefined</legend>
