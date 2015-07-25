@@ -424,7 +424,7 @@ sub is_future {
 
 sub is_past {
     my ($self) = @_;
-    return $self < FTM::Time::Spec->now($TS);
+    return FTM::Time::Spec->now($TS) > $self;
 }
 
 __PACKAGE__->meta->make_immutable;

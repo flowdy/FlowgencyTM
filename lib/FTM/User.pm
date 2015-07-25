@@ -146,7 +146,28 @@ after update_time_model => sub {
 sub dump_time_model {
     my ($self) = shift;
 
-    return from_json($self->_dbicrow->time_model);
+    my $href = from_json($self->_dbicrow->time_model);
+
+    my $convert_ts = sub {
+        my ($href, $from_key, $until_key) = @_;
+        my $cnt_defined = 0;
+        for ( $href->{ $from_key } // (), $href->{ $until_key } // () ) {
+            $_ = FTM::Time::Spec->parse_ts($_);
+            $cnt_defined++;
+        }
+        if ( $cnt_defined == 2 ) {
+            $href->{$from_key}->fix_order($href->{$until_key});
+        }
+    };
+
+    for my $href ( values %$href ) {
+        $convert_ts->($href, 'from_earliest', 'until_latest');
+        for my $var (@{ $href->{variations} // [] }) {
+            $convert_ts->($var, 'from_date', 'until_date');
+        } 
+    }
+    
+    return $href;
 
 }    
 
