@@ -503,6 +503,8 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
 function ObjectCacheProxy (name, obj, fields) {
     var my = this;
 
+    my.prototype = obj;
+
     fields.forEach(function (i) {
         Object.defineProperty(my, i, {
             get: function () { return obj[i]; },

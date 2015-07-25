@@ -484,6 +484,7 @@ $(function () {
             if ( value === null ) proxy.drop(key);
             else proxy[key] = value;
             console.log("Changed key " + key + " to value " + value);
+            proxy._docker();
         }
         return fieldtypes[ key ](field, updater);
     }
@@ -493,7 +494,7 @@ $(function () {
 
        function dynamize(tab, name, isMain) {
            var fields = isMain ? mainFields : varFields,
-               properties = {},
+               properties = { _docker: function () {} },
                proxy = new FlowgencyTM.ObjectCacheProxy(properties, name, fields);
            tab.find("input.property").each(function () { return setup_field( $(this), proxy  ); });
            tab.find("fieldset.undefined option").click(function () {
@@ -507,12 +508,15 @@ $(function () {
                option.prop("disabled", "disabled");
            });
            if ( isMain ) {
-               properties.variations = [];
+               properties.variations = [null]; /* null means "append" */
                properties.name = name.split("/")[1];
                trackdata = properties;
            }
            else {
-               trackdata.variations.push(properties);
+               properties._docker = function () {
+                   trackdata.variations.push(properties);
+                   this._docker = function () {};
+               }
            }
        }
 
@@ -563,12 +567,22 @@ $(function () {
           dialog.dialog( "close" );
           event.preventDefault();
        });
+       vtab.data("trackdata", trackdata);
     });
     $(".vtab").delegate( "span.ui-icon-close", "click", function() {
        var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
        $( "#" + panelId ).remove();
        trackdata.variations.push({ ref: panelId, apply: false });
        vtab.tabs( "refresh" );
+    });
+
+    $("#update-settings-form").submit(function () {
+       var time_model_data = {};
+       $("#configure-time-model .vtab").each(function () {
+           var trackdata = $(this).data("trackdata");
+           if ( trackdata === undefined ) return;
+           
+       });
     });
 
 });

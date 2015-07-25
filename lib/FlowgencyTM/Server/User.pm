@@ -47,23 +47,8 @@ sub settings {
         }
     }
 
-    my %change_model;
-    my %tracks = map { $_->[0] => 1 } $user->get_available_time_tracks;
-    for my $tt ( keys %tracks ) {
-        my $data = $self->param("timetrack[$tt]");
-        next if !length $data;
-        $change_model{$tt} = from_json('{'.$data.'}');
-    }
-    for my $newtt ( @{ $self->every_param('timetrack[]') // [] } ) {
-        next if !length $newtt;
-        my $data = from_json('{'.$newtt.'}');
-        my $name = $data->{name};
-        if ( $tracks{$name} ) {
-            croak "track $name exists";
-        }
-        $change_model{$name} = $data;
-    }
-    $user->update_time_model(\%change_model) if %change_model;
+    my $change_model = $self->param('time_model_changes');
+    $user->update_time_model(from_json($change_model)) if $change_model;
 
     if ( my $prio = $self->param('priorities') ) {
         my (%prio,$i);
