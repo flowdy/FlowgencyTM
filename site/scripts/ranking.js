@@ -110,13 +110,18 @@ $(function () {
         var reload_age = Math.floor(
             ((new Date).getTime() - reload_date.getTime()) / 60000
         );
-        orig_reload_age += reload_age;
         if ( reload_age > minutes  ) {
+            orig_reload_age += reload_age;
             reload_age = orig_reload_age + " minute" + (orig_reload_age > 1 ? "s" : "");
             block_warnOnFocus = true;
             setTimeout(function () { warn_ranking_obsolete(reload_age) }, 250);
         }
+        else {
+            $("#warn-reload-in-minutes").text(minutes - reload_age);
+        }
     });
         
+    $("#warn-reload-in-minutes").text(minutes);
+
 });
 
