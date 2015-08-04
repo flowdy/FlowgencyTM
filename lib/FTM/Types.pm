@@ -2,6 +2,8 @@
 package FTM::Types;
 use Moose::Util::TypeConstraints;
 use FTM::Time::Spec;
+use FTM::Time::Rhythm;
+use Date::Calc qw(Today);
 
 coerce 'FTM::Time::Spec',
     from 'Str'      => via { FTM::Time::Spec->parse_ts(shift) },
@@ -25,4 +27,7 @@ coerce 'RgbColour',
     via {[ map { hex($_) } m{ \A \# (?: ([0-9a-f][0-9a-f]) ){3} \z }xms ]}
     ;
 
-
+coerce 'FTM::Time::Rhythm'
+    from 'Str',
+    via { FTM::Time::Rhythm->from_string( shift, { init_day => [ Today() ] }) }
+    ;
