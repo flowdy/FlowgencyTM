@@ -3,7 +3,13 @@
 
 export FLOWDB_SQLITE_FILE="${1:-flow.db}"
 
-sqlite3 $FLOWDB_SQLITE_FILE <<'END_OF_SQL'
+echo -n "Initializing database file $FLOWDB_SQLITE_FILE ... "
+sqlite_cmd=$(which sqlite3)
+if [ -z "$sqlite_cmd" ]; then
+    echo 'FAILED: Cannot find and execute `sqlite3` command!'
+fi
+
+$sqlite_cmd $FLOWDB_SQLITE_FILE <<'END_OF_SQL' && echo OK.
 CREATE TABLE task (
   task_id INTEGER PRIMARY KEY NOT NULL,
   user_id ,
@@ -95,8 +101,11 @@ Please follow the syntax outlined by the examples below:
   * Mo-We@9-12,Do-Sa@15-18,Sa@14,!18
     --> different patterns for the halfs of a week, the specifications for Saturday will get merged.
      !  Note: When indicating minutes prefer common parts like halfs, thirds or
-        quaters of the hour to save hardware resources (the less parts an hour
-        needs to be split into, the better is memory usage and performance).
+        quaters of the hour to save hardware resources. The less equal parts an hour
+        needs to be resolved into, the more efficiently the pattern can be stored
+        and processed.
+  * 2n:Mo-Tu@9-16,We@9-12;2n+1:We@12-16,Th-Fr@9-16
+    --> different patterns for alternate weeks (based on ISO week number)
 
 END_OF_INFO
 
@@ -109,6 +118,7 @@ if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-So@0-23' ) {
        default => { label => 'May mindful work clean breaks from worry', week_pattern => '$TIME_MODEL' }
     });
 }
+else { exit 1; }
 END_OF_PERL
 
 cat > local.rc <<END_OF_CONFIG

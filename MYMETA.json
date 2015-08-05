@@ -36,6 +36,7 @@
             "Benchmark" : "0",
             "Bit::Vector" : "0",
             "Carp" : "0",
+            "DBIx::Class" : "0",
             "Date::Calc" : "0",
             "FindBin" : "0",
             "JSON" : "0",

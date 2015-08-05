@@ -16,7 +16,7 @@
 #     BUILD_REQUIRES => {  }
 #     CONFIGURE_REQUIRES => {  }
 #     NAME => q[FlowgencyTM]
-#     PREREQ_PM => { Test::More=>q[0], Bit::Vector=>q[0], JSON=>q[0], Benchmark=>q[0], Mojolicious=>q[6], Date::Calc=>q[0], Algorithm::Dependency=>q[0], FindBin=>q[0], Moose=>q[0], Time::Local=>q[0], POSIX=>q[0], Carp=>q[0], Test::Exception=>q[0], Scalar::Util=>q[0] }
+#     PREREQ_PM => { Carp=>q[0], JSON=>q[0], Time::Local=>q[0], Mojolicious=>q[6], POSIX=>q[0], Date::Calc=>q[0], FindBin=>q[0], Test::Exception=>q[0], Bit::Vector=>q[0], Algorithm::Dependency=>q[0], Moose=>q[0], Benchmark=>q[0], Scalar::Util=>q[0], DBIx::Class=>q[0], Test::More=>q[0] }
 #     TEST_REQUIRES => {  }
 #     VERSION_FROM => q[lib/FlowgencyTM.pm]
 
@@ -697,6 +697,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '  Benchmark: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  Bit::Vector: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  Carp: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  DBIx::Class: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  Date::Calc: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  FindBin: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  JSON: '\''0'\''' >> META_new.yml
@@ -748,6 +749,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '            "Benchmark" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "Bit::Vector" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "Carp" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "DBIx::Class" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "Date::Calc" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "FindBin" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "JSON" : "0",' >> META_new.json
@@ -1048,6 +1050,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Benchmark::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Bit::Vector" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Carp::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="DBIx::Class" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Date::Calc" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="FindBin::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="JSON::" />' >> $(DISTNAME).ppd

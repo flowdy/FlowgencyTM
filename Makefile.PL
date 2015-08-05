@@ -12,6 +12,7 @@ WriteMakefile(
         'Bit::Vector' => 0, # OK, 7.3
         'Carp' => 0, # OK, 1.29
         'Date::Calc' => 0, # OK, 6.3
+        'DBIx::Class' => 0, # OK, 0.08
         'FindBin' => 0, # OK, 1.51
         'JSON' => 0, # OK, 2.61
         'Mojolicious' => 6, # OK, loaded (just version unknown)
