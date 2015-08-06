@@ -143,6 +143,7 @@ Klone das git-Repository in ein beliebiges Verzeichnis. Unter Linux genügt dazu
 
     $ git clone https://github.com/flowdy/FlowgencyTM.git
     $ cd FlowgencyTM/
+    $ perl Makefile.PL
 
 Für andere Systeme stelle sicher, das Git installiert ist und führe die entsprechenden Schritte durch (s. Manual).
 

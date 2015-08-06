@@ -143,6 +143,7 @@ Clone the git repository in a directory of your choice. With plain git on Linux 
 
     $ git clone https://github.com/flowdy/FlowgencyTM.git
     $ cd FlowgencyTM/
+    $ perl Makefile.PL
 
 For other systems, install the Git DVCS and do the according steps (cf. manual). All commands below are tested on a Debian 8 (stable) system. With another system, you may have to vary them.
 
