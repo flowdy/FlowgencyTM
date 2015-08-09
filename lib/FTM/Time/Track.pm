@@ -141,11 +141,13 @@ sub _add_child {
     my ($self, $child, $ref) = @_;
     my $children = $ref ? $self->{_ref_children} : $self->{_children};
     for my $c ( $children->{ $child->name } ) { $c = $child; weaken $c; }
+    $child->clear_inherited_variations if !$ref;
 }
 sub _drop_child {
     my ($self, $child, $ref) = @_;
     my $children = $ref ? $self->{_ref_children} : $self->{_children};
     delete $children->{$child->name};
+    $child->clear_inherited_variations if !$ref;
 }
 sub _ref_children { _children(shift, 1) }
 sub _add_ref_child { _add_child(shift, shift, 1) }
@@ -154,9 +156,15 @@ sub _drop_ref_child { _drop_child(shift, shift, 1) }
 
 has _variations => (
     is => 'ro',
-    isa => 'ArrayRef[HashRef]',
-    init_arg => 'variations',
+    init_arg => undef,
     default => sub { [] },
+);
+
+has inherited_variations => (
+    isa => 'HashRef',
+    lazy_build => 1,
+    init_arg => undef,
+    clearer => 'clear_inherited_variations',
 );
 
 around BUILDARGS => sub {
@@ -189,7 +197,11 @@ around BUILDARGS => sub {
 };
 
 sub BUILD {
-    my $self = shift;
+    my ($self, $args) = @_;
+
+    if ( my $v = $args->{variations} ) {
+        $self->_edit_variations($v);
+    }
 
     $self->apply_variations;
 
@@ -320,11 +332,8 @@ sub dump {
 
     my @variations = @{ $self->_variations };
     for my $var ( @variations ) {
-        delete $var->{ _may_modify_past };
-        $var = { %$var };
-        $_ = $_->name for $var->{week_pattern_of_track} // (),
-                          $var->{section_from_track} // ()
-                      ;
+        $var->_clear_modify_past;
+        $var = $var->dump();
     }
     $hash{variations} = \@variations if @variations;
 
@@ -613,7 +622,7 @@ sub apply_variations {
         my ($name, $base, $track, $obj)
             = delete @{$span}{qw( name base section_from_track _span_obj )};
 
-        my $_may_modify_past = $span->{ _may_modify_past };
+        my $_may_modify_past = $span->may_modify_past;
 
         my $attr = {
             map({
@@ -686,25 +695,30 @@ sub update {
 sub _edit_variations {
     my ($self, @variations) = @_;
 
+    my $inh_vars = $self->_inherited_variations;
+
     for my $new_var ( @variations ) {
         
         my $found;
         my $variations = $self->_variations;
 
         for my $old_var ( $new_var->{name} ? @$variations : () ) {
-            if ( $old_var->{name} eq $new_var->{name} ) {
-                _populate($old_var => $new_var);
-                $old_var = $new_var;
+            if ( $old_var->name eq $new_var->{name} ) {
+                if ( my $new_inh_ref = delete $new_var->{ref} ) {
+                    $old_var->ref($inh_vars->{$new_inh_ref});
+                }
+                $old_var->change( $new_var );
                 $found = 1;
+                last;
             }
             else {
-                $old_var->{ _may_modify_past } = 1;
+                $old_var->may_modify_past(1);
             }
             
         }
 
         if ( !$found ) {
-            push @$variations, $new_var;
+            push @$variations, FTM::Time::Track::Variation->new($new_var);
         }
 
     }
@@ -712,6 +726,50 @@ sub _edit_variations {
     for my $desc ( values %{ $self->gather_family } ) {
         $desc->apply_variations;
     }
+}
+
+around 'inherited_variations' => sub {
+    my ($orig, $self) = @_;
+
+    my $inh = $self->$orig();
+
+    if ( wantarray ) {
+        my $max = 0;
+        for ( values %$inh ) {
+            my $seqno = $_->seqno;
+            $max = $seqno if $seqno > $max;
+        }
+        return $max, %$inh;       
+    }
+    else { return $inh; }
+
+};
+
+sub _build_inherited_variations {
+    my ($self) = @_;
+
+    my %variations;
+    my ($next_incr, $incr) = (0, 0);
+    for my $p ( $self->_parents ) {
+        while ( my ($name, $var) = each %{ $self->all_variations } ) {
+            ...
+        }
+    }
+    
+}
+
+sub all_variations {
+    my ($self) = @_;
+
+    my ($i, %variations) = $self->inherited_variations;
+
+    for my $v ( $self->_variations ) {
+        $v->seqno(++$i);
+        $variations{ $v->name } = $v;
+    }
+
+    return %variations;
+
 }
 
 sub gather_dependencies {

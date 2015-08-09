@@ -6,7 +6,9 @@ use Moose;
 
 with FTM::Time::Structure::Link;
 
-has [ '+from_date', '+until_date' ] => ( required => 0 );
+for my $date ( 'from_date', 'until_date' ) {
+    has "+$date" => ( required => 0, predicate => "${date}_is_explicit" );
+}
 
 has name => ( is => 'rw' );
 
@@ -54,7 +56,7 @@ has inherit_mode => ( is => 'rw', isa => 'Str' );
 
 has apply => ( is => 'rw', isa => 'Str|Bool' );
 
-has base => ( is => 'rw', isa => 'FTM::Time::Track::Variation' );
+has base => ( is => 'rw', isa => 'FTM::Time::Track::Variation', weaken => 1 );
 
 has track => ( is => 'rw', isa => 'FTM::Time::Track', weaken => 1 );
 
