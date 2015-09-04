@@ -267,7 +267,7 @@ test_cmp_variations(@$_) for
        [ '[ 2  3] [ 1  4] : [B [A A] B]' => X ])
 ;
  
-my ($a_fd, $a_ud, $b_fd, $b_ud, $mode, $flag_overlap, $flag_covered, $left_polarity, $right_polarity);
+my ($a_fd, $a_ud, $b_fd, $b_ud, $mode);
 sub cmp_variations {
 
     # For variations situated properly apart in regard to their start/end
@@ -304,10 +304,10 @@ sub cmp_variations {
                       || ( ( $mode &  5 ) ==  5 && $a_ud == $b_ud )
                       ;
 
-    return 0 if $mode ==  7 ? $a_ud > $b_ud || $a_ud < $b_fd
+    return 0 if $mode ==  7 ? $a_ud < $b_fd || $a_ud > $b_ud
               : $mode == 11 ? $a_fd < $b_fd || $a_fd > $b_ud
               : $mode == 13 ? $b_ud < $a_fd || $b_ud > $a_ud
-              : $mode == 14 ? $b_fd > $a_ud || $b_fd < $a_fd
+              : $mode == 14 ? $b_fd < $a_fd || $b_fd > $a_ud
               :               1
               ;
 

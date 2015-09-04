@@ -724,6 +724,7 @@ sub _edit_variations {
     }
 
     for my $desc ( values %{ $self->gather_family } ) {
+        @$_ = sort { $a->cmp_position_to($b) } @$_ for $self->_variations;
         $desc->apply_variations;
     }
 }
