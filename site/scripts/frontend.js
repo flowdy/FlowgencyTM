@@ -93,7 +93,13 @@ function Ranking (args) {
             $.post('/update', str_params).done(function () {
                 delete nextload.update_tasks;
                 rerank();
-            }).fail(function () { alert("Couldn't post changed data!"); });
+            }).fail(function (jqXHR, textStatus) {
+                alert("HTTP POST failure. Status code: "
+                    + jqXHR.status
+                    + ". For details see server.log file.\n"
+                    + "(Proper error handling and reporting yet under construction.)"
+                );
+            });
         }
         else rerank();
         return false;
