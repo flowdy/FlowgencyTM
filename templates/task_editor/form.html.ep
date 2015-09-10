@@ -27,17 +27,17 @@
 <p class="help">A name for a task is found automatically on creation. You may want to provide a prefix. If the prefix exists, an number is appended and incremented until the ID is unique. You may suggest the number where the incrementing is to start.</p>
 <p class="input"><input name="incr_name_prefix"></p>
 % }
-<dt>Title</dt>
+<dt>Title *</dt>
 <dd class="input"><input type="text" value="<%= $std->{title} %>" name="title" ></dd>
-<dt>Priority level</dt>
+<dt>Priority level *</dt>
 <dd><p class="help">Dedicate the maximum number you ever assigned (currently <%= $prio_max %>, average <%= sprintf '%.2f', $prio_avg %>) for first priority tasks only. Those tasks with that level will be no more first priority once you input an even higher level for this task.</p>
 <p class="input"><% for ( @priorities ) { my ($label, $num) = @$_; %><label><input type="radio" name="priority" value="<%= $num %>" <%= $num == $std->{priority} ? 'checked' : '' %>><%= $label %></label><% } %><input type="radio" name="priority"><input type="number" min="1" value="<%= $std->{priority} %>"></p>
 </dd>
-<dt>Start date</dt>
+<dt>Start date *</dt>
 <dd><p class="help">If it is now, just leave it empty.</p>
 <p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"></p>
 </dd>
-<dt>Time stages</dt>
+<dt>Time stages *</dt>
 <dd><p class="help">Associate the task to a time track you can define and modify in the settings,  and specify the due date. You may also specify points of time when the task shall change the track.</p>
 <div class="input">
 <table class="time-stages">
@@ -54,9 +54,10 @@
 </tr>
 % }
 </table>
-</div><dd>
-% }
+</div></dd>
 <dt>Description</dt>
+% }
+<dt>Description *</dt>
 <dd><p class="help">You can use Markdown syntax. Heading levels are automatically increased by 3.</p>
 <div class="input"><textarea name="description" rows="5" style="width:90%"><%= $step->{description} %></textarea></div></dd>
 <dt>Expenditure of time share</dt>
@@ -84,13 +85,23 @@ Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:9
 
 %= $render_fieldset->({ name => '_NEW_STEP_' });
 
-<div style="float:left;">Jump to step: <select id="steps-for-<%= $id // "_NEW_TASK_" %>-tree" name="step">
+% my $step_switcher_id = sprintf "steps-for-%s-tree", $id // "_NEW_TASK_";
+<div style="text-align:right;"><label for="<%= $step_switcher_id %>">Switch step:</label> <select id="<%= $step_switcher_id %>" name="step">
 % for my $step ( sort keys %$steps ) {
-<option value="<%= $step %>"><%= $step %></option>
+% my $label = length $step ? $step : "MAIN ($id)";
+<option value="<%= $step %>"><%= $label %></option>
 % }
 </select></div>
 
-% if ( !$bare_mode ) {
+% if ( $bare_mode ) {
+<ul style="font-size:smaller;">
+<li>Fields marked with an <strong>asterisk (*)</strong> are required. <a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;">2 more hints</a></li>
+<li style="display:none;"><strong>Finished and ready?</strong> Click the FlowgencyTM logo to submit all created or modified data and to get a freshly re-ranked list of pending tasks.</li>
+<li style="display:none;">If a general and vacuous <strong>error message</strong> pops up instead (&quot;HTTP POST failure...&quot;), admins may want to see the <code>server.log</code> file where might be cues for the cause. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
+
+</ul>
+% }
+% else {
 <div style="text-align:right;"><input type="submit" name="parse_json" value="Send"></div>
 
 <p>Create or edit a task:</p>
