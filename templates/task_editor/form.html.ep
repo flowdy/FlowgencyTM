@@ -95,9 +95,9 @@ Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:9
 
 % if ( $bare_mode ) {
 <ul style="font-size:smaller;">
-<li>Fields marked with an <strong>asterisk (*)</strong> are required. <a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;">2 more hints</a></li>
-<li style="display:none;"><strong>Finished and ready?</strong> Click the FlowgencyTM logo to submit all created or modified data and to get a freshly re-ranked list of pending tasks.</li>
-<li style="display:none;">If a general and vacuous <strong>error message</strong> pops up instead (&quot;HTTP POST failure...&quot;), admins may want to see the <code>server.log</code> file where might be cues for the cause. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
+<li>Fields marked with an <strong>asterisk (*)</strong> are required.<a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;"><br>Finished and ready – what next? (2 more hints)</a></li>
+<li style="display:none;"><strong>Finished and ready?</strong> Click the FlowgencyTM logo to create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list.</li>
+<li style="display:none;">Should a general and vacuous <strong>error message</strong> pop up instead (&quot;HTTP POST failure...&quot;), admins may want, i.e. non-admin users may ask their admin to see the <code>server.log</code> file for details. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
 
 </ul>
 % }
