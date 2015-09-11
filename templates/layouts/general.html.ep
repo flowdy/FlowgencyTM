@@ -9,13 +9,13 @@
   </script>
 <![endif]-->
   <link rel="stylesheet" type="text/css"
-     href="/scripts/jquery-ui-1.11.2.custom/jquery-ui.min.css" media="screen,projection">
+     href="/scripts/jquery-ui-1.11.4.custom/jquery-ui.min.css" media="screen,projection">
   <link rel="stylesheet" type="text/css"
      href="/screen.css" media="screen,projection">
   <link rel="stylesheet" type="text/css"
      href="/anytime.5.1.0.min.css" media="screen,projection">
   <script src="/scripts/jquery-1.9.1.min.js"></script>
-  <script src="/scripts/jquery-ui-1.11.2.custom/jquery-ui.min.js"></script>
+  <script src="/scripts/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
   <script src="/scripts/anytime.5.1.0.min.js"></script>
 % my $scripts = stash 'addScripts';
 % for my $script ( 'frontend', @$scripts ) {
