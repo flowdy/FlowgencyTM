@@ -27,7 +27,7 @@ coerce 'RgbColour',
     via {[ map { hex($_) } m{ \A \# (?: ([0-9a-f][0-9a-f]) ){3} \z }xms ]}
     ;
 
-coerce 'FTM::Time::Rhythm'
+coerce 'FTM::Time::Rhythm',
     from 'Str',
     via { FTM::Time::Rhythm->from_string( shift, { init_day => [ Today() ] }) }
     ;

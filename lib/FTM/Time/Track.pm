@@ -161,6 +161,7 @@ has _variations => (
 );
 
 has inherited_variations => (
+    is => 'ro',
     isa => 'HashRef',
     lazy_build => 1,
     init_arg => undef,
@@ -695,7 +696,7 @@ sub update {
 sub _edit_variations {
     my ($self, @variations) = @_;
 
-    my $inh_vars = $self->_inherited_variations;
+    my $inh_vars = $self->inherited_variations;
 
     for my $new_var ( @variations ) {
         
@@ -729,7 +730,7 @@ sub _edit_variations {
     }
 }
 
-around 'inherited_variations' => sub {
+around inherited_variations => sub {
     my ($orig, $self) = @_;
 
     my $inh = $self->$orig();
