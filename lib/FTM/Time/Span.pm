@@ -16,7 +16,11 @@ with "FTM::Time::Structure::Link";
 
 has description => ( is => 'rw', isa => 'Str' );
 
-has track => ( is => 'rw', isa => 'FTM::Time::Track', weak_ref => 1 );
+has orig => (
+    is => 'rw',
+    isa => 'FTM::Time::Track|FTM::Time::Variation',
+    weak_ref => 1
+);
 
 has rhythm => (
     is => 'ro',
@@ -109,7 +113,7 @@ sub from_string {
 sub new_alike {
     my ($self, $args) = @_;
 
-    for my $arg (qw/from_date until_date description track/) {
+    for my $arg (qw/from_date until_date description orig/) {
         next if exists $args->{$arg};
         $args->{$arg} = $_ if defined($_ = $self->$arg());
     }

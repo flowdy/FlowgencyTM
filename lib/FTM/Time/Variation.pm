@@ -1,71 +1,35 @@
 use strict;
 
-package FTM::Time::Track::Variation;
-use FTM::Types;
+package FTM::Time::Variation;
 use Moose;
 
 with FTM::Time::Structure::Link;
 
-for my $date ( 'from_date', 'until_date' ) {
-    has "+$date" => ( required => 0, predicate => "${date}_is_explicit" );
-}
-
 has name => ( is => 'rw' );
 
-has position => ( is => 'rw' );
-
 has description => ( is => 'rw' );
-
-has ref => (
-    is => 'rw',
-    isa => 'Maybe[Str]',
-    trigger => sub {
-       my ($self) = @_;
-       $_ = undef for @{$self}{'week_pattern','section_from_track'};
-    },
-    lazy => 1,
-    default => sub {
-       my ($self) = @_;
-       return $self->name if !$self->week_pattern
-                          && !$self->section_from_track
-                          ;
-       return;
-    }
-);
-
-has week_pattern => (
-    is => 'rw',
-    isa => 'Maybe[FTM::Time::Rhythm]',
-    trigger => sub {
-       my ($self) = @_;
-       delete @{$self}{'ref','section_from_track'};
-    },
-    coerce => 1,
-);
-
-has section_from_track => (
-    is => 'rw',
-    isa => 'Maybe[FTM::Time::Track]',
-    trigger => sub {
-       my ($self) = @_;
-       delete @{$self}{'week_pattern','ref'};
-    },
-);
 
 has inherit_mode => ( is => 'rw', isa => 'Str' );
 
 has apply => ( is => 'rw', isa => 'Str|Bool' );
 
-has base => ( is => 'rw', isa => 'FTM::Time::Track::Variation', weaken => 1 );
+has track => (
+    is => 'rw',
+    isa => 'FTM::Time::Track',
+    weak_ref => 1,
+);
 
-has track => ( is => 'rw', isa => 'FTM::Time::Track', weaken => 1 );
+sub from_date_is_explicit { 1 }
+sub until_date_is_explicit { 1 }
+sub week_pattern { shift->track->week_pattern }
 
-for my $prop (qw(from_date until_date description week_pattern section_from_track inherit_mode)) {
-    around $prop => sub {
-        my ($orig, $self, @val) = @_;
-        return $self->$orig(@val) if @val || exists $self->{$prop};
-        return $self->base->$prop();
-    }
+sub span {
+    my ($self) = @_;
+    return FTM::Time::Span->new({
+        map { $_ => $self->$_ } qw(
+            week_pattern description from_date until_date
+        )
+    });
 }
 
 sub cmp_position_to {
@@ -82,26 +46,27 @@ sub cmp_position_to {
     #       that the variation mentioned right-hand in the track's list of own
     #       or adapted variations trims or covers the left-hand one.
     #    b) If both end/start dates are explicit, an exception of class
-    #       FTM::X::VariationsInterlace is thrown.
-    #       
+    #       FTM::Error::TimeVariation::Interlaced is thrown.
+    #
     # Thus, the user can change start/end dates of variations without worrying
     # about position conflicts between variations in other tracks.
     # 
 
     my $mode = 0;
-    my ($a_fd, $a_ud, $b_fd, $b_ud) = (
-        $left->from_date, $left->until_date,
-        $right->from_date, $right->until_date,
-    );
     if ( $left ->from_date_is_explicit  ) { $mode |= 8 }
     if ( $left ->until_date_is_explicit ) { $mode |= 4 }
     if ( $right->from_date_is_explicit  ) { $mode |= 2 }
     if ( $right->until_date_is_explicit ) { $mode |= 1 }
 
+    my ($a_fd, $a_ud, $b_fd, $b_ud) = (
+        $left->from_date, $left->until_date,
+        $right->from_date, $right->until_date,
+    );
+
     return -1 if $b_fd > $a_ud && $a_fd < $b_ud;
     return  1 if $b_fd < $a_ud && $a_fd > $b_ud;
 
-    FTM::Error::TimeTrackVariation::Interlaced->throw(
+    FTM::Error::TimeVariation::Interlaced->throw(
         left => $left, right => $right
     ) if $mode == 15 
       || ( ( $mode & 10 ) == 10 && $a_fd == $b_fd )
@@ -117,17 +82,52 @@ sub cmp_position_to {
               :               1
               ;
 
-    FTM::Error::TimeTrackVariation::Interlaced->throw(
+    FTM::Error::TimeVariation::Interlaced->throw(
         left => $left, right => $right
     );
 
 }
 
-package FTM::Error::TimeTrackVariation::Interlaced;
+sub subtype_instance {
+    use FTM::Time::Variation::BorrowedRhythm;
+    use FTM::Time::Variation::Derived;
+    use FTM::Time::Variation::DifferentRhythm;
+    use FTM::Time::Variation::Section;
+
+    my (undef, $args) = @_;
+    my $package = __PACKAGE__;
+
+    if ( $args->{ref} ) {
+        if ( $args->{ref} =~ s/^@// ) {
+            croak "Contradiction: Can't depend on another object as week_pattern is passed"
+                if $args->{week_pattern};
+            if ( $args->{ref} =~ s/\+$// ) {
+                $package .= '::Section';
+            }
+            elsif ( length $args->{ref} ) {
+                $package .= '::BorrowedRhythm';
+            }
+        }
+        else {
+            $package .= '::Derived';
+        }
+    }
+    
+    elsif ( $args->{week_pattern} ) {
+        croak "Contradiction: Can't depend on another object as week_pattern is passed"
+            if $args->{ref};
+        $package .= '::DifferentRhythm';
+    }
+
+    return $package->new($args);
+
+}
+
+package FTM::Error::TimeVariation::Interlaced;
 extends FTM::Error;
 
-has left => ( isa => 'FTM::Time::Track::Variation' );
-has right => ( isa => 'FTM::Time::Track::Variation' );
+has left => ( isa => 'FTM::Time::Variation' );
+has right => ( isa => 'FTM::Time::Variation' );
 
 has '+message' => ( required => 0 );
 
@@ -137,7 +137,7 @@ around 'message' => sub {
     if ( @_ > 1 ) { return $orig->(@_); }
 
     return $orig->(shift) //
-        sprintf "Variations in %s interlaced due to explicit dates: %s <-> %s",
+        sprintf "Variations in %s may not be interlaced due to explicit dates: %s <-> %s",
             $left->track->name,
             $left->name // "$left", $right->name // "$right"
         ;

@@ -719,7 +719,8 @@ sub _edit_variations {
         }
 
         if ( !$found ) {
-            push @$variations, FTM::Time::Track::Variation->new($new_var);
+            push @$variations,
+                FTM::Time::Variation->subtype_instance( $new_var );
         }
 
     }
