@@ -29,7 +29,7 @@ has fillIn => (
     },
 );
 
-has _lock_time => (
+has _lock_until_date => (
     is => 'rw',
     isa => 'FTM::Time::Spec',
     predicate => 'is_used',
@@ -210,8 +210,8 @@ sub BUILD {
 
 sub calc_slices {
     my ($self, $from, $until) = @_;
-    if ( !$self->is_used || $until > $self->_lock_time ) {
-        $self->_lock_time($until);
+    if ( !$self->is_used || $until > $self->_lock_until_date ) {
+        $self->_lock_until_date($until);
     }
     $from = $from->run_from if $from->isa("FTM::Time::Cursor");
 
@@ -219,12 +219,18 @@ sub calc_slices {
                ->calc_slices($from, $until);
 }
 
+after clear_inherited_variations => sub {
+    my ($self) = @_;
+    $_->clear_inherited_variations
+        for $self->_children, $self->_ref_children;
+};
+
 around couple => sub {
     my ($wrapped, $self, $span, $opts) = @_;
     $opts //= {};
 
     if ( $self->is_used ) {
-       my $ref_time = $self->_lock_time;
+       my $ref_time = $self->_lock_until_date;
        $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
        if ( !$opts->{ _may_modify_past } && $span->from_date <= $ref_time ) {
            croak "Span cannot begin within the used coverage of the track ",
