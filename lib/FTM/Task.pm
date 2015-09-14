@@ -458,7 +458,7 @@ sub _store_root_step {
         FTM::Error::Task::InvalidDataToStore->throw(
             "root step cannot have a parent"
         ) if defined $data->{parent};
-        $self->_normalize_task_data($data => $row);
+        $self->_normalize_task_data($data);
     }
 
     while ( my ($key, $value) = each %$data ) {

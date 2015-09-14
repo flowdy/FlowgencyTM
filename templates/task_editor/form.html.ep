@@ -6,7 +6,7 @@
 % my $tree = stash('tree') // [];
 % my $incr_prefix = stash 'incr_prefix';
 % my ($prio_max, $prio_avg) = delete @{$_priodir}{'_max', '_avg'};
-% my $steps = stash('steps') // { '' => { expoftime_share => 1, checks => 1, done => 0, subtask_data => {} } };
+% my $steps = stash('steps') // { '' => { subtask_data => {} } };
 % my @priorities = map { [ $_, $_priodir->{$_} ] } sort { $_priodir->{$a} <=> $_priodir->{$b} } keys %$_priodir;
 <p id="error-msg">
 % if ( my $message = stash 'message' ) {
@@ -24,7 +24,7 @@
 % if ( !$name && $incr_prefix ) {
 <dt>ID prefix</dt>
 <dd class="input">
-<p class="help">A name for a task is found automatically on creation. You may want to provide a prefix. If the prefix exists, an number is appended and incremented until the ID is unique. You may suggest the number where the incrementing is to start.</p>
+<p class="help">A name for a task is found automatically on creation. Sometimes you may want to provide a prefix consisting of alphabetical characters. If the prefix exists, a number is appended and incremented until the ID is unique. You may suggest the number where the incrementing is to start.</p>
 <p class="input"><input name="incr_name_prefix"></p>
 % }
 <dt>Title *</dt>
@@ -33,8 +33,8 @@
 <dd><p class="help">Dedicate the maximum number you ever assigned (currently <%= $prio_max %>, average <%= sprintf '%.2f', $prio_avg %>) for first priority tasks only. Those tasks with that level will be no more first priority once you input an even higher level for this task.</p>
 <p class="input"><% for ( @priorities ) { my ($label, $num) = @$_; %><label><input type="radio" name="priority" value="<%= $num %>" <%= $num == $std->{priority} ? 'checked' : '' %>><%= $label %></label><% } %><input type="radio" name="priority"><input type="number" min="1" value="<%= $std->{priority} %>"></p>
 </dd>
-<dt>Start date *</dt>
-<dd><p class="help">If it is now, just leave it empty.</p>
+<dt>Start date</dt>
+<dd><p class="help">You need to set it only if you want the task to start at a later date/time.</p>
 <p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"></p>
 </dd>
 <dt>Time stages *</dt>
@@ -57,13 +57,15 @@
 </div></dd>
 <dt>Description</dt>
 % }
+% else {
 <dt>Description *</dt>
-<dd><p class="help">You can use Markdown syntax. Heading levels are automatically increased by 3.</p>
+% }
+<dd><p class="help">If you have installed the markdown package or, precisely, the Text::Markdown CPAN module (optional; you can do it later but use the syntax already), it is loaded automatically and you can have clickable links, inline emphasis, headings and the like. Please note that heading levels are automatically increased by 3.</p>
 <div class="input"><textarea name="description" rows="5" style="width:90%"><%= $step->{description} %></textarea></div></dd>
 <dt>Expenditure of time share</dt>
 <dd><p class="help">By how much shall the completion of this step advance the overall progress?<br>
 To estimate this value right, imagine the expenditure of time used by the superordinate step (or task, alternatively) as a pie to be shared with all subordinate steps incl. this one <em>and additionally</em> each of its own subordinate steps. The pieces are equal in size but of any number in total. However, you may allocate to this step more than one. When in doubt, better leave the default of 1.</p>
-<p class="input">Allocate: <input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} %>" /> piece of superordinate time share</p>
+<p class="input">Allocate: <input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} // 1 %>" /> piece of superordinate time share</p>
 </dd>
 <dt>Subordinate steps</dt>
 <dd><p class="help">For naming steps the following characters are allowed: A-Z,a-z,0-9. If you want multiple steps, separate them by one of the following separators, depending on meaning:
@@ -71,9 +73,10 @@ To estimate this value right, imagine the expenditure of time used by the supero
 <li>Use <strong>/</strong> (slash) or <strong>|</strong> (vertical bar) to group steps among which the order of completion is irrelevant.</li><li>Separate steps or step groups by <strong>,</strong> (comma) to indicate that the order does matter.</li><li><strong>;</strong> (semicolon) instead of comma signals a final special group of steps not depending on any other one. Each is always displayed until completed.</li></ul>
 <p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
 <dt>Step progress</dt>
-<dd><p class="input"><br>
-Number of checks: <input type="number" name="checks" size="2" min="0" value="<%= $step->{checks} %>" ><br>
-Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:90%" name="done" value="<%= $step->{done} %>"></p></dd>
+<dd><p class="input">
+% $step->{checks} //= 1;
+% $step->{done} //= 0;
+Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;vertical-align:middle;" name="done" value="<%= $step->{done} %>"> &rArr; <span><%= $step->{done} %></span> of <input type="number" name="checks" style="width:2em;" min="0" value="<%= $step->{checks} %>" ><br></p></dd>
 </fieldset>
 % end
 
@@ -95,8 +98,8 @@ Checked: <input type="range" min="0" max="<%= $step->{checks} %>" style="width:9
 
 % if ( $bare_mode ) {
 <ul style="font-size:smaller;">
-<li>Fields marked with an <strong>asterisk (*)</strong> are required.<a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;"><br>Finished and ready – what next? (2 more hints)</a></li>
-<li style="display:none;"><strong>Finished and ready?</strong> Click the FlowgencyTM logo to create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list.</li>
+<li>Fields marked with an <strong>asterisk (*)</strong> are required.<a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;"><br>Finished and ready to submit – but how? (2 more hints)</a></li>
+<li style="display:none;">Click the FlowgencyTM logo to actually create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list reflecting what you have submitted.</li>
 <li style="display:none;">Should a general and vacuous <strong>error message</strong> pop up instead (&quot;HTTP POST failure...&quot;), admins may want, i.e. non-admin users may ask their admin to see the <code>server.log</code> file for details. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
 
 </ul>

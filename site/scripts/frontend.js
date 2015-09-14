@@ -258,8 +258,11 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     });
 
     fieldset.find("input[name=checks]").change( function () {
-        this.parentNode.lastChild.max = this.value;
+        $(this).siblings("input").prop("max", this.value);
         update(this);
+    });
+    fieldset.find("input[name=done]").change( function () {
+        $(this).next("span").text(this.value);
     });
 
     // to add: time stages, substeps
