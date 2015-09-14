@@ -532,8 +532,9 @@ $(function () {
        });
 
        vtab.prepend(ul);
-       vtab.tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
-       vtab.find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+       vtab.tabs(); // .addClass( "ui-tabs-vertical ui-helper-clearfix" );
+       // vtab.find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+       vtab.find(".ui-tabs-nav").sortable();
 
        function addVariation () {
            var label = $("#new-variation-name").val(),
