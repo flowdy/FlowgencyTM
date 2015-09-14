@@ -76,17 +76,15 @@ How best to benefit from using FlowgencyTM
 
 ### Define your personal time model
 
-User profiles are created with a default 24/7 time model. This is to avoid tasks to vanish at times, thus confusing the user. It is not meant at all to promote the idea that workoholism is of any good.
+User profiles are created with a default 24/7 time model. This is to avoid tasks to vanish at times, which would rather confuse the user. It is not meant at all to promote the idea that workoholism is of any good.
 
-Your experience of proper urgency-based ranking requires telling the software beforehand when you plan to work on the entered tasks and when not. With FlowgencyTM, you are to plan your working time roughly in advance. You can always modify your time model for the future (e.g. for holidays), but to touch the past would lead to false results which is why that would lead to an error message.
+Your experience of proper urgency-based ranking requires settling beforehand when you plan to work on the entered tasks and when not. With FlowgencyTM, you are to plan your working time roughly in advance. You can always modify your time model for the future (e.g. for holidays), but to touch the past would lead to false results which is why that would lead to an error message.
 
 Don't get that wrong: It is not required (practically it is impossible anyway) to follow your defined time model tightly down to the second. Just the more your actual working times match with what you have planned, of the more use will be FlowgencyTM for you. This asks of you some discipline. To a certain extent, you will have to let go of spontaneity, you have to plan your day and to stick. When you have to go no matter what your plans say, you can have a glance into a future state of your urgency ranking left alone till then, so there will be no nasty surprise when you return.
 
-So define: When are you at work? When do you engage in which job or project? And when are you off, absent from work, which means rather fully present for family, friends, hobbies and stuff? When do you want a *computated* reason to let go of worries related to your work organization, business imponderables drawing circles in your mind? Please note, however, that the amount of working time directly relates to how fast urgencies rise along the way.
+So define: When are you at work? When do you engage in which job or project? And when are you off, absent from work, which means rather fully present for family, friends, hobbies and stuff? When do you want a *computated* reason to let go of worries related to your work organization, business imponderables drawing circles in your mind? Keep in mind, however, that the overall amount of working time directly relates to how fast urgencies rise along the way.
 
-The time model system is very flexible in order to allow for hopefully everyone's preferences. For example, when you define a variation (a rhythm bound to a given time span) inside a time track, you can have that variation shared with other tracks specified in the track definition. So you need to define holidays only once in a master track, all subordinate "slave" tracks can automatically adopt them and future changes to them as well.
-
-But then there is a risk of overcomplicating your time model. If you don't understand why task X is unlisted as paused suddenly, this is unfavourable and can reduce your productivity by turning your focus back to time management instead of the tasks themselves. Keep it simple and stupid, and do not tune it all the time. Best change it only to add next holidays or when you are imposed / have agreed upon job structure changes.
+The time model system is very flexible in order to allow for hopefully everyone's preferences. For example, when you define a variation (a rhythm bound to a given time span) inside a time track, you can have that variation shared with other tracks specified in the track definition. So you need to define holidays only once in a master track, all subordinate "slave" tracks can automatically adopt them and future changes to them as well. But then there is a risk of overcomplicating your time model. If you don't understand why task X is unlisted as paused suddenly, this is unfavourable and can reduce your productivity by turning your focus back to time management instead of the tasks themselves. Keep it simple and stupid, and do not tune it all the time. Best change it only to add next holidays or when you are imposed / have agreed upon job structure changes.
 
 ### Appreciate your off-times
 
@@ -123,6 +121,8 @@ Wherefore all that, what's the vision?
 
 On the larger scale, if the software is used by many, this I hope is what FlowgencyTM will contribute to: As a kind of a feedback-driven pacemaker, there will be reliable rhythms of stress and relaxation in a global business life that is presently running amok, overheating more and more and therefore likely to collapse thoroughly someday.
 
+Software is for humans. That is, software is to serve humanity, hence must be humane.
+
 One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic nonstop GHz-rhythm is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
 
 At least I hope you get more flow experience – hence the name –, because you can focus better on tasks in your work as you can focus better on challenges in your life. Your employer would not say no if he effectively regains individual working time of up to twenty minutes that, according to studies, are regularly lost in average because you need them to refocus – and to fix errors due to lacking attention – after each unexpected interruption. 
@@ -130,56 +130,12 @@ At least I hope you get more flow experience – hence the name –, because you
 The concept in detail
 ---------------------
 
-This is the summary of the concept that you can read [in more detail](doc/konzept.en.md). Those who have got a good command of German might prefer [that version](doc/konzept.de.md) as it is at times more up-to-date than the english translation.
+This is the summary of the concept that you can read [in thorough detail](doc/konzept.en.md). Those who have got a good command of German might prefer [that version](doc/konzept.de.md) as it is at times more up-to-date than the english translation.
 
 Installation
 -------------
 
-FlowgencyTM is a prototype, yet just a proof-of-concept that can work like a smooth or fail badly, for others as likely as for myself. So you are welcome to use FlowgencyTM with test data! Keep in mind that this software is alpha. This means that crashes and a regularly corrupted database are to be expected. So do not yet use it for vital projects or if you do really cannot help doing, backup often! Please file bug-reports, for which I thank you very much in advance.
-
-FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac OS X and most linux distributions include it ready for use, ensure it is installed by running the command `perl -v`, or search the web how to install the latest version on your system. Windows users are recommended Strawberry Perl, please download from <http://strawberryperl.com/>.
-
-Clone the git repository in a directory of your choice. With plain git on Linux enter at a shell prompt:
-
-    $ git clone https://github.com/flowdy/FlowgencyTM.git
-    $ cd FlowgencyTM/
-    $ perl Makefile.PL
-
-For other systems, install the Git DVCS and do the according steps (cf. manual). All commands below are tested on a Debian 8 (stable) system. With another system, you may have to vary them.
-
-### Check the dependencies
-
-Check and install any prerequisites by running inside the FlowgencyTM directory, provided cpanm tool is installed on your system:
-
-  cpanm --installdeps .
-
-Instead, you might prefer installing the packages that your linux distribution repository provides. E.g. if you want to install FlowgencyTM on your Raspbian-driven Pi which however I do not quite recommend because it is rather slow:
-
-    $ git clone https://github.com/flowdy/FlowgencyTM.git
-    $ cd FlowgencyTM/
-    $ script/gather_check_dependencies 
-      # analyze output for missing modules ...
-    $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3 cpanminus
-    $ sudo cpanm Mojolicious # newer version, that one in the repo is deprecated
-    $ prove -rl t                      
-
-### Bootstrap flow.db database file
-
-FlowgencyTM does not yet work right from the box in a webbrowser. First, you need to initialize it, i.e. create a database, a user and also modify the time model unless you want to work 24/7:
-
-    $ script/install.sh
-
-This script also writes local.rc file used for script/daemon.
-
-### Start and manage the server:
-
-    $ script/daemon start
-      # waits for the first log line printed to file, then exits
-      # server process in the background runs until 'stop' command
-    $ script/daemon status # whenever you want
-      # status info and most recent log lines
-    $ script/daemon restart|update|stop # 'update' = 'restart'
-                                        # with `git pull` in between
+Please read [the installation guide](INSTALL.md)
 
 Credits to other Open source projects used
 ------------------------------------------
