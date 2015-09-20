@@ -1,10 +1,26 @@
 README (or the [german version](LIESMICH.md))
 =============================================
 
+ 1. [What is FlowgencyTM?](#what-is)
+ 2. [What is it not?](#what-is-not)
+ 3. [The FlowgencyTM demo service(s) (planned)](#demo)
+ 4. [How to benefit most from it?](#how-to-benefit)
+ 5. [Wherefore all that, what is the vision?](#vision)
+ 6. [The concept in more detail](#concept)
+ 7. [Installation](INSTALL.md) (see INSTALL.md)
+ 8. [Credits to other Open Source projects used](#acknowledgements)
+ 9. [Contact and Support](#contact)
+ 10. [Copyleft and license](#license)
+
+<a id="what-is"></a>
+What is FlowgencyTM?
+--------------------
+
 ![Logo](site/logo/flowgencytm.png)
 
-What is FlowgencyTM? - Seven key-notes
---------------------------------------
+In short, FlowgencyTM is a software tool to help establish a sustainable, healthy and humane work culture and reconcile it with our usual fast-paced parallel timed commitments in business. 
+
+Seven longer key-points explain that:
 
  1. FlowgencyTM is a tool to plan and to manage tasks, their urgencies, progresses and also dependencies if any, just for yourself. In a business world that is fallen for the multitasking illusion, it is essential to maintain atomic steps in a sequential order that allows for completing all of your tasks in time. Doing this all in mind wastes attentiveness and is prone to airy and impulsive revisioning. Better delegate consideration of which tasks deserve your attention most, by right now, to the computer. Provided the data you enter is appropriate, flow experience is then liklier to come, your working gets healthier and more sustainable.
 
@@ -30,10 +46,11 @@ What is FlowgencyTM? - Seven key-notes
 
  7. It is open source software licensed under the General Public License, version 3 or any later version. It resides on GitHub (URL: https://github.com/flowdy/FlowgencyTM) for you to download and use, or to fork it.
 
-This is how FlowgencyTM looks like on your screen:
+This is how FlowgencyTM looks like on your screen. In newer versions it differs, but essentially little changed:
 
 ![Screenshot](doc/snapshot-home.png)
 
+<a id="what-is-not"></a>
 What it is not
 --------------
 
@@ -51,6 +68,7 @@ Due to its architecture, it is technically possible to provide a FlowgencyTM ser
 
 After all a server is simply a program that communicates with other programs via a network interface, which can just as well be `localhost` (IP 127.0.0.1) to ensure that server and client are actually running on the same machine. Such so-called loopback interface is provided by any system that could likewise communicate with a remote machine via the internet. That way, a FlowgencyTM server listening to a localhost port is as safe against unauthorized access as the underlying SQLite database and any other locally stored file is.
 
+<a id="demo"></a>
 FlowgencyTM demo (planned)
 --------------------------
 
@@ -71,8 +89,9 @@ Every official test and demo site of FlowgencyTM (the "system") must comply to t
  3. Users must know that their accounts and all associated data are subject to being deleted without notice someday. You can configure a limit of user accounts and adapt it at any time and at your discretion considering server resources to spare.
 
 
-How best to benefit from using FlowgencyTM
-------------------------------------------
+<a id="how-to-benefit"></a>
+How to benefit most from this tool
+----------------------------------
 
 ### Define your personal time model
 
@@ -86,15 +105,17 @@ So define: When are you at work? When do you engage in which job or project? And
 
 The time model system is very flexible in order to allow for hopefully everyone's preferences. For example, when you define a variation (a rhythm bound to a given time span) inside a time track, you can have that variation shared with other tracks specified in the track definition. So you need to define holidays only once in a master track, all subordinate "slave" tracks can automatically adopt them and future changes to them as well. But then there is a risk of overcomplicating your time model. If you don't understand why task X is unlisted as paused suddenly, this is unfavourable and can reduce your productivity by turning your focus back to time management instead of the tasks themselves. Keep it simple and stupid, and do not tune it all the time. Best change it only to add next holidays or when you are imposed / have agreed upon job structure changes.
 
-### Appreciate your off-times
+### Observe your scheduled off-times
 
-Off does not mean stand-by. You do not need to load and look at FlowgencyTM every now and then. This would be like opening the fridge just to convince yourself that it is dark in there.
+Off does not mean stand-by. In those times you do not need to load and look at FlowgencyTM every now and then. This would be like opening the fridge just to convince yourself that it is dark in there.
 
-The use of FlowgencyTM is questionable if you end up having no regular periods of time when all time tracks are inactive, all tasks are suspended, that is, periods of real private, non-work and unorganized time.
+The use of FlowgencyTM is questionable if you end up having no regular periods of time when all time tracks are inactive and render all linked tasks hidden and pausing, i.e. periods of really private, non-work and unorganized time.
 
 ### Structure your tasks unless they are simple.<br>Check steps when they are done.
 
-Enter tasks before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
+Enter tasks before you do them. Enter even simple ones unless you are certain that doing them right ahead is notably faster than entering them first. It goes without saying, however, that utility of FlowgencyTM correlates with how much time is spent on tasks entered properly.
+
+In order to enable FlowgencyTM to calculate and rank their urgencies correctly, make sure you take the following questions into consideration:
 
   * When does a task start if not now, and when is it due?
 
@@ -115,7 +136,7 @@ Once a task is entered with proper data, and it is displayed somewhere below in 
 
 Check a step right when it is done. When you want to save the checks and you are mentally prepared to switch to another task that might have become more urgent than what you have been working on: Just deliberately click the FlowgencyTM logo to reorder the tasks by descending urgency as how it is at the time of the click. Tasks of which the associated time track is currently "off" will never raise in urgency while this is the case. In other words, these planned periods of still time are logically identical with the net second before. By default, paused tasks are even hidden from display.
 
-
+<a id="vision"></a>
 Wherefore all that, what's the vision?
 ---------------------------------------
 
@@ -123,10 +144,11 @@ On the larger scale, if the software is used by many, this I hope is what Flowge
 
 Software is for humans. That is, software is to serve humanity, hence must be humane.
 
-One could doubt, though, software is the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic nonstop GHz-rhythm is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
+One could doubt, though, that software can be the right means of help, but in an era of quite religious belief in computers and technology in general (which is something computer pioneer and late technology critic Joseph Weizenbaum made me question), it is high time to teach our computers that we must be off regularly because we are at last who deliver them energy to run. To comply with them in their agnostic nonstop GHz-rhythm is idiotic, it is like having our children say what we are to do. Keep in mind, too: Your competitors never sleep, maybe since they suffer burn-out syndrome ;-).
 
 At least I hope you get more flow experience – hence the name –, because you can focus better on tasks in your work as you can focus better on challenges in your life. Your employer would not say no if he effectively regains individual working time of up to twenty minutes that, according to studies, are regularly lost in average because you need them to refocus – and to fix errors due to lacking attention – after each unexpected interruption. 
 
+<a id="concept"></a>
 The concept in detail
 ---------------------
 
@@ -135,8 +157,9 @@ This is the summary of the concept that you can read [in thorough detail](doc/ko
 Installation
 -------------
 
-Please read [the installation guide](INSTALL.md)
+Please read [the installation guide](INSTALL.md). It is not yet as easy to install as it could be, but eventually I will deal with that.
 
+<a id="acknowledgements"></a>
 Credits to other Open source projects used
 ------------------------------------------
 
@@ -156,14 +179,17 @@ FlowgencyTM could not even be thought of without the following Open source tools
   * git – distributed version control system
   * InkScape – design of logo and icons
 
-Contact Author / Project initiator
------------------------------------
-
-(Address split up for the sake of spam protection. Just glue it together and apply the "@" sign replacing "at".)
+<a id="contact"></a>
+Contact and support
+-------------------
 
     flowgencytm-dev at mailbox. org
 
+(Address split up for the sake of spam protection. Just glue it together and apply the "@" sign replacing "at".)
 
+Please note: FlowgencyTM is alpha. For me as the developer, support is rather to make the software better than to support you individually. But I'll do what my time permits.
+
+<a id="license"></a>
 Copyleft and License
 --------------------
 
