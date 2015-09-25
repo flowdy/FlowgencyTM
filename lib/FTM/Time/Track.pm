@@ -4,7 +4,8 @@ use strict;
 package FTM::Time::Track;
 use Moose;
 use FTM::Time::Span;
-use Carp qw(carp croak);
+use FTM::Time::Variation;
+use Carp qw(croak);
 use Scalar::Util qw(blessed refaddr weaken);
 
 has name => (
@@ -19,22 +20,45 @@ has label => (
 );
 
 has fillIn => (
-    is => 'rw',
+    is => 'ro',
     isa => 'FTM::Time::Span',
     required => 1,
+    writer => '_fillIn',
     trigger => sub {
         my ($self, $new, $old) = @_;
-        croak "You cannot change fillIn rhythm for used track"
-            if $old && $self->is_used;
+        for my $c ( values %{ $self->{_ref_children} } ) {
+            next if !$c->[1];
+            $c->[0]->_fillIn($new);
+        }
+        continue { $c->reset; }
+        $self->reset;
     },
 );
 
-has _lock_until_date => (
-    is => 'rw',
+has lock_from_date => (
+    is => 'ro',
+    isa => 'FTM::Time::Spec',
+    handles => { 'modifiable_before_ts' => 'get_qm_timestamp' },
+);
+sub _set_lock_from_earlier {
+    my ($self, $new_ts, $cur_ts) = ( @_[0,1], \$_[0]->{lock_from_date} );
+    return if $$cur_ts && $$cur_ts <= $new_ts;
+    for ( $self->parents ) { $_->_set_lock_from_earlier($new_ts) }
+    $$cur_ts = $new_ts;
+}
+
+has lock_until_date => (
+    is => 'ro',
     isa => 'FTM::Time::Spec',
     predicate => 'is_used',
     handles => { 'modifiable_after_ts' => 'get_qm_timestamp' },
 );
+sub _set_lock_until_later {
+    my ($self, $new_ts, $cur_ts) = ( @_[0,1], \$_[0]->{lock_until_date} );
+    return if $$cur_ts && $new_ts <= $$cur_ts;
+    for ( $self->parents ) { $_->_set_lock_until_later($new_ts) }
+    $$cur_ts = $new_ts;
+}
 
 with 'FTM::Time::Structure::Chain';
 
@@ -46,46 +70,80 @@ has version => (
     clearer => '_update_version',
 );
 
-has ['+start', '+end'] => (
-    init_arg => 'fillIn'
+has '+start' => (
+    required => 0,
+    predicate => 'variations_rendered',
+    init_arg => undef,
 );
 
-has ['from_earliest', 'until_latest'] => (
-    is => 'rw',
-    isa => 'FTM::Time::Spec',
-    coerce => 1,
-    trigger => sub {
-        my $self = shift;
-        if ( $self->find_span_covering(shift) ) {
-            croak "Time track limits can be extended, not narrowed";
-        }
-        $self->_update_version;
-    }
+before start => sub {
+    &variations_rendered or &_apply_variations;
+};
+
+
+has '+end' => (
+    init_arg => 'fillIn',   
 );
+
+for ( ['from_earliest', 'until_latest'] ) {
+    has $_ => (
+        is => 'rw',
+        isa => 'FTM::Time::Spec',
+        coerce => 1,
+        trigger => \&_update_version,
+    );
+    before $_ => sub {
+        my $self = shift;
+        my $ts = @_ && $self->is_used ? shift : return;
+        $ts = ref($ts) eq 'ARRAY' ? FTM::Time::Spec->from(@$ts)
+            : !ref($ts)           ? FTM::Time::Spec->parse_ts($ts)
+            : $ts
+            ;
+        $DB::single=1;
+        croak "Time track limits can be extended, not narrowed"
+            if $ts > $self->lock_from_date
+            && $self->lock_until_date > $ts
+            ;
+    };
+}
 
 has successor => (
     is => 'rw',
     isa => 'FTM::Time::Track',
-    trigger => sub {
-        my ($self, $succ) = @_;
-        $succ->mustnt_start_later($self->end->until_date->successor);
-        $self->_update_version;
-    }
+    trigger => \&_update_version,
+    weak_ref => 1,
 );
+before successor => sub {
+    my ($self, $succ) = @_;
+    return if !$succ;
+    if ( my $until_date = $self->{until_latest} ) {
+        $succ->mustnt_start_later($until_date->successor);
+    }
+    elsif ( my $from_date = $succ->from_earliest ) {
+        croak "Track cannot succeed: It does not begin early enough."
+            if $self->is_used && $from_date < $self->lock_until_date;
+    }
+    else {
+        croak "Cannot succeed at unknown point in time";        
+    }
+    $self->{successor} = $succ;
+};
 
 has default_inherit_mode => (
     is      => 'rw',
     isa     => 'Str',
     default => 'optional',
+    trigger => \&clear_inherited_variations,
 );
 
 has force_receive_mode => (
     is => 'rw',
     isa => 'Maybe[Str]',
+    trigger => \&reset,
 );
 
 
-has _parents => (
+has parents => (
     is => 'rw',
     isa => 'ArrayRef[FTM::Time::Track]',
     init_arg => 'unmentioned_variations_from',
@@ -93,13 +151,10 @@ has _parents => (
     trigger => sub {
         my ($self, $new_value, $old_value) = @_;
         if ( $old_value ) {
-            for my $p (@$old_value) {
-                $p->_drop_child($self);
-            }
+            for my $p (@$old_value) { $p->_drop_child($self); }
         }
-        for my $p (@$new_value) {
-            $p->_add_child($self);
-        }
+        for my $p (@$new_value) { $p->_add_child($self); }
+        $self->clear_inherited_variations;
     }, 
     auto_deref => 1,
 );
@@ -110,19 +165,18 @@ has _children => (
     default => sub { {} },
 );
 
-has _ref_parent => (
+has ref => (
     is => 'rw',
     isa => 'FTM::Time::Track',
-    init_arg => 'ref',
     trigger => sub {
         my ($self, $new_value, $old_value) = @_;
         if ( my $p = $old_value ) {
             $p->_drop_ref_child($self);
         }
         $new_value->_add_ref_child($self);
-        return if !$old_value;
+        return if !$old_value; # why? - s. BUILDARGS
         $self->fillIn( $new_value->fillIn->new_alike );
-        $self->apply_variations;
+        $self->reset;
     }, 
 );
 
@@ -133,31 +187,88 @@ has _ref_children => (
 );
 
 sub _children {
-    my ($self, $ref) = @_;
-    my $children = $ref ? $self->{_ref_children} : $self->{_children};
+    my $self = shift;
+    my $children = $self->{_children};
     wantarray ? values %$children : [ values %$children ];
 }
 sub _add_child {
     my ($self, $child, $ref) = @_;
     my $children = $ref ? $self->{_ref_children} : $self->{_children};
     for my $c ( $children->{ $child->name } ) { $c = $child; weaken $c; }
-    $child->clear_inherited_variations if !$ref;
+    $child->clear_inherited_variations;
 }
 sub _drop_child {
-    my ($self, $child, $ref) = @_;
-    my $children = $ref ? $self->{_ref_children} : $self->{_children};
-    delete $children->{$child->name};
-    $child->clear_inherited_variations if !$ref;
+    my ($self, $child) = @_;
+    delete $self->{_children}{ $child->name };
+    $child->clear_inherited_variations;
 }
-sub _ref_children { _children(shift, 1) }
-sub _add_ref_child { _add_child(shift, shift, 1) }
-sub _drop_ref_child { _drop_child(shift, shift, 1) }
 
+sub _ref_children {
+    my $self = shift;
+    my @children = map { $_->[0] } values %{$self->{_ref_children}};
+    wantarray ? @children : \@children;
+}
+sub _add_ref_child {
+    my ($self, $other) = @_;
+    my $var = do {
+        if ( $other->isa("FTM::Time::Variation") ) {
+            my $obj = $other;
+            $other = $other->track;
+            $obj;
+        }
+        else { undef }
+    };
 
-has _variations => (
+    my $aref = $self->{_ref_children}{ $other->name }
+           //= do { my $ar = [ $other, 0 ]; weaken $ar->[0]; $ar }
+             ;
+
+    if ( $var ) {
+        push @$aref, $var;
+        weaken $aref->[ -1 ];
+    }
+    else {
+        $aref->[1] = 1;
+    }
+
+}
+sub _drop_ref_child {
+    my ($self, $other) = @_;
+    my $var = do {
+        if ( $other->isa("FTM::Time::Variation") ) {
+            my $obj = $other;
+            $other = ($other)->track;
+            $obj;
+        }
+        else { undef };
+    };
+
+    my $cref = $self->{_ref_children};
+    my $aref = $cref->{ ($other)->name } // return;
+
+    if ( $var ) {
+        for my $i ( 2 .. @$aref-1 ) {
+            next if $var == $aref->[$i];
+            splice @$aref, $i, 1;
+            last;
+        }
+    }
+    else {
+        $aref->[1] = 0;
+    }
+
+    if ( !$aref->[1] && @$aref < 3 ) {
+        delete $cref->{ $other->name };
+    }
+
+}
+    
+has variations => (
     is => 'ro',
+    isa => 'ArrayRef',
     init_arg => undef,
     default => sub { [] },
+    auto_deref => 1,
 );
 
 has inherited_variations => (
@@ -166,7 +277,17 @@ has inherited_variations => (
     lazy_build => 1,
     init_arg => undef,
     clearer => 'clear_inherited_variations',
+    auto_deref => 1,
 );
+
+after clear_inherited_variations => sub {
+    my ($self) = @_;
+    for ( $self->_children ) {
+        $_->clear_inherited_variations
+    }
+    $self->reset;
+};
+
 
 around BUILDARGS => sub {
     my ($orig, $class) = (shift, shift);
@@ -174,13 +295,10 @@ around BUILDARGS => sub {
     my $args = $class->$orig(@_);
 
     for my $fillIn ( $args->{fillIn} ) {
-        if ( $fillIn ) {
-            my $superfluous = join ( " and ", grep { exists $args->{$_} }
-                                  qw/week_pattern ref/
-                              );
-            carp "fillIn passed, but $superfluous too - will be ignored"
-               if $superfluous;
-        }
+        my @content = grep { exists $args->{$_} } qw/week_pattern ref/;
+        my $superfluous = join " and ", @content;
+        croak "fillIn passed, but $superfluous too" if $fillIn && @content;
+        croak "Both $superfluous passed which is ambiguous" if @content > 1;
         my $day_of_month = (localtime)[3];
         $fillIn //= FTM::Time::Span->new(
             week_pattern => delete $args->{week_pattern} // do {
@@ -199,44 +317,27 @@ around BUILDARGS => sub {
 
 sub BUILD {
     my ($self, $args) = @_;
-
-    if ( my $v = $args->{variations} ) {
-        $self->_edit_variations($v);
+    if ( my $vars = $args->{variations} ) {
+        $self->update_variations($vars);
     }
-
-    $self->apply_variations;
-
 }
 
 sub calc_slices {
     my ($self, $from, $until) = @_;
-    if ( !$self->is_used || $until > $self->_lock_until_date ) {
-        $self->_lock_until_date($until);
-    }
+
+    $self->_set_lock_from_earlier($from);
+    $self->_set_lock_until_later($until);
+
     $from = $from->run_from if $from->isa("FTM::Time::Cursor");
 
     return $self->find_span_covering($self->start, $from)
-               ->calc_slices($from, $until);
-}
+                ->calc_slices($from, $until);
 
-after clear_inherited_variations => sub {
-    my ($self) = @_;
-    $_->clear_inherited_variations
-        for $self->_children, $self->_ref_children;
-};
+}
 
 around couple => sub {
     my ($wrapped, $self, $span, $opts) = @_;
     $opts //= {};
-
-    if ( $self->is_used ) {
-       my $ref_time = $self->_lock_until_date;
-       $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
-       if ( !$opts->{ _may_modify_past } && $span->from_date <= $ref_time ) {
-           croak "Span cannot begin within the used coverage of the track ",
-               sprintf("(%s <= %s)", $span->from_date, $ref_time);
-       }
-    }
 
     my $last = $span->get_last_in_chain;
     my $sts = $self->from_earliest // $span->from_date;
@@ -264,7 +365,11 @@ around couple => sub {
             
     $self->$wrapped($span);
 
-    $self->_update_version;
+    if ( caller ne __PACKAGE__ ) {
+        # we assume reset() has not been called
+        $self->_update_version;
+    }
+
     return 1;
 
 };
@@ -313,12 +418,12 @@ sub dump {
     my ($self) = @_;
 
     my $successor = $self->successor;
-    my $ref_parent = $self->_ref_parent;
+    my $ref = $self->ref;
 
     my %hash = (
 
-        @{$self->_parents} ? (unmentioned_variations_from => [
-            map { $_->name } $self->_parents
+        @{$self->parents} ? (unmentioned_variations_from => [
+            map { $_->name } $self->parents
         ]) : (),
 
         (map {
@@ -331,13 +436,13 @@ sub dump {
 
         $successor ? (successor => $successor->name) : (),
 
-        $ref_parent ? ( ref => $ref_parent->name )
-                    : ( week_pattern => $self->fillIn->rhythm->description )
-                    ,
+        $ref ? ( ref => $ref->name )
+             : ( week_pattern => $self->fillIn->rhythm->description )
+             ,
 
     );
 
-    my @variations = @{ $self->_variations };
+    my @variations = @{ $self->variations };
     for my $var ( @variations ) {
         $var->_clear_modify_past;
         $var = $var->dump();
@@ -383,10 +488,9 @@ sub dump_spans {
 
 sub reset {
     my ($self) = @_;
-    my $fillIn = $self->fillIn;
-    $fillIn->nonext;
-    $self->_set_start($fillIn);
-    $self->_set_end($fillIn);
+    $self->fillIn->nonext;
+    delete @{$self}{'_set_start', '_set_end'};
+    $self->_update_version;
 }
 
 sub mustnt_start_later {
@@ -451,144 +555,21 @@ around until_latest => sub {
 
 };
 
-sub _populate {
-    my ($properties, $var) = @_;
-    while ( my ($key, $value) = each %$properties ) {
-        next if exists $var->{$key};
-        $var->{$key} = $value;
-    }
-}
+sub _apply_variations {
+    my $self = shift;
 
-sub _register_variations_in {
-    my ($self, $variations, $ancestry) = @_;
-
-    my $track_name = $self->name;
-
-    if ( defined $ancestry ) {
-        push @$ancestry, $track_name;
-    }
-    else { $ancestry = [ $track_name ]; }
-
-    for my $p (@{ $self->_parents }) {
-        $p->_register_variations_in( $variations, $ancestry );
-        pop @$ancestry;
-    }
-
-    my %seen;
-    my $cnt = keys %$variations;
-
-    VARIATION:
-    for my $var ( map { {%$_} } @{ $self->_variations } ) {
-        my ($name, $ref, $ref_track)
-            = delete @{$var}{'name', 'ref', 'week_pattern_of_track'};
-
-        $var->{ "_for_$track_name" } = delete $var->{apply} // 1;
-        $var->{ "_pos" }             = $cnt++; # increment after assignment
-
-        if ( $name and my $props = $variations->{$name} ) {
-
-            # Keep variation untouched unless it is inherited from ancestry
-            if ( !$props->{ _inherited_by }{ $track_name } ) {
-                carp "Variation $name left untouched: "
-                   . "originates from a sibling's ancestry";
-                next VARIATION;
-            }
-            elsif ( $props->{inherit_mode} eq 'block' ) {
-                carp "Variation $name has been blocked from inheritance. "
-                   . "If you need, reuse it by 'ref' attribute";
-                next VARIATION;
-            }
-
-            # When reusing a name, we must accept the rhythm
-            # of the original variation
-            my @must_be_empty = grep { defined }
-                @{$var}{'week_pattern','section_from_track'}, $ref_track
-                ;
-            croak "Reuse of a variation name ($name), but the rhythm is"
-                . "overwritten by an attribute" if @must_be_empty;
-
-            _populate( $props => $var );
-            
-        }
-
-        elsif ( defined $ref_track ) {
-            croak 'ref and week_pattern_of_track defined at the same time'
-                if defined $ref;
-            $var->{base} = $ref_track->fillIn;
-        }
-
-        elsif ( defined $ref ) {
-
-            my $properties = $variations->{$ref}
-                // croak "Track $track_name, variation $name: ",
-                    ref $ref
-                        ? "'ref' is $ref, i.e. neither a variation "
-                          . "name nor a reference to another track"
-                        : "No base variation with name '$ref' registered"
-                        ;
-
-            for my $key (qw( week_pattern section_from_track )) {
-                next if !defined $var->{$key};
-                croak "$name: $key property present "
-                    . "but bases on $ref"
-                    ;
-            }
-
-            _populate( $properties => $var );
-
-            $var->{base} = delete $var->{_span_obj};
-
-        }
-
-        elsif ( my $p = delete $var->{week_pattern} ) {
-            my $span = FTM::Time::Span->new(
-                %$var,
-                week_pattern => $p,
-                track => $self
-            );
-            $var->{ _span_obj } = $span;
-        }
-
-        elsif ( !$var->{base} ) {
-            $var->{base} = $self->fillIn;
-        }
-
-        $var->{ inherit_mode  }
-            //= defined $name ? $self->default_inherit_mode : 'optional';
-
-        $var->{ _inherited_by } //= { map { $_ => 1 } @$ancestry };
-
-        $name        //= "_unnamed_" . refaddr $var;
-        $seen{ $name } = 1;
-
-        $variations->{ $name } = $var;
-    }
-
-    return \%seen;
-
-}
-
-sub apply_variations {
-    my ($self) = @_;
-
-    my (%levels, %variations);
+    my $variations = $self->all_variations;
     my @ORDER = qw( bottom suggest middle impose top );
-    
-    if ( $self->start->next ) { $self->reset; }
-
-    my $seen = $self->_register_variations_in( \%variations );
-
     my $force_inh = $self->force_receive_mode;
-    for my $key ( @ORDER ) { $levels{ $key } = [] }
+
+    my %levels = map { $_ => [] } @ORDER;
 
     VARIATION:
-    while ( my ($name, $properties) = each %variations ) {
+    for my $var ( values %$variations ) {
 
         my $level;
 
-        if ( $seen->{ $name } ) {
-
-            my $apply = delete $properties->{ "_for_" . $self->name };
+        if ( defined(my $apply = $var->apply) ) {
 
             next VARIATION if !$apply || lc $apply eq 'ignore';
 
@@ -596,13 +577,14 @@ sub apply_variations {
                             : lc $apply eq 'bottom' ? 'bottom'
                             : lc $apply eq 'top'    ? 'top'
                             :     croak "apply = $apply"
-                     } // die $apply
-                     ;
+                            } // die $apply
+                         ;
+
         }
 
         else {
 
-            my $inh = $properties->{ inherit_mode };
+            my $inh = $var->inherit_mode;
             next VARIATION if lc $inh eq 'block';
             $inh = $force_inh // $inh;
             next VARIATION if lc $inh eq 'optional';
@@ -614,170 +596,167 @@ sub apply_variations {
 
         }
 
-        delete $properties->{ inherit_mode };
-        push @$level, $properties;
+        push @$level, $var;
 
     }
 
-    my @arranged_variations
-        = map { sort { $a->{_pos} <=> $b->{_pos} } @$_ } @levels{ @ORDER };
-
-    my @ATTRIBUTES = qw(from_date until_date description);
-
-    for my $span ( @arranged_variations ) {
-
-        my ($name, $base, $track, $obj)
-            = delete @{$span}{qw( name base section_from_track _span_obj )};
-
-        my $_may_modify_past = $span->may_modify_past;
-
-        my $attr = {
-            map({
-                exists $span->{$_} ? ($_ => delete $span->{$_}) : ()
-            } @ATTRIBUTES),
-            track => $self
-        };
-
-        if ( my @unprocessed = grep { !/^_/ } keys %$span ) {
-            croak "Unprocessed attributes for variation '$name': "
-                . join q{, }, @unprocessed
-                ;
-        }
-
-        $span = $base  ? $base->new_alike( $attr )
-              : $track ? $track->get_section( $attr )
-              : $obj   // croak "Not enough data to make span $name"
-        ;
-
-        $self->couple( $span, {
-            trimmable => 1,
-            _may_modify_past => $_may_modify_past,
-        });
-
-    }
+    $self->_set_start($self->fillIn);
     
+    $self->couple( $_->span, { trimmable => 1 })
+        for map {
+              sort { $a->seqno <=> $b->seqno } @$_
+            } @levels{ @ORDER }
+    ;
+
 }
 
 sub update {
     my ($self, $args) = @_;
 
-    my ($base, $week_pattern) = delete @{$args}{'ref','week_pattern'};
-    if ( $base ) {
-        $self->fillIn( $base->fillIn->new_alike );
-        $self->_ref_parent($base);
+    my $week_pattern = delete $args->{week_pattern};
+    if ( $self->is_used && ( $args->{ref} || $week_pattern ) ) {
+        croak "You cannot change fillIn rhythm of a used track";
+    }
+    elsif ( $args->{ref} && $week_pattern ) {
+        croak "Both ref and week_pattern passed which is ambiguous";
     }
     elsif ( $week_pattern ) {
         my $old_fillIn = $self->fillIn;
         my $from_date = $old_fillIn->from_date;
         my $until_date = $old_fillIn->until_date;
-        $self->fillIn(
-            FTM::Time::Span->new(
-                week_pattern => $week_pattern,
-                from_date => $from_date,
-                until_date => $until_date,
-            )
-        );
+        $self->_fillIn( FTM::Time::Span->new(
+            week_pattern => $week_pattern, track => $self,
+            from_date => $from_date, until_date => $until_date,
+        ));
     }
+
     if ( my $variations = delete $args->{variations} ) {
-
-        if ( !defined $variations->[0] ) { shift @$variations; }
-        else { $self->{_variations} = []; }
-
-        $self->_edit_variations(@$variations);
-
-    }
-    elsif ( $base || $week_pattern ) {
-        $self->apply_variations;
+        $self->update_variations($variations);
     }
 
-    if ( my $p = delete $args->{unmentioned_variations_from} ) {
-        $self->_parents($p);
-    }
     while ( my ($attr,$value) = each %$args ) {
         $self->$attr($value);
     }
 
 }
 
-sub _edit_variations {
-    my ($self, @variations) = @_;
-
-    my $inh_vars = $self->inherited_variations;
-
-    for my $new_var ( @variations ) {
-        
-        my $found;
-        my $variations = $self->_variations;
-
-        for my $old_var ( $new_var->{name} ? @$variations : () ) {
-            if ( $old_var->name eq $new_var->{name} ) {
-                if ( my $new_inh_ref = delete $new_var->{ref} ) {
-                    $old_var->ref($inh_vars->{$new_inh_ref});
-                }
-                $old_var->change( $new_var );
-                $found = 1;
-                last;
-            }
-            else {
-                $old_var->may_modify_past(1);
-            }
-            
-        }
-
-        if ( !$found ) {
-            push @$variations,
-                FTM::Time::Variation->subtype_instance( $new_var );
-        }
-
-    }
-
-    for my $desc ( values %{ $self->gather_family } ) {
-        @$_ = sort { $a->cmp_position_to($b) } @$_ for $self->_variations;
-        $desc->apply_variations;
-    }
+sub unlock {
+    my $self = shift;
+    delete @{$self}{'lock_from_date','lock_until_date'};
+    $self->reset;
 }
 
-around inherited_variations => sub {
-    my ($orig, $self) = @_;
+sub update_variations {
+    my ($self, $variations) = @_;
+    my $stored_variations = $self->variations;
 
-    my $inh = $self->$orig();
-
-    if ( wantarray ) {
-        my $max = 0;
-        for ( values %$inh ) {
-            my $seqno = $_->seqno;
-            $max = $seqno if $seqno > $max;
-        }
-        return $max, %$inh;       
+    if ( !defined $variations->[0] ) {
+        $stored_variations = [];
+        shift @$variations;
     }
-    else { return $inh; }
+    
+    my $inh_vars = $self->inherited_variations;
 
-};
+    my $count_inh_vars = keys %$inh_vars;
+
+    VARIATION:
+    for my $new_var ( @$variations ) {
+        
+        $new_var->{track}   = $self;
+        $new_var->{apply} //= 1;
+
+        my $i = 0;
+        for my $old_var ( $new_var->{name} ? @$stored_variations : () ) {
+            next if $old_var->name ne $new_var->{name};
+            for ( $new_var->{ref} ) {
+                $_ = $inh_vars->{$_} // croak "No variation '$_' found"
+            }
+            $new_var = $old_var->new_alike( $new_var );
+            splice @$stored_variations, $i, 1;
+            next VARIATION;
+        }
+        continue { $i++; }
+
+        my $old_obj = $new_var->{name}
+                   && delete $inh_vars->{ $new_var->{name} };
+
+        if ( defined $old_obj ) {
+            $new_var = $old_obj->new_alike($new_var);
+        }
+        else {
+            my $new_obj = FTM::Time::Variation->new_alike( $new_var );
+            $new_obj->ensure_coverage_is_alterable;
+            $new_var = $new_obj;
+        }
+                
+    }
+
+    $self->reset;
+    my @to_sort_anew;
+
+    my %family = %{ $self->gather_family };
+    delete $family{ $self->name };
+    for ( values %family ) {
+        $_->clear_inherited_variations;
+        my $vars = $_->variations;
+        push @to_sort_anew, $vars; 
+    }
+
+    for ( $variations ) {
+        unshift @$_, @$stored_variations;
+        push @to_sort_anew, $_; 
+    }
+
+    for my $vars ( @to_sort_anew ) {
+        @$vars = sort { $a->cmp_position_to($b) } @$vars;
+    }
+
+    for ( @$variations ) {
+        $_->seqno( ++$count_inh_vars );
+    }
+
+    $self->{variations} = $variations;
+
+    return;
+}
 
 sub _build_inherited_variations {
     my ($self) = @_;
 
     my %variations;
     my ($next_incr, $incr) = (0, 0);
-    for my $p ( $self->_parents ) {
-        while ( my ($name, $var) = each %{ $self->all_variations } ) {
-            ...
+    for my $p ( $self->parents ) {
+        while ( my ($name, $var) = each %{ $p->all_variations } ) {
+            $var = $var->meta->clone_object($var, apply => undef);
+            my $seqno = $var->seqno;
+            $next_incr = $seqno if $seqno > $next_incr;
+            $var->seqno( $incr + $seqno );
+            $variations{$name} = $var;
         }
+        
     }
+    continue {
+        $incr += $next_incr;
+        $next_incr = 0;
+    }
+
+    for my $v ( $self->variations ) {
+        $v->seqno( ++$incr );
+    }
+
+    return \%variations;
     
 }
 
 sub all_variations {
     my ($self) = @_;
+    my %variations = $self->inherited_variations;
 
-    my ($i, %variations) = $self->inherited_variations;
-
-    for my $v ( $self->_variations ) {
-        $v->seqno(++$i);
+    for my $v ( $self->variations ) {
         $variations{ $v->name } = $v;
     }
 
-    return %variations;
+    return \%variations;
 
 }
 
@@ -795,7 +774,7 @@ sub gather_dependencies {
 
     # Prior to track $id being constructed, all its parents must be ready
     my $parents_key = 'unmentioned_variations_from';
-    if ( my $p = $self ? $self->_parents : $data->{$parents_key} ) {
+    if ( my $p = $self ? $self->parents : $data->{$parents_key} ) {
         for my $p (
             ref $p ? @$p : $self ? $p : $data->{$parents_key}
         ) {
@@ -803,7 +782,7 @@ sub gather_dependencies {
         }
     }
 
-    for my $r ( $self ? $self->_ref_parent // () : $data->{ref} // () ) {
+    for my $r ( $self ? $self->ref // () : $data->{ref} // () ) {
         push @{$is_required{$r}}, \$r;
     }
 
@@ -816,7 +795,7 @@ sub gather_dependencies {
 
     # ... to not forget its variations which are sections of another track
     for my $var (
-        @{ $self ? $self->_variations : $data->{variations} }
+        @{ $self ? $self->variations : $data->{variations} }
     ) {
         defined $var or next;
         my $s;
@@ -866,8 +845,6 @@ sub timestamp_of_nth_net_second_since {
     my ($next_stage, $signal_slice, $last_sec) = do {
         if ( $early_pass and my $p = $early_pass->() ) {
             my $slice = $p->pass_after_slice;
-            # TO FIX error: after storing data to a task that has been previously
-            # given multiple time-track segments, cursor cannot fully restore here? 
             $p, $slice, $slice->position + $slice->length;
         }
         else { undef, undef, undef; }
@@ -942,13 +919,22 @@ sub timestamp_of_nth_net_second_since {
     );
 }
 
+sub DEMOLISH {
+    my $self = shift;
+
+    if ( $self and my $p = $self->ref ) {
+        $p->_drop_ref_child($self);
+    }
+
+}
+
 __PACKAGE__->meta->make_immutable;
 
 __END__
 
 =head1 NAME
 
-FTM::Time::Track - (irr-)Regularly interchanging working- and off-time periods
+FTM::Time::Track - Regularly and irregularly interchanging working- versus off-time periods
 
 =head1 SYNOPSIS
 
@@ -958,11 +944,11 @@ A time track has a week_pattern to cover a arbitrary time span, whatever the cur
 
 Beside their basic week pattern, tracks can include variations with different patterns, restricted to a specified coverage in time (from_date/until_date).
 
-Caution: FTM::Time::Track instances can be linked to each other via several axes. It is very easy to make circular constructions. FTM::Time::Model has means some in place to detect that and warn the user.
+Caution: FTM::Time::Track instances can be linked to each other via several axes. It is very easy to make circular constructions. FTM::Time::Model has some means in place to detect that and warn the user.
 
 =head1 COPYRIGHT
 
-(C) 2012-2014 Florian Hess
+(C) 2012-2015 Florian Hess
 
 =head1 LICENSE
 

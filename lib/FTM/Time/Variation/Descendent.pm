@@ -1,23 +1,20 @@
 #!/usr/bin/perl
 use strict;
 
-package FTM::Time::Variation::Derived;
+package FTM::Time::Variation::Descendent;
 use Moose;
 
 extends 'FTM::Time::Variation';
 
 has ref => (
     is => 'rw',
-    isa => 'Str',
-    lazy => 1,
-    default => sub { shift->name },
-);
-
-has base => (
-    is => 'rw',
     isa => 'FTM::Time::Variation',
-    weak_ref => 1,
-    handles => ['span']
+    handles => ['span'],
+    trigger => sub {
+        my ($self, $new, $old) = @_;
+        $new->incr_reference_count;
+        $old->decr_reference_count;
+    }
 );
 
 for my $prop (qw(from_date until_date description inherit_mode)) {
@@ -27,6 +24,16 @@ for my $prop (qw(from_date until_date description inherit_mode)) {
         return @val || exists $self->{$prop} ? $self->$orig(@val) : $self->base->$prop;
     }
 }
+
+sub _specific_fields { return 'ref' }
+
+augment like => sub {
+    my ($self, $other) = @_;
+    
+    return $self->ref == $other->ref
+        && ( ref($self) eq __PACKAGE__ || inner() );
+        ;
+};
 
 around span => sub {
     my ($orig, $self, @args) = @_;
@@ -38,6 +45,13 @@ around span => sub {
     $span->variation($self);
     return $span;
 };
+
+__PACKAGE__->meta->make_immutable;
+
+sub DEMOLISH {
+    my $self = shift;
+    $self->ref->decr_reference_count;
+}
 
 1;
 

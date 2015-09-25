@@ -14,6 +14,18 @@ has week_pattern => (
     coerce => 1,
 );
 
+sub _specific_fields { return 'week_pattern' }
+
+augment like => sub {
+    my ($self, $other) = @_;
+    
+    return $self->week_pattern->description
+        eq $other->week_pattern->description
+        && ( ref($self) eq __PACKAGE__ || inner() );
+        ;
+};
+
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

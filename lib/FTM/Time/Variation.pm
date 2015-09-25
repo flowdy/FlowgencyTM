@@ -1,20 +1,38 @@
 use strict;
 
 package FTM::Time::Variation;
+use Carp qw(croak);
+use FTM::Types;
 use Moose;
 
-with FTM::Time::Structure::Link;
+with 'FTM::Time::Structure::Link';
 
 has name => ( is => 'rw' );
 
 has description => ( is => 'rw' );
 
+has seqno => ( is => 'rw', isa => 'Num' );
+
 has inherit_mode => ( is => 'rw', isa => 'Str' );
 
-has apply => ( is => 'rw', isa => 'Str|Bool' );
+has apply => (
+    is => 'rw',
+    isa => 'Maybe[Bool|BooleanObject|Str]',
+);
+
+has keep_for_referents => (
+    is => 'rw',
+    isa => 'Num',
+    traits => ['Counter'],
+    handles => {
+        'incr_reference_count' => 'inc',
+        'decr_reference_count' => 'dec',
+    }
+);
 
 has track => (
     is => 'rw',
+    required => 1,
     isa => 'FTM::Time::Track',
     weak_ref => 1,
 );
@@ -23,17 +41,75 @@ sub from_date_is_explicit { 1 }
 sub until_date_is_explicit { 1 }
 sub week_pattern { shift->track->week_pattern }
 
+sub like {
+    my ($self, $other) = @_;
+
+    return ref($self) eq ref($other)
+        && $self->track == $other->track
+        && ( ref $self eq __PACKAGE__ || inner() )
+        ;
+}
+
+sub new_alike {
+    my $self = shift;
+    my $args = @_ == 1 ? shift : { @_ };
+    my $class = __PACKAGE__;
+
+    my $content = (my @content = grep { exists $args->{$_} } qw(
+        week_pattern_of_track section_from_track ref week_pattern
+    ))[0];
+
+    if ( $content && ref $self && exists $self->{$content} ) {
+        $content = '' if !defined $args->{$content};
+    }
+
+    croak "Ambiguity in FTM::Time::Variation::new_alike() call: you passed ",
+        join(" and ", @content), ". Decide"
+        if @content > 1;
+
+    $class = $content eq 'week_pattern_of_track' ? $class.'::BorrowedRhythm'
+           : $content eq 'section_from_track'    ? $class.'::Section'
+           : $content eq 'ref'                   ? $class.'::Descendent'
+           : $content eq 'week_pattern'          ? $class.'::DifferentRhythm'
+           :                                       ref $self || $class
+           ;
+
+    eval "use $class"; die $@ if $@;
+
+    croak "New variation would touch the past"
+        if ref $self
+        && !$self->ensure_coverage_is_alterable($args->{until_date})
+        && $content
+        ;
+
+    for my $arg (
+      qw/ from_date until_date name description inherit_mode apply track /,
+      ref $self && !$content ? $self->_specific_fields : ()
+    ) {
+        next if exists $args->{$arg};
+        next if !ref $self;
+        $args->{$arg} = $self->{$arg} // next;
+    }
+
+    return $class->new($args);
+
+}
+sub _specific_fields {
+    # Base class has none
+}
+
 sub span {
     my ($self) = @_;
     return FTM::Time::Span->new({
-        map { $_ => $self->$_ } qw(
-            week_pattern description from_date until_date
+        variation => $self,
+        map { my $v = $self->$_; defined($v) ? ($_ => $v) : () } qw(
+            week_pattern description from_date until_date track
         )
     });
 }
 
 sub cmp_position_to {
-    my ($left, right) = @_;
+    my ($left, $right) = @_;
 
     # For variations situated properly apart in regard to their start/end
     # dates, returns -1 or 1 like <=> does. If two variations interlace, it
@@ -88,59 +164,91 @@ sub cmp_position_to {
 
 }
 
-sub subtype_instance {
-    use FTM::Time::Variation::BorrowedRhythm;
-    use FTM::Time::Variation::Derived;
-    use FTM::Time::Variation::DifferentRhythm;
-    use FTM::Time::Variation::Section;
-
-    my (undef, $args) = @_;
-    my $package = __PACKAGE__;
-
-    if ( $args->{ref} ) {
-        if ( $args->{ref} =~ s/^@// ) {
-            croak "Contradiction: Can't depend on another object as week_pattern is passed"
-                if $args->{week_pattern};
-            if ( $args->{ref} =~ s/\+$// ) {
-                $package .= '::Section';
-            }
-            elsif ( length $args->{ref} ) {
-                $package .= '::BorrowedRhythm';
-            }
-        }
-        else {
-            $package .= '::Derived';
-        }
+sub ensure_coverage_is_alterable {
+    # prevent time variation from altering the past ("used past at least")
+    my ($self, $until_date) = @_;
+    my $track = $self->track;
+    if ( $track->is_used ) {
+       my $ref_time = $track->lock_until_date;
+       $ref_time = FTM::Time::Spec->now if $ref_time->is_future;
+       unless ( $self->from_date > $ref_time ) {
+           return if $track->lock_from_date > $self->until_date;
+           return if $self->until_date->last_sec > $ref_time
+                  && $until_date &&  $until_date > $ref_time
+                  ;
+           croak "Variation cannot begin/end within the used coverage of the",
+               sprintf " track (%s--%s <= %s)", $self->from_date,
+                   $until_date // $self->until_date, $ref_time
+               ;
+       }
     }
-    
-    elsif ( $args->{week_pattern} ) {
-        croak "Contradiction: Can't depend on another object as week_pattern is passed"
-            if $args->{ref};
-        $package .= '::DifferentRhythm';
-    }
-
-    return $package->new($args);
-
+    return 1;
 }
 
-package FTM::Error::TimeVariation::Interlaced;
-extends FTM::Error;
+sub __obsolete_change { # use `$obj = $obj->new_alike({ ... });`
+    my ($self, $orig_args) = @_;
 
-has left => ( isa => 'FTM::Time::Variation' );
-has right => ( isa => 'FTM::Time::Variation' );
+    my ($new_class, $args, $has_content) = $self->derive(%$orig_args);
+    my $cur_class = ref $self;
+
+    $self->let_alone_past if $has_content
+                          || defined $args->{apply}
+                          ;
+
+    if ( $new_class eq $cur_class ) {
+        while ( my ($key, $value) = each %$args ) {
+            $self->$key($value);
+        }
+    }
+    else {
+        my $meta = (ref $self)->meta;
+        if ( $cur_class ne __PACKAGE__ ) {
+            $meta->rebless_instance_back();
+        }
+        if ( $new_class ne __PACKAGE__ ) {
+            $meta->rebless_instance($self, $args);
+        }
+    }
+
+    return $self;
+
+}
+        
+sub _change_ref_track {
+    my ($self, $new_track, $old_track) = @_;
+
+    if ( $old_track ) {
+        $old_track->_drop_ref_child( $self->track, $self->name );
+    }
+    if ( $new_track ) {
+        $new_track->_add_ref_child( $self->track, $self->name );
+    }
+
+}
+    
+__PACKAGE__->meta->make_immutable;
+
+package FTM::Error::TimeVariation::Interlaced;
+use Moose;
+extends 'FTM::Error';
+
+has left => ( is => 'ro', isa => 'FTM::Time::Variation' );
+has right => ( is => 'ro', isa => 'FTM::Time::Variation' );
 
 has '+message' => ( required => 0 );
 
 around 'message' => sub {
-    my $orig = shift;
+    my ($orig, $self) = (shift, @_);
 
-    if ( @_ > 1 ) { return $orig->(@_); }
+    if ( @_ > 2 ) { return $orig->(@_); }
 
     return $orig->(shift) //
         sprintf "Variations in %s may not be interlaced due to explicit dates: %s <-> %s",
-            $left->track->name,
-            $left->name // "$left", $right->name // "$right"
+            $self->left->track->name,
+            $self->left->name // "left", $self->right->name // "right"
         ;
 };
+
+__PACKAGE__->meta->make_immutable;
 
 1;

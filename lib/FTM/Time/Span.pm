@@ -22,6 +22,12 @@ has track => (
     weak_ref => 1
 );
 
+has variation => (
+    is => 'ro',
+    isa => 'FTM::Time::Variation',
+    weak_ref => 1,
+);
+
 has rhythm => (
     is => 'ro',
     isa => 'FTM::Time::Rhythm',
@@ -196,7 +202,7 @@ __END__
 
 =head1 NAME
 
-FTM::Time::Span - connect a coverage between from and until time point to a time rhythm
+FTM::Time::Span - connects a coverage between from and until time specification to a time rhythm
 
 =head1 SYNOPSIS
 
@@ -204,7 +210,7 @@ FTM::Time::Span - connect a coverage between from and until time point to a time
 
 =head1 COPYRIGHT
 
-(C) 2012-2014 Florian Hess
+(C) 2012-2015 Florian Hess
 
 =head1 LICENSE
 

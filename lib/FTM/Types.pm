@@ -4,11 +4,12 @@ use Moose::Util::TypeConstraints;
 use FTM::Time::Spec;
 use FTM::Time::Rhythm;
 use Date::Calc qw(Today);
+use overload;
 
-coerce 'FTM::Time::Spec',
-    from 'Str'      => via { FTM::Time::Spec->parse_ts(shift) },
-    from 'Num'      => via { FTM::Time::Spec->from_epoch(shift, 3, 3) },
-    from 'ArrayRef' => via { FTM::Time::Spec->from(@$_) }
+subtype 'BooleanObject',
+    as 'Object',
+    where { ref($_) =~ /[:_]Bool(ean)?($|::)/ }, 
+    message { "Class name does not seem very Boolean" },
     ;
 
 subtype 'RgbColour',
@@ -22,6 +23,16 @@ subtype 'RgbColour',
     };
 ;
 
+coerce 'Bool',
+   from 'BooleanObject' => via { shift() ? 1 : 0 }
+   ;
+
+coerce 'FTM::Time::Spec',
+    from 'Str'      => via { FTM::Time::Spec->parse_ts(shift) },
+    from 'Num'      => via { FTM::Time::Spec->from_epoch(shift, 3, 3) },
+    from 'ArrayRef' => via { FTM::Time::Spec->from(@$_) }
+    ;
+
 coerce 'RgbColour',
     from 'Str',
     via {[ map { hex($_) } m{ \A \# (?: ([0-9a-f][0-9a-f]) ){3} \z }xms ]}
@@ -31,3 +42,4 @@ coerce 'FTM::Time::Rhythm',
     from 'Str',
     via { FTM::Time::Rhythm->from_string( shift, { init_day => [ Today() ] }) }
     ;
+
