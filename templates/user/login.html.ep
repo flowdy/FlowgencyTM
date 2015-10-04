@@ -17,27 +17,49 @@
     <input type="submit" value="log in">
 </form>
 
-<p>See below to get an account.</p>
-
-<h2 id="terms">Terms of use</h2>
-
-<ol>
-<li>You are allowed to use this demo service as long as the input data is fictitious, therefore not subject to privacy rights. For any data entered and associated to your account, you accept full liability for any accidental leakage or intended disclosure¹ if to someone's claimed disadvantage, since the stored date of account creation. Your password is securely stored in a hashed and salted form. Beyond that, no privacy precautions are guaranteed.</li>
-<li style="margin-top:0.5em;">When you consider using FlowgencyTM with real productive data, you are welcome to install your own, private FlowgencyTM server on an appropriate device². Despite being a HTML5 UI client/server app, the single-user mode is focussed in development. You might prefer having it deployed and hosted by some expert you know personally and trust, if you find your IT competence insufficient. In your own and our all future's interest, please think twice before using such a service if provided by your employer: Once they start to establish means for subtle control and monitoring staff's performance, no matter if in a social or technical or either way, all former benefits of FlowgencyTM might get perverted and even endanger your wellbeing.</li>
-<li style="margin-top:0.5em;">Considering their age, all user accounts are increasingly subject to deletion. The provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this intentionally ad-free service that is provided at no charge.</li>
-</ol>
-
-<p style="font-size:smaller;">¹) Within the open community of FlowgencyTM developers and demo providers, everyone needs to be able to publish and to discuss on the basis of sample data as may be provided by you all, without the need for a permission by the respective account owner to do so.<br>²) In case it is your personal computer, you should configure FlowgencyTM to listen only to <tt>localhost</tt> = IP 127.0.0.1 so noone else can access it via the web.</p>
-
-<h2 id="register">Want an account, too?</h2>
-
-<p>Create your personal test account and get an activation link via email. Just fill in this form: </p>
+<h2 id="terms">Get invited</h2>
 
 <form action="/user/join" method="post">
-<label>User ID: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label><br>
-<label>Name: <input name="username" placeholder="(skip if inferrable from mail address)"></label><br>
-<label>Mail address: <input name="email" type="text"></label><br>
-<label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label>
+<div style="text-align:center;">
+<p><label>User login: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
+<label>Name: <input name="username" placeholder="(skip if inferrable from mail address)"></label>
+<label>Mail address: <input name="email" type="text"></label></p>
+<p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
+</div>
 
-<p>I understand the terms above, accept them and <input type="submit" value="join!"></p>
+<p>With submission, you accept the following terms:<p>
+
+<ul class="formlist">
+
+<li><p><label><input type="checkbox" name="checkwhatisftm" value="1"> I not only read what FlowgencyTM is and how it works but also understand that this demo service is provided "as is" so that I can check it out, without local installation, particularly with regard to my personal working style: for free, non-commercial but without promise of ordinary uptime and reliability since it is still under active development.</label></p></li>
+
+<li><p><label><input type="checkbox" name="privacywarning" value="1">As this service is just for testing, the data I will enter after login is non-productive, which means I do not depend on it in my job in any way. It is even more or less fictitious, therefore beyond interest of commercial data brokers. However, I try to reflect roughly how my job is really like. I have the right to – and hereby do – put the entered task and time model data under the terms of Creative Commons Zero (CC0) license, so it can be freely published and exchanged e.g. as representative example data in the effort to solve software errors cooperatively, without the need to ask my permission. <em>Email address and full name is kept confidential and the password is stored in a hashed and salted, not plain-text form.</em></label></p></li>
+
+<li><label><input type="checkbox" name="promisefeedback" value="1">I will give feedback, at latest when I cease using the service. If it turns out too bad, I will give it nevertheless and be ready to simply smile, should the developers not handle it equanimously. ;-)</label></li>
+
+<li><label><input type="checkbox" name="deletion" value="1"> Considering their age, all user accounts are increasingly at risk of deletion. The provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this intentionally ad-free service that is provided at no charge.</label></li>
+
+<li><label><input type="checkbox" name="spambot" value="1"> I am a spambot, found this form, and by checking this I admit that my programmer is not the lightest person.</label></li>
+
+<li>
+<p><label><input type="checkbox" name="onproductiveuse" value="1"> Once I am going to use FlowgencyTM productively, I stop using this service and may ask the provider to send me a backup of my records. Then I will probably ...</label></p><ul style="width:50%;float:left;border-right:2px solid lightblue;margin-right:1em;padding-right:1em;">
+    <li><label><input type="checkbox" name="onproductiveuse" value="myself"> install the software on my own device easily, so the database file is as safe from unauthorized access as any other document in local storage.</label></li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="friend"> ask an IT-competent and trustworthy friend of mine to host it</label></li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="employer"> prefer the service my employer hosts or plans to host</label><ul>
+        <li><label><input type="radio" name="employer" value="supervised"> only if supervised by the local union or a potent staff association</label></li>
+        <li><label><input type="radio" name="employer" value="engage-against-monitoring"> I would engage against their practice of monitoring us, should I stumble upon respective signs, and first and foremost stop using the tool at all.</label></li>
+        <li><label><input type="radio" name="employer" value="candowhatever"> I do not bother what they do with the data, so even if the staff gets monitored, I would rather see to be among the most productive in comparison.</label></li></ul>
+    </li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="commercial-service"> Use a commercial service provided by a third party</label><ul>
+        <li><label><input type="radio" name="commercialservice" value="paid"> paid regularly on the basis of a subscription</label><li>
+        <li><label><input type="radio" name="commercialservice" value="sponsored"> having it sponsored by on-screen advertisements</label></li>
+        <li><label><input type="radio" name="commercialservice" value="datasale"> that claims use is at no charge, but deals the data underhand or hides such reservations in their terms and conditions.</label></ul>
+</li></ul>
+</li>
+
+</ul>
+
+<p style="font-weight:bold; color: lightblue; font-size:smaller;">&larr; This is just a poll. The inquiry data will be dissociated from your account upon invitation. Thank you!</p>
+
+<p>I understand the terms above, accept them and want to <input type="submit" value="join!"></p>
 </form>
