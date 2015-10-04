@@ -75,12 +75,21 @@ sub _dump_task {
         active => $active,
         $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
-        extended_info => !$task->archived_ts && $task->is_open && {
-           focus => [$task->current_focus],
-        },
+        extended_info => extend_open_task($task),
+            
     };
 
     return $dump;
+}
+
+sub extend_open_task {
+    my ($task) = @_;
+    $task->is_open ? {
+        focus => [ $task->archived_ts
+            ? [ undef, $task->main_step_row ]
+            : $task->current_focus,
+        ]
+    } : undef,
 }
 
 my $blender = FTM::Util::LinearNum2ColourMapper->new({

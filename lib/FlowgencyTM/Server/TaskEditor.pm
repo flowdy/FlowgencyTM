@@ -62,7 +62,7 @@ sub open {
     my $self = shift;
     my $task = $self->_get_task;
     $task->open;
-    $self->render( details => { focus => [ $task->current_focus ] } );
+    $self->render( details => FlowgencyTM::Server::Ranking::extend_open_task($task) );
 }
 
 sub fast_bulk_update {

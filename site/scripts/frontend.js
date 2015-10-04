@@ -13,21 +13,17 @@ function Ranking (args) {
         'open_since', 'archived_because'
     );
 
-    var nl = {};
-    ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming', 'query']
+    var nl = new ObjectCacheProxy("nextload", nextload,
+        ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming',
+         'query', 'archive' ]
+    ); /*
         .forEach(function (i) {
             Object.defineProperty(nl, i, {
                 get: function () { return nextload[i] },
                 set: function (v) { nextload[i] = v },
             });
-        });
-    nl.json_task_updates = function (task) {
-        var obj = nextload.update_tasks;
-        if ( task === undefined )
-            return JSON.stringify(obj);
-        else return JSON.stringify(obj[task]);
-    };
-    this.nextload = Object.freeze(nl);
+        }); */
+    this.nextload = nl;
     this.resetfilter = function () {
         nextload = { update_tasks: nextload.update_tasks };
     }
@@ -149,6 +145,8 @@ Ranking.prototype.dynamizechecks = function (plan) {
 };
 
 Ranking.prototype.progressbar2canvas = function (bar) {
+
+   if ( !bar.length ) return;
 
    var canvas = document.createElement("canvas"),
        ctx = canvas.getContext('2d'),
@@ -555,7 +553,7 @@ $(function () {
                   ftm.resetfilter();
                   ftm.rerank(e);
               });
-    $( "#icons-bar .icon:first-child a" ).click(function (e) {
+    $( "#icons-bar .icon:first-child > a" ).click(function (e) {
         var menu = $(this).next(".menu:hidden"); 
         e.preventDefault();
         if ( menu.get(0) !== undefined ) {
@@ -592,10 +590,25 @@ $(function () {
 
     $("#query").change(function (e) {
         ftm.nextload[this.name] = this.value;
+        if ( this.value.length ) {
+           ftm.nextload.archive
+               = $("#with-archive").prop("disabled", false)
+                 .is(":checked") ? 1 : 0;
+        }
+        else {
+           $("#with-archive").prop("disabled", true);
+           ftm.nextload.drop("query");
+           ftm.nextload.drop("archive");
+        }
+
         console.log(
             "New value of " + this.name + " is " + ftm.nextload[this.name]
         );
     }).each(function () { if (this.value) $(this).change(); });
+
+    $("#with-archive").change(function (e) {
+        ftm.nextload.archive = $(this).is(":checked") ? 1 : 0;
+    });
 
     $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
 

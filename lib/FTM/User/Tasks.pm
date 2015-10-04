@@ -427,8 +427,9 @@ sub list {
 
     $archive = ref $archive eq 'ARRAY' ? { -in => $archive }
              : ref($archive) !~ m{^($|HASH)} ?
-                   croak "archive: neither ARRAY nor HASH reference"
-             : $archive
+                   croak( "archive: neither ARRAY nor HASH reference" )
+             : $archive eq "1" ? { -not_in => [] }
+             : $archive || undef
              ;
 
     my @and_search = ({ archived_because => $archive });

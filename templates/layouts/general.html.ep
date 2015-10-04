@@ -37,7 +37,7 @@
         </li>
         <li>Search tasks:<br />
         <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>
-        <span><input id="with-archive" type="checkbox" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/task/archive">archive</a></span> 
+        <span><input id="with-archive" type="checkbox" disabled="disabled" checked="checked" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/?archive=1&desk=0">archive</a></span> 
         </li>
         <li><form id="settime"><label>Set time:<br />
         <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>

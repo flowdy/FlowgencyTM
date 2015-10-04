@@ -726,7 +726,9 @@ sub archive_if_completed {
     else {
         $self->dbicrow->update({
             archived_because => 'done',
-            archived_ts => FTM::Time::Spec->now_as_string(),
+            $self->dbicrow->archived_ts ? () : (
+                archived_ts => FTM::Time::Spec->now_as_string() 
+            )
         });
     }
 }
