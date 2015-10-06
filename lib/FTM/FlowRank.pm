@@ -2,6 +2,7 @@ use strict;
 
 package FTM::FlowRank;
 use FTM::Types;
+use Carp qw(croak);
 use Moose;
 
 has _time => (
@@ -62,6 +63,9 @@ sub new_closure {
 
     return sub {
 
+        my ($t) = @_;
+        my $t_is_time = $t && ( !ref $t || $t->isa("FTM::Time::Spec") );
+
         # If we are called without another task to register,
         # we return a ranked list of all registered tasks and un-cache them:
         if ( !@_ ) {
@@ -76,8 +80,7 @@ sub new_closure {
         # At the first run, when our tasks cache is yet empty, we accept
         # a timestamp to base the time-dynamic scoring criteria on
         elsif ( $self->no_tasks_registered ) {
-            my ($t) = @_;
-            if ( $t && ( !ref $t || $t->isa("FTM::Time::Spec") ) ) {
+            if ( $t_is_time ) {
                 $t = FTM::Time::Spec->from( $t, $self->_time // () );
                 $self->_time( $t );
                 return;
@@ -85,6 +88,11 @@ sub new_closure {
             elsif ( !$self->_time ) {
                 $self->_time(FTM::Time::Spec->now)
             }
+        }
+
+        elsif ( $t_is_time ) {
+            croak "FlowRank cache has not been cleared, ",
+                "time ($t) is therefore not accepted as argument";
         }
 
         $self->register_task(@_);
