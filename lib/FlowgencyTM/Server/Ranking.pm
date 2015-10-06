@@ -70,7 +70,12 @@ sub _dump_task {
         },
         duedate => $task->due_ts,
         startdate => $task->start_ts,
-        archiveddate => $task->archived_ts,
+        $task->is_archived
+          ? (
+              archiveddate => $task->archived_ts,
+              archived_because => $task->dbicrow->archived_because
+            )
+          : (),
         due_in_hms => $due,
         active => $active,
         $due ne $next ? (next_statechange_in_hms => $next) : (),

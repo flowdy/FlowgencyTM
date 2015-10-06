@@ -20,7 +20,8 @@
 <fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>">
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
 <dl class="fields">
-% if ( my $std = $step->{subtask_data} ) {
+% my $std = $step->{subtask_data};
+% if ( $std ) {
 % if ( !$name && $incr_prefix ) {
 <dt>ID prefix</dt>
 <dd class="input">
@@ -77,6 +78,13 @@ To estimate this value right, imagine the expenditure of time used by the supero
 % $step->{checks} //= 1;
 % $step->{done} //= 0;
 Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;vertical-align:middle;" name="done" value="<%= $step->{done} %>"> &rArr; <span><%= $step->{done} %></span> of <input type="number" name="checks" style="width:2em;" min="0" value="<%= $step->{checks} %>" ><br></p></dd>
+% if ( $std ) {
+<dt>Archive task</dt>
+<dd><p class="help">If you enter something in this field, the task is archived even if not all steps are completed, that is it will not show up any more. To view all tasks that have been archived (whether completed or not), please click the link "archive" in the filter menu.<br>
+The value 'done' is special: It is applied or deleted automatically depending on whether there are uncompleted steps.</p>
+<input name="archived_because" value="<%= $std->{archived_because} %>" placeholder="I archive this uncompleted task because ..." />
+</dd>
+% }
 </fieldset>
 % end
 

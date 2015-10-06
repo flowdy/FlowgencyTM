@@ -14,7 +14,10 @@
 % end
 % my $archived_section = begin
 %     my $task = shift;
-      <hr style="height:8px;background-color:<%= $task->{progressbar}{secondary_color} %>" ><div class="ranking-data">Task archived at <%= $task->{archiveddate} %>.</div>
+      <hr style="height:8px;background-color:<%= $task->{progressbar}{secondary_color} %>" >
+      <div class="ranking-data">
+           Task archived since <%= $task->{archiveddate} %>; <%= $task->{archived_because} %>.
+      </div>
 % end
 % my %info = (
 %     upcoming => $upcoming_section,

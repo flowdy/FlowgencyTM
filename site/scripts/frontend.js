@@ -292,6 +292,7 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
             .datepicker( "option", "onChangeMonthYear", used_datepicker)
             .change(ts_updater);
         };
+        table.find("select[name=track]").change(ts_updater);
         table.find("input[type=datetime]").each(dp_modifier);
         table.on('click', '.add-btn', function (e) {
             var myrow = $(this).parents("tr").first();
@@ -310,7 +311,7 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
 
     var remaining_fields = [
         'incr_name_prefix', 'title', 'description', 'done', 'from_date',
-        'expoftime_share' // , 'substeps' (see below)
+        'expoftime_share', 'archived_because' // , 'substeps' (see below)
     ], block_continuation = false;
 
     function default_change_handler (e) {

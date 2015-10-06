@@ -72,7 +72,7 @@ has subtasks => (
 has flowrank => (
     is => 'rw',
     isa => 'FlowRank::Score',
-
+    clearer => '_clear_flowrank',
 );
 
 has is_open => (
@@ -296,7 +296,7 @@ sub store {
         if ( @touched_timestructure ) {
             $self->check_timestructure(@touched_timestructure);
         }
-        $self->archive_if_completed;
+        $self->is_to_complete_otherwise_archive;
     });
 
     my (@to_recalc);
@@ -715,22 +715,37 @@ sub priority_num { shift->dbicrow->priority };
 
 sub step { shift->steps->find({ name => shift }) }
 
-sub archive_if_completed {
+sub is_to_complete_otherwise_archive {
     my ($self) = @_;
-    my $uncompleted_own_steps = $self->steps({
-        done => { '<' => { -ident => 'checks' } }
-    });
-    if ( !$uncompleted_own_steps || $self->current_focus ) {
-        $self->dbicrow->update({ archived_because => undef, archived_ts => undef });
-    }
-    else {
-        $self->dbicrow->update({
-            archived_because => 'done',
-            $self->dbicrow->archived_ts ? () : (
-                archived_ts => FTM::Time::Spec->now_as_string() 
-            )
+
+    my $row = $self->dbicrow;
+    my $archived_because = $row->archived_because;
+
+    my $is_to_complete
+      = $archived_because && $archived_because ne 'done'
+        ? 0 # state of progress does not matter
+        : $self->steps({ done => { '<' => { -ident => 'checks' } } }) > 0
+          || $self->current_focus # include linked steps
+        ;
+
+    if ( $is_to_complete ) {
+        return $row->update({
+            map { $_ => undef } qw/archived_because archived_ts/
         });
     }
+
+    else {
+        if ( !$archived_because ) {
+            $row->archived_because( 'done' )
+        }
+        if ( !$self->is_archived ) {
+            $row->open_since(undef);
+            $row->archived_ts( FTM::Time::Spec->now_as_string() );
+        }
+        $self->_clear_flowrank;
+        return $row->update;
+    }
+
 }
  
 __PACKAGE__->meta->make_immutable();
