@@ -113,7 +113,7 @@ sub update {
 sub delete {
     my ($self, $name) = @_;
     if ( my $task = delete $self->cache->{$name} ) {
-        $task->dbirow->delete;
+        $task->dbicrow->delete;
     }
     elsif ( my $row = $self->task_rs->find({ name => $name }) ) {
         $row->delete;
@@ -417,6 +417,11 @@ sub list {
     my ($desk, $tray, $drawer, $archive, $now)
         = delete @criteria{ 'desk', 'tray', 'drawer', 'archive', 'now' };
 
+    my %force_include;
+    if ( my $tasknames = delete $criteria{force_include} ) {
+        %force_include = map { $_ => 1 } @$tasknames;
+    }
+
     $desk //= 1;
     if ( %criteria ) {
         $tray //= 1;
@@ -476,7 +481,7 @@ sub list {
 
     my $list = $processor->();
 
-    for my $task ( @$list ) {
+    while ( my $task = shift @$list ) {
         if ( $task->is_open ) {
             push @on_desk, $desk ? @in_tray : (), $task;
             @in_tray = () if $desk;
@@ -484,6 +489,17 @@ sub list {
         else {
             push @in_tray, $task;
         }
+        delete $force_include{$task->name};
+    }
+
+    for my $task ( keys %force_include ) {
+        $task = eval { $self->get($task) }
+               // die "Could not cache task $task: $@";
+        push @{
+            $task->start_ts > $now ? \@upcoming
+          : $task->is_archived     ? \@in_archive
+          :                          \@in_tray
+        }, $task;
     }
 
     if ( !$tray ) {

@@ -80,7 +80,7 @@ body > header h1 {
 #icons-bar {
   text-align:center;
   font-size:1.1em;
-  margin:1% 0;
+  margin:15px 0;
   padding: 0 auto;
   margin-left:320px;
   margin-right:10px;
@@ -194,4 +194,19 @@ ul.formlist li {
    list-style-type: none;
    list-style-position: inside;
    text-indent:-1.5em;
+}
+
+.error {
+   border: 2px solid red;
+   background-color: #FFE0FF;
+}
+
+.error h2, .error h3, .error h4 {
+   margin: 0;
+   background-color: red;
+   color: white;
+}
+
+.error pre {
+   margin: 3px;
 }

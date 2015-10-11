@@ -24,6 +24,11 @@
 %     archived => $archived_section,
 % );
 
+% if ( my @fi = @$force_include ) {
+%     for ( @fi ) { $_ = sprintf q{<a href="#task-%s">%1$s</a>}, $_ }
+<p>Created/Updated successful: <%== join ", ", @fi %>. See below. The grey ones hide on next rerank as they would normally unless you make appropriate settings.
+% }
+
 <ol id="plans">
 % my $there_are_tasks_shown;
 % while ( my $task = $list->() ) {

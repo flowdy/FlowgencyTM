@@ -16,13 +16,7 @@ function Ranking (args) {
     var nl = new ObjectCacheProxy("nextload", nextload,
         ['now', 'keep', 'desk', 'tray', 'drawer', 'upcoming',
          'query', 'archive' ]
-    ); /*
-        .forEach(function (i) {
-            Object.defineProperty(nl, i, {
-                get: function () { return nextload[i] },
-                set: function (v) { nextload[i] = v },
-            });
-        }); */
+    );
     this.nextload = nl;
     this.resetfilter = function () {
         nextload = { update_tasks: nextload.update_tasks };
@@ -86,15 +80,37 @@ function Ranking (args) {
                 }
                 str_params[i] = JSON.stringify(changes);
             });
-            $.post('/update', str_params).done(function () {
+            $.post('/update', str_params).done(function (response) {
+                var tasks = Object.keys( response );
+                nextload.force_include = tasks.join(",");
                 delete nextload.update_tasks;
                 rerank();
             }).fail(function (jqXHR, textStatus) {
-                alert("HTTP POST failure. Status code: "
-                    + jqXHR.status
-                    + ". For details see server.log file.\n"
+                if ( jqXHR.status == 500 ) alert(
+                    "HTTP POST failure. For details see server.log file.\n"
                     + "(Proper error handling and reporting yet under construction.)"
                 );
+                else {
+                    var errors = JSON.parse( jqXHR.responseText );
+                    $("#plans li").each(function () {
+                        var li = $(this), id = li.data("id"), err = errors[ id ];
+                        if ( err ) {
+                            $('<div class="error"><h3>Sorry, the following error occurred:</h3>')
+                                .append('<pre>' + err + '</pre>').insertAfter(
+                                    li.find(".ranking-data")
+                                );
+                        }
+                        else if ( err !== undefined ) {
+                            li.hide('fast');
+                            delete nextload.update_tasks[ id ];
+                        }
+                    });
+                    $("#plans").before(
+                        '<p class="error">'
+                      + jqXHR.status + " " + jqXHR.statusText
+                      + ' – Please fix the errors shown in the task block(s) below:</p>'
+                    );
+                }
             });
         }
         else rerank();

@@ -135,13 +135,16 @@ before ['insert', 'update'] => sub {
     my $checks = $args->{checks}            // $self->checks          // 1;
     my $done   = $args->{done}              // $self->done            // 0;
     my $exp    = $args->{expoftime_share}   // $self->expoftime_share // 1;
-    croak "done field cannot be negative" if $done < 0;
-    croak "checks value cannot be negative" if $checks < 0;
-    croak "expoftime_share value cannot be less than 1" if $exp < 1;
-    croak "Checks must be >0 unless step is linked or has / will have substeps"
-        if !$checks && !($self->link_row || $self->is_parent);
-    croak "Step cannot have more checks done than available"
-        if $done > $checks;
+    my $Error = "FTM::Error::Task::InvalidDataToStore";
+    $Error->throw("done field cannot be negative") if $done < 0;
+    $Error->throw("checks value cannot be negative") if $checks < 0;
+    $Error->throw("expoftime_share value cannot be less than 1") if $exp < 1;
+    $Error->throw(
+        "Checks must be >0 unless step is linked or has / will have substeps"
+    ) if !$checks && !($self->link_row || $self->is_parent);
+    $Error->throw(
+        "Step cannot have more checks done than available"
+    ) if $done > $checks;
 };
 
 before add_to_substeps => sub {

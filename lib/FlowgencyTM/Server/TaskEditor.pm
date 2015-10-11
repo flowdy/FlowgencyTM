@@ -70,6 +70,7 @@ sub fast_bulk_update {
 
     my $log = Mojo::Log->new();
 
+    my (%errors, $status);
     for my $task (@{ $self->req->params->names }) {
 
         my $data = $self->param($task);
@@ -79,16 +80,26 @@ sub fast_bulk_update {
         $_ = from_json $_ for $data;
 
         my $method = $is_new ? 'add'
-                   : $data->{incr_name_prefix} ? 'copy'
+                   : $data->{copy} || $data->{incr_name_prefix} ? 'copy'
+                   : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
                    : 'update';
 
         $data->{step} //= '';
 
-        $task = FlowgencyTM::user->tasks->$method($task || (), $data);
+        try {
+            $task = FlowgencyTM::user->tasks->$method($task || (), $data);
+        }
+        catch {
+            ($status, $errors{$task}) = index(ref($_), "FTM::Error::") == 0
+                                      ? ($status || 400, $_->message)
+                                      : ($status || 500, $_);
+            return 0;
+        } and ref($task)
+          and $errors{ $task->name } = q{}; # empty
 
     }
 
-    $self->rendered(204); # no content
+    $self->render(status => $status // 200, json => \%errors )
         
 }
 

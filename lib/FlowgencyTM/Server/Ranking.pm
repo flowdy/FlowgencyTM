@@ -21,6 +21,9 @@ sub list {
   }
   else { $now = $args{now} }
 
+  my @force_include = split q{,}, $args{force_include};
+  $args{force_include} = \@force_include;
+
   my @tasks = FlowgencyTM::user->tasks->list(%args);
   $self->res->headers->cache_control('max-age=1, no-cache');
 
@@ -33,13 +36,20 @@ sub list {
         $task->uncouple_dbicrow;
         return $tdata;
     },
-    timestamp => ref($tasks[0]) ? $tasks[0]->flowrank->_for_ts : $now
+    timestamp => ref($tasks[0]) ? $tasks[0]->flowrank->_for_ts : $now,
+    force_include => \@force_include,
   );
 }
 
 sub archived {
     my $self = shift;
-    $self->stash('tasks' => scalar FlowgencyTM::user()->tasks->search({ archived_because => { '!=' => undef }}, { order_by => { -desc => ['archived_ts'] }, rows => 100 }));
+    $self->stash(
+        'tasks' => scalar FlowgencyTM::user()->tasks->search({
+                              archived_because => { '!=' => undef }
+                          }, { order_by => { -desc => ['archived_ts'] },
+                               rows => 100
+                          })
+    );
 }
 
 use FTM::Util::LinearNum2ColourMapper;

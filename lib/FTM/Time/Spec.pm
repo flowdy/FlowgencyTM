@@ -115,23 +115,24 @@ sub parse_ts {
         move(\%ret, $diff);
         ($year, $month, $day) = @ret{qw|year month day|};
     }
-    # else { croak "Kein Datum im String: $ts" } # to early
        
-    croak "Could not parse date" if $ts =~ m{ \A \d* [.-] \d }xms;
+    FTM::Error::TimeSpec::Invalid->throw("Could not parse date: '$ts'")
+        if $ts =~ m{ \A \d* [.-] \d }xms;
 
     # Let us parse the time part which is always absolute:
     $ts =~ s{ \G \s* T?
         0?(\d\d?) (?: \: 0?(\d\d?) # Minutes are optional
         (?:\:0?(\d\d?))? )? # Will we need to indicate seconds someday? Horror!
     \s* | }{}xms;
-    croak 'Invalid time'
+    FTM::Error::TimeSpec::Invalid->throw('Invalid time'." ($1:$2:$3)")
         if !Date::Calc::check_time(map { $_ || 0 } $1, $2, $3);
     $ret{hour} = $1 if defined $1;
     $ret{min} = $2 if defined $2;
     $ret{sec} = $3 if defined $3;
 
-    croak "No date and/or time found in string '$ts' (expecting one at its front)"
-        if !defined( $ret{year} || $ret{month} || $ret{day} || $ret{hour} );
+    FTM::Error::TimeSpec::Invalid->throw(
+        "No date and/or time found in string '$ts' (expecting one at its front)"
+    ) if !defined( $ret{year} || $ret{month} || $ret{day} || $ret{hour} );
 
     $ret{remainder} = $ts;
     my $self = $class->new(\%ret);
@@ -223,7 +224,9 @@ sub move {
 
     if ( $diff =~ m{ > (\w\w) \w* \z }xms ) {
         my $day = Day_of_Week(@ymdhms[0..2]);
-        my $pos = $WD{ lc $1 } // croak "Not a week day: $1";
+        my $pos = $WD{ lc $1 } // FTM::Error::TimeSpec::Invalid->throw(
+            "Not a week day: $1"
+        );
         $day = ( $pos - $day ) % ( $neg ? -7 : 7 );
         @ymdhms[0..2] = Add_Delta_Days(@ymdhms[0..2], $day);
     }
@@ -355,7 +358,9 @@ sub get_qm_timestamp {
 sub last_sec {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec
-       // croak "last_sec requires all date components to be defined";
+       // FTM::Error::TimeSpec::Invalid->throw(
+              "last_sec requires all date components to be defined"
+          );
     $epoch_sec += !defined($self->hour) ? do { # no, not always 24*3600-1
                      my @date = Add_Delta_Days($self->date_components, 1);
                      $date[1]--;
@@ -371,7 +376,10 @@ sub last_sec {
 sub split_seconds_since_midnight {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec
-       // croak "split_seconds_since_midnight requires all date components to be defined";
+       // FTM::Error::TimeSpec::Invalid->throw(
+              "split_seconds_since_midnight requires all "
+              . "date components to be defined"
+          );
     my $ssm = ($self->sec // 0)
             + 60*($self->min // 0)
             + 3600*($self->hour // 0)
@@ -412,6 +420,13 @@ sub is_past {
 }
 
 __PACKAGE__->meta->make_immutable;
+
+
+package FTM::Error::TimeSpec::Invalid;
+use Moose;
+extends 'FTM::Error';
+
+1;
 
 __END__
 
