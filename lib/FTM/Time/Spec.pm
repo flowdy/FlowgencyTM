@@ -92,7 +92,7 @@ sub parse_ts {
     # Parse the date components
     if ( $ts =~ s{ \A (?:(?:(\d{4}|\d\d) - )? 0?(\d\d?) - )? 0?(\d\d?)
                    (?![.:\d]) }{}gxms
-                   # look ahead to tell apart german notation or clock time
+                   # look ahead is to tell apart german notation or clock time
        ) {
         $ret{year} = $1 if defined $1;
         substr $ret{year}, 0, 0, 20 if length($ret{year}||q{}) == 2;
@@ -109,9 +109,17 @@ sub parse_ts {
         $month = $ret{month} = $2 if defined $2;
         $day = $ret{day} = $1 if defined $1;
     }
-    elsif ( $ts =~ s{ \A ( [+-](?=[\d>]) (?i:\s*-?\d+[dwmy])* (>\w+)? ) }{}igxms ) {
+    elsif ( $ts =~ s{ \A ( [+-](?=[\d>]) (?i:\s*-?\d+[dwmy])* ) }{}igxms ) {
         @ret{qw|year month day|} = ($year, $month, $day);
         (my $diff = $1) =~ s/^\+//;
+        if ( $ts =~ s{ \G (>\w+) }{}igxms ) {
+            $diff .= $1;
+        }
+        else {
+            FTM::Error::TimeSpec::Invalid->throw(
+                "Timestamp invalid after plus sign"
+            ) if !length($diff);
+        }
         move(\%ret, $diff);
         ($year, $month, $day) = @ret{qw|year month day|};
     }
@@ -124,7 +132,7 @@ sub parse_ts {
         0?(\d\d?) (?: \: 0?(\d\d?) # Minutes are optional
         (?:\:0?(\d\d?))? )? # Will we need to indicate seconds someday? Horror!
     \s* | }{}xms;
-    FTM::Error::TimeSpec::Invalid->throw('Invalid time'." ($1:$2:$3)")
+    FTM::Error::TimeSpec::Invalid->throw("Invalid time ($1:$2:$3)")
         if !Date::Calc::check_time(map { $_ || 0 } $1, $2, $3);
     $ret{hour} = $1 if defined $1;
     $ret{min} = $2 if defined $2;
