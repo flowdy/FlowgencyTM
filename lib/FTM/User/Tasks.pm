@@ -489,17 +489,7 @@ sub list {
         else {
             push @in_tray, $task;
         }
-        delete $force_include{$task->name};
-    }
-
-    for my $task ( keys %force_include ) {
-        $task = eval { $self->get($task) }
-               // die "Could not cache task $task: $@";
-        push @{
-            $task->start_ts > $now ? \@upcoming
-          : $task->is_archived     ? \@in_archive
-          :                          \@in_tray
-        }, $task;
+        $_ = 0 for $force_include{$task->name} // ();
     }
 
     if ( !$tray ) {
@@ -512,7 +502,10 @@ sub list {
                            )
                          : - 1;
             for ( @in_tray ) {
-                 $_->flowrank->score > $appendix or next;
+                 next if !(
+                     $_->flowrank->score > $appendix 
+                     || defined $force_include{$_->name}
+                 ); 
                  push @on_desk, $_;
             }
         }
@@ -524,6 +517,17 @@ sub list {
         }
     }
  
+    for my $task ( keys %force_include ) {
+        next if !$force_include{$task};
+        $task = eval { $self->get($task) }
+               // die "Could not cache task $task: $@";
+        push @{
+            $task->start_ts > $now ? \@upcoming
+          : $task->is_archived     ? \@in_archive
+          :                          \@in_tray
+        }, $task;
+    }
+
     return $desk ? @on_desk : (),
            $tray ? @in_tray : (),
            @upcoming ? ('upcoming',

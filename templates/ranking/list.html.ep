@@ -26,7 +26,7 @@
 
 % if ( my @fi = @$force_include ) {
 %     for ( @fi ) { $_ = sprintf q{<a href="#task-%s">%1$s</a>}, $_ }
-<p>Created/Updated successful: <%== join ", ", @fi %>. See below. The grey ones hide on next rerank as they would normally unless you make appropriate settings.
+<p>Tasks successfully processed: <%== join ", ", @fi %>. See below. (Displayed at any rate once for your convenience. As of the next rerank, they may hide due to their urgency score, list settings and/or time model configuration.)</p>
 % }
 
 <ol id="plans">
