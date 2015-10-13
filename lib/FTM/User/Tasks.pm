@@ -513,7 +513,7 @@ sub list {
             # Because there are no open tasks on desk yet,
             # let's present all closed tasks so the user can
             # select the next task to open
-            @on_desk = @in_tray;
+            $tray = 1;
         }
     }
  
