@@ -26,7 +26,7 @@
 
 % if ( my @fi = @$force_include ) {
 %     for ( @fi ) { $_ = sprintf q{<a href="#task-%s">%1$s</a>}, $_ }
-<p>Tasks successfully processed: <%== join ", ", @fi %>. See below. (Displayed at any rate once for your convenience. As of the next rerank, they may hide due to their urgency score, list settings and/or time model configuration.)</p>
+<p>Data successfully processed for task<%= @fi > 1 ? "s" : "" %> <%== join ", ", @fi %> – see below. (Displayed for once at any rate. Without changes and given default list settings, a task normally hides if its urgency score is too low or it is currently inactive, upcoming or archived.)</p>
 % }
 
 <ol id="plans">
