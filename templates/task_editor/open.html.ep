@@ -1,6 +1,10 @@
 % layout undef;
 % my $focus = $details->{focus};
-% my $main_step = ${ $focus->[-1] }[1];
+% my $main_step = $focus && @$focus ? ${ $focus->[-1] }[1]
+%               : undef;
+% if ( !$main_step ) {
+% return '<p class="error">No main_step passed (task closed)</p>';
+% }
 % if ( my $description = $main_step->markdown_description ) {
 <div class="description"><%== $description %></div>
 % }
