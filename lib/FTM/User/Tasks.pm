@@ -475,7 +475,8 @@ sub list {
             push @upcoming, $task;
         }
         else {
-            $processor->( $task, $drawer & 1 );
+            my ($f) = map { $_ && $_-- } $force_include{ $task->name };
+            $processor->( $task, $f || $drawer & 1 );
         }
     }       
 
@@ -489,7 +490,6 @@ sub list {
         else {
             push @in_tray, $task;
         }
-        $_ = 0 for $force_include{$task->name} // ();
     }
 
     if ( !$tray ) {
@@ -505,7 +505,7 @@ sub list {
                  next if !(
                      $_->flowrank->score > $appendix 
                      || defined $force_include{$_->name}
-                 ); 
+                 );
                  push @on_desk, $_;
             }
         }
@@ -524,7 +524,7 @@ sub list {
         push @{
             $task->start_ts > $now ? \@upcoming
           : $task->is_archived     ? \@in_archive
-          :                          \@in_tray
+          : die "Task neither upcoming nor archived, nor processed by FlowRank"
         }, $task;
     }
 

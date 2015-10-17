@@ -308,6 +308,7 @@ sub store {
 
     $self->_tasks->recalculate_dependencies($self => @to_recalc);
     $self->clear_progress;
+    $self->_clear_flowrank;
     delete $self->{is_open};
     delete $steps->{$root_step};
 
@@ -742,7 +743,6 @@ sub is_to_complete_otherwise_archive {
             $row->open_since(undef);
             $row->archived_ts( FTM::Time::Spec->now_as_string() );
         }
-        $self->_clear_flowrank;
         return $row->update;
     }
 
