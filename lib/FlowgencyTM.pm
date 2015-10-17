@@ -41,6 +41,19 @@ sub user {
                 croak "user: 2nd arg is $new. Must be either a hash-ref or 1",
         };
     }
+    elsif ( defined $create_if_unknown ) {
+        # user( $username => 0 ) to reset a user object
+
+        my $i = _seek_user_in_queue($user_id);
+        if ( defined $i ) {
+            delete($users{ splice @current_users, $i, 1 });
+        }
+        else { croak "no user $user_id cached" }
+
+        return if !defined wantarray; # in void context, we do not regenerate
+                                      # the user from its database record
+
+    }
 
     my $user_obj = $users{$user_id} //= FTM::User->new(
         dbicrow => database->resultset("User")->$retr($data)
@@ -49,15 +62,15 @@ sub user {
     );
 
     if ( my $max_users = $ENV{MAX_USERS_IN_CACHE} ) {
-        if ( !$user_obj->in_storage ) {
-            unshift @current_users, $user_obj->user_id;
-        }
-        else {
-            my $i; for ( $i = 0; $i < @current_users; $i++ ) {
-                last if $user_id eq $current_users[$i];
-            }
+
+        if ( $user_obj->in_storage ) {
+            my $i = _seek_user_in_queue($user_id);
             unshift @current_users, splice @current_users, $i, 1;
         }
+        else {
+            unshift @current_users, $user_obj->user_id;
+        }
+
         if ( (my $drop_count = $max_users - @current_users) < 0 ) {
             delete $users{ splice @current_users, $drop_count };
         }
@@ -69,6 +82,15 @@ sub user {
 
     return $user_obj;
 
+}
+
+sub _seek_user_in_queue {
+    my $user_id = shift;
+    my $i;
+    for ( $i = 0; $i < @current_users; $i++ ) {
+        last if $user_id eq $current_users[$i];
+    }
+    return $i < @current_users ? $i : ();
 }
 
 sub new_user {

@@ -13,7 +13,7 @@
 % if ( $user ) {
 <%= $user->user_id %>, created <%= $user->created %>, cached since <%= $user->cached_since_date %>
 % }
-<br>(<a href="/user/login">Login</a> | <a href="/user/login#terms">Terms of use</a> | <a href="/user/login#register">Register new user</a>)
+<br>(<a href="/user/logout">Logout</a> | <a href="/user/login">Login</a> | <a href="/user/login#terms">Terms of use</a> | <a href="/user/login#register">Register new user</a>)
 </dl>
 
 <h2>About</h2>
@@ -26,7 +26,11 @@
 <li>Schedule working and recreational periods to get proper estimates</li>
 </ul>
 
-<p>Please note: FlowgencyTM is currently "alpha", that is to say probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>, thank you in advance. Do not forget to stay up-to-date by regularly issuing a <code>git pull</code> from inside your local repository directory, if any.</p>
+<h2>Bug reports warmly welcome</h2>
+
+<p>FlowgencyTM is currently "alpha", therefore probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>.</p>
+
+<p>Please make sure you have the latest version of FlowgencyTM.</p>
 <h2>Legal notices</h2>
 
 <p>&copy; 2011-2015 Florian Heß</p>

@@ -158,10 +158,19 @@ sub login {
         $self->redirect_to("home");
     }
     else {
-        $self->render( retry => 1 );
+        $self->render( retrymsg => 'authfailure' );
         return;
     }
 
+}
+
+sub logout {
+    my $self = shift;
+
+    FlowgencyTM::user( $self->session('user_id') => 0 );
+    $self->session(expires => 1);
+
+    $self->render(template => "user/login", retrymsg => 'loggedOut' );
 
 }
 

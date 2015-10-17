@@ -30,7 +30,13 @@ sub startup {
       local $ENV{FLOWGENCYTM_USER} = undef
           if ( index( $ENV{MOJO_LISTEN}//q{}, $ip ) < 0 );
           
-      my $user = FlowgencyTM::user( $c->session('user_id') || () );
+      my $user_id = $c->session('user_id');
+      if ( !$user_id and my $default_user = $ENV{FLOWGENCYTM_USER} ) {
+          $c->session( user_id => $default_user );
+          $user_id = $default_user;
+      }
+
+      my $user = FlowgencyTM::user( $user_id || () );
       if ( $user && $user->can_login ) {
           $c->stash( user => $user );
           return 1;
@@ -43,6 +49,7 @@ sub startup {
   });
 
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login" );
+  $r->get( '/user/logout' )->to("user#logout");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })
       ->get('/admin');
   $admin->get('/')->to('admin#dash');
