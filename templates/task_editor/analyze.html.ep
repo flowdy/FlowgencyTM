@@ -1,0 +1,48 @@
+<h2><%= $title %></h2>
+
+<script>$(function () { $("#aspects").tabs(); });</script>
+% sub format_num {
+%     my $num = shift;
+%     return $num if $num eq int $num;
+%     return sprintf '%1e', $num;
+% }
+
+<div id="aspects">
+<ul>
+<li><a href="#components">FlowRank components</a></li>
+<li><a href="#progress">Progress</a></li>
+<li><a href="#timeway">Time way</a></li>
+</ul>
+<div id="components">
+<table>
+<tr>
+<th></th>
+<th>lowermost</th>
+<th>raw</th>
+<th>topmost</th>
+<th>weighted</th>
+<th>/weight</th>
+</tr>
+% for my $comp ( qw/priority due drift open timeneed/ ) {
+%     my $data = $dump->{components}{$comp};
+%     if ( !$data ) {
+<tr><td colspan="6">No data for component <%= $comp %></td></tr>
+%         next
+%     }
+<tr>
+<th><%= $comp %></th>
+<td><%= format_num($data->{minimum}) %></td>
+<td><%= format_num($data->{raw}) %></td>
+<td><%= format_num($data->{maximum}) %></td>
+<td><%= sprintf '%0.3f', $data->{weighted} %></td>
+<td>/<%= $data->{weight} %></td>
+</tr>
+% }
+<tr style="outline-top: 1px solid black;"><th colspan="4" style="text-align:right;">Total:</th><td><%= sprintf '%0.3f', $dump->{score} %></td></tr>
+</table>
+</div>
+<div id="progress">
+</div>
+<div id="timeway">
+</div>
+</div> <!-- #aspects -->

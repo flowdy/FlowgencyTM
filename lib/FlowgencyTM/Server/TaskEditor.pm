@@ -103,6 +103,19 @@ sub fast_bulk_update {
         
 }
 
+sub analyze {
+    my $self = shift;
+    my $task = $self->_get_task;
+
+    my $flowrank = $task->flowrank;
+    $flowrank &&= $flowrank->dump || {};
+    
+    $self->render(
+        title => $task->title,
+        dump => $flowrank,
+    );
+}
+
 sub _get_task {
     my $self = shift;
     my $id = $self->stash('id');

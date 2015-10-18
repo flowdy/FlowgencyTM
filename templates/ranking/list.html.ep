@@ -6,7 +6,7 @@
 %     my $time_progress = int($task->{progress_pc}{time} * 100)."%";
 %     my $checked_expenditure_progress = int($task->{progress_pc}{checked_exp} * 100)."%";
       <div class="progressbar" title="progress: <%= $time_progress %> of time elapsed : <%= $checked_expenditure_progress %> of expenditure checked" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>;">&nbsp;</span></div>
-      <div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %> // Urgency score: <%= sprintf("~%.3f", $task->{score}) %></div>
+      <div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %> // Urgency score: <%= sprintf("~%.3f", $task->{score}) %> <a title="analyze how this value results" href="/task/<%= $task->{name} %>/analyze/">?</a></div>
 %     end
 % my $upcoming_section = begin
 %     my $task = shift;

@@ -305,8 +305,9 @@ sub calculate_score {
         next if !$max; # Because min and max equal, order is irrelevant
         my $value = ($self->$which - $min) / $max - ( $wgh < 0 ? 1 : 0 );
             # as is $max reduced by min in get_ranking()
-        $score += $comps->{$which} = abs( $value ) * abs( $wgh );
+        $comps->{$which} = abs( $value ) * abs( $wgh );
     }
+    continue { $score += $comps->{$which} //= 0 }
 
     $self->_rundata($rundata_href);
     return $score;
@@ -318,19 +319,31 @@ sub score { return sum 0, values %{shift->_components}; }
 sub dump {
     my $self = shift;
 
-    my $comps = $self->_components;
-    my %rundata = %{$self->_rundata};
-    while ( my ($which, $value) = each %$comps ) {
-        @{$rundata{$which}}{'raw','weighted'} = ($self->$which, $value);
+    my ($comps, $rundata) = ($self->_components, $self->_rundata);
+    my %rundata;
+    while ( my ($which, $value) = each %$rundata ) {
+        next if !ref $value;
+        for my $r ( $rundata{$which} ) {
+            $r = {%$value};
+            @{$r}{'raw','weighted'} = (
+                $self->$which, $comps->{$which}
+            );
+            $r->{maximum} += $r->{minimum};
+            my $w = $r->{weight};
+            if ( $w < 0 ) {
+                @{$r}{'maximum', 'minimum'} = @{$r}{'minimum', 'maximum'};
+                $r->{weight} = abs $w;
+            }
+        }
     }
 
-    return (
+    return {
        datetime => q{}.$self->_for_ts,
        state => $self->active ? 'active' : 'paused',
        components => \%rundata,
        map { $_ => $self->$_ }
            qw(score ranking_position next_statechange_in_hms elapsed_pres),
-    );
+    };
 }
 
 sub _calc_timeneed {
