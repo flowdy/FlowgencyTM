@@ -65,7 +65,9 @@ $(function () {
             var te = newtask.find(".taskeditor"),
                 id = te.data('taskid') + new_task_count;
             newtask.attr('id', 'task-' + id);
+            newtask.data('id', id);
             te.data('taskid', id);
+            console.log('New task with id ' + id);
             te.find('fieldset').each(function () {
                 var new_id = $(this).attr('id').replace('_-','_'+new_task_count+'-');
                 $(this).attr( 'id', new_id );

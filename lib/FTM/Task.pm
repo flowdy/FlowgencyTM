@@ -6,6 +6,7 @@ use Moose;
 use FTM::FlowDB::Task;
 use FTM::Util::DependencyResolver qw(ordered);
 use Carp qw(croak);
+use Try::Tiny;
 
 has _cursor => (
     is => 'ro',
@@ -285,19 +286,28 @@ sub store {
     # list all upper steps before their lower levels
     my $steps_aref = _ordered_step_hrefs($root, %$steps);
 
-    $self->dbicrow->result_source->storage->txn_do( sub {
-        $self->_store_root_step(\%args);
-        $self->_store_steps_below($root, $steps_aref);
-        my @touched_timestructure;
-        for my $step ( $root_step ? \%args : (), @$steps_aref ) {
-            next if !grep { defined } @{$step}{'from_date','timestages'};
-            push @touched_timestructure, $step->{name} // $step->{_oldname};
-        }
-        if ( @touched_timestructure ) {
-            $self->check_timestructure(@touched_timestructure);
-        }
-        $self->is_to_complete_otherwise_archive;
-    });
+    try {
+        $self->dbicrow->result_source->storage->txn_do( sub {
+            $self->_store_root_step(\%args);
+            $self->_store_steps_below($root, $steps_aref);
+            my @touched_timestructure;
+            for my $step ( $root_step ? \%args : (), @$steps_aref ) {
+                next if !grep { defined } @{$step}{'from_date','timestages'};
+                push @touched_timestructure, $step->{name} // $step->{_oldname};
+            }
+            if ( @touched_timestructure ) {
+                $self->check_timestructure(@touched_timestructure);
+            }
+            $self->is_to_complete_otherwise_archive;
+        });
+    }
+    finally {
+        # to avoid any inconsistencies, notice any defaults, etc.
+        $row->discard_changes();
+    }
+    catch {
+        die $_; # rethrow
+    };
 
     my (@to_recalc);
     while ( my ($step, $args) = each %$steps ) {
@@ -460,6 +470,7 @@ sub _store_root_step {
             "root step cannot have a parent"
         ) if defined $data->{parent};
         $self->_normalize_task_data($data);
+
     }
 
     while ( my ($key, $value) = each %$data ) {
@@ -469,23 +480,32 @@ sub _store_root_step {
     my $result;
 
     if ( $row->in_storage ) {
-        $self->redraw_cursor_way if $store_mode eq 'task';
+        if ( $store_mode eq 'task' ) {
+            $self->redraw_cursor_way;
+        }
         $result = $row->update;
     }
     else {
+
+        if ( $store_mode eq 'task' ) {
+            for my $field ( 'priority', 'title' ) {
+                FTM::Error::Task::InvalidDataToStore->throw(
+                    "Mandatory field $field not defined"
+                ) if !defined $data->{$field};
+            }
+        }
         $result = $row->insert;
+
         FTM::Error::Task::InvalidDataToStore->throw(
             "Cursor setup failed: $@"
         ) if !eval { $self->_cursor };
+
     }
 
     if ( $store_mode eq 'step' ) {
         $self->_update_subtask_if_any($row);
     }
     
-    # to avoid any inconsistencies, notice any defaults, etc.
-    $row->discard_changes();
-
     return $result;
 }
 

@@ -76,10 +76,10 @@ sub fast_bulk_update {
         my $data = $self->param($task);
         $log->info("For task $task update: $data");
 
-        my $is_new = $task =~ s/^_NEW_TASK_\d+$//;
+        my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
         $_ = from_json $_ for $data;
 
-        my $method = $is_new ? 'add'
+        my $method = $tmp_name ? 'add'
                    : $data->{copy} || $data->{incr_name_prefix} ? 'copy'
                    : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
                    : 'update';
@@ -90,10 +90,14 @@ sub fast_bulk_update {
             $task = FlowgencyTM::user->tasks->$method($task || (), $data);
         }
         catch {
-            ($status, $errors{$task}) = index(ref($_), "FTM::Error::") == 0
-                                      ? ($status || 400, $_->message)
-                                      : ($status || 500, $_);
+            ($status, $errors{ $task || $tmp_name })
+                 = index(ref($_), "FTM::Error::") == 0
+                 ? ($status || 400, $_->message)
+                 : ($status || 500, $_);
+            $log->error($_);
+
             return 0;
+
         } and ref($task)
           and $errors{ $task->name } = q{}; # empty
 
