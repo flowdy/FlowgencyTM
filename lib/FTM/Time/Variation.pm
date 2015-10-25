@@ -13,8 +13,18 @@ has description => ( is => 'rw' );
 
 has seqno => ( is => 'rw', isa => 'Num' );
 
-has inherit_mode => ( is => 'rw', isa => 'Str' );
-
+has inherit_mode => (
+    is => 'rw', isa => 'Str',
+    predicate => 'inherit_mode_is_explicit',
+);
+around inherit_mode => sub {
+    my ($orig, $self) = (shift, shift);
+    return @_                           ? $self->$orig(@_)
+         : exists $self->{inherit_mode} ? $self->inherit_mode
+         :                                $self->track->default_inherit_mode
+         ;
+};
+    
 has apply => (
     is => 'rw',
     isa => 'Maybe[Bool|BooleanObject|Str]',
@@ -39,7 +49,7 @@ has track => (
 
 sub from_date_is_explicit { 1 }
 sub until_date_is_explicit { 1 }
-sub week_pattern { shift->track->week_pattern }
+sub week_pattern { shift->track->fillIn->rhythm }
 
 sub like {
     my ($self, $other) = @_;
@@ -67,11 +77,12 @@ sub new_alike {
         join(" and ", @content), ". Decide"
         if @content > 1;
 
-    $class = $content eq 'week_pattern_of_track' ? $class.'::BorrowedRhythm'
+    $class = !defined($content)                  ? ref $self || $class
+           : $content eq 'week_pattern_of_track' ? $class.'::BorrowedRhythm'
            : $content eq 'section_from_track'    ? $class.'::Section'
            : $content eq 'ref'                   ? $class.'::Descendent'
            : $content eq 'week_pattern'          ? $class.'::DifferentRhythm'
-           :                                       ref $self || $class
+           :                                       die
            ;
 
     eval "use $class"; die $@ if $@;

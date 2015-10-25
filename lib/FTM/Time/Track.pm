@@ -99,7 +99,6 @@ for ( ['from_earliest', 'until_latest'] ) {
             : !ref($ts)           ? FTM::Time::Spec->parse_ts($ts)
             : $ts
             ;
-        $DB::single=1;
         croak "Time track limits can be extended, not narrowed"
             if $ts > $self->lock_from_date
             && $self->lock_until_date > $ts
@@ -146,7 +145,7 @@ has force_receive_mode => (
 has parents => (
     is => 'rw',
     isa => 'ArrayRef[FTM::Time::Track]',
-    init_arg => 'unmentioned_variations_from',
+    init_arg => 'use_variations_from',
     default => sub { [] },
     trigger => sub {
         my ($self, $new_value, $old_value) = @_;
@@ -320,6 +319,7 @@ sub BUILD {
     if ( my $vars = $args->{variations} ) {
         $self->update_variations($vars);
     }
+    return;
 }
 
 sub calc_slices {
@@ -422,7 +422,7 @@ sub dump {
 
     my %hash = (
 
-        @{$self->parents} ? (unmentioned_variations_from => [
+        @{$self->parents} ? (use_variations_from => [
             map { $_->name } $self->parents
         ]) : (),
 
@@ -564,6 +564,7 @@ sub _apply_variations {
 
     my %levels = map { $_ => [] } @ORDER;
 
+    $DB::single = 1;
     VARIATION:
     for my $var ( values %$variations ) {
 
@@ -722,11 +723,11 @@ sub update_variations {
 
 sub _build_inherited_variations {
     my ($self) = @_;
-
     my %variations;
     my ($next_incr, $incr) = (0, 0);
     for my $p ( $self->parents ) {
-        while ( my ($name, $var) = each %{ $p->all_variations } ) {
+        my $all_variations = $p->all_variations;
+        while ( my ($name, $var) = each %$all_variations ) {
             $var = $var->meta->clone_object($var, apply => undef);
             my $seqno = $var->seqno;
             $next_incr = $seqno if $seqno > $next_incr;
@@ -773,7 +774,7 @@ sub gather_dependencies {
                      # values: \@scalar_refs_to_be_filled_with_track_oref
 
     # Prior to track $id being constructed, all its parents must be ready
-    my $parents_key = 'unmentioned_variations_from';
+    my $parents_key = 'use_variations_from';
     if ( my $p = $self ? $self->parents : $data->{$parents_key} ) {
         for my $p (
             ref $p ? @$p : $self ? $p : $data->{$parents_key}
