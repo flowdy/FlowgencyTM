@@ -5,6 +5,7 @@ package FlowgencyTM {
 use Carp qw(croak);
 our $VERSION = "0.7";
 use FTM::FlowDB;
+use FTM::Error
 use FTM::User; # No, it is rather the user who use FlowgencyTM
 
 my ($db, %users, @current_users);
@@ -42,7 +43,7 @@ sub user {
         };
     }
     elsif ( defined $create_if_unknown ) {
-        # user( $username => 0 ) to reset a user object
+        # user( $user_id => 0 ) to reset a user object
 
         my $i = _seek_user_in_queue($user_id);
         if ( defined $i ) {

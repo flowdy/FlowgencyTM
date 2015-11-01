@@ -1,5 +1,6 @@
 package FlowgencyTM::Server;
-use FlowgencyTM;
+use POE::Component::IKC::ClientLite;
+use FTM::FlowDB;
 use Mojolicious 6.0;
 use Mojolicious::Sessions;
 use Mojo::Base 'Mojolicious';
@@ -11,8 +12,6 @@ use Mojo::Base 'Mojolicious';
 sub startup {
   my $self = shift;
 
-  # Documentation browser under "/perldoc"
-  $self->plugin('PODRenderer');
   $self->secrets([rand]);
   $self->sessions->cookie_name('FlowgencyTM');
 
@@ -52,7 +51,12 @@ sub startup {
       # Prevent autologin unless server is requested from the same machine
       local $ENV{FLOWGENCYTM_USER} = undef if $c->stash('is_remote');
           
+      # Rely on Mojolicious in that the session cookie be cryptographically
+      # protected against manipulation (HMAC-SHA1 signature). Hence, if the
+      # user id is defined, the user has certainly logged in properly.
+      # Refer to `perldoc Mojolicious::Controller` if interested.
       my $user_id = $c->session('user_id');
+
       if ( !$user_id and $user_id = $ENV{FLOWGENCYTM_USER} ) {
           $c->session( user_id => $user_id );
       }

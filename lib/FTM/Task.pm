@@ -770,16 +770,6 @@ sub is_to_complete_otherwise_archive {
  
 __PACKAGE__->meta->make_immutable();
 
-package FTM::Error::Task::FailsToLoad;
-use Moose;
-extends 'FTM::Error';
-
-package FTM::Error::Task::InvalidDataToStore;
-use Moose;
-extends 'FTM::Error';
-
-__END__
-
 __END__
 
 =head1 NAME

@@ -429,7 +429,6 @@ sub is_past {
 
 __PACKAGE__->meta->make_immutable;
 
-
 package FTM::Error::Time::InvalidSpec;
 use Moose;
 extends 'FTM::Error';

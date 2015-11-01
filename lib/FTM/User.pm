@@ -3,10 +3,11 @@ use strict;
 package FTM::User;
 use Moose;
 use Carp qw(croak);
-use FTM::Time::Model;
-use FTM::User::Tasks;
-use FTM::FlowRank;
-use JSON qw(from_json to_json);
+
+sub TRIGGERS { return [qw[
+    get_ranking get_task_data update_task open_task add_task copy_task
+    get_settings update_settings
+]]; }
 
 has _dbicrow => (
     is => 'ro',
@@ -17,36 +18,6 @@ has _dbicrow => (
         find_related insert invite update in_storage extprivacy
     /],
     init_arg => "dbicrow",
-);
-
-has _time_model => (
-    is => 'ro',
-    isa => 'FTM::Time::Model',
-    lazy => 1,
-    init_arg => undef,
-    handles => {
-        dump_time_model => 'dump',
-        get_available_time_tracks => 'get_available_tracks',
-    },
-    default => sub {
-        my ($self) = shift;
-        FTM::Time::Model->from_json($self->_dbicrow->time_model);    
-    }
-);
-
-has tasks => (
-    is => 'ro',
-    isa => 'FTM::User::Tasks',
-    init_arg => undef,
-    builder => '_build_tasks',
-    handles => { 'get_task' => 'get', 'search_tasks' => 'search' },
-    lazy => 1,
-);
-
-has cached_since_date => (
-    is => 'ro',
-    init_arg => undef,
-    default => sub { FTM::Time::Spec->now },
 );
 
 has can_admin => (
@@ -64,129 +35,41 @@ has can_login => (
     }
 );
 
-has weights => (
-    is => 'ro',
-    isa => 'HashRef[Int]',
-    auto_deref => 1,
-    lazy => 1,
-    default => sub {
-        return from_json(shift->_dbicrow->weights);
-    },
-);
-    
-has _priorities => (
-    is => 'ro',
-    isa => 'HashRef[Int|Str]',
-    auto_deref => 1,
-    lazy => 1,
-    default => sub {
-        my $href = from_json(shift->_dbicrow->priorities);
-        my %ret;
-        while ( my ($p, $n) = each %$href ) {
-            croak "priority $p redefined" if $ret{"p:$n"};
-            croak "ambiguous label for priority number $n" if $ret{"n:$p"};
-            @ret{ "p:$n", "n:$p" } = ($p, $n);
-        }
-        return \%ret; 
-    },
-);
+my $IS_INITIALIZED;
 
-has appendix => (
-    is => 'rw',
-    isa => 'Num',
-    lazy => 1,
-    default => sub { shift->_dbicrow->appendix },
-    trigger => sub {
-        my ($self, $value) = @_;
-        $self->_dbicrow->update({ appendix => $value });
-    },
-);
+INIT {
+    return if $IS_INITIALIZED;
 
-sub get_labeled_priorities {
-    my ($self) = @_;
-    my $p = $self->_priorities;
-    my $ret = {};
-    while ( my ($label, $num) = each %$p ) {
-        $label =~ s{^n:}{} or next;
-        $ret->{$label} = $num;
-    }
-    return $ret;
+    # we are used with "()", normally suppressing import call, but as we are
+    # that important, we call it ourselves nevertheless:
+    __PACKAGE__->import();
+
 }
 
-sub modify_weights {
-    my ($self,%weights) = @_;
-    my $w = $self->weights;
-    while ( my ($key, $value) = each %weights ) {
-        die "Unknown key: $key" if !exists $w->{$key};
-        die "Not an integer: $key = $value" if $value !~ /^-?\d+$/;
-        $w->{$key} = $value;
+sub import {
+    my ($class, $mode, $args) = @_;
+    if ( $IS_INITIALIZED ) {
+        croak "$class already initialized" if @_ > 1;
+        return;
     }
-    return $self->_dbicrow->update({ weights => to_json($w) });
-}
 
-sub remap_priorities {
-    my ($self,@priorities) = @_;
-    my (%p);
-    while ( my ($key, $value) = splice @priorities, 0, 2 ) {
-        die "Multiple labels for priority = $value" if exists $p{$value};
-        die "Not an integer: $key = $value" if $value !~ /^-?\d+$/;
-        $p{$key} = $value;
+    $mode = !$mode             ? 'Common'
+          : $mode eq 'Backend' ? 'Interface' # Installed POE::Component::IKC?
+          : $mode eq 'Proxy'   ? 'Proxy'
+          :                      croak "Illegal $class mode: $mode"
+          ;
+
+    my $role = "FTM::User::$mode";
+
+    if ( $args ) {
+        eval "require $role" or die;
+        $role->import(%$args);
     }
-    delete $self->{_priorities};
-    return $self->_dbicrow->update({ priorities => to_json(\%p) });
-}
 
-sub update_time_model {
-    my ($self, $args) = @_;
-    my $tm = $self->_time_model;
-    $tm->update($args) && $self->_dbicrow->update({
-        time_model => $tm->to_json
-    });
-};
+    with $role;
 
-sub __legacy_dump_time_model {
-    my ($self) = shift;
-
-    my $href = from_json($self->_dbicrow->time_model);
-
-    my $convert_ts = sub {
-        my ($href, $from_key, $until_key) = @_;
-        my $cnt_defined = 0;
-        for ( $href->{ $from_key } // (), $href->{ $until_key } // () ) {
-            $_ = FTM::Time::Spec->parse_ts($_);
-            $cnt_defined++;
-        }
-        if ( $cnt_defined == 2 ) {
-            $href->{$from_key}->fix_order($href->{$until_key});
-        }
-    };
-
-    for my $href ( values %$href ) {
-        $convert_ts->($href, 'from_earliest', 'until_latest');
-        for my $var (@{ $href->{variations} // [] }) {
-            $convert_ts->($var, 'from_date', 'until_date');
-        } 
-    }
-    
-    return $href;
-
-}    
-
-sub _build_tasks {
-    my $self = shift;
-    FTM::User::Tasks->new({
-        track_finder => sub {
-            $self->_time_model->get_track(shift);
-        }, 
-        flowrank_processor => FTM::FlowRank->new_closure({
-            get_weights => sub { $self->weights }
-        }),
-        priority_resolver => sub {
-            $self->_priorities->{ +shift };
-        },
-        appendix => sub { $self->appendix },
-        task_rs => scalar $self->_dbicrow->tasks,
-    });
+    $class->meta->make_immutable;
+    $IS_INITIALIZED = 1;
 }
 
 __PACKAGE__->meta->make_immutable;

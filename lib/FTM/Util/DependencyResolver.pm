@@ -68,14 +68,6 @@ sub _fail_with_reason {
 
 }
 
-package FTM::Error::IrresolubleDependency;
-use Moose;
-extends 'FTM::Error';
-
-augment message => sub {
-    return inner() . "(and maybe further dependency problems that may or may not result from this one)"
-};
-
 __END__
 
 =head1 NAME
