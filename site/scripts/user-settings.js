@@ -3,7 +3,6 @@ $(function () {
     $("#track-definitions").accordion({ heightStyle: 'content', collapsible: true, active: false });
     $("#new-time-track + div textarea").change(function () {
         var text, header = $(this).parents("div").prev();
-        console.log("Here you are:");
         if ( this.value.match(/"name"\s*:\s*"([^"]+)/) ) {
            text = RegExp.$1;
            header.find(".name").text("[" + text + "]");
@@ -494,8 +493,9 @@ $(function () {
 
        function dynamize(tab, name, isMain) {
            var fields = isMain ? mainFields : varFields,
-               properties = { _docker: function () {} },
-               proxy = new FlowgencyTM.ObjectCacheProxy(properties, name, fields);
+               noop = function () { return; },
+               properties = { _docker: noop },
+               proxy = new FlowgencyTM.ObjectCacheProxy(name, properties, fields);
            tab.find("input.property").each(function () { return setup_field( $(this), proxy  ); });
            tab.find("fieldset.undefined option").click(function () {
                var option = $(this), fieldname = option.text(),
@@ -515,7 +515,7 @@ $(function () {
            else {
                properties._docker = function () {
                    trackdata.variations.push(properties);
-                   this._docker = function () {};
+                   this._docker = noop;
                }
            }
        }

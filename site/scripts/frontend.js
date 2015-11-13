@@ -501,9 +501,8 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
 }
             
 function ObjectCacheProxy (name, obj, fields) {
-    var my = this;
 
-    my.prototype = obj;
+    var my = Object.create(obj);
 
     fields.forEach(function (i) {
         Object.defineProperty(my, i, {
@@ -519,6 +518,8 @@ function ObjectCacheProxy (name, obj, fields) {
     my.fields = fields;
 
     Object.freeze(my);
+
+    return my;
 };
 
 var __dtpCounter = 0;
