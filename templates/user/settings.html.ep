@@ -51,12 +51,11 @@
 </fieldset>
 <fieldset id="set-weights">
 <legend>Weights of the ranking criteria</legend>
-% my %weights = $user->weights;
 <p>The FlowgencyTM ranking score ("FlowRank") is mathematically just a simple product comprising the following dimensions of urgency. By default, they are equally weighted, but you may adjust that to your liking. Please note: It is of no use changing it too often. The mind will need some time to get accustomed.</p>
 <table>
 % my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your checking steps as done. This is additionally visualized by a variadic colour gradient under the task title.", open => "If and for how long the task has been open", timeneed => "When the task will be done as compared to when you planned it should be done. This is inferred from your average working speed once you make the first check.");
 % while ( my ($key, $hint) = splice @hints, 0, 2 ) {
-%   my $value = $weights{$key};
+%   my $value = $weights->{$key};
     <tr><th><label for="#weight-<%= $key %>"><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" id="weight-<%= $key %>" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> type="number" value="<%= $value %>"></td><td><%= $hint %></li>
 % }
 </table>
@@ -65,7 +64,6 @@
 <fieldset id="set-priorities">
 <legend>Priority levels</legend>
 <p>Separate the priority labels by comma. You may chain commas to indicate that the next labeled priority is more than one level higher than the last. In the priority level field of the task editor, you can assign the priority just as well by number, so these unlabeled in between are usable, too. Count up from left to right, start at 1.</p>
-% my $priorities = $user->get_labeled_priorities;
 % my @chain;
 % while ( my ($label, $number) = each %$priorities ) {
 %   $chain[$number] = $label;
@@ -91,12 +89,11 @@
 
 % my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from force_receive_mode default_inherit_mode from_earliest until_latest successor);
 % my @varfields = qw(description week_pattern week_pattern_of_track section_of_track ref apply from_date until_date inherit_mode);
-% my $tm = $user->dump_time_model;
-% my @tracks = sort { $tm->{$a}{label} cmp $tm->{$b}{label} } keys %$tm;
+% my @tracks = sort { $time_model->{$a}{label} cmp $time_model->{$b}{label} } keys %$time_model;
 
 <div id="track-definitions">
 % for my $track_name ( @tracks ) {
-%     my $track = $tm->{$track_name};
+%     my $track = $time_model->{$track_name};
 %     $_ = join q{, }, @$_ for $track->{unmentioned_variations_from} // ();
 % my @trackfields = @trackfields;
 % delete $track->{name};

@@ -5,12 +5,14 @@ use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
+
 sub settings {
     my ($self) = @_;
     my $user = $self->stash('user');
     my %errors;
 
-    if ( defined(my $email = $self->param('email')) ) {
+    my $email = $self->param('email');
+    if ( length $email ) {
          my $error;
          my $part = 'account';
          for ( my ($account, $provider) = split /@/, $email ) {
@@ -19,7 +21,7 @@ sub settings {
              }
              elsif ( /[^\w.-]/ ) {
                  $error = $part.' part is malformed or too esoteric';
-               # If needed someday, we could well use Regex::Common, but mind
+               # If needed someday, we could well use Regex::Common, but I mind
                # the number of the dependencies FlowgencyTM already has got.
              }
              last if $error;
@@ -47,30 +49,24 @@ sub settings {
         }
     }
 
+    my $prio = $self->param('priorities');
     my $change_model = $self->param('time_model_changes');
-    $user->update_time_model(from_json($change_model)) if $change_model;
-
-    if ( my $prio = $self->param('priorities') ) {
-        my (%prio,$i);
-        for my $p ( split q{,}, $prio ) {
-            $i++;
-            next if !length $p;
-            $prio{$p} = $i;
-        }
-        $user->remap_priorities(%prio) if %prio;
-    }
-
     my %weights;
     for my $w ( qw(priority due drift open timeneed) ) {
         if ( defined(my $num = $self->param("weight[$w]")) ) {
             $weights{$w} = $num;
         }
     }
-    $user->modify_weights(%weights) if %weights;
+    my %settings;
+    $settings{weights} = \%weights if %weights;
+    $settings{priorities} = $prio if $prio;
+    $settings{change_time_model} = $change_model if $change_model;
 
     if ( defined(my $appendix = $self->param("appendix")) ) {
         $user->appendix($appendix);
     }
+
+    $user->realize_settings(\%settings) if %settings;
 
     $user->update() if $self->param('update');
 
@@ -78,7 +74,7 @@ sub settings {
         $self->redirect_to('home');
     }
     else {
-        $self->stash( errors => \%errors );
+        $self->stash( errors => \%errors, $user->dump_complex_settings );
     }
     
 }

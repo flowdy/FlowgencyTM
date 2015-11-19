@@ -7,101 +7,80 @@ use Try::Tiny;
 use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
 
-sub _parser { FlowgencyTM::user->tasks->get_tfls_parser; }
 sub form {
     my $self = shift;
     my $task; 
 
+    my $args = {};
+
     if ( defined( my $lazystr = $self->param('lazystr') ) ) {
-        $task = _parser->($lazystr)->{task_obj};
-        $self->stash( incr_prefix => 0, id => $task->name );
+        $args->{lazystr} = $lazystr;
+        $self->stash( incr_prefix => 0 );
     }
-    else { $task = $self->_get_task; }
+    else { $args->{task} = $self->_get_task; }
 
-    $self->render( _task_dumper($task), bare => $self->param('bare') );
+    $self->render(
+        FlowgencyTM::user->form_task_data($args},
+        bare => $self->param('bare')
+    );
 
-}
-
-sub _task_dumper {
-    my ($task, $steps) = shift;
-
-    if ( $task ) {
-        $steps = { map { $_->name => $_->dump } $task->main_step_row, $task->steps };
-    }
-
-    my $priodir = FlowgencyTM::user->get_labeled_priorities;
-    my $priocol = FlowgencyTM::user->tasks->task_rs
-        ->search({ archived_because => undef })->get_column('priority');
-    @{$priodir}{'_max','_avg'} = ($priocol->max, $priocol->func('AVG') );
-
-    return
-        steps => $steps, _priodir => $priodir,
-        tracks => [ FlowgencyTM::user->get_available_time_tracks ],
 }
 
 sub post {
-    my $self = shift;
-    my $task = $self->_get_task;
-    my $sub = $task ? sub { $_->{oldname} = $task->name } : sub {};
+    #
+    # OBSOLETE:
+    #
+    # my $self = shift;
+    # my $task = $self->_get_task;
+    # my $sub = $task ? sub { $_->{oldname} = $task->name } : sub {};
 
-    my $tfls = $self->param('tfls');
-    try { _parser->( $tfls, $sub ); }
-    catch {
-         my $e = shift;
-         $self->render(
-             action => 'form', message => $e, input => $tfls,
-             _task_dumper($task)
-         );
-         0;
-    } or return;
+    # my $tfls = $self->param('tfls');
+    # try { _parser->( $tfls, $sub ); }
+    # catch {
+    #      my $e = shift;
+    #      $self->render(
+    #          action => 'form', message => $e, input => $tfls,
+    #          FlowgencyTM::user->get_task_data($task)
+    #      );
+    #      0;
+    # } or return;
 
-    $self->redirect_to('home');
+    # $self->redirect_to('home');
+    #
 }
 
 sub open {
     my $self = shift;
     my $task = $self->_get_task;
-    $task->open;
-    $self->render( details => FlowgencyTM::Server::Ranking::extend_open_task($task) );
+    $self->render( details => $user->open_task($task, 1) );
 }
 
 sub fast_bulk_update {
     my $self = shift;
 
-    my $log = Mojo::Log->new();
-
-    my (%errors, $status);
+    my (%data, %errors, $status);
     for my $task (@{ $self->req->params->names }) {
 
         my $data = $self->param($task);
-        $log->info("For task $task update: $data");
 
-        my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
-        $_ = from_json $_ for $data;
+        $data{$task} = from_json $data;
 
-        my $method = $tmp_name ? 'add'
-                   : $data->{copy} || $data->{incr_name_prefix} ? 'copy'
-                   : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
-                   : 'update';
-
-        $data->{step} //= '';
-
-        try {
-            $task = FlowgencyTM::user->tasks->$method($task || (), $data);
-        }
-        catch {
-            ($status, $errors{ $task || $tmp_name })
-                 = index(ref($_), "FTM::Error::") == 0
-                 ? ($status || 400, $_->message)
-                 : ($status || 500, $_);
-            $log->error($_);
-
-            return 0;
-
-        } and ref($task)
-          and $errors{ $task->name } = q{}; # empty
+        $errors{$task} = q{}; # empty error = no error;
 
     }
+
+    try {
+        $self->stash('user')->fast_bulk_update(\%data);
+    }
+    catch {
+        while ( my ($task, $error) = each %$_ ) {
+            $errors{$task} = $error;
+            if ( ref $error ) {
+                $status ||= 400;
+            }
+            else { $status = 500; }
+        }
+    };
 
     $self->render(status => $status // 200, json => \%errors )
         
@@ -111,20 +90,15 @@ sub analyze {
     my $self = shift;
     my $task = $self->_get_task;
 
-    my $flowrank = $task->flowrank;
-    $flowrank &&= $flowrank->dump || {};
-    
-    $self->render(
-        title => $task->title,
-        dump => $flowrank,
-    );
+    my $dynamics = $user->get_dynamics_of_task($task);
+
+    $self->render( %$dynamics );
 }
 
 sub _get_task {
     my $self = shift;
     my $id = $self->stash('id');
-    return if !$id;
-    return FlowgencyTM::user->tasks->get($id) // croak "No task $id";
+    return $id;
 }
 
 sub _markdown {

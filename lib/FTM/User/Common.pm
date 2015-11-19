@@ -117,33 +117,7 @@ sub update_time_model {
     });
 };
 
-sub __legacy_dump_time_model {
-    my ($self) = shift;
-
-    my $href = from_json($self->_dbicrow->time_model);
-
-    my $convert_ts = sub {
-        my ($href, $from_key, $until_key) = @_;
-        my $cnt_defined = 0;
-        for ( $href->{ $from_key } // (), $href->{ $until_key } // () ) {
-            $_ = FTM::Time::Spec->parse_ts($_);
-            $cnt_defined++;
-        }
-        if ( $cnt_defined == 2 ) {
-            $href->{$from_key}->fix_order($href->{$until_key});
-        }
-    };
-
-    for my $href ( values %$href ) {
-        $convert_ts->($href, 'from_earliest', 'until_latest');
-        for my $var (@{ $href->{variations} // [] }) {
-            $convert_ts->($var, 'from_date', 'until_date');
-        } 
-    }
-    
-    return $href;
-
-}    
+sub _parser { shift->tasks->get_tfls_parser; }
 
 sub _build_tasks {
     my $self = shift;
@@ -176,31 +150,144 @@ sub get_ranking {
     };
 })}
 
-sub store_task { 
-    ...
+sub get_task_data {
+    my ($self, $task, $steps) = @_[0,1];
+
+    $task = $self->get_task($task) if ref $task eq 'HASH';
+
+    if ( $task ) {
+        my %steps = map { $_->name => $_->dump }
+                        $task->main_step_row,
+                        $task->steps
+        ;
+        $steps = \%steps; 
+    }
+
+    my $priodir = $self->get_labeled_priorities;
+    my $priocol = $self->tasks->task_rs
+        ->search({ archived_because => undef })->get_column('priority');
+    @{$priodir}{'_max','_avg'} = ($priocol->max, $priocol->func('AVG') );
+
+    return
+        steps => $steps, _priodir => $priodir,
+        tracks => [ $self->get_available_time_tracks ],
+        id => $task->name,
 }
 
-sub get_task_data { ... }
+sub __legacy_form_task_data {
+    my ($self, $args) = @_;
 
-sub add_task { _process(@_ => sub {
-    ...
-})}
+    my $task;
 
-sub open_task { _process(@_ => sub {
-    ...
-})}
+    if ( defined( my $lazystr = $args->{lazystr} ) ) {
+        $task = _parser($self)->($lazystr)->{task_obj};
+    }
+    else { $task = $self->get_task($args->{task}); }
 
-sub copy_task { _process(@_ => sub {
-    ...
-})}
+    return $self->get_task_data($task);
+}
 
-sub get_settings { _process(@_ => sub {
-    ...
-})}
+sub fast_bulk_update {
+    my ($self, $args) = @_;
 
-sub update_settings { _process(@_ => sub {
-    ...
-}); }
+    my %errors;
+
+    while ( my ($task, $data) = each %$args ) {
+
+        my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
+
+        my $method = $tmp_name ? 'add'
+                   : $data->{copy} || $data->{incr_name_prefix} ? 'copy'
+                   : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
+                   : 'update';
+
+        $data->{step} //= '';
+
+        try {
+            $task = FlowgencyTM::user->tasks->$method($task || (), $data);
+        }
+        catch {
+            $errors{ $task || $tmp_name })
+                 = index(ref($_), "FTM::Error::") == 0
+                 ? $_->message
+                 : $_;
+
+            return 0;
+
+        };
+
+    }
+
+    die \%errors if %errors;
+
+    return;
+
+}
+
+sub open_task {
+    my ($task, $user) = (pop, pop);
+
+    if ( $user ) {
+        $task = $user->get_task($task);
+        $task->open;
+    }
+    
+    return defined($task->is_open)
+        ? { focus => [
+                $task->archived_ts
+                    ? [ undef, $task->main_step_row ]
+                    : $task->current_focus,
+            ]
+          }
+        : undef
+        ;
+ 
+
+}
+
+sub get_dynamics_of_task {
+    my ($user, $task_id) = @_;
+
+    my $task = $user->get_task($task_id);
+    my $flowrank = $task->flowrank;
+    return {
+        title => $task->title,
+        flowrank => $flowrank ? $flowrank->dump : {},
+      # TODO:
+      # - progress: step hierarchy, foreach step done, checks, total_ratio, expenditure
+      # - time way: stages, spans and for each: net working and still seconds elapsed/remaining
+    };
+    
+}
+
+sub dump_complex_settings { my ($user) = @_; return
+    weights => { $user->weights },
+    priorities => $user->get_labeled_priorities,
+    time_model => $user->dump_time_model,
+}
+
+sub realize_settings {
+    my ($user, $settings) = @_
+    if ( my $prio = $self->param('priorities') ) {
+        my (%prio,$i);
+        for my $p ( split q{,}, $prio ) {
+            $i++;
+            next if !length $p;
+            $prio{$p} = $i;
+        }
+        $user->remap_priorities(%prio) if %prio;
+    }
+
+    if ( defined(my $weights = $settings{weights}) ) {
+         $user->modify_weights(%$weights);
+    }
+
+    if ( defined(my $tm = $settings{change_time_model}) ) {
+        $user->update_time_model( $tm );
+    }
+
+    return;
+}
 
 __PACKAGE__->meta->make_immutable;
 
@@ -244,7 +331,7 @@ sub _dump_task {
         active => $active,
         $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
-        extended_info => extend_open_task($task),
+        extended_info => open_task($task),
             
     };
 

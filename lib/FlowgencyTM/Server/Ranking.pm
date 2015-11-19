@@ -16,7 +16,10 @@ sub list {
   if ( delete $args{keep} ) {
       use POSIX qw(strftime);
       $now = delete($args{now}) || strftime("%Y-%m-%d %H:%M:%S", localtime time);
-      FTM::Time::Spec->now($now);
+      if ( $c->stash('is_remote') {
+          croak 'Cannot set time in remote mode – Would affect other users, too.';
+      }
+      else { FTM::Time::Spec->now($now); }
   }
   else { $now = $args{now} }
 

@@ -5,8 +5,8 @@ use Moose;
 use Carp qw(croak);
 
 sub TRIGGERS { return [qw[
-    get_ranking get_task_data update_task open_task add_task copy_task
-    get_settings update_settings
+    get_ranking get_task_data update_task open_task get_dynamics_of_task
+    dump_complex_settings realize_settings
 ]]; }
 
 has _dbicrow => (
