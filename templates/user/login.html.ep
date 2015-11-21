@@ -20,7 +20,7 @@
     <input type="submit" value="log in">
 </form>
 
-<h2 id="terms">Get invited</h2>
+<h2 id="terms">Or get invited</h2>
 
 <form action="/user/join" method="post">
 <div style="text-align:center;">
@@ -73,21 +73,8 @@
 <p>I am a random spam bot, found this form, and by checking this I reveal that my programmer is not the lightest person. <span style="color:white;">;-)</span></p><p style="text-align:right;"><label><input type="checkbox" name="willsp@myou" value="1"> Indeed.</label></p></li>
 
 <li>
-<h3>If I like it ...</h3>
+<h3>If I like it</h3>
 <p>Once I am going to use FlowgencyTM productively, I stop using this service and may ask the provider to erase my records from the database.</p><p style="text-align:right;"><label><input type="checkbox" name="onproductiveuse" value="1"> I agree</label></p>
-<h3>... I will probably ...</h3><ul style="width:50%;float:left;border-style:solid;border-color:#00c0ff;border-width:2px 2px 0 0; margin-right:1em;padding-right:1em;">
-    <li><label><input type="checkbox" name="onproductiveuse" value="myself"> install the software on my own device if an easy-to-use installation routine is provided, so the database file is as safe from unauthorized access as any other document in my local storage.</label></li>
-    <li><label><input type="checkbox" name="onproductiveuse" value="friend"> ask an IT-competent and trustworthy friend of mine to host it</label></li>
-    <li><label><input type="checkbox" name="onproductiveuse" value="employer"> prefer the service my employer hosts or plans to host</label><ul>
-        <li><label><input type="radio" name="employer" value="supervised"> only if supervised by the local union or a potent staff association</label></li>
-        <li><label><input type="radio" name="employer" value="engage-against-monitoring"> will engage against their practice of monitoring us if I stumble upon respective signs, and first and foremost stop using the tool at all.</label></li>
-        <li><label><input type="radio" name="employer" value="candowhatever"> I do not bother what they do with the data, so even if the staff gets monitored, I would rather see to be among the most productive in comparison.</label></li></ul>
-    </li>
-    <li><label><input type="checkbox" name="onproductiveuse" value="commercial-service"> use a commercial service provided by a third party</label><ul>
-        <li><label><input type="radio" name="commercialservice" value="paid"> paid regularly on the basis of a subscription</label></li>
-        <li><label><input type="radio" name="commercialservice" value="sponsored"> having it sponsored by on-screen advertisements</label></li>
-        <li><label><input type="radio" name="commercialservice" value="datasale"> that claims use is at no charge, but deals the data underhand or hides such reservations in their terms and conditions.</label></li></ul>
-</li></ul>
 </li>
 
 </ul>
@@ -95,5 +82,4 @@
 <p>I understand and accept the terms I have checked, will patiently await the confirmation mail that is sent manually (so it might take time), and want to <input type="submit" value="join!"></p>
 </form>
 
-<p style="font-weight:bold; color: #00c0ff; font-size:smaller;">&larr; This is just an attached poll. Check what you like to, the gatekeeper does not really care, and multiple choice is just as welcome. You may prefer to make your choice instead or additionally in your own words on feedback. The inquiry data will no longer be associated to your account upon activation. Thank you!</p>
 

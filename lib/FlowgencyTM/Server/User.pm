@@ -101,7 +101,8 @@ sub settings {
 sub join {
     my ($self) = @_;
 
-    my ($email, $password) = $self->param([ "email", "password" ]);
+    my $email = $self->param("email");
+    my $password = $self->param("password");
 
     if ( !$email or $email !~ m{ \A [\w.-]+ @ [\w.-]+ . \w+ \z }xms ) {
         croak "Email address passed is invalid";
@@ -113,12 +114,24 @@ sub join {
         ;
     }
 
-    my $user = FlowgencyTM::new_user( $self->param("user") => {
-        username => $self->param("username"), email => $email,
-        -invite => 1,
-    });
-    $user->salted_password($password);
-    $user->update;
+    my $will_accept = join "", map { $self->param($_) ? 1 : 0 } qw(
+        checkwhatisftm privacywarning voluntaryuse promisefeedback
+        deletion spaghettimonster willsp@myou
+    );
+
+    my $orig_accept = $will_accept;
+
+    if ( $will_accept eq "1111100" ) {
+        my $user = FlowgencyTM::new_user( $self->param("user") => {
+            username => $self->param("username"), email => $email,
+            -invite => 1,
+        });
+        $user->salted_password($password);
+        $user->update;
+    }
+    else { $will_accept = 0 }
+
+    $self->render( accepted => $will_accept, orig_accept => $orig_accept );
 
 }
 

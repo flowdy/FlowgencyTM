@@ -1,4 +1,10 @@
+% if ( $accepted ) {
 <h2>Welcome, <%= param('username') // param('user') %></h2>
 
 <p>Invitation request sent. Please await email with the account activation link to click. Please note, however, that the FlowgencyTM admin can moderate invitation requests at his/her discretion.</p>
+% } else {
+<h2>Sorry, <%= param('username') // param('user') %></h2>
+
+<p>Based on which conditions you have checked and which not, the gatekeeper will not enter you on the invitation list (<%= $orig_accept %>).</p>
+% }
 
