@@ -63,8 +63,8 @@ function Ranking (args) {
     this.rerank = function (e) {
         var url = '/';
         function rerank () {
-            url += '?' + $.param(nextload);
-            window.location.href = url;
+            var n = $.param(nextload);
+            window.location.href = url + ( n ? '?' + n : '' );
         }
         e.preventDefault();
         if ( this.reg_changes(1) ) {
