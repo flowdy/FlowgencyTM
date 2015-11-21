@@ -64,6 +64,17 @@ sub invite {
     });
 }
 
+sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+
+   $sqlt_table->add_index(
+        name => 'unique_mail',
+        fields => ['email'],
+        type => 'unique'
+   );
+
+}
+
 my @chars = ( 0..9, "a".."z", "A".."Z" );
 sub _randomstring {
     my ($length) = @_;
