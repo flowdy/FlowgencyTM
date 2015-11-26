@@ -26,7 +26,7 @@ Instead, you might prefer installing the packages that your linux distribution r
     $ cd FlowgencyTM/
     $ script/gather_check_dependencies 
       # analyze output for missing modules ...
-    $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl markdown sqlite3 cpanminus
+    $ sudo apt-get install libmoose-perl libdate-calc-perl libjson-perl libtest-exception-perl libalgorithm-dependency-perl libdbix-class-perl libthrowable-perl libdbd-sqlite3-perl libtext-markdown-perl sqlite3 cpanminus
     $ sudo cpanm Mojolicious # newer version, that one in the repo is deprecated
     $ prove -rl t                      
 

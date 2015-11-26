@@ -126,7 +126,7 @@ sub _parse_markdown_description {
                   { $h .( $2 eq '-' ? '##' : '#' ).' '.$1 }egxms;
     }
 
-    return Text::Markdown::Markdown($text);
+    return Text::Markdown::markdown($text);
 }
 
 before ['insert', 'update'] => sub {
