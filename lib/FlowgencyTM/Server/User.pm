@@ -144,7 +144,8 @@ sub login {
 
     my $on_success = sub {};
 
-    if ( my $confirm = $self->param('token') ) {
+    my $confirm;
+    if ( $confirm = $self->param('token') ) {
         $confirm = $user->find_related(
             mailoop => { token => $confirm }
         );
@@ -168,7 +169,7 @@ sub login {
     if ( $user && $user->password_equals($password) ) {
         $on_success->();
         $self->session("user_id" => $user_id);
-        $self->redirect_to("home");
+        $self->redirect_to( $confirm ? "/user/settings" : "home");
     }
     else {
         $self->render( retrymsg => 'authfailure' );
