@@ -483,7 +483,7 @@ sub list {
     my $list = $processor->();
 
     while ( my $task = shift @$list ) {
-        if ( $task->is_open ) {
+        if ( defined $task->is_open ) {
             push @on_desk, $desk ? @in_tray : (), $task;
             @in_tray = () if $desk;
         }
