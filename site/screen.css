@@ -235,3 +235,16 @@ ul.formlist li {
 .ui-tabs-vertical .ui-tabs-nav li a { display:block; }
 .ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; }
 .ui-tabs-vertical .ui-tabs-panel { padding: 1em; float: right; width: 40em;}
+
+#track-definitions { line-height: 150% }
+#track-definitions .property { border:1px solid grey; padding: 0 .5em; white-space: nowrap; cursor: pointer; }
+#track-definitions .property + .property { margin: 0 .5em; }
+
+#track-definitions .property:before,
+#track-definitions .undefined-properties:before {
+    content: attr(title) ": ";
+    font-style: normal;
+}
+#track-definitions .undefined-properties { text-align:right; color:grey; }
+#track-definitions .variations li + li { margin-top: .5em }
+

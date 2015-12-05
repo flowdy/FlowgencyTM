@@ -1,6 +1,5 @@
 $(function () {
 
-    $("#track-definitions").accordion({ heightStyle: 'content', collapsible: true, active: false });
     $("#new-time-track + div textarea").change(function () {
         var text, header = $(this).parents("div").prev();
         if ( this.value.match(/"name"\s*:\s*"([^"]+)/) ) {
@@ -459,11 +458,11 @@ $(function () {
             },
         },
         mainFields = [
-            'week_pattern', 'week_pattern_of_track', 'unmentioned_variations_from',
-            'label', 'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
+            'label', 'week_pattern', 'week_pattern_of_track', 'unmentioned_variations_from',
+            'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
         ],
         varFields = [
-            'week_pattern', 'week_pattern_of_track', 'section_of_track', 'description', 'ref', 'apply',
+            'description', 'week_pattern', 'week_pattern_of_track', 'section_of_track', 'ref', 'apply',
             'until_date', 'from_date', 'inherit_mode'
         ],
         tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>";
@@ -488,8 +487,10 @@ $(function () {
         return fieldtypes[ key ](field, updater);
     }
 
-    $(".vtab").each(function () {
-       var vtab = $(this), ul = $('<ul>'), dialog, trackdata = {};
+    var ul = $('<ul>').prependTo("#track-definitions");
+
+    $("#track-definitions .vtab").each(function () {
+       var vtab = $(this), dialog, trackdata = {};
 
        function dynamize(tab, name, isMain) {
            var fields = isMain ? mainFields : varFields,
@@ -520,21 +521,10 @@ $(function () {
            }
        }
 
-       vtab.children("div").each(function () {
-          var id = $(this).attr('id'), name, li = $('<li><a>'), isMain = false;
-          if ( isMain = id.indexOf("-fill-in") > 0 ) {
-              name = "MAIN";
-          }
-          else name = id.replace(/(\w+)-variation-/, '');
-          li.children().text(name).attr('href', '#' + id);
-          ul.append(li);
-          dynamize($(this), isMain ? id.split("-")[0] : RegExp.$1 + "/" + name, isMain);
-       });
-
-       vtab.prepend(ul);
-       vtab.tabs(); // .addClass( "ui-tabs-vertical ui-helper-clearfix" );
-       // vtab.find('li').removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
-       vtab.find(".ui-tabs-nav").sortable();
+       var id = $(this).attr('id'), li = $('<li><a>');
+       li.children().text(id).attr('href', '#' + id);
+       ul.append(li);
+       // dynamize($(this), isMain ? id.split("-")[0] : RegExp.$1 + "/" + id, isMain);
 
        function addVariation () {
            var label = $("#new-variation-name").val(),
@@ -570,7 +560,10 @@ $(function () {
        });
        vtab.data("trackdata", trackdata);
     });
-    $(".vtab").delegate( "span.ui-icon-close", "click", function() {
+
+    $("#track-definitions").tabs();
+
+    if (0) $(".vtab").delegate( "span.ui-icon-close", "click", function() {
        var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
        $( "#" + panelId ).remove();
        trackdata.variations.push({ ref: panelId, apply: false });

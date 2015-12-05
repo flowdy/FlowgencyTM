@@ -85,22 +85,23 @@
 <input name="time_model_changes" type="hidden">
 <p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, i.e. when [not] to increase their urgency rank in need of their expenditures' continuously being checked. You can define as many tracks as you find necessary to match how you work. Please note: KISS – Keep it simple and stupid.</p>
 <p>I am developing a user-friendly form functionality for time model modifications. For the time being, please define changes to a track in JSON syntax. The atomic fields are disabled.</p> 
-% my @trackfields = qw(week_pattern week_pattern_of_track unmentioned_variations_from label default_inherit_mode from_earliest successor until_latest);
-% my @varfields = qw(week_pattern week_pattern_of_track section_of_track description ref apply until_date from_date inherit_mode);
+
+% my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from default_inherit_mode from_earliest successor until_latest);
+% my @varfields = qw(description week_pattern week_pattern_of_track section_of_track ref apply from_date until_date inherit_mode);
 % my $tm = $user->dump_time_model;
 % my @tracks = sort { $tm->{$a}{label} cmp $tm->{$b}{label} } keys %$tm;
+
 <div id="track-definitions">
 % for my $track_name ( @tracks ) {
 %     my $track = $tm->{$track_name};
 % my @trackfields = @trackfields;
 % delete $track->{name};
-<h2><%= $track->{label} %> <em>[<%= $track_name %>]</em></h2>
 % my ($fe,$ul) = @{$track}{'from_earliest','until_latest'};
 % my $class = (defined $fe && $fe->is_future) ? 'future'
 %           : (defined $ul && $ul->is_past)   ? 'past'
 %           :                                   'present'
 %           ;
-<div class="vtab">
+<div class="vtab" id="<%= $track_name %>">
 <div class="fill-in <%= $class %>" id="<%= $track_name %>-fill-in">
 % my $variations = delete $track->{variations} // [];
 % my @available_trackfields;
@@ -109,14 +110,15 @@
 %         push @available_trackfields, $key;
 %         next;
 %     };    
-<fieldset><legend><%= $key %></legend>
-<input type="text" readonly="readonly" class="property" data-property="<%= $key %>" value="<%= $value %>">
-</fieldset>
+<dfn class="property" title="<%= $key %>" data-orig-value="<%= $value %>"><%= $value %></dfn>
 % }
-<fieldset class="undefined"><legend>Undefined</legend>
-<select><%== join "", q{<option value="">field ...</option>}, map {qq{<option>$_</option>}} @available_trackfields %></select>
-</fieldset>
+<div class="undefined-properties" title="Other available properties"><%== join " ", map { qq{<a href="javascript:void(0);">$_</a>} } @available_trackfields %></div>
 </div>
+% if ( @$variations ) {
+<h3>Variations</h3>
+% }
+
+<ul class="variations">
 % for my $var ( @$variations ) {
 %     my $class = $var->{ from_date  }->is_future ? 'future'
 %               : $var->{ until_date }->is_past   ? 'past'
@@ -124,33 +126,28 @@
 %               ;
 %     my @varfields = @varfields;
 %     my @available_varfields;
-      <div id="<%= $track_name %>-variation-<%= delete $var->{name} // "" %>" class="<%= $class %>">
+%     my $vname = delete $var->{name} // "";
+      <li id="<%= $vname %>" class="variation <%= $class %>"><strong title="name"><%= $vname %></strong>:
 %     while ( my $key = shift @varfields ) {
 %         my $value = $var->{$key} // do {
 %             push @available_varfields, $key;
 %             next;
 %         };    
-          <fieldset><legend><%= $key %></legend>
-          <input type="text" readonly="readonly" class="property" data-property="<%= $key %>"
-              value="<%= $value %>">
-          </fieldset>
+          <dfn title="<%= $key %>" class="property" data-orig-value="<%= $value %>"><%= $value %></dfn>
 %     }
-      <fieldset class="undefined"><legend>Undefined</legend>
-          <select><%== join "", q{<option value="">field ...</option>},
-                            map {qq{<option>$_</option>}} @available_varfields
-                  %>
-          </select>
-      </fieldset>
+      <div class="undefined-properties" title="Other available properties">
+      <%== join " ", map { qq{<a href="javascript:void(0);">$_</a>} } @available_varfields %></select>
       </div>
+      </li>
 % }
 </div>
 % }
-<h2 style="display:none" id="new-time-track"><span class="title">New time track</span> <em class="name"></em></h2>
-<div>
-<textarea placeholder="{&quot;name&quot;:&quot;name_for_new_track&quot;,&quot;label&quot;:&quot;The title of the track as it will be displayed&quot;,&quot;field1&quot;:&quot;value1&quot;,&quot;field2&quot;:&quot;value2&quot;,...,&quot;variations&quot;:[&quot;var_field1&quot;:&quot;var_value1&quot;,&quot;var_field2&quot;:&quot;var_value2&quot;,...]}" name="timetrack[]" style="width:95%"></textarea>
-</div>
 </div>
 <button id="create-track-btn">Create time track ...</button>
+
+       <button id="add-variation-button">Add variation</button>
+
+</fieldset>
 
 <div id="add-variation-dialog" title="Add variation">
             <form>
@@ -171,9 +168,6 @@
             </fieldset>
             </div></div>
         </div>
-        <button id="add-variation-button">Add variation</button>
-
-</fieldset>
 
 <fieldset id="appendix">
 <legend>Flowgency rank threshold for closed tasks</legend>
