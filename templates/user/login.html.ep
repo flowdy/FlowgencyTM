@@ -11,7 +11,7 @@
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
 % }
-<form method="post" style="text-align:center;display:block;">
+<form method="post" action="/user/login" style="text-align:center;display:block;">
 % if ( my $t = param 'token' ) {
     <input type="hidden" name="token" value="<%= $t %>">
 % }
