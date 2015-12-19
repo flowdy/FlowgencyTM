@@ -16,8 +16,6 @@ README (or the [german version](LIESMICH.md))
 What is FlowgencyTM?
 --------------------
 
-![Logo](site/logo/flowgencytm.png)
-
 In short, FlowgencyTM is a software tool to help establish a sustainable, healthy and humane work culture and reconcile it with our usual fast-paced parallel timed commitments in business. 
 
 Seven longer key-points explain that:
