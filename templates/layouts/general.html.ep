@@ -41,8 +41,10 @@
         </li>
         <li><form id="settime"><label>Set time:<br />
         <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
+% if ( !$is_remote ) {
         <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
         <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
+% }
         </form></li>
     </ul>
 </div>
@@ -69,6 +71,11 @@
 <div id="page">
 <%= content %>
 </div>
+
+<footer>
+FlowgencyTM v0.7 <%== $hoster_info %>
+<br><span id="subfooter">FlowgencyTM is open source under the terms of GNU GPL v3. | &copy; 2015 Florian L. Heß | <a href="http://www.github.com/flowdy/FlowgencyTM">Code repository</a> on GitHub</span>
+</footer>
 
 </body>
 </html>

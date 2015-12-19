@@ -17,6 +17,16 @@ sub startup {
   $self->defaults(
       layout => 'general',
       user => undef,
+      hoster_info => do {
+          my $file = $self->home->rel_dir('/templates/layouts') . '/hoster_info.html.ep';
+          if ( -f $file ) {
+              open my $fh, '<', $file;
+              local $/;
+              binmode $fh => ':utf8';
+              <$fh>;
+          }
+          else { q{} }
+      },
   );
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
@@ -25,10 +35,15 @@ sub startup {
   my $auth = $r->under(sub {
       my $c = shift;
 
-      my $ip = $c->tx->remote_address;
+      my $is_remote = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
       # Prevent autologin unless server is requested from the same machine
-      local $ENV{FLOWGENCYTM_USER} = undef
-          if ( index( $ENV{MOJO_LISTEN}//q{}, $ip ) < 0 );
+      local $ENV{FLOWGENCYTM_USER} = undef if $is_remote;
+
+      if ( !$c->stash('hoster_info') ) {
+          $c->stash( hoster_info => $is_remote ? '(private remote)' : '(local)' );
+      }
+
+      $c->stash( is_remote => $is_remote );
           
       my $user_id = $c->session('user_id');
       if ( !$user_id and my $default_user = $ENV{FLOWGENCYTM_USER} ) {

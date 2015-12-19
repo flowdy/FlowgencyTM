@@ -63,6 +63,20 @@ body > header {
    width: 100%;
 }
 
+body > footer {
+   position: fixed;
+   bottom: 0;
+   text-align:center;
+   background-color:rgba(255,255,255,0.9);
+   border-top: 2px solid darkgrey;
+   width: 100%;
+}
+
+#subfooter {
+   font-size:smaller;
+   color:#555;
+}
+
 #page {
    position: absolute;
    top: 122px;
@@ -210,3 +224,4 @@ ul.formlist li {
 .error pre {
    margin: 3px;
 }
+
