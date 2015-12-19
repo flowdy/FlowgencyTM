@@ -97,9 +97,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.54163862"
-     inkscape:cx="330.14387"
-     inkscape:cy="-90.870148"
+     inkscape:zoom="0.39"
+     inkscape:cx="282.47616"
+     inkscape:cy="79.388726"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -120,7 +120,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -130,7 +130,7 @@
      id="layer1"
      transform="translate(-41.903367,-166.46278)">
     <path
-       style="fill:#e6e6e6;fill-opacity:1;stroke:#ffffff;stroke-width:3.35945344;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#f2f2f2;fill-opacity:1;stroke:#ffffff;stroke-width:3.35945343999999979;stroke-miterlimit:4;stroke-dasharray:none"
        d="m 390.85541,174.34499 c -20.80861,2.9e-4 -78.728,37.92559 -111.51272,64.87403 -31.03305,27.73754 -51.47861,43.28594 -95.47983,95.46214 -37.518,-54.0221 -95.894664,-81.63658 -86.622654,-57.25657 9.272054,24.37995 29.240514,52.6655 47.382414,86.42304 18.14189,33.75751 27.83831,95.77868 50.35727,55.8016 22.51898,-39.97703 40.96005,-69.98729 78.86721,-116.4174 37.90717,-46.43008 130.96429,-128.86155 117.00831,-128.88684 z"
        id="rect2985"
        inkscape:connector-curvature="0"
@@ -146,8 +146,8 @@
        sodipodi:cy="600.93359"
        sodipodi:rx="114.28571"
        sodipodi:ry="114.28571"
-       d="m 311.3624,516.55108 c 46.60318,42.56827 49.87411,114.85602 7.30584,161.4592 -42.56828,46.60317 -114.85603,49.87411 -161.4592,7.30583 -43.40332,-39.64546 -49.65238,-105.75025 -14.44712,-152.82679"
-       sodipodi:start="5.4525692"
+       d="M 335.04332,546.99725 A 114.28571,114.28571 0 1 1 142.76192,532.48932"
+       sodipodi:start="5.7916919"
        sodipodi:end="10.066889"
        sodipodi:open="true"
        transform="matrix(0.09623363,0.77660388,-0.81682934,0.09149453,627.1384,56.227803)" />
@@ -157,56 +157,6 @@
        id="rect5197"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccc" />
-    <g
-       id="g5357"
-       style="fill:#b3b3b3;stroke:#b3b3b3;filter:url(#filter5378)"
-       transform="translate(104.56326,-468.20671)">
-      <flowRoot
-         transform="matrix(0.83151806,0,0,1,-55.817379,516.56612)"
-         style="font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;font-family:Sans;-inkscape-font-specification:Sans Bold"
-         id="flowRoot5200-1"
-         xml:space="preserve"><flowRegion
-           id="flowRegion5202-5"><rect
-             style="fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3"
-             y="163.57443"
-             x="284.93491"
-             height="78.422432"
-             width="402.56851"
-             id="rect5204-8" /></flowRegion><flowPara
-           style="font-size:56px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;font-family:FreeSans;-inkscape-font-specification:FreeSans Semi-Bold"
-           id="flowPara5206-8">FlowgencyTM:</flowPara><flowPara
-           style="font-style:italic;font-weight:normal;line-height:142.99999475%;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;-inkscape-font-specification:Sans Italic"
-           id="flowPara5210-6" /><flowPara
-           style="font-style:italic;font-weight:normal;line-height:142.99999475%;fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;-inkscape-font-specification:Sans Italic"
-           id="flowPara5212-8" /></flowRoot>      <path
-         inkscape:connector-curvature="0"
-         id="path5270-1"
-         d="m 183.72478,745.49259 c 322.66799,0 322.66799,0 322.66799,0"
-         style="fill:#b3b3b3;fill-opacity:1;stroke:#b3b3b3;stroke-width:6.75748873;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    </g>
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot5200"
-       style="font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
-       transform="matrix(0.83151806,0,0,1,45.392743,47.053469)"><flowRegion
-         id="flowRegion5202"><rect
-           id="rect5204"
-           width="402.56854"
-           height="190.82794"
-           x="284.93491"
-           y="163.57443" /></flowRegion><flowPara
-         id="flowPara5206"
-         style="font-size:56px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#00c0ff;fill-opacity:1;font-family:FreeSans;-inkscape-font-specification:FreeSans Semi-Bold">FlowgencyTM:</flowPara><flowPara
-         id="flowPara5208"
-         style="font-style:italic;font-weight:normal;line-height:109.00000334%;-inkscape-font-specification:Sans Italic"> - Save updates</flowPara><flowPara
-         id="flowPara5210"
-         style="font-style:italic;font-weight:normal;line-height:109.00000334%;-inkscape-font-specification:Sans Italic"> - Refresh to-dos</flowPara><flowPara
-         id="flowPara5212"
-         style="font-style:italic;font-weight:normal;line-height:142.99999475%;-inkscape-font-specification:Sans Italic" /></flowRoot>    <path
-       style="fill:none;stroke:#00c0ff;stroke-width:6.75748873;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 284.9349,275.97994 c 322.668,0 322.668,0 322.668,0"
-       id="path5270"
-       inkscape:connector-curvature="0" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot5308"
@@ -217,5 +167,26 @@
            height="279.70673"
            x="235.26735"
            y="187.10117" /></flowRegion><flowPara
-         id="flowPara5314"></flowPara></flowRoot>  </g>
+         id="flowPara5314" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3827"
+       style="font-size:23.2932682px;font-style:italic;font-weight:bold;text-align:end;line-height:93.99999976%;letter-spacing:1.11937094px;word-spacing:0.00647035px;text-anchor:end;fill:#6c5d53;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold Italic"
+       transform="matrix(1.2358987,0,0,2.5063672,-124.61787,-125.93546)"><flowRegion
+         id="flowRegion3829"><rect
+           id="rect3831"
+           width="327.56888"
+           height="88.81588"
+           x="276.93741"
+           y="154.38071"
+           style="font-size:23.2932682px;font-style:italic;text-align:end;line-height:93.99999976%;letter-spacing:1.11937094px;word-spacing:0.00647035px;text-anchor:end;fill:#6c5d53;-inkscape-font-specification:Sans Bold Italic" /></flowRegion><flowPara
+         id="flowPara3833"><flowSpan
+           style="font-size:31.05769157px"
+           id="flowSpan3028">Update / refresh</flowSpan><flowSpan
+           style="font-size:18.11698723px"
+           id="flowSpan3030"></flowSpan></flowPara><flowPara
+         id="flowPara3034"><flowSpan
+           style="font-size:18.11698723px"
+           id="flowSpan3036">/ list</flowSpan><flowSpan
+           style="font-size:18.11698723px;font-style:italic;text-align:end;line-height:93.99999976%;letter-spacing:1.11937094px;word-spacing:0.00647035px;text-anchor:end;fill:#6c5d53;-inkscape-font-specification:Sans Bold Italic"
+           id="flowSpan3836"> open + urgent tasks</flowSpan></flowPara></flowRoot>  </g>
 </svg>
