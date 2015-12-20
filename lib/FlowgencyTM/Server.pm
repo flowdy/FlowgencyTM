@@ -31,19 +31,24 @@ sub startup {
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
   # Router
-  my $r = $self->routes;
-  my $auth = $r->under(sub {
+  my $r = $self->routes->under(sub {
       my $c = shift;
 
       my $is_remote = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
-      # Prevent autologin unless server is requested from the same machine
-      local $ENV{FLOWGENCYTM_USER} = undef if $is_remote;
+      $c->stash( is_remote => $is_remote );
 
       if ( !$c->stash('hoster_info') ) {
           $c->stash( hoster_info => $is_remote ? '(private remote)' : '(local)' );
       }
 
-      $c->stash( is_remote => $is_remote );
+      return 1;
+  });
+
+  my $auth = $r->under(sub {
+      my $c = shift;
+
+      # Prevent autologin unless server is requested from the same machine
+      local $ENV{FLOWGENCYTM_USER} = undef if $c->stash('is_remote');
           
       my $user_id = $c->session('user_id');
       if ( !$user_id and my $default_user = $ENV{FLOWGENCYTM_USER} ) {
