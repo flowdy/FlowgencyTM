@@ -73,7 +73,7 @@
 </div>
 
 <footer>
-FlowgencyTM v0.7 <%== $hoster_info %>
+FlowgencyTM <%== $hoster_info %>
 <br><span id="subfooter">FlowgencyTM is open source under the terms of GNU GPL v3. | &copy; 2015 Florian L. Heß | <a href="http://www.github.com/flowdy/FlowgencyTM">Code repository</a> on GitHub</span>
 </footer>
 
