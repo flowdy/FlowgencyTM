@@ -565,7 +565,7 @@ $(function () {
                   ftm.resetfilter();
                   ftm.rerank(e);
               });
-    $( "#icons-bar .icon:first-child > a" ).click(function (e) {
+    $( "#icons-bar .icon:nth-child(2) > a" ).click(function (e) {
         var menu = $(this).next(".menu:hidden"); 
         e.preventDefault();
         if ( menu.get(0) !== undefined ) {
