@@ -248,3 +248,5 @@ ul.formlist li {
 #track-definitions .undefined-properties { text-align:right; color:grey; }
 #track-definitions .variations li + li { margin-top: .5em }
 
+#configure-timemodel-prototypes > div { display: none; }
+

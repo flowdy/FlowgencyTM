@@ -523,7 +523,7 @@ function ObjectCacheProxy (name, obj, fields) {
 };
 
 var __dtpCounter = 0;
-function DateTimePicker () {
+function DateTimePicker (inline) {
     var but = $('<button title="Pick day and time with a widget">D/T?</button>'),
         input = $(this), eod = input.hasClass('until');
     if ( input.attr('id') === undefined )
@@ -544,7 +544,8 @@ function DateTimePicker () {
     but.click(function (e) {
         input.AnyTime_noPicker().AnyTime_picker({
             askSecond: false, init: today, // Why is init ignored?
-            format: '%Y-%m-%d %H:%i'
+            format: '%Y-%m-%d %H:%i',
+            placement: inline ? 'inline' : 'popup'
         }).focus();
         e.preventDefault();
     });
