@@ -390,7 +390,7 @@ $(function () {
 
     var mainFields = [
             'label', 'week_pattern', 'week_pattern_of_track', 'unmentioned_variations_from',
-            'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
+            'force_inherit_mode', 'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
         ],
         varFields = [
             'description', 'week_pattern', 'week_pattern_of_track', 'section_of_track', 'ref', 'apply',
@@ -412,8 +412,8 @@ $(function () {
 
         function radio (value, block) {
             var new_value;
-            block.find(":radio").find("[value=" + value + "]").click().end()
-                                .prop("name", "tmp-radio").click(function () { new_value = $(this).val(); });
+            block.find("input:radio").filter("[value=" + value + "]").click().end()
+                .prop("name", "tmp-radio").click(function () { new_value = $(this).val(); });
             return function () { return new_value; };
         }
 
@@ -429,11 +429,12 @@ $(function () {
 
             $("#track-definitions .ui-tabs-nav > li a").each(function () {
                 var self = $(this),
-                    title = self.closest("div").find('#' + self.text()).find(".fill-in dfn[title=label]").text();
+                    title = self.closest("div").find('#track-' + self.text()).find(".fill-in dfn[title=label]").text();
                 selector.append('<option value="' + self.text() + '">' + title + "</option>");
             });
 
             block.find("input").replaceWith(selector);
+            selector.find("[value=" + value + "]").prop("selected", "selected");
 
             return function () { return selector.find(":selected").val(); };
         }
@@ -467,10 +468,12 @@ $(function () {
     $("#track-definitions .vtab").each(function () {
        var vtab = $(this), dialog, trackdata = {};
 
-       var id = vtab.attr('id'), li = $('<li><a>');
-       li.children().text(id).attr('href', '#' + id);
+       var id = vtab.data('name'), li = $('<li><a>');
+       li.children().text(id).attr('href', '#track-' + id);
        ul.append(li);
 
+       vtab.prop('id', 'track-' + id);
+ 
        function dynamize(tab, name, isMain) {
            var fields = isMain ? mainFields : varFields,
                noop = function () { return; },
@@ -480,13 +483,14 @@ $(function () {
            tab.on("click", ".property, .undefined-properties a", change_track);
 
            if ( isMain ) {
-               properties.variations = [null]; /* null means "append" */
-               properties.name = name.split("/")[1];
                trackdata = properties;
            }
            else {
+               properties.name = name;
                properties._docker = function () {
-                   trackdata.variations.push(properties);
+                   var t = trackdata;
+                   if ( !t.variations ) t.variations = [null]; /* null means "append" */
+                   t.variations.push(properties);
                    this._docker = noop;
                }
            }
@@ -495,10 +499,10 @@ $(function () {
                e.preventDefault();
                var field = $(this), key = field.attr('title') || field.text(),
                    variation = field.closest(".variations > li"),
-                   track = (variation.length ? variation : field).closest(".vtab").attr('id'),
+                   track = (variation.length ? variation : field).closest(".vtab").data('name'),
                    orig_value = field.attr('title') ? field.text() : field.data('orig_value') || '';
 
-               if ( variation ) variation = variation.attr('id');
+               if ( variation ) variation = variation.data('name');
 
                var mode = variation ? 'variation' : 'track';
 
@@ -557,8 +561,9 @@ $(function () {
                        proxy[key] = value;
                        if ( !orig_value.length ) {
                            field.remove();
-                           $('<dfn class="property">').text(proxy[key]).prop('title', key)
-                               .prependTo(tab);
+                           field = $('<dfn class="property">')
+                               .text(proxy[key]).prop('title', key);
+                           variation ? tab.children().first().after(field) : tab.prepend(field);
                        }
                        else { field.text(proxy[key]); }
                    }   
@@ -574,7 +579,7 @@ $(function () {
        dynamize(vtab.find(".fill-in"), id, true);
        vtab.find(".variations > li").each(function () {
             var variation = $(this);
-            dynamize( variation, variation.attr('id'), false );
+            dynamize( variation, variation.data('name'), false );
        });
        vtab.data("dynamize", dynamize);
 
@@ -595,8 +600,13 @@ $(function () {
        $("#configure-time-model .vtab").each(function () {
            var trackdata = $(this).data("trackdata");
            if ( trackdata === undefined ) return;
-           
+           time_model_data[ $(this).data('name') ] = trackdata;
        });
+       time_model_data = JSON.stringify(time_model_data);
+       if ( !time_model_data )
+           return;
+       if ( confirm("Bitte bestätigen:\n\t" + time_model_data) )
+           this.time_model_changes.value = time_model_data;
     });
 
 });

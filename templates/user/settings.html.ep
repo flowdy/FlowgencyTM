@@ -100,7 +100,7 @@
 %           : (defined $ul && $ul->is_past)   ? 'past'
 %           :                                   'present'
 %           ;
-<div class="vtab" id="<%= $track_name %>">
+<div class="vtab" data-name="<%= $track_name %>">
 <div class="fill-in <%= $class %>" id="<%= $track_name %>-fill-in">
 % my $variations = delete $track->{variations} // [];
 % my @available_trackfields;
@@ -126,7 +126,7 @@
 %     my @varfields = @varfields;
 %     my @available_varfields;
 %     my $vname = delete $var->{name} // "";
-      <li id="<%= $vname %>" class="variation <%= $class %>"><strong title="name"><%= $vname %></strong>:
+      <li data-name="<%= $vname %>" class="variation <%= $class %>"><span><strong title="name"><%= $vname %></strong>: </span>
 %     while ( my $key = shift @varfields ) {
 %         my $value = $var->{$key} // do {
 %             push @available_varfields, $key;
