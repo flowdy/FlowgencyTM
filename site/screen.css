@@ -47,7 +47,7 @@ header.backgr-page + #page { z-index:-1; }
   box-shadow:         1px 1px 1px 0px #ccc;
 } 
 
-#icons-bar menu > ul > li > a, a.button {
+#icons-bar .menu > ul > li > a, a.button {
    display:block;
    text-decoration:none;
    color:inherit;
