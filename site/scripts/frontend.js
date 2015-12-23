@@ -569,19 +569,25 @@ $(function () {
                   ftm.resetfilter();
                   ftm.rerank(e);
               });
-    $( "#icons-bar .icon:nth-child(2) > a" ).click(function (e) {
+    function reloadHandler (e) {
+        console.log("Clicked filter icon");
+        $(this).off('click').click(showMenuHandler);
+        ftm.rerank(e);
+    }
+    function showMenuHandler (e) {
         var menu = $(this).next(".menu:hidden"); 
         e.preventDefault();
-        if ( menu.get(0) !== undefined ) {
+        if ( menu.length ) {
             console.log("Hidden menu found");
             menu.addClass("visible");
             $("header").addClass("backgr-page");
         }
-        else {
-            console.log("Clicked filter icon");
-            ftm.rerank(e);
-        }
-    });
+    }
+    $( "#icons-bar .icon:nth-child(2) > a" ).hover(function () {
+        setTimeout(function () {
+            $(this).off('click').click(reloadHandler);
+        }, 20);
+    }).click(showMenuHandler);
 
     $("#settime").change(function (e) {
         ftm.nextload.now = this.time.value;
@@ -591,6 +597,12 @@ $(function () {
             + " (keep: " + ftm.nextload.keep + ")"
         );
     }).each(function () { if (this.time.value) $(this).change(); });
+
+    $(".nav-button button").click(function (e) {
+       console.log("button clicked");
+       e.preventDefault();
+       $(this).closest(".icon").find("a:first").click();
+    });
 
     $("#list-opts").buttonset();
     $("#list-opts input").each(function () {
