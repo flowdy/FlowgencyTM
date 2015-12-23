@@ -570,7 +570,7 @@ $(function () {
                   ftm.rerank(e);
               });
     function reloadHandler (e) {
-        console.log("Clicked filter icon");
+        e.preventDefault();
         $(this).off('click').click(showMenuHandler);
         ftm.rerank(e);
     }
@@ -583,9 +583,10 @@ $(function () {
             $("header").addClass("backgr-page");
         }
     }
-    $( "#icons-bar .icon:nth-child(2) > a" ).hover(function () {
+    $( "#icons-bar .icon:nth-child(2) > a" ).mouseenter(function () {
+        link = $(this);
         setTimeout(function () {
-            $(this).off('click').click(reloadHandler);
+            link.off('click').click(reloadHandler);
         }, 20);
     }).click(showMenuHandler);
 
