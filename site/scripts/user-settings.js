@@ -1,18 +1,5 @@
 $(function () {
 
-    $("#new-time-track + div textarea").change(function () {
-        var text, header = $(this).parents("div").prev();
-        if ( this.value.match(/"name"\s*:\s*"([^"]+)/) ) {
-           text = RegExp.$1;
-           header.find(".name").text("[" + text + "]");
-        }
-        else alert("No name defined");
-        if ( this.value.match(/"label"\s*:\s*"([^"]+)/) ) {
-           text = RegExp.$1;
-           header.find(".title").text(text);
-        }
-        else alert("No label defined");
-    });
     $("#set-email").click(function () {
         var f = $('#email');
         if ( this.checked ) {
@@ -33,13 +20,6 @@ $(function () {
             fieldset.prop('disabled','disabled');
         }    
         fieldset.toggle(50);
-    });
-    $("#create-track-btn").click(function () {
-       var trackdef = $("#new-time-track").add("#new-time-track + div").clone(true);
-       trackdef.first().show().removeAttr("id").end()
-           .insertBefore("#new-time-track").first().click().end()
-           .find("textarea").focus();
-       return false;
     });
 
     function WeekPattern (definitionString, onUpdateCallback) {
@@ -378,23 +358,13 @@ $(function () {
 
     }
 
-    /*
-    $("#week-pattern-source").change(function () {
-        function update (string) { source.val(string); }
-        var source = $(this), oldtable = source.next(),
-            instance = new WeekPattern( source.val(), update );
-        if ( oldtable ) oldtable.remove();
-        instance.insertAfter(source);
-    });
-    */
-
     var mainFields = [
             'label', 'week_pattern', 'week_pattern_of_track', 'unmentioned_variations_from',
-            'force_inherit_mode', 'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
+            'force_receive_mode', 'default_inherit_mode', 'from_earliest', 'successor', 'until_latest'
         ],
         varFields = [
-            'description', 'week_pattern', 'week_pattern_of_track', 'section_of_track', 'ref', 'apply',
-            'until_date', 'from_date', 'inherit_mode'
+            'description', 'week_pattern', 'week_pattern_of_track', 'section_of_track', 'ref',
+            'from_date', 'until_date', 'apply', 'inherit_mode'
         ],
         tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>";
     ;
@@ -406,7 +376,7 @@ $(function () {
 
         function text (value, block) {
             var input = block.find("input");
-            input.val(value);
+            if ( value.length ) input.val(value);
             return function () { return input.val(); };
         }
 
@@ -427,10 +397,8 @@ $(function () {
         function track (value, block) {
             var selector = $("<select>");
 
-            $("#track-definitions .ui-tabs-nav > li a").each(function () {
-                var self = $(this),
-                    title = self.closest("div").find('#track-' + self.text()).find(".fill-in dfn[title=label]").text();
-                selector.append('<option value="' + self.text() + '">' + title + "</option>");
+            $.each(get_tracks(), function (name, title) {
+                selector.append('<option value="' + name + '">' + title + "</option>");
             });
 
             block.find("input").replaceWith(selector);
@@ -451,8 +419,8 @@ $(function () {
             },
             week_pattern_of_track: track,
             default_inherit_mode: radio,
-            force_inherit_mode: radio,
-            unmentioned_variations_from: radio,
+            force_receive_mode: radio,
+            unmentioned_variations_from: text,
             from_earliest: date, from_date: date,
             until_earliest: date, until_date: date,
             successor: track,
@@ -466,7 +434,7 @@ $(function () {
     })();
 
     $("#track-definitions .vtab").each(function () {
-       var vtab = $(this), dialog, trackdata = {};
+       var vtab = $(this), trackdata;
 
        var id = vtab.data('name'), li = $('<li><a>');
        li.children().text(id).attr('href', '#track-' + id);
@@ -474,126 +442,243 @@ $(function () {
 
        vtab.prop('id', 'track-' + id);
  
-       function dynamize(tab, name, isMain) {
-           var fields = isMain ? mainFields : varFields,
-               noop = function () { return; },
-               properties = { _docker: noop },
-               proxy = new FlowgencyTM.ObjectCacheProxy(name, properties, fields);
-
-           tab.on("click", ".property, .undefined-properties a", change_track);
-
-           if ( isMain ) {
-               trackdata = properties;
-           }
-           else {
-               properties.name = name;
-               properties._docker = function () {
-                   var t = trackdata;
-                   if ( !t.variations ) t.variations = [null]; /* null means "append" */
-                   t.variations.push(properties);
-                   this._docker = noop;
-               }
-           }
-
-           function change_track (e) {
-               e.preventDefault();
-               var field = $(this), key = field.attr('title') || field.text(),
-                   variation = field.closest(".variations > li"),
-                   track = (variation.length ? variation : field).closest(".vtab").data('name'),
-                   orig_value = field.attr('title') ? field.text() : field.data('orig_value') || '';
-
-               if ( variation ) variation = variation.data('name');
-
-               var mode = variation ? 'variation' : 'track';
-
-               console.log("Changing field " + key + " of track " + track +
-                   (variation ? ", variation " + variation : '')
-               );
-
-               var dialog = $("#configure-timemodel-prototypes").find("."+mode + "." + key)
-                       .clone().prependTo("#configure-timemodel-prototypes"),
-                   init = tm_prototype_initializers[key] || tm_prototype_initializers[mode + " " + key],
-                   upd = init( proxy[key] || orig_value, dialog, updater ),
-                   buttons = {
-                       "Set": function () {
-                           if ( updater(upd()) ) dialog.dialog("close");
-                       },
-                       "Cancel": function () {
-                           dialog.dialog("close");
-                       }
-                   }
-               ;
-               if ( orig_value.length ) buttons.Reset = function () {
-                   updater(null);
-                   dialog.dialog("close");
-               }
-
-               var multih;
-               if ( multih = dialog.find("header") ) {
-                   multih = multih.replaceWith( multih.find("p."+key) );
-                   dialog.prop("title", multih.attr("title"));
-                   multih.removeAttr("title");
-               }
-                   
-               dialog.dialog({
-                   close: function () {
-                       $(this).detach();
-                   },
-                   buttons: buttons,
-                   modal: true,
-                   width: 500,
-                   maxHeight: 400,
-               });
-
-               function updater (value) {
-                   var new_field;
-                   if ( value === undefined ) return false;
-                   if ( value === null ) {
-                       proxy.drop(key);
-                       if ( orig_value ) {
-                           field.remove();
-                           $('<a href="javascript:void(0);">')
-                               .text(key).data('orig_value',orig_value)
-                               .appendTo(tab.find('.undefined-properties')).before(" ");
-                       }
-                   }
-                   else {
-                       proxy[key] = value;
-                       if ( !orig_value.length ) {
-                           field.remove();
-                           field = $('<dfn class="property">')
-                               .text(proxy[key]).prop('title', key);
-                           variation ? tab.children().first().after(field) : tab.prepend(field);
-                       }
-                       else { field.text(proxy[key]); }
-                   }   
-                   console.log("Changed key " + key + " to value " + value);
-                   proxy._docker();
-                   return true;
-               }
-
-           }
-
-       }
-
-       dynamize(vtab.find(".fill-in"), id, true);
+       trackdata = dynamize(vtab.find(".fill-in"), null, id);
        vtab.find(".variations > li").each(function () {
             var variation = $(this);
-            dynamize( variation, variation.data('name'), false );
+            dynamize( variation, trackdata, variation.data('name') );
        });
-       vtab.data("dynamize", dynamize);
 
        vtab.data("trackdata", trackdata);
     });
 
     $("#track-definitions").tabs();
 
-    if (0) $(".vtab").delegate( "span.ui-icon-close", "click", function() {
-       var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
-       $( "#" + panelId ).remove();
-       trackdata.variations.push({ ref: panelId, apply: false });
-       vtab.tabs( "refresh" );
+    $("#extend-time-model-name").change(function (e) {
+        var nameInput = $(this), name = nameInput.val();
+        console.log("Name: " + name);
+        if ( !name || (name.match(/\W/) ) ) {
+            alert("Name " + name + " is invalid");
+            setTimeout(function () { nameInput.focus(); }, 10);
+        }
     });
+
+    $("#create-track-btn").click(function (e) {
+        e.preventDefault();
+        var nameInput = $("#extend-time-model-name"), name = nameInput.val(),
+            createTrackOkay = true;
+
+        $.each(get_tracks(), function (key) {
+            if ( name === key ) {
+                alert("The name " + name + " is already used for another track.");
+                createTrackOkay = false;
+                return false;
+            }
+            else { return; }
+        });
+
+        if ( createTrackOkay ) {
+            var newTabHandle = $(tabTemplate.replace(/#\{href\}/, '#track-' + name )
+                                    .replace(/#\{label\}/, name )
+                         ),
+                newTab = $('<div class="vtab">').appendTo("#track-definitions"),
+                trackdata;
+            newTab.prop('id', 'track-' + name);
+            newTab.data('name', name);
+            var newTabFillIn = $('<div id="' + name + '-fill-in" class="fill-in future">'
+                     + '<div class="undefined-properties" title="Available properties">'
+                     + '</div>')
+                     .appendTo(newTab);
+            var newTabFields = newTabFillIn.find(".undefined-properties");
+            $.each(mainFields, function (i, key) {
+                newTabFields.append(' <a href="javascript:void(0);">' + key + '</a>');
+            });
+            trackdata = dynamize(newTabFillIn, null, name);
+            newTab.data('trackdata', trackdata);
+            var tabs = $("#track-definitions")
+            tabs.find(".ui-tabs-nav").append(newTabHandle)
+            newTabHandle.find(".ui-icon-close").click(function (e) {
+                var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
+                $( "#" + panelId ).remove();
+                tabs.tabs( "refresh" );
+            });
+            tabs.tabs( 'refresh' );
+        }
+        else nameInput.focus();
+    });
+
+    $("#add-variation-btn").click(function (e) {
+        e.preventDefault();
+        var id = $("#track-definitions .ui-state-active a").attr('href'), activeTab = $(id),
+            variations = activeTab.find(".variations"),
+            nameInput = $(this).parent().find("input:text"),
+            name = nameInput.val(), createVariationOkay;
+        console.log("tab: " + id);
+        if ( variations.length ) {
+            createVariationOkay = true;
+            variations.each(function () {
+                if ( $(this).data('name') === name ) {
+                    alert("The name " + name + " is already already for another variation in current track.");
+                    createVariationOkay = false;
+                    return false;
+                }
+                else { return; }
+            });
+        }
+        else {
+            variations = $('<ul class="variations">');
+            variations.appendTo(activeTab);
+            console.log("Noch keine Überschrift");
+            variations.before('<h3>Variations</h3>');
+            console.log("Jetzt sollte eine Überschrift drin sein");
+            createVariationOkay = true;
+        }
+
+        if ( createVariationOkay ) {
+            var newLi = $('<li class="variation new">').data('name', name)
+                        .append('<span><strong class="name">' + name + '</strong>: <span>'),
+                fields = $('<div class="undefined-properties" title="Available fields">').appendTo(newLi);
+            $.each(varFields, function (i, key) {
+                fields.append(' <a href="javascript:void(0);">' + key + '</a>');
+            });
+            newLi.appendTo(variations);
+            dynamize(newLi, activeTab.data('trackdata'), name);
+        }
+        else nameInput.focus();
+
+    });
+
+    function get_tracks () {
+        var tracks = {};
+        $("#track-definitions .ui-tabs-nav > li a").each(function () {
+            var self = $(this),
+                title = self.closest("div").find('#track-' + self.text()).find(".fill-in dfn[title=label]").text();
+            tracks[ self.text() ] = title;
+        });
+        return tracks;
+    }   
+
+    function dynamize(tab, trackdata, name) {
+        var fields = trackdata ? varFields : mainFields, properties, proxy;
+
+        tab.on("click", ".property, .undefined-properties a", change_track);
+
+        if ( trackdata ) {
+            properties = new PropertyCollection(name, trackdata);
+        }
+        else {
+            properties = new PropertyCollection();
+            trackdata = properties;
+        }
+
+        proxy = new FlowgencyTM.ObjectCacheProxy(name, properties, fields);
+
+        function change_track (e) {
+            e.preventDefault();
+            var field = $(this), key = field.attr('title') || field.text(),
+                variation = field.closest(".variations > li"),
+                track = (variation.length ? variation : field).closest(".vtab").data('name'),
+                orig_value = field.attr('title') ? field.text() : field.data('orig_value') || '';
+
+            if ( variation ) variation = variation.data('name');
+
+            var mode = variation ? 'variation' : 'track';
+
+            console.log("Changing field " + key + " of track " + track +
+                (variation ? ", variation " + variation : '')
+            );
+
+            var dialog = $("#configure-timemodel-prototypes").find("."+mode + "." + key)
+                    .clone().prependTo("#configure-timemodel-prototypes"),
+                init = tm_prototype_initializers[key] || tm_prototype_initializers[mode + " " + key],
+                upd = init( proxy[key] || orig_value, dialog, updater ),
+                buttons = {
+                    "Set": function () {
+                        if ( updater(upd()) ) dialog.dialog("close");
+                    },
+                    "Cancel": function () {
+                        dialog.dialog("close");
+                    }
+                }
+            ;
+            if ( orig_value.length ) buttons.Reset = function () {
+                updater(null);
+                dialog.dialog("close");
+            }
+
+            var multih;
+            if ( multih = dialog.find("header") ) {
+                multih = multih.replaceWith( multih.find("p."+key) );
+                dialog.prop("title", multih.attr("title"));
+                multih.removeAttr("title");
+            }
+                
+            dialog.dialog({
+                close: function () {
+                    $(this).detach();
+                },
+                buttons: buttons,
+                modal: true,
+                width: 500,
+                maxHeight: 400,
+            });
+
+            function updater (value) {
+                var new_field;
+                if ( value === undefined ) return false;
+                if ( value === null ) {
+                    proxy.drop(key);
+                    if ( orig_value ) {
+                        field.remove();
+                        $('<a href="javascript:void(0);">')
+                            .text(key).data('orig_value',orig_value)
+                            .appendTo(tab.find('.undefined-properties')).before(" ");
+                    }
+                }
+                else {
+                    proxy[key] = value;
+                    if ( !orig_value.length ) {
+                        field.remove();
+                        field = $('<dfn class="property">')
+                            .text(proxy[key]).prop('title', key);
+                        variation ? tab.children().first().after(field) : tab.prepend(field);
+                    }
+                    else { field.text(proxy[key]); }
+                }   
+                console.log("Changed key " + key + " to value " + value);
+                proxy._docker();
+                return true;
+            }
+
+        }
+
+        return trackdata;
+
+    }
+
+    function noop () {}
+
+    function PropertyCollection (name, trackdata) {
+
+        var my = this;
+        this.name = name;
+        if (!trackdata) return;
+
+        this._docker = function () {
+            console.log("Added variation " + this.name);
+            var t = trackdata;
+            if ( !t.variations ) t.variations = [];
+            t.variations.push(my);
+            if ( !delete my._docker ) { console.log("Could not delete _docker"); }
+            else if ( Object.hasOwnProperty(my, '_docker') ) {
+                console.log("_docker is still there.");
+            }
+            else if ( my._docker !== noop ) {
+                console.log("_docker is not reset.");
+            }
+        }
+        
+    }
+    PropertyCollection.prototype._docker = noop;
 
     $("#update-settings-form").submit(function () {
        var time_model_data = {};
@@ -607,6 +692,7 @@ $(function () {
            return;
        if ( confirm("Bitte bestätigen:\n\t" + time_model_data) )
            this.time_model_changes.value = time_model_data;
+       else return false;
     });
 
 });

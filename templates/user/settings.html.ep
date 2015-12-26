@@ -83,9 +83,9 @@
 <fieldset id="configure-time-model">
 <legend>Time Model</legend>
 <input name="time_model_changes" type="hidden">
-<p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, i.e. when [not] to increase their urgency rank in need to get checks continuously. You can define as many tracks as you find necessary to match how you work. The model is very flexible, but keep yours as simple as possible.</p>
+<p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, that is when they rank up according to higher urgency score to reflect need of more checks, just like hungry nestlings cheep for worms. You can define as many tracks as you find necessary to match how you work. The model is very flexible, but beware, an overcomplicated model would confuse you, so would effectively be a productivity hindrance.</p>
 
-% my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from force_inherit_mode default_inherit_mode from_earliest successor until_latest);
+% my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from force_receive_mode default_inherit_mode from_earliest until_latest successor);
 % my @varfields = qw(description week_pattern week_pattern_of_track section_of_track ref apply from_date until_date inherit_mode);
 % my $tm = $user->dump_time_model;
 % my @tracks = sort { $tm->{$a}{label} cmp $tm->{$b}{label} } keys %$tm;
@@ -115,8 +115,6 @@
 </div>
 % if ( @$variations ) {
 <h3>Variations</h3>
-% }
-
 <ul class="variations">
 % for my $var ( @$variations ) {
 %     my $class = $var->{ from_date  }->is_future ? 'future'
@@ -139,10 +137,13 @@
       </div>
       </li>
 % }
+</ul>
+% }
+
 </div>
 % }
 </div>
-<p>Create: <input placeholder="Name" type="text" name="extend-time-model-name">
+<p>Create: <input placeholder="Name" type="text" id="extend-time-model-name">
 be a new
 <button id="create-track-btn">track</button>
 <button id="add-variation-btn">variation of current track</button></p>
@@ -187,7 +188,7 @@ be a new
           </header>
           <p>Please input (s. tooltip on formats) or use the date picker: <input></p>
      </div> 
-     <div class="track unmentioned_variations_from">
+     <div class="track unmentioned_variations_from" title="unmentioned variations from">
           <p>Tracks can reuse variations by hierarchical relation to other tracks so you do not need to copy them between and to keep in sync. The value "private" is safe and tested and best used for tracks on which the holiday variations defined in "private" track. This feature is experimental.</p>
           <p>Track(s) from which to inherit variations: <input value="private"></p>
      </div>
@@ -217,10 +218,3 @@ If you put the handle to the left end (=0), closed tasks are never displayed aft
 <input type="submit" name="update" value="Update Profile">
 <input type="reset" value="Discard changes">
 </form> 
-
-<div id="info">
-<h3>For your information</h3>
-<ul>
-<li>Your account was created <%= $user->created %></li>
-<li>The user object is cached since <%= $user->cached_since_date %>.</li>
-</ul>

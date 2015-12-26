@@ -9,6 +9,16 @@ use FTM::Time::Cursor;
 
 test_model(get_simple_model_inheriting_all_variations());
 test_model(get_simple_model());
+my $model = modified_model(get_simple_model(), work => {
+    variations => [{
+        name => 'jw16',
+        week_pattern_of_track => 'urlaub',
+        description => 'Jahreswechsel 2015/16',
+        from_date => '+1d',
+        until_date => '2016-01-06',
+    }]
+});
+is $model->get_track("work")->variations->[2]->name, "jw16", "Modifiziertes Model ist okay.";
 
 sub test_model {
     my $model = shift;
@@ -29,6 +39,12 @@ sub test_model {
     is $work->fillIn->pattern, $next->pattern => "Third span is business as usual";
     $next = $next->next;
     is $next->description, "Honorary work", "Forth span is honorary work";
+}
+
+sub modified_model {
+    my ($model, %modifications) = @_;
+    $model->update(\%modifications);
+    return $model;
 }
 
 done_testing();

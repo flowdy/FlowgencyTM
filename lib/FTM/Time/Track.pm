@@ -7,6 +7,7 @@ use FTM::Time::Span;
 use FTM::Time::Variation;
 use Carp qw(croak);
 use Scalar::Util qw(blessed refaddr weaken);
+use List::MoreUtils qw(first_index);
 
 has name => (
     is => 'ro',
@@ -419,12 +420,12 @@ sub dump {
 
     my $successor = $self->successor;
     my $ref = $self->ref;
+    my $p = $self->parents;
 
     my %hash = (
 
-        @{$self->parents} ? (use_variations_from => [
-            map { $_->name } $self->parents
-        ]) : (),
+        @$p ? (unmentioned_variations_from => join ', ', map { $_->name } @$p )
+            : (),
 
         (map {
             my $value = $self->$_();
@@ -444,7 +445,6 @@ sub dump {
 
     my @variations = @{ $self->variations };
     for my $var ( @variations ) {
-        $var->_clear_modify_past;
         $var = $var->dump();
     }
     $hash{variations} = \@variations if @variations;
@@ -564,7 +564,6 @@ sub _apply_variations {
 
     my %levels = map { $_ => [] } @ORDER;
 
-    $DB::single = 1;
     VARIATION:
     for my $var ( values %$variations ) {
 
@@ -631,6 +630,10 @@ sub update {
         ));
     }
 
+    for ( $args->{unmentioned_variations_from} // () ) {
+         $_ = [ split /\s*,\s*/, $_ ] if !ref; 
+    }
+
     if ( my $variations = delete $args->{variations} ) {
         $self->update_variations($variations);
     }
@@ -651,7 +654,7 @@ sub update_variations {
     my ($self, $variations) = @_;
     my $stored_variations = $self->variations;
 
-    if ( !defined $variations->[0] ) {
+    if ( @$variations && !defined $variations->[0] ) {
         $stored_variations = [];
         shift @$variations;
     }
@@ -669,7 +672,7 @@ sub update_variations {
         my $i = 0;
         for my $old_var ( $new_var->{name} ? @$stored_variations : () ) {
             next if $old_var->name ne $new_var->{name};
-            for ( $new_var->{ref} ) {
+            for ( $new_var->{ref} // () ) {
                 $_ = $inh_vars->{$_} // croak "No variation '$_' found"
             }
             $new_var = $old_var->new_alike( $new_var );
@@ -678,8 +681,7 @@ sub update_variations {
         }
         continue { $i++; }
 
-        my $old_obj = $new_var->{name}
-                   && delete $inh_vars->{ $new_var->{name} };
+        my $old_obj = $new_var->{name} && delete $inh_vars->{ $new_var->{name} };
 
         if ( defined $old_obj ) {
             $new_var = $old_obj->new_alike($new_var);
@@ -796,7 +798,7 @@ sub gather_dependencies {
 
     # ... to not forget its variations which are sections of another track
     for my $var (
-        @{ $self ? $self->variations : $data->{variations} }
+        @{ ($self ? $self->variations : $data->{variations}) // [] }
     ) {
         defined $var or next;
         my $s;

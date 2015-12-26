@@ -109,6 +109,24 @@ sub _specific_fields {
     # Base class has none
 }
 
+sub dump {
+    my ($self) = @_;
+    my $href = {};
+    for my $arg (qw/ from_date until_date name description inherit_mode /, $self->_specific_fields) {
+        my $value = $self->$arg() // next;
+        if ( index( ref $value, 'FTM::Time' ) == 0 ) {
+            if ( ref $value eq 'FTM::Time::Spec' ) { $value = "".$value; }
+            else { $value = $value->name }
+        } 
+        $href->{$arg} = "".$value;
+    }
+    if ( $self->apply ne "1" ) {
+        $href->{apply} = $self->apply();
+    }
+
+    return $href;
+}
+
 sub span {
     my ($self) = @_;
     return FTM::Time::Span->new({
