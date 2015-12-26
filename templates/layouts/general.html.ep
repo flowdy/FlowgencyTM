@@ -9,7 +9,7 @@
   </script>
 <![endif]-->
   <link rel="stylesheet" type="text/css"
-     href="/scripts/jquery-ui-1.11.4.custom/jquery-ui.min.css" media="screen,projection">
+     href="/scripts/jquery-ui-1.11.4.custom/smoothness/jquery-ui.min.css" media="screen,projection">
   <link rel="stylesheet" type="text/css"
      href="/screen.css" media="screen,projection">
   <link rel="stylesheet" type="text/css"
