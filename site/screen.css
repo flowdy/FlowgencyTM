@@ -75,8 +75,10 @@ body > header {
 }
 
 body > footer {
-   position: fixed;
+   position:absolute;
    bottom: 0;
+   left: 0;
+   height:2em;
    text-align:center;
    background-color:rgba(255,255,255,0.9);
    border-top: 2px solid darkgrey;
@@ -91,7 +93,7 @@ body > footer {
 #page {
    position: absolute;
    top: 122px;
-   bottom: 0;
+   bottom: 2.1em;
    left: 5px;
    right: 0;
    overflow-y:auto;
