@@ -25,7 +25,6 @@ has _time_model => (
     lazy => 1,
     init_arg => undef,
     handles => {
-        update_time_model => 'update',
         get_available_time_tracks => 'get_available_tracks',
     },
     default => sub {
@@ -136,10 +135,11 @@ sub remap_priorities {
     return $self->_dbicrow->update({ priorities => to_json(\%p) });
 }
 
-after update_time_model => sub {
-    my ($self) = @_;
-    $self->_dbicrow->update({
-        time_model => $self->_time_model->to_json
+sub update_time_model {
+    my ($self, $args) = @_;
+    my $tm = $self->_time_model;
+    $tm->update($args) && $self->_dbicrow->update({
+        time_model => $tm->to_json
     });
 };
 

@@ -20,7 +20,7 @@ has inherit_mode => (
 around inherit_mode => sub {
     my ($orig, $self) = (shift, shift);
     return @_                           ? $self->$orig(@_)
-         : exists $self->{inherit_mode} ? $self->inherit_mode
+         : exists $self->{inherit_mode} ? $self->$orig()
          :                                $self->track->default_inherit_mode
          ;
 };

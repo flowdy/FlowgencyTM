@@ -58,21 +58,34 @@ sub to_json {
 sub update {
     my ($self, $tracks) = @_;
 
-    my $dependencies;
+    my ($dependencies, $i);
     while ( my ($name, $data) = each %$tracks ) {
         my $track = $self->get_track($name);
+
+        if ( !%$data ) {
+            next if $track;
+            croak 'No change data content for new track '.$name;
+        }
+
         my $is_required = FTM::Time::Track->gather_dependencies($data);
         $dependencies->{$name} = [ keys %$is_required ];
         $self->_bind_tracks($is_required);
+
         for my $track ( map {${ $_->[0] }} values %$is_required ) {
             $track->gather_dependencies($dependencies);
         }
+
         if ( $track ) {
             my $family = $track->gather_family;
             delete $family->{$name};
             push @{$dependencies->{$_}}, $name for keys %$family;
         }
+
+        $i++;
+
     }
+
+    return if !$i;
 
     for my $name ( ordered( $dependencies ) ) {
         my $data = $tracks->{$name} // next;
@@ -86,6 +99,9 @@ sub update {
             );
         }
     }
+
+    return $i;
+
 }
 
 sub _bind_tracks {
