@@ -46,13 +46,18 @@ sub from_json {
 
 }
 
-sub to_json {
+sub dump {
     my ($self) = @_;
     my %dump = %{ $self->_time_tracks };
     for my $track ( values %dump ) {
         $track = $track->dump;
     }
-    return JSON::to_json( \%dump );
+    return \%dump;
+}
+
+sub to_json {
+    my ($self) = @_;
+    return JSON::to_json( $self->dump );
 }
 
 sub update {

@@ -25,6 +25,7 @@ has _time_model => (
     lazy => 1,
     init_arg => undef,
     handles => {
+        dump_time_model => 'dump',
         get_available_time_tracks => 'get_available_tracks',
     },
     default => sub {
@@ -143,7 +144,7 @@ sub update_time_model {
     });
 };
 
-sub dump_time_model {
+sub __legacy_dump_time_model {
     my ($self) = shift;
 
     my $href = from_json($self->_dbicrow->time_model);
