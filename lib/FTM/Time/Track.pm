@@ -331,8 +331,11 @@ sub calc_slices {
 
     $from = $from->run_from if $from->isa("FTM::Time::Cursor");
 
-    return $self->find_span_covering($self->start, $from)
-                ->calc_slices($from, $until);
+    my $start_span = $self->find_span_covering($self->start, $from);
+
+    croak "No span found that covers timestamp $from" if !$start_span;
+
+    return $start_span->calc_slices($from, $until);
 
 }
 
@@ -489,7 +492,7 @@ sub dump_spans {
 sub reset {
     my ($self) = @_;
     $self->fillIn->nonext;
-    delete @{$self}{'_set_start', '_set_end'};
+    delete @{$self}{'start', 'end'};
     $self->_update_version;
 }
 
