@@ -679,9 +679,7 @@ $(function () {
        time_model_data = JSON.stringify(time_model_data);
        if ( !time_model_data )
            return;
-       if ( confirm("Bitte bestätigen:\n\t" + time_model_data) )
-           this.time_model_changes.value = time_model_data;
-       else return false;
+       this.time_model_changes.value = time_model_data;
     });
 
 });
