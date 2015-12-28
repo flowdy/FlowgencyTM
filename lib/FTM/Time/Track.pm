@@ -146,7 +146,7 @@ has force_receive_mode => (
 has parents => (
     is => 'rw',
     isa => 'ArrayRef[FTM::Time::Track]',
-    init_arg => 'use_variations_from',
+    init_arg => 'unmentioned_variations_from',
     default => sub { [] },
     trigger => sub {
         my ($self, $new_value, $old_value) = @_;
@@ -427,7 +427,7 @@ sub dump {
 
     my %hash = (
 
-        @$p ? (unmentioned_variations_from => join ', ', map { $_->name } @$p )
+        @$p ? (unmentioned_variations_from => [ map { $_->name } @$p ] )
             : (),
 
         (map {
@@ -679,6 +679,7 @@ sub update_variations {
                 $_ = $inh_vars->{$_} // croak "No variation '$_' found"
             }
             $new_var = $old_var->new_alike( $new_var );
+            $new_var->ensure_coverage_is_alterable;
             splice @$stored_variations, $i, 1;
             next VARIATION;
         }
@@ -779,7 +780,7 @@ sub gather_dependencies {
                      # values: \@scalar_refs_to_be_filled_with_track_oref
 
     # Prior to track $id being constructed, all its parents must be ready
-    my $parents_key = 'use_variations_from';
+    my $parents_key = 'unmentioned_variations_from';
     if ( my $p = $self ? $self->parents : $data->{$parents_key} ) {
         for my $p (
             ref $p ? @$p : $self ? $p : $data->{$parents_key}
