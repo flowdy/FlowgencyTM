@@ -30,10 +30,10 @@ Please follow the syntax outlined by the examples below:
      !  Note: Omitted minute part in "until" times implies HH:59
   * Mo-Fr@9-16,!12
     --> same with a lunch break from 12 to 12:59
-  * Mo-Di,Do-Sa@...
+  * Mo-Tu,Th-Sa@...
     --> Separate also the week days with comma if needed
      !  Note: Mo-Fr,!We@... wouldn't get parsed, exclusion is supported for the hours only.
-  * Mo-We@9-12,Do-Sa@15-18,Sa@14,!18
+  * Mo-We@9-12,Th-Sa@15-18,Sa@14,!18
     --> different patterns for the halfs of a week, the specifications for Saturday will get merged.
      !  Note: When indicating minutes prefer common parts like halfs, thirds or
         quaters of the hour to save hardware resources. The less equal parts an hour
@@ -44,12 +44,12 @@ Please follow the syntax outlined by the examples below:
 
 END_OF_INFO
 
-read -e -p '? Default rhythm of time model: ' -i 'Mo-So@0-23' TIME_MODEL
+read -e -p '? Default rhythm of time model: ' -i 'Mo-Su@0-23' TIME_MODEL
 echo 'Now, issue `script/daemon start`, then open the URL shown in your webbrowser.'
 perl -Ilib -MFlowgencyTM <<END_OF_PERL && echo 'Default time track changed here, therefore you can skip step #1 explained in the Get Started screen.' 
 my \$user = FlowgencyTM::user('$USER',1);
 \$user->insert;
-if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-So@0-23' ) {
+if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-Su@0-23' ) {
     \$user->update_time_model({
        default => { label => 'May mindful work clean breaks from worry', week_pattern => '$TIME_MODEL' }
     });
