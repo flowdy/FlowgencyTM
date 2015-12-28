@@ -1,3 +1,5 @@
+<!-- [% META pagetitle = "Installation Guide" %] -->
+
 Installation Guide
 ==================
 
