@@ -85,6 +85,10 @@
 <input name="time_model_changes" type="hidden">
 <p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, that is when they rank up according to higher urgency score to reflect need of more checks, just like hungry nestlings cheep for worms. You can define as many tracks as you find necessary to match how you work. The model is very flexible, but beware, an overcomplicated model would confuse you, so would effectively be a productivity hindrance.</p>
 
+<p>If you want to create further tracks, give them distinct names that may not contain space, punctuation or other special characters, only a-z, A-Z, 0-9 and _. Make sure you set a descriptive label by which you can select it in the task editor. Then, set either week_pattern or a week_pattern_of_track to shape the fill-in used initially and in gaps between variations if any. All linkages between tracks are checked for circular dependencies (successor, too).</p>
+
+<p>Variations can have names with the same restriction as for track names. You may set any one of week_pattern, week_pattern_of_track ignoring or section_of_track including variations if any, or ref. If you set none, the properties of track fill-in are implied. Give the variation a description, from_date and until_date at least. In case of ref, however, all properties not mentioned are implied from the referenced variation that must originate in the upper hierarchy of the track.</p>
+
 % my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from force_receive_mode default_inherit_mode from_earliest until_latest successor);
 % my @varfields = qw(description week_pattern week_pattern_of_track section_of_track ref apply from_date until_date inherit_mode);
 % my $tm = $user->dump_time_model;
