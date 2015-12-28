@@ -455,7 +455,6 @@ $(function () {
 
     $("#extend-time-model-name").change(function (e) {
         var nameInput = $(this), name = nameInput.val();
-        console.log("Name: " + name);
         if ( !name || (name.match(/\W/) ) ) {
             alert("Name " + name + " is invalid");
             setTimeout(function () { nameInput.focus(); }, 10);
@@ -512,7 +511,6 @@ $(function () {
             variations = activeTab.find(".variations"),
             nameInput = $(this).parent().find("input:text"),
             name = nameInput.val(), createVariationOkay;
-        console.log("tab: " + id);
         if ( variations.length ) {
             createVariationOkay = true;
             variations.each(function () {
@@ -527,9 +525,7 @@ $(function () {
         else {
             variations = $('<ul class="variations">');
             variations.appendTo(activeTab);
-            console.log("Noch keine Überschrift");
             variations.before('<h3>Variations</h3>');
-            console.log("Jetzt sollte eine Überschrift drin sein");
             createVariationOkay = true;
         }
 
@@ -668,13 +664,6 @@ $(function () {
             var t = trackdata;
             if ( !t.variations ) t.variations = [];
             t.variations.push(my);
-            if ( !delete my._docker ) { console.log("Could not delete _docker"); }
-            else if ( Object.hasOwnProperty(my, '_docker') ) {
-                console.log("_docker is still there.");
-            }
-            else if ( my._docker !== noop ) {
-                console.log("_docker is not reset.");
-            }
         }
         
     }
