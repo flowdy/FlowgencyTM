@@ -93,15 +93,16 @@
 <div id="track-definitions">
 % for my $track_name ( @tracks ) {
 %     my $track = $tm->{$track_name};
+%     $_ = join q{, }, @$_ for $track->{unmentioned_variations_from} // ();
 % my @trackfields = @trackfields;
 % delete $track->{name};
 % my ($fe,$ul) = @{$track}{'from_earliest','until_latest'};
-% my $class = (defined $fe && $fe->is_future) ? 'future'
-%           : (defined $ul && $ul->is_past)   ? 'past'
-%           :                                   'present'
-%           ;
+%#my $class = (defined $fe && $fe->is_future) ? 'future'
+%#          : (defined $ul && $ul->is_past)   ? 'past'
+%#          :                                   'present'
+%#          ;
 <div class="vtab" data-name="<%= $track_name %>">
-<div class="fill-in <%= $class %>" id="<%= $track_name %>-fill-in">
+<div class="fill-in <%# $class %>" id="<%= $track_name %>-fill-in">
 % my $variations = delete $track->{variations} // [];
 % my @available_trackfields;
 % while ( my $key = shift @trackfields ) {
@@ -117,14 +118,14 @@
 <h3>Variations</h3>
 <ul class="variations">
 % for my $var ( @$variations ) {
-%     my $class = $var->{ from_date  }->is_future ? 'future'
-%               : $var->{ until_date }->is_past   ? 'past'
-%               :                                   'present'
-%               ;
+%#    my $class = $var->{ from_date  }->is_future ? 'future'
+%#              : $var->{ until_date }->is_past   ? 'past'
+%#              :                                   'present'
+%#              ;
 %     my @varfields = @varfields;
 %     my @available_varfields;
 %     my $vname = delete $var->{name} // "";
-      <li data-name="<%= $vname %>" class="variation <%= $class %>"><span><strong title="name"><%= $vname %></strong>: </span>
+      <li data-name="<%= $vname %>" class="variation <%# $class %>"><span><strong title="name"><%= $vname %></strong>: </span>
 %     while ( my $key = shift @varfields ) {
 %         my $value = $var->{$key} // do {
 %             push @available_varfields, $key;
