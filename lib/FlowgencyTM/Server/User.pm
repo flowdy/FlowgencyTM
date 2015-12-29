@@ -86,6 +86,10 @@ sub settings {
 sub join {
     my ($self) = @_;
 
+    if ( !$self->param('join') ) {
+        return $self->render('user/signup');
+    }
+
     my $email = $self->param("email");
     my $password = $self->param("password");
 
@@ -101,15 +105,15 @@ sub join {
 
     my $will_accept = join "", map { $self->param($_) ? 1 : 0 } qw(
         checkwhatisftm privacywarning voluntaryuse promisefeedback
-        deletion spaghettimonster willsp@myou
+        deletion ignoreterms dontcheck
     );
 
     my $orig_accept = $will_accept;
 
-    if ( $will_accept eq "1111100" ) {
+    if ( $will_accept =~ /1([01])11100/ ) {
         my $user = FlowgencyTM::new_user( $self->param("user") => {
             username => $self->param("username"), email => $email,
-            -invite => 1,
+            -invite => 1, extprivacy => !$1
         });
         $user->salted_password($password);
         $user->update;
@@ -127,6 +131,7 @@ sub login {
     my $password = $self->param('password');
     my $user = FlowgencyTM::database->resultset("User")->find($user_id);
 
+    die "Oh!";
     my $on_success = sub {};
 
     my $confirm;
@@ -157,7 +162,7 @@ sub login {
         $self->redirect_to( $confirm ? "/user/settings" : "home");
     }
     else {
-        $self->render( retrymsg => 'authfailure' );
+        $self->render( retry_msg => 'authfailure' );
         return;
     }
 
@@ -169,7 +174,7 @@ sub logout {
     FlowgencyTM::user( $self->session('user_id') => 0 );
     $self->session(expires => 1);
 
-    $self->render(template => "user/login", retrymsg => 'loggedOut' );
+    $self->render(template => "user/login", retry_msg => 'loggedOut' );
 
 }
 

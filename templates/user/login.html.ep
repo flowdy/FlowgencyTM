@@ -1,12 +1,3 @@
-% stash addScripts => [ 'login' ];
-% $_ = $_ eq 'authfailure' ? "Authentication failed: User does not exist or the password was wrong."
-%    : $_ eq 'loggedOut'   ? "You have been logged out. All session cookies are expired and deleted. If you want to re-login:"
-%    : undef for my $retry_msg = stash 'retrymsg';
-
-<h2>Welcome</h2>
-
-<p>This is a live demo of the task and time management tool <em><a href="http://github.com/flowdy/FlowgencyTM">FlowgencyTM</a></em>. It allows you to find out if the concept matches your style of working, without the need to install extra software.</p>
-
 <h2>Please login</h2>
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
@@ -20,66 +11,8 @@
     <input type="submit" value="log in">
 </form>
 
-<h2 id="terms">Or get invited</h2>
+<h2>New users welcome!</h2>
 
-<form action="/user/join" method="post">
-<div style="text-align:center;">
-<p><label>User login: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
-<label>Name: <input name="username" placeholder="(skip if inferrable from mail address)"></label>
-<label>Mail address: <input name="email" type="text"></label></p>
-<p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
-</div>
+<p>Want to use this installation of FlowgencyTM? To see if the concept matches your style of working?</p>
 
-<p>By submission, you accept the following conditions ... (Yes, you will have to read and identify every single passage that you find should be checked. This is just how I imagine a registration procedure of a web service that claims to be compliant with some ethically right and common-sense Data Policy which to constitute is high time for the modern Big Data world.)</p>
-
-<ul>
-
-<li><h3>I know what I am just signing up to</h3><p>I have not only read what FlowgencyTM is and how it works but also understand that this demo service is provided "as is" so interested people can test it, without local installation, particularly with regard to their personal working style.</p>
-
-<p>This service is provided for free. It is non-commercial and I will not be annoyed with advertisement of any kind.</p>
-
-<p>There is no promise of a sufficient uptime or reliability, however, since it is still under active development.The service may be shut down without further notice, only its entry would be removed from the list of official demo services.</p><p style="text-align:right;"><label><input type="checkbox" name="checkwhatisftm" value="1"> I agree</label></p></li>
-
-<li><h3>I use it with <em>test data</em> only</h3>
-<p>Accordingly the data I will enter after login is declared non-productive, which means I do not depend on it in my job in any way.</p>
-
-<p>Albeit I try to reflect roughly how my job is really like, I affirm the data about my tasks and my time model will be substantially fictitious. Particularly I make sure the data does not relate to real people or facts subject to secrecy. What concerns that data specifically, the provider may freely publish and exchange it e.g. as representative example data in the effort to solve software errors in cooperation with others, without the need for asking my permission.</p>
-
-<p>In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a hashed and salted form, i.e. unusable for hackers. My IP address is not getting logged. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache.</p>
-<p style="text-align:right;"><label><input type="checkbox" name="privacywarning" value="1">I accept</label></p>
-</li>
-
-<li><h3>I opt in of my own free will</h3>
-
-<p>I have not been persuaded or pressured by anyone to use or even just try FlowgencyTM, neither in an expressed nor in a subtle way. I do it voluntarily as I know that otherwise I would not happen to like it anyway.
-
-<p>Inferred from what I read, this tool may be classified as mind enhancement software and might develop a good or bad long-term influence on my mental condition as any such software can have. Hence it requires a good sense of responsibility for myself. If I notice it does not work for me or not the way I have expected, I will stop using it. I might need to seek professional help if I feel I get somehow addicted to this tool.</p>
-
-<p>According to the disclaimer of the GNU General Public License the tool underlies, I take for granted that the tool is realized to the best of the inventor's knowledge and belief, but as it is provided without warranty of fitness for any purpose, I would not hold the service provider and/or the developer(s) liable in that case. I am informed that there are no independent scientific analyses of the tool enlarging on the risks, benefits and (contra-)indications of its usage as yet.</p>
-
-<p style="text-align:right;"><label><input type="checkbox" name="voluntaryuse" value="1">I agree</label></p></li>
-
-<li>
-<h3>I tell the provider how I like the tool</h3>
-<p>I will give feedback, at the latest when I cease using the service. If it turns out too bad, I will give it nevertheless and be ready to simply smile, should the developers not be able to handle it as equanimously as they promise to.</label></p><p style="text-align:right;"><label><input type="checkbox" name="promisefeedback" value="1">I agree</label></p>
-</li>
-
-<li><h3>I consent to the following idea</h3>
-<p>The only true religion is the Pastafarian. Mankind should have to worship the Holy One Spaghetti Monster exclusively, because only she is guilty of our need for other religions in the first place. Everyone that is unmasked disobedient is brought into the Void of No Space. The gain of our belief is not less than being freed at last from must-read terms and conditions usually accepted unread. <span style="color:white;">;-)</span></p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="spaghettimonster"> Amen.</label></p></li>
-
-<li><h3>I am creating a temporary account</h3><p>Considering their age, all user accounts are increasingly at risk of deletion. The provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this intentionally ad-free demo service that is provided at no charge.</p><p style="text-align:right;"><label><input type="checkbox" name="deletion" value="1"> Okay</label></li>
-
-<li><h3>I am a spam bot</h3>
-<p>I am a random spam bot, found this form, and by checking this I reveal that my programmer is not the lightest person. <span style="color:white;">;-)</span></p><p style="text-align:right;"><label><input type="checkbox" name="willsp@myou" value="1"> Indeed.</label></p></li>
-
-<li>
-<h3>If I like it</h3>
-<p>Once I am going to use FlowgencyTM productively, I stop using this service and may ask the provider to erase my records from the database.</p><p style="text-align:right;"><label><input type="checkbox" name="onproductiveuse" value="1"> I agree</label></p>
-</li>
-
-</ul>
-
-<p>I understand and accept the terms I have checked, will patiently await the confirmation mail that is sent manually (so it might take time), and want to <input type="submit" value="join!"></p>
-</form>
-
-
+<p style="text-align:center;"><a id="invite-btn" href="/user/join">Get invited</a><script>$(function () { $("#invite-btn").button(); });</script></p>

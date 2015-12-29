@@ -11,6 +11,6 @@
 %    #    $user->delete;
 %    #    next;
 %    #}
-<li data-userid="<%= $user->user_id %>"><a href="/admin/view_user?id=<%= $user->user_id %>"><%= $user->username || $user->user_id %></a> (mail: <a href="mailto:<%= $user->email %>"><%= $user->email %></a>) requests <button><%= $ml->type %></button> <button>allow w/o mail</button> <button>delete</button> <a href="<%= url_for('/user/login')->query({ token => $ml->token })->to_abs %>">login</a></li>
+<li data-userid="<%= $user->user_id %>"><a href="/admin/view_user?id=<%= $user->user_id %>"><%= $user->username || $user->user_id %></a><% $user->extprivacy ? '*' : '' %> (mail: <a href="mailto:<%= $user->email %>"><%= $user->email %></a>) requests <button><%= $ml->type %></button> <button>allow w/o mail</button> <button>delete</button> <a href="<%= url_for('/user/login')->query({ token => $ml->token })->to_abs %>">login</a></li>
 % }
 </ul>

@@ -68,14 +68,14 @@ sub startup {
 
   });
 
-  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login" );
+  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
   $r->get( '/user/logout' )->to("user#logout");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })
       ->get('/admin');
   $admin->get('/')->to('admin#dash');
   $admin->get('/:action')->to(controller => 'admin');
 
-  $r->post('/user/join')->to("user#join");
+  $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");
 
   # Normal route to controller
   $auth->get('/')->to('ranking#list')->name('home');

@@ -1,5 +1,5 @@
 % if ( $accepted ) {
-<h2>Welcome, <%= param('username') // param('user') %></h2>
+<h2>Welcome, <%= param('username') // param('user_id') %></h2>
 
 <p>Invitation request sent. Please await email with the account activation link to click. Please note, however, that the FlowgencyTM admin can moderate invitation requests at his/her discretion.</p>
 % } else {
