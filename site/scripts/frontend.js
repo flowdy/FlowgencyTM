@@ -221,7 +221,7 @@ Ranking.prototype.progressbar2canvas = function (bar) {
 Ranking.prototype.dynamize_taskeditor = function (te) {
     var ftm = this, taskname = te.data("taskid");
     var steptree = new StepTree(taskname);
-    te.submit(function () { $("#logo").click(); return false; });
+    te.submit(function () { $("#mainicon").click(); return false; });
     te.find('fieldset').each(function () {
         var fieldset = $(this);
         var id = fieldset.data('stepid');
@@ -358,7 +358,7 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     fieldset.find('input[name=substeps]')
         .data("acceptChangeHandler")(default_change_handler);
 
-    fieldset.find("input[type=datetime]").each(DateTimePicker);
+    fieldset.find("input[type=datetime]").each(function() { DateTimePicker.apply(this); });
 };
 
 function StepTree (taskname) {
@@ -454,7 +454,7 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
                 new_fieldset.find(":input[name=substeps]"),
                 step
             );
-            $("#logo").data('FlowgencyTM').dynamize_taskeditor_step_fieldset(
+            $("#mainicon").data('FlowgencyTM').dynamize_taskeditor_step_fieldset(
                 new_fieldset
             );
             /* Following code insp. by http://stackoverflow.com/questions/45888/ */
@@ -563,15 +563,11 @@ return {
 
 $(function () {
     var ftm = new FlowgencyTM.Ranking();
-    $('#logo').data('FlowgencyTM', ftm)
-              .click(function (e) {
-                  e.preventDefault();
-                  ftm.resetfilter();
-                  ftm.rerank(e);
-              });
+    $('#mainicon').data('FlowgencyTM', ftm);
     function reloadHandler (e) {
         e.preventDefault();
         $(this).off('click').click(showMenuHandler);
+        ftm.resetfilter();
         ftm.rerank(e);
     }
     function showMenuHandler (e) {
@@ -583,7 +579,7 @@ $(function () {
             $("header").addClass("backgr-page");
         }
     }
-    $( "#icons-bar .icon:nth-child(2) > a" ).mouseenter(function () {
+    $( "#icons-bar .icon:first-child > a" ).mouseenter(function () {
         link = $(this);
         setTimeout(function () {
             link.off('click').click(reloadHandler);
@@ -599,12 +595,16 @@ $(function () {
         );
     }).each(function () { if (this.time.value) $(this).change(); });
 
-    $(".nav-button button").click(function (e) {
+    $("#icons-bar .icon:first-child button").click(function (e) {
        console.log("button clicked");
        e.preventDefault();
-       $(this).closest(".icon").find("a:first").click();
-    });
+       ftm.rerank(e);
+    }).button({ width: "100%" });
 
+    $("#icons-bar .icon:nth-child(2) button").click(function (e) {
+        $(this).closest(".icon").children("a").first().click();
+    });
+    
     $("#list-opts").buttonset();
     $("#list-opts input").each(function () {
         function update () {
@@ -639,6 +639,6 @@ $(function () {
         ftm.nextload.archive = $(this).is(":checked") ? 1 : 0;
     });
 
-    $("input[type=datetime]").each(FlowgencyTM.DateTimePicker);
+    $("input[type=datetime]").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
 
 }); 

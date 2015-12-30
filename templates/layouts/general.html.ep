@@ -25,9 +25,8 @@
 <body>
   <header>
     <nav id="icons-bar">
-    <div class="icon"><a id="logo" href="/"><img title="Clicking the logo is like clicking the filter/reload button but changes to the options, if any, are reset to default" src="/images/homebtn.png" alt="FlowgencyTM" /></a></div>
-    <div class="icon"><a href="javascript:void(0);"><img src="/images/filter-icon.png"></a>
-    <div class="menu"><ul>
+    <div class="icon"><a id="mainicon" href="javascript:void(0);"><img src="/images/filter-icon.png"></a>
+    <div class="menu">&nearr; Click to refresh with default options<ul>
         <li id="list-opts">List tasks:<br >
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
             <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
@@ -47,7 +46,7 @@
 % }
         </form></li>
     </ul>
-    <p class="nav-button"><button>Reload with set options</button> (or click icon)</p>
+    <p class="nav-button"><button style="width:100%">Reload with set options</button></p>
     </div>
 </div>
     <div class="icon"><a href="/newtask"><img src="/images/newtask-icon.png"></a><div class="menu">
@@ -67,18 +66,20 @@
     </ul></div>
     </div>
     <div class="icon"><a href="/info"><img src="/images/info-icon.png"></a></div>
+    <div class="icon hosterlink"><strong>FlowgencyTM</strong> <%= $FlowgencyTM::VERSION %> proudly hosted by <br><a href="http://www.humanetasking.net">humanetasking.net</a></div>
 </nav>
 % # Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.
   </header>
 
 <div id="page">
 <%= content %>
-</div>
 
 <footer>
 FlowgencyTM <%== $hoster_info %>
 <br><span id="subfooter">FlowgencyTM is open source under the terms of GNU GPL v3. | &copy; 2015 Florian L. Heß | <a href="http://www.github.com/flowdy/FlowgencyTM">Code repository</a> on GitHub</span>
 </footer>
+
+</div>
 
 </body>
 </html>

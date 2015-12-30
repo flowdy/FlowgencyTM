@@ -1,5 +1,5 @@
 $(function () {
-    var ftm = $('#logo').data('FlowgencyTM');
+    var ftm = $('#mainicon').data('FlowgencyTM');
  
     var toggler = function () {
         var plan = $(this),
