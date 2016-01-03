@@ -131,7 +131,6 @@ sub login {
     my $password = $self->param('password');
     my $user = FlowgencyTM::database->resultset("User")->find($user_id);
 
-    die "Oh!";
     my $on_success = sub {};
 
     my $confirm;
