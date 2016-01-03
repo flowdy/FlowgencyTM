@@ -107,8 +107,8 @@ The value 'done' is special: It is applied or deleted automatically depending on
 % if ( $bare_mode ) {
 <ul style="font-size:smaller;">
 <li>Fields marked with an <strong>asterisk (*)</strong> are required.<a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;"><br>Finished and ready to submit – but how? (2 more hints)</a></li>
-<li style="display:none;">Click the FlowgencyTM logo to actually create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list reflecting what you have submitted.</li>
-<li style="display:none;">Should a general and vacuous <strong>error message</strong> pop up instead (&quot;HTTP POST failure...&quot;), admins may want, i.e. non-admin users may ask their admin to see the <code>server.log</code> file for details. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
+<li style="display:none;">Click the top-left &quot;filter&amp;refresh&quot; button to actually create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list reflecting what you have submitted.</li>
+<li style="display:none;">If a general and vacuous <strong>error message</strong> pops up instead (&quot;HTTP POST failure...&quot;), admins may want, i.e. non-admin users may ask their admin to see the <code>server.log</code> file for details. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
 
 </ul>
 % }
