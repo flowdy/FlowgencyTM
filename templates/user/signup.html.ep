@@ -5,13 +5,40 @@
 
 <h2>Welcome</h2>
 
-<p>This is a live demonstration of the task and time management tool <em><a href="http://github.com/flowdy/FlowgencyTM">FlowgencyTM</a></em>. It allows you to find out if the concept matches your style of working, without the need to install extra software on your device. Requirement: Read, understand and accept the terms below explicitly. This is because they are quite unusual and the service provider just wants to prevent anger in the userbase.</p>
+<p>This is a live demonstration of the task and time management tool <em><a href="http://github.com/flowdy/FlowgencyTM">FlowgencyTM</a></em>. It allows you to find out if the concept matches your style of working, without the need to install extra software on your device.</p>
+
+<p>Requirement: Read, understand and accept the terms below explicitly, which is however not as trivial as it usually is.</p>
 
 <form action="/user/join" method="post">
 
+<h3>Personal data</h3>
+
+<div style="text-align:center;">
+<p><label>User login: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
+<label>Name: <input name="username" placeholder="(skip if inferrable from mail address)"></label><br>
+<label>Mail address: <input name="email" type="text"></label></p>
+<p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
+</div>
+
 <h3>Terms of Use</h3>
 
-<p>Please check each article you accept. If the profile of what you checked can be agreed upon, the "join" submit button is enabled.</p>
+<p>Please check each article that you accept. If the subset of checked items can be agreed upon, the "join" submit button is enabled.</p>
+
+<h4>Definitions</h4>
+
+<dl>
+<dt>Service</dt>
+<dd>FlowgencyTM installation that is available online. The provider must have deliberately changed the default configuration of the tool for that.</dd>
+<dt>Provider</dt>
+<dd>Owner and administrator of the service.</dd>
+<dd>Not per se identical with the FlowgencyTM project maintainer. Exception: The particular service provided as part of the official project website.</dd>
+<dd>Identified in the page footer, that is not part of the official project but must be filled individually by the provider.</dd>
+<dt>User</dt>
+<dd>The person who receives the invitation code and logs into the service.</dd>
+<dd>May always install and use FlowgencyTM locally. The terms below do not apply to local usage, only the GNU General Public License.</dd>
+</dt>
+
+<h4>Conditions</h4>
 
 <ol id="terms">
 
@@ -43,33 +70,23 @@
 
 <p style="text-align:right;"><label><input type="checkbox" name="voluntaryuse" value="1">I agree</label></p></li>
 
+<li><h3>I do not really read this</h3>
+<p>I always ignored terms of use and will always ignore them because they are not legal anyway.</p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="ignoreterms"> Sure.</label></p></li>
+
 <li>
 <h3>I tell the provider how I like the tool</h3>
 <p>I will give feedback, at the latest when I cease using the service. If it turns out too bad, I will give it nevertheless and be ready to simply smile, should the developers not be able to handle it as equanimously as they promise to.</label></p><p style="text-align:right;"><label><input type="checkbox" name="promisefeedback" value="1">I agree</label></p>
 </li>
 
-<li><h3>I do not really read this</h3>
-<p>I always ignored terms of use and will always ignore them because they are not legal anyway.</p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="ignoreterms"> Sure.</label></p></li>
+<li><h3>I am open to paying for real use of the service by all data or money!</h3>
+<p>If the provider changes their mind to set-up a commercial service, presumably the next big(-data) thing and "for free" of course, I will be obliged to stick to it for my lifetime whatever the price may be. And if I do not agree to marriage to get freed in turn from foreign rule of time by then prevailing, for the rest of my life I will re-read this article again and again in a cold cabin without wi-fi access and regret having accepted it. <span style="color:white">;-)</span></p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="dontcheck" value="1"> Exactly.</label></p></li>
 
 <li><h3>My user account can be deleted any time</h3>
 <p>Considering their age, all user accounts are increasingly at risk of deletion. The service provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this online service that is intentionally provided free of advertisement at no charge.</p><p style="text-align:right;"><label><input type="checkbox" name="deletion" value="1"> Okay.</label></li>
 
-%# Disclaimer: Neither the following nor the logical opposite is the opinion of the project initiator. He also does not suppose either to be the opinion of the target group. He just questions that mankind is wise enough to handle these things properly and not to the disadvantage of the poor and the dissenters. The only reason for this pseudo-term is to make people think about that subject.
-<li><h3>(TODO: second joke)</h3>
-<p>Idea anyone?</p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="dontcheck" value="1"> Exactly.</label></p></li>
-
 </ol>
 
-<h3>Personal data</h3>
-
-<div style="text-align:center;">
-<p><label>User login: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
-<label>Name: <input name="username" placeholder="(skip if inferrable from mail address)"></label>
-<label>Mail address: <input name="email" type="text"></label></p>
-<p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
-
-<p><input type="submit" name="join" value="join!"></p>
-</div>
+<p style="text-align:right;">Finally, click <input type="submit" name="join" value="join!"></p>
 </form>
 
 

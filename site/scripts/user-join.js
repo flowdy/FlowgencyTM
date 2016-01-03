@@ -13,7 +13,7 @@ $(function () {
         $(this).click(function (e) {
             terms_accept_bitmask[i] = this.checked ? 1 : 0;
             var idx = parseInt(terms_accept_bitmask.join(""), 2);
-            submitbtn.button( idx == 122 || idx == 90 ? "enable" : "disable" );
+            submitbtn.button( idx == 117 || idx == 85 ? "enable" : "disable" );
         });
     });
  
