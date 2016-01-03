@@ -1,3 +1,10 @@
+% for ( $retry_msg // () ) {
+%     $_ = $_ eq 'authfailure' ? "Authentication failed: User does not exist "
+%                              . "or the password was wrong."
+%    : $_ eq 'loggedOut'       ? "You have been logged out. All session cookies "
+%                              . "are expired and deleted. If you want to re-login:"
+%    : undef;
+% }
 <h2>Please login</h2>
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
