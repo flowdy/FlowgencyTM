@@ -1,6 +1,7 @@
 package FlowgencyTM::Server;
 use FlowgencyTM;
 use Mojolicious 6.0;
+use Mojolicious::Sessions;
 use Mojo::Base 'Mojolicious';
 
 # use Tie::File;
@@ -13,6 +14,7 @@ sub startup {
   # Documentation browser under "/perldoc"
   $self->plugin('PODRenderer');
   $self->secrets([rand]);
+  $self->sessions->cookie_name('FlowgencyTM');
 
   $self->defaults(
       layout => 'general',
@@ -35,7 +37,7 @@ sub startup {
       my $c = shift;
 
       my $is_remote = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
-      $c->stash( is_remote => $is_remote );
+      $c->stash( is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote );
 
       if ( !$c->stash('hoster_info') ) {
           $c->stash( hoster_info => $is_remote ? '(private remote)' : '(local)' );
