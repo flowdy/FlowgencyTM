@@ -3,9 +3,9 @@
 Installation Guide
 ==================
 
-FlowgencyTM is a prototype, yet just a proof-of-concept that can work like a smooth or fail badly, for others as likely as for myself. So you are welcome to use FlowgencyTM with test data! Keep in mind that this software is alpha. This means that crashes and a regularly corrupted database are to be expected. So do not yet use it for vital projects or if you do really cannot help doing, backup often! Please file bug-reports, for which I thank you very much in advance.
+FlowgencyTM is beta. This means that crashes, corrupted or inconsistent data or other unconveniences cannot be excluded. So do not use it for vital projects yet. If you really cannot help doing, backup often! Please file bug-reports to flowgencytm-dev at <span>mailbox.</span>org, for which I thank you very much in advance.
 
-FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac OS X and most linux distributions include it ready for use, ensure it is installed by running the command `perl -v`, or search the web how to install the latest version on your system. Windows users are recommended Strawberry Perl, please download from <http://strawberryperl.com/>.
+FlowgencyTM is implemented in the Perl programming language, version 5.14+. Mac OS X and most linux distributions include it ready for use. Ensure it is installed by running the command `perl -v`, or search the web how to install the latest version on your system. Windows users are recommended Strawberry Perl, please download from <http://strawberryperl.com/>.
 
 Clone the git repository in a directory of your choice. With plain git on Linux enter at a shell prompt:
 
@@ -22,7 +22,7 @@ Check and install any prerequisites by running inside the FlowgencyTM directory,
 
     cpanm --installdeps .
 
-Instead, you might prefer installing the packages that your linux distribution repository provides. E.g. if you want to install FlowgencyTM on your Raspbian-driven Pi which however I do not quite recommend because it is rather slow:
+Instead, you might prefer installing the packages that your linux distribution repository provides. E.g. if you want to install FlowgencyTM on your Raspbian-driven Pi (which however I do not quite recommend because it is rather slow):
 
     $ git clone https://github.com/flowdy/FlowgencyTM.git
     $ cd FlowgencyTM/
