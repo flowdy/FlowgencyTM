@@ -3,10 +3,20 @@ use strict;
 
 package FlowgencyTM {
 use Carp qw(croak);
-our $VERSION = "0.7";
+our $VERSION = "0.8";
 use FTM::FlowDB;
-use FTM::Error
-use FTM::User; # No, it is rather the user who use FlowgencyTM
+use FTM::Error;
+
+sub import {
+    # load FTM::User in the right mode
+    my ($class, $mode, @args) = @_;
+    require FTM::User;
+    if ( !defined($mode) and my $backend = $ENV{FLOWGENCYTM_BACKEND} ) {
+        $mode = $backend =~ /:0$/ ? 'Backend' : 'Proxy';
+        push @args, $backend;
+    }
+    FTM::User->import($mode, @args);
+}
 
 my ($db, %users, @current_users);
 
@@ -56,10 +66,21 @@ sub user {
 
     }
 
-    my $user_obj = $users{$user_id} //= FTM::User->new(
-        dbicrow => database->resultset("User")->$retr($data)
-                // croak(qq{Could not find a user with id = '$user_id'}),
-        can_admin => $ADMINS{$user_id} // 0,
+    my $user_obj = do {
+        if ( my $u = $users{$user_id} ) {
+            # Force re-fetch database row, otherwise we could risk that we work
+            # with an older version of the data that has been changed by
+            # another process in the meanwhile.
+            $u->refetch_from_db if @_;
+            $u;
+        }
+        else {
+            $users{ $user_id } = FTM::User->new(
+                dbicrow => database->resultset("User")->$retr($data)
+                        // croak(qq{Could not find a user with id = '$user_id'}),
+                can_admin => $ADMINS{$user_id} // 0,
+            }
+        }
     );
 
     if ( my $max_users = $ENV{MAX_USERS_IN_CACHE} ) {
@@ -81,6 +102,7 @@ sub user {
         %users = ( $user_id => $user_obj );
     }
 
+    
     return $user_obj;
 
 }

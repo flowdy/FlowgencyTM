@@ -35,6 +35,12 @@ has can_login => (
     }
 );
 
+has seqno => (
+    is => 'ro',
+    init_arg => undef,
+    default => do { my $i; sub { ++$i } },
+}
+
 my $IS_INITIALIZED;
 
 INIT {
@@ -47,7 +53,7 @@ INIT {
 }
 
 sub import {
-    my ($class, $mode, $args) = @_;
+    my ($class, $mode, @args) = @_;
     if ( $IS_INITIALIZED ) {
         croak "$class already initialized" if @_ > 1;
         return;
@@ -63,13 +69,17 @@ sub import {
 
     if ( $args ) {
         eval "require $role" or die;
-        $role->import(%$args);
+        $role->import(@args);
     }
 
     with $role;
 
     $class->meta->make_immutable;
     $IS_INITIALIZED = 1;
+}
+
+sub refetch_from_db {
+    return shift->_dbicrow->discard_changes;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -387,7 +387,6 @@ sub _progress_bar {
     }
 
 }
-__END__
 
 =head1 NAME
 
@@ -429,6 +428,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with FlowgencyTM. If not, see <http://www.gnu.org/licenses/>.
+
+=cut
 
 package FTM::User::Common::TaskManager;
 use Moose;

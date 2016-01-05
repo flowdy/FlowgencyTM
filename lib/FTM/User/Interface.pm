@@ -10,7 +10,13 @@ my $server_properties;
 
 sub import {
     my ($class, $args) = @_;
-    $args = { port => $args } if $args && !ref $args;
+    if ( $args && !ref $args ) {
+        my ($port, $ip) = reverse split /:/, $args;
+        $args = {
+            $ip ? (ip => $ip) : (),
+            $port ? (port => $port) : (),
+        };
+        
     my $port = POE::Component::IKC::Server->spawn(
       ip => '127.0.0.1',
       port => 0,
@@ -31,7 +37,7 @@ sub import {
 
 with 'FTM::User::Common';
 
-around [ TRIGGERS ] => sub {
+around FTM::User::TRIGGERS => sub {
     my $orig = shift;
 
     # Prepare for being invoked by the user object
@@ -42,13 +48,15 @@ around [ TRIGGERS ] => sub {
     my ($user_id, $wantarray) = @{ delete $data->{_context} }{
      qw( user_id   wantarray) 
     }
-    my $self = FlowgencyTM::user( $user_id );
 
     my $output = try {
+        my $self = FlowgencyTM::user( $user_id );
         if ( !defined $wantarray ) {   $self->$orig( $data ); undef }
         elsif ( $wantarray       ) { [ $self->$orig( $data ) ] }
         else                       {   $self->$orig( $data ); }
     } catch {
+        if ( !(ref $_ && $_->isa("FTM::Error") ) { $_ = FTM::Error->new($_); }
+        $_->user_seqno($self->seqno);
         $output->{_error} = $_;
     };
 

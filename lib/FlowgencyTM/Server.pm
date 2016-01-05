@@ -1,5 +1,5 @@
 package FlowgencyTM::Server;
-use POE::Component::IKC::ClientLite;
+use FlowgencyTM;
 use FTM::FlowDB;
 use Mojolicious 6.0;
 use Mojolicious::Sessions;
@@ -29,6 +29,16 @@ sub startup {
           else { q{} }
       },
   );
+
+  $self->log->format(sub {
+      my ($time, $level, @lines) = @_;
+      my $usn = "FTM::U".( FTM::Error::last_user_seqno() // '?' );
+      my $prefix = "$usn [$time] [$level]"
+      return @lines > 1 ? $prefix . ":" . join("", map { "\n\t".$_ } @lines )
+           : $prefix . " " . $lines[0]
+           ;
+  }
+
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
   # Router
