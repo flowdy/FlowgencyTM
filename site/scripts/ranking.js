@@ -102,7 +102,7 @@ $(function () {
           + " Click the logo, the OK button or the filter icon (with options if desired) to"
           + " update the ranking whenever you have changes to commit or you feel ready for"
           + " any other tasks currently most urgent.")
-        ) $('#logo').click();
+        ) $('#mainicon').click();
         else { reload_date = new Date(); minutes = 5; }
         block_warnOnFocus = false;
     }
