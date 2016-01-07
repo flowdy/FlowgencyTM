@@ -53,12 +53,11 @@ sub startup {
       local $ENV{FLOWGENCYTM_USER} = undef if $c->stash('is_remote');
           
       my $user_id = $c->session('user_id');
-      if ( !$user_id and my $default_user = $ENV{FLOWGENCYTM_USER} ) {
-          $c->session( user_id => $default_user );
-          $user_id = $default_user;
+      if ( !$user_id and $user_id = $ENV{FLOWGENCYTM_USER} ) {
+          $c->session( user_id => $user_id );
       }
 
-      my $user = FlowgencyTM::user( $user_id || () );
+      my $user = defined($user_id) && FlowgencyTM::user( $user_id );
       if ( $user && $user->can_login ) {
           $c->stash( user => $user );
           return 1;
