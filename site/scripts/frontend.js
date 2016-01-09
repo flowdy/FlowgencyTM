@@ -66,7 +66,7 @@ function Ranking (args) {
             var n = $.param(nextload);
             window.location.href = url + ( n ? '?' + n : '' );
         }
-        e.preventDefault();
+        if (e) e.preventDefault();
         if ( this.reg_changes(1) ) {
             var params = nextload.update_tasks;
             var str_params = {};
