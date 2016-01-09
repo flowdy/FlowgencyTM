@@ -7,8 +7,6 @@
 
 <p>This is a live demonstration of the task and time management tool <em><a href="http://github.com/flowdy/FlowgencyTM">FlowgencyTM</a></em>. It allows you to find out if the concept matches your style of working, without the need to install extra software on your device.</p>
 
-<p>Requirement: Read, understand and accept the terms below explicitly, which is however not as trivial as it usually is.</p>
-
 <form action="/user/join" method="post">
 
 <h3>Personal data</h3>
@@ -22,7 +20,7 @@
 
 <h3>Terms of Use</h3>
 
-<p>Please check each article that you accept. If the subset of checked items can be agreed upon, the "join" submit button is enabled.</p>
+<p class="error"><strong style="color: red;">Please check each that you accept.</strong> Beware of fake term(s) which to accept would render the "join" submit button below still disabled. The terms are short and plain, but substantially quite different from those of other personalized sites. Nasty surprise can be avoided this way.</p>
 
 <h4>Definitions</h4>
 
@@ -31,12 +29,13 @@
 <dd>FlowgencyTM installation that is available online. The provider must have deliberately changed the default configuration of the tool for that.</dd>
 <dt>Provider</dt>
 <dd>Owner and administrator of the service.</dd>
-<dd>Not per se identical with the FlowgencyTM project maintainer. Exception: The particular service provided as part of the official project website.</dd>
+<dd>Not per se identical with the FlowgencyTM project maintainer. Exception: The particular service provided as part of the <a href="http://www.humanetasking.net">official project website</a>.</dd>
 <dd>Identified in the page footer, that is not part of the official project but must be filled individually by the provider.</dd>
 <dt>User</dt>
 <dd>The person who receives the invitation code and logs into the service.</dd>
-<dd>May always install and use FlowgencyTM locally. The terms below do not apply to local usage, only the GNU General Public License.</dd>
+<dd>May always install and use FlowgencyTM locally. The conditions below do not apply to local use. Only the GNU General Public License is then legally effective.</dd>
 </dt>
+</dl>
 
 <h4>Conditions</h4>
 
@@ -49,29 +48,29 @@
 <p>There is no promise of a sufficient uptime or reliability, however, since it is still under active development. The service may be shut down without further notice, only its entry would be removed from the list of official demo services.</p><p style="text-align:right;"><label><input type="checkbox" name="checkwhatisftm" value="1"> I agree</label></p></li>
 
 <li><h3>I use it with <em>test data</em> only</h3>
-<p>Accordingly the data I will enter after login is declared non-productive, which means I do not depend on it in my job in any way. Once I decide to use the tool with real data in my work, I cease using this service and either install the open-source tool locally or have it hosted by someone trustworthy and willing to accept the ethical responsibility for privacy.</p>
+<p>a. Accordingly the data I will enter after login is declared non-productive, which means I do not depend on it in my job in any way. Once I decide to use the tool with real data in my work, I cease using this service and either install the open-source tool locally or have it hosted by someone trustworthy and willing to accept the ethical responsibility for privacy.</p>
 
-<p>I try to reflect roughly how my job is really like. But I also affirm that the data of my tasks and my time model will be substantially fictitious. Particularly I make sure the data does not relate to real people, including myself, or facts subject to institutional or industrial secrecy. What concerns that data specifically, the provider may freely publish and exchange it, licensed under CC-0, e.g. as representative samples in the effort to solve software errors in cooperation with others, without the need for asking my permission in any single case.</p>
+<p>b. I try to reflect roughly how my job is really like. But I also affirm that the data of my tasks and my time model will be substantially fictitious. Particularly I make sure the data does not relate to real people, including myself, or facts subject to institutional or industrial secrecy. What concerns that data specifically, the provider may freely publish and exchange it, licensed under CC-0, e.g. as representative samples in the effort to solve software errors in cooperation with others, without the need for asking my permission in any single case.</p>
 
-<p>In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a secure form. My IP address is not logged, which is why I should take note of my temporary user id displayed in error pages if I request support. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache. The provider is obliged to blank or pseudonymize all that personal data prior to publish any example database extracts or dumps.</p>
+<p>c. In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a secure form. My IP address is not logged, which is why I should take note of my temporary user id displayed in error pages if I request support. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache. The provider is obliged to blank or pseudonymize all that personal data prior to publishing any example database extracts or dumps.</p>
 
-<p><em>Family members, friends and acquaintances (except co-workers) of the service provider need not to check this one if they trust the provider personally to ensure extended privacy exclusively for them. Their data is at least not contained in public example data.</em></p>
+<p>d. <em><strong>Family members, friends and acquaintances (except co-workers)</strong> of the service provider need not to check this one if they trust the provider to ensure extended privacy for them exclusively. Their data is at least not contained in public example data.</em></p>
 
 <p style="text-align:right;"><label><input type="checkbox" name="privacywarning" value="1">I accept</label></p>
 </li>
 
-<li><h3>I opt in of my own free will</h3>
+<li><h3>I sign up of my own free will</h3>
 
-<p>I have not been persuaded or pressured by anyone to use or even just try FlowgencyTM, neither in an expressed nor in a subtle way. I do it voluntarily as I know that otherwise I would not happen to like and benefit from it anyway.</p>
+<p>I am not underage according to my jurisdiction and I have not been persuaded or pressured by anyone to use or even just try FlowgencyTM, neither in an expressed nor in a subtle way. The Humane Tasking initiative advertises the tool in an informative way that is not aggressive or invasive in my eyes. I sign up voluntarily as I know that otherwise I would not happen to like and benefit from it anyway.</p>
 
-<p>Inferred from what I read, this tool may be classified as mind enhancement software and might develop a good or bad long-term influence on my mental condition as any such software can have. Hence it requires a good sense of responsibility for myself. If I notice it does not work for me or not the way I have expected, I will stop using it. I might need to seek professional help if I feel I get somehow addicted to this tool.</p>
+<p>Inferred from what I read, this tool may be classified as mind enhancement software and may develop a good or bad long-term influence on my mental condition as any such software can do. Hence it requires a good sense of responsibility for myself. If I notice it does not work for me or not the way I have expected, I will stop using it. I might need to seek professional help if I suffer from possible mental addiction to this tool, which has not been the intention of the project initiator. I am informed that by the time of release, there have been no independent scientific studies or analyses of the tool enlarging on the risks, benefits and (contra-)indications of its usage as yet. This situation might have got better now. Research is up to me if I am interested.</p>
 
-<p>According to the disclaimer of the GNU General Public License the tool underlies, I take for granted that the tool is realized to the best of the inventor's knowledge and belief, but as it is provided without warranty of fitness for any purpose, I would not hold the service provider and/or the developer(s) liable in that case. I am informed that there are no independent scientific analyses of the tool enlarging on the risks, benefits and (contra-)indications of its usage as yet.</p>
+<p>According to the disclaimer of the GNU General Public License the tool underlies, I take for granted that the tool is realized to the best of the inventor's knowledge and belief. As it is provided without warranty of fitness for any purpose, however, I would not hold the service provider and/or the developer(s) liable if effects of usage of any sort turn out negative.</p>
 
 <p style="text-align:right;"><label><input type="checkbox" name="voluntaryuse" value="1">I agree</label></p></li>
 
 <li><h3>I do not really read this</h3>
-<p>I always ignored terms of use and will always ignore them because they are not legal anyway.</p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="ignoreterms"> Sure.</label></p></li>
+<p>I do not quite understand but I neither care, I always ignored terms of use and will always ignore them because they are not legal anyway.</p><p style="text-align:right;"><label title="You will not check this, will you?"><input type="checkbox" name="ignoreterms"> Sure.</label></p></li>
 
 <li>
 <h3>I tell the provider how I like the tool</h3>
