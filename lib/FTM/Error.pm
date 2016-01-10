@@ -8,13 +8,19 @@ use overload eq => sub { ref($_[0]) eq $_[1] };
 
 my $user_seqno;
 
-has user_seqno;
+has user_seqno => (
+    is => 'rw',
+    trigger => sub {
+        my ($self, $new) = @_;
+        $user_seqno = $new;
+    },
+);
 
 sub last_user_seqno { $user_seqno; }
 
 before throw => sub {
     my ($self) = @_;
-    $user_seqno = $self->seqno;
+    $user_seqno = $self->seqno if ref ($self);
 };
 
 sub DEMOLISH {
