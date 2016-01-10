@@ -75,7 +75,7 @@ sub server_properties {
     return %$server_properties;
 }
 
-sub await_requests {
+sub await_requests_till_shutdown {
     POE::Kernel->run();
     exit;
 }
