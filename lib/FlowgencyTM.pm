@@ -11,9 +11,12 @@ sub import {
     # load FTM::User in the right mode
     my ($class, $mode, @args) = @_;
     require FTM::User;
-    if ( !defined($mode) and my $backend = $ENV{FLOWGENCYTM_BACKEND} ) {
-        $mode = $backend =~ /:0$/ ? 'Backend' : 'Proxy';
-        push @args, $backend;
+    if ( !defined($mode) and my $string = $ENV{FLOWGENCYTM_MODE} ) {
+        $mode = $string =~ s{^Backend:}{}i || $string =~ /:0$/       ? 'Backend'
+              : $string =~ s{^Proxy:}{}i   || $string =~ /^[^a-z]+$/ ? 'Proxy'
+              : croak "Environment variable FLOGENCYTM_MODE is invalid"
+              ;
+        push @args, $string;
     }
     FTM::User->import($mode, @args);
 }
