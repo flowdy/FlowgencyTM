@@ -13,12 +13,12 @@ my $model = modified_model(get_simple_model(), work => {
     variations => [{
         name => 'jw16',
         week_pattern_of_track => 'urlaub',
-        description => 'Jahreswechsel 2015/16',
-        from_date => '+1d',
+        description => 'Turn of the year 2015/16',
+        from_date => '2015-12-27',
         until_date => '2016-01-06',
     }]
 });
-is $model->get_track("work")->variations->[2]->name, "jw16", "Modifiziertes Model ist okay.";
+is $model->get_track("work")->variations->[2]->name, "jw16", "Modified model is okay.";
 
 sub test_model {
     my $model = shift;
@@ -78,7 +78,7 @@ sub get_simple_model_inheriting_all_variations {
        "work": {
            "label": "Traditional office hours",
            "week_pattern": "Mo-Fr@9-17:30",
-           "use_variations_from": ["urlaub"]
+           "unmentioned_variations_from": ["urlaub"]
        },
     
        "urlaub": {

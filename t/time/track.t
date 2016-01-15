@@ -77,7 +77,7 @@ sub test_atoms {
         'tspan expand by +5 days at the beginning';
     $tspan->from_date('21.5.');
     is $tspan->rhythm->atoms->to_Bin, $tspan_bin, ' ... which is reversible';
-    my $tspan2 = FTM::Time::Span->from_string('21.5.--5.8.:Mo-Fr@9-17:30');
+    my $tspan2 = FTM::Time::Span->from_string('21.5.--5.8.15:Mo-Fr@9-17:30');
     is $tspan2->rhythm->hourdiv, 2,
        'another tspan with end of business day 17:30';
     is length($tspan2->rhythm->atoms->to_Bin), length($tspan_bin)*2,
