@@ -27,6 +27,8 @@ sub DEMOLISH {
     $user_seqno = undef;
 }
 
+}
+
 package FTM::Error::Task::FailsToLoad;
 use Moose;
 extends 'FTM::Error';
