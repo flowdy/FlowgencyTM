@@ -42,7 +42,7 @@ around BUILDARGS => sub {
         $args->{_timeway} = FTM::Time::Cursor::Way->from_stage_hrefs(@$t);
     }
     else {
-        croak "Missing mandatory attribut timestages used ".
+        croak "Missing mandatory attribute timestages used ".
               "to initialize internal _timeway";
     }
 
@@ -169,9 +169,10 @@ sub timestamp_of_nth_net_second_since {
     my ($self, $net_seconds, $from_ts) = @_;
 
     my $stage = defined($from_ts)
-        ? $self->_timeway->find_span_covering($from_ts) // do {
-             croak "Time $from_ts not covered by cursor timeway";
-          }
+        ? $self->_timeway->find_span_covering($from_ts)
+             // FTM::Error::Time::InvalidSpec->throw(
+                    "Time $from_ts not covered by cursor timeway"
+                )
         : $self->_timeway->start;
 
     my ($stage_part, $iter) = $stage->partition_sensitive_iterator;

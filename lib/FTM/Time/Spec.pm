@@ -116,7 +116,7 @@ sub parse_ts {
             $diff .= $1;
         }
         else {
-            FTM::Error::TimeSpec::Invalid->throw(
+            FTM::Error::Time::InvalidSpec->throw(
                 "Timestamp invalid after plus sign"
             ) if !length($diff);
         }
@@ -124,7 +124,7 @@ sub parse_ts {
         ($year, $month, $day) = @ret{qw|year month day|};
     }
        
-    FTM::Error::TimeSpec::Invalid->throw("Could not parse date: '$ts'")
+    FTM::Error::Time::InvalidSpec->throw("Could not parse date: '$ts'")
         if $ts =~ m{ \A \d* [.-] \d }xms;
 
     # Let us parse the time part which is always absolute:
@@ -132,13 +132,13 @@ sub parse_ts {
         0?(\d\d?) (?: \: 0?(\d\d?) # Minutes are optional
         (?:\:0?(\d\d?))? )? # Will we need to indicate seconds someday? Horror!
     \s* | }{}xms;
-    FTM::Error::TimeSpec::Invalid->throw("Invalid time ($1:$2:$3)")
+    FTM::Error::Time::InvalidSpec->throw("Invalid time ($1:$2:$3)")
         if !Date::Calc::check_time(map { $_ || 0 } $1, $2, $3);
     $ret{hour} = $1 if defined $1;
     $ret{min} = $2 if defined $2;
     $ret{sec} = $3 if defined $3;
 
-    FTM::Error::TimeSpec::Invalid->throw(
+    FTM::Error::Time::InvalidSpec->throw(
         "No date and/or time found in string '$ts' (expecting one at its front)"
     ) if !defined( $ret{year} || $ret{month} || $ret{day} || $ret{hour} );
 
@@ -232,7 +232,7 @@ sub move {
 
     if ( $diff =~ m{ > (\w\w) \w* \z }xms ) {
         my $day = Day_of_Week(@ymdhms[0..2]);
-        my $pos = $WD{ lc $1 } // FTM::Error::TimeSpec::Invalid->throw(
+        my $pos = $WD{ lc $1 } // FTM::Error::Time::InvalidSpec->throw(
             "Not a week day: $1"
         );
         $day = ( $pos - $day ) % ( $neg ? -7 : 7 );
@@ -366,7 +366,7 @@ sub get_qm_timestamp {
 sub last_sec {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec
-       // FTM::Error::TimeSpec::Invalid->throw(
+       // FTM::Error::Time::InvalidSpec->throw(
               "last_sec requires all date components to be defined"
           );
     $epoch_sec += !defined($self->hour) ? do { # no, not always 24*3600-1
@@ -384,7 +384,7 @@ sub last_sec {
 sub split_seconds_since_midnight {
     my ($self) = @_;
     my $epoch_sec = $self->epoch_sec
-       // FTM::Error::TimeSpec::Invalid->throw(
+       // FTM::Error::Time::InvalidSpec->throw(
               "split_seconds_since_midnight requires all "
               . "date components to be defined"
           );
@@ -430,7 +430,7 @@ sub is_past {
 __PACKAGE__->meta->make_immutable;
 
 
-package FTM::Error::TimeSpec::Invalid;
+package FTM::Error::Time::InvalidSpec;
 use Moose;
 extends 'FTM::Error';
 

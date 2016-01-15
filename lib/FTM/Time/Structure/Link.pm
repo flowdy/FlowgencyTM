@@ -4,7 +4,6 @@ use utf8;
 
 package FTM::Time::Structure::Link;
 use Moose::Role;
-use Carp qw(croak);
 
 requires 'like', 'new_alike';
 
@@ -15,8 +14,9 @@ has from_date => (
      trigger => sub {
         my ($self, $date, $old) = @_;
         my $ud = $self->until_date // return;
-        croak "from_date ($date) > until_date ($ud)"
-            if !$date->fix_order($ud);
+        FTM::Error::Time::InvalidSpec->throw(
+            "from_date ($date) succeeds until_date ($ud)"
+        ) if !$date->fix_order($ud);
         my $trigger = $self->can("_onchange_from");
         $self->$trigger($date, $old) if $old && $trigger;
      },
@@ -30,8 +30,9 @@ has until_date => (
      trigger => sub {
         my ($self, $date, $old) = @_;
         my $fd = $self->from_date // return;
-        croak "until_date ($date) < from_date ($fd)"
-            if !$fd->fix_order($date);
+        FTM::Error::Time::InvalidSpec->throw(
+            "until_date ($date) preceeds from_date ($fd)"
+        ) if !$fd->fix_order($date);
         my $trigger = $self->can("_onchange_until");
         $self->$trigger($date, $old) if $old && $trigger;
      },
@@ -89,7 +90,9 @@ sub alter_coverage {
         for grep { defined && !ref } $from_date, $until_date;
     if ( $from_date && $until_date ) {
         $from_date->fix_order($until_date)
-            or croak 'FTM::Time::Span::alter_coverage(): dates in wrong order';
+            or FTM::Error::Time::InvalidSpec->throw(
+                'FTM::Time::Span::alter_coverage(): dates in wrong order'
+            );
     }
 
     my ( $from_span, $until_span );

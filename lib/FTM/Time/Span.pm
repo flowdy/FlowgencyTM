@@ -94,15 +94,16 @@ sub from_string {
     $span = $from_date->remainder;
     my $rhythm;
 
-    # 1. Handelt es sich bei $dates um ein Anfangs und Enddatum?
+    # 1. Do we have an from_date or an until_date
     if ( $span =~ s{^\s*--?\s*}{} || $span =~ m{^\s*\+} ) {
         $until_date = FTM::Time::Spec->parse_ts($span,$from_date);
-        croak "Bis-Datum liegt vor Von-Datum"
-            if !$from_date->fix_order($until_date);
+        FTM::Error::Time::InvalidSpec->throw(
+            "until_date preceeding from_date"
+        ) if !$from_date->fix_order($until_date);
 	($rhythm = $until_date->remainder) =~ s{^(:|=>)}{};
     }
     else {
-        # Wir haben es mit einem einzigen Tag zu tun
+        # We parse a single day
         my $hours = $span =~ s{ (@ [\d:,-]+) \z }{}xms ? $1 : q{};
         $rhythm = "Mo-So$hours"; 
         $until_date = $from_date;

@@ -3,7 +3,6 @@ use strict;
 
 package FTM::Time::Model;
 use Moose;
-use Carp qw(carp croak);
 use Date::Calc;
 use Scalar::Util qw( blessed );
 use FTM::Util::DependencyResolver qw( ordered );
@@ -69,7 +68,9 @@ sub update {
 
         if ( !%$data ) {
             next if $track;
-            croak 'No change data content for new track '.$name;
+            FTM::Error::Time::InvalidTrackData->throw(
+                'No change data content for new track '.$name
+            );
         }
 
         my $is_required = FTM::Time::Track->gather_dependencies($data);

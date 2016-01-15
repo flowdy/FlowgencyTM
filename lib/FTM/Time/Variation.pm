@@ -1,7 +1,6 @@
 use strict;
 
 package FTM::Time::Variation;
-use Carp qw(croak);
 use FTM::Types;
 use Moose;
 
@@ -73,9 +72,9 @@ sub new_alike {
         $content = '' if !defined $args->{$content};
     }
 
-    croak "Ambiguity in FTM::Time::Variation::new_alike() call: you passed ",
-        join(" and ", @content), ". Decide"
-        if @content > 1;
+    FTM::Error::Time::InvalidTrackData->throw(
+        "Ambiguity: you passed ", join(" and ", @content), ". Decide"
+    ) if @content > 1;
 
     $class = !defined($content)                  ? ref $self || $class
            : $content eq 'week_pattern_of_track' ? $class.'::BorrowedRhythm'
@@ -87,7 +86,7 @@ sub new_alike {
 
     eval "use $class"; die $@ if $@;
 
-    croak "New variation would touch the past"
+    FTM::Error::Time::HasPast->throw( "New variation would touch the past" )
         if ref $self
         && !$self->ensure_coverage_is_alterable($args->{until_date})
         && $content
@@ -151,7 +150,7 @@ sub cmp_position_to {
     #       that the variation mentioned right-hand in the track's list of own
     #       or adapted variations trims or covers the left-hand one.
     #    b) If both end/start dates are explicit, an exception of class
-    #       FTM::Error::TimeVariation::Interlaced is thrown.
+    #       FTM::Error::Time::InterlacedVariations is thrown.
     #
     # Thus, the user can change start/end dates of variations without worrying
     # about position conflicts between variations in other tracks.
@@ -171,7 +170,7 @@ sub cmp_position_to {
     return -1 if $b_fd > $a_ud && $a_fd < $b_ud;
     return  1 if $b_fd < $a_ud && $a_fd > $b_ud;
 
-    FTM::Error::TimeVariation::Interlaced->throw(
+    FTM::Error::Time::InterlacedVariations->throw(
         left => $left, right => $right
     ) if $mode == 15 
       || ( ( $mode & 10 ) == 10 && $a_fd == $b_fd )
@@ -187,7 +186,7 @@ sub cmp_position_to {
               :               1
               ;
 
-    FTM::Error::TimeVariation::Interlaced->throw(
+    FTM::Error::Time::InterlacedVariations->throw(
         left => $left, right => $right
     );
 
@@ -205,10 +204,11 @@ sub ensure_coverage_is_alterable {
            return if $self->until_date->last_sec > $ref_time
                   && $until_date &&  $until_date > $ref_time
                   ;
-           croak "Variation cannot begin/end within the used coverage of the",
-               sprintf " track (%s--%s <= %s)", $self->from_date,
-                   $until_date // $self->until_date, $ref_time
-               ;
+           FTM::Error::Time::HasPast->throw(
+               "Variation cannot begin/end within the used coverage of the",
+                   sprintf " track (%s--%s <= %s)", $self->from_date,
+                       $until_date // $self->until_date, $ref_time
+           );
        }
     }
     return 1;
@@ -257,7 +257,7 @@ sub _change_ref_track {
     
 __PACKAGE__->meta->make_immutable;
 
-package FTM::Error::TimeVariation::Interlaced;
+package FTM::Error::Time::InterlacedVariations;
 use Moose;
 extends 'FTM::Error';
 

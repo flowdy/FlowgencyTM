@@ -100,10 +100,11 @@ for ( ['from_earliest', 'until_latest'] ) {
             : !ref($ts)           ? FTM::Time::Spec->parse_ts($ts)
             : $ts
             ;
-        croak "Time track limits can be extended, not narrowed"
-            if $ts > $self->lock_from_date
-            && $self->lock_until_date > $ts
-            ;
+        FTM::Error::Time::InvalidTrackData->throw(
+            "Time track limits can be extended, not narrowed"
+        ) if $ts > $self->lock_from_date
+          && $self->lock_until_date > $ts
+        ;
     };
 }
 
@@ -120,11 +121,15 @@ before successor => sub {
         $succ->mustnt_start_later($until_date->successor);
     }
     elsif ( my $from_date = $succ->from_earliest ) {
-        croak "Track cannot succeed: It does not begin early enough."
-            if $self->is_used && $from_date < $self->lock_until_date;
+        my ($self_name, $succ_name) = ($self->name, $succ->name);
+        FTM::Error::Time::InvalidTrackData->throw(
+            "It is too late for Track $succ_name to succeed $self_name: "
+        ) if $self->is_used && $from_date < $self->lock_until_date;
     }
     else {
-        croak "Cannot succeed at unknown point in time";        
+        FTM::Error::Time::InvalidTrackData->throw(
+            "Cannot succeed at unknown point in time"
+        );        
     }
     $self->{successor} = $succ;
 };
@@ -294,16 +299,22 @@ around BUILDARGS => sub {
 
     my $args = $class->$orig(@_);
 
+    my @content = grep { exists $args->{$_} } qw/week_pattern ref/;
+    my $superfluous = join " and ", @content;
+    FTM::Error::Time::InvalidTrackData->throw(
+        "Both $superfluous passed which is ambiguous"
+    ) if @content > 1;
     for my $fillIn ( $args->{fillIn} ) {
-        my @content = grep { exists $args->{$_} } qw/week_pattern ref/;
-        my $superfluous = join " and ", @content;
-        croak "fillIn passed, but $superfluous too" if $fillIn && @content;
-        croak "Both $superfluous passed which is ambiguous" if @content > 1;
+        FTM::Error::Time::InvalidTrackData->throw(
+            "fillIn passed, but $superfluous too"
+        ) if $fillIn && @content;
         my $day_of_month = (localtime)[3];
         $fillIn //= FTM::Time::Span->new(
             week_pattern => delete $args->{week_pattern} // do {
                 my $ref = delete $args->{ref};
-                croak "Neither week_pattern nor ref defined" if !$ref;
+                FTM::Error::Time::InvalidTrackData->throw(
+                    "Neither week_pattern nor ref defined"
+                ) if !$ref;
                 $ref->fillIn->rhythm;
             },
             from_date => $day_of_month,  # do really no matter; both time points
@@ -333,7 +344,9 @@ sub calc_slices {
 
     my $start_span = $self->find_span_covering($self->start, $from);
 
-    croak "No span found that covers timestamp $from" if !$start_span;
+    FTM::Error::Time::Gap->throw(
+        "No span found that covers timestamp $from"
+    ) if !$start_span;
 
     return $start_span->calc_slices($from, $until);
 
@@ -360,11 +373,16 @@ around couple => sub {
         }
     }
     else {
-        my $fail = !defined $opts->{trimmable};
-        ($fail ? croak "Span hits track coverage limits" : return)
-            if $span->from_date < $sts->epoch_sec
-            || $ets->last_sec < $last->until_date
-            ;
+        if ( $span->from_date < $sts->epoch_sec
+          || $ets->last_sec < $last->until_date
+        ) {
+            if ( defined $opts->{trimmable} ) { return }
+            else {
+                FTM::Error::Time::InvalidTrackData->throw(
+                    "Span hits track coverage limits"
+                );
+            }
+        }
     }
             
     $self->$wrapped($span);
@@ -386,7 +404,9 @@ sub get_section {
                          ;
 
     $from->fix_order($until)
-        or croak 'from and until arguments in wrong order';
+        or FTM::Error::Time::InvalidSpec->throw(
+           'from and until arguments in wrong order'
+        );
 
     $self->mustnt_start_later($from);
     $self->mustnt_end_sooner($until);
@@ -503,8 +523,9 @@ sub mustnt_start_later {
 
     return if $start->from_date <= $tp;
 
-    croak "Can't start before minimal from_date"
-        if $self->from_earliest && $tp < $self->from_earliest;
+    FTM::Error::Time::Gap->throw(
+        "Can't start before from_earliest of ". $self->name
+    ) if $self->from_earliest && $tp < $self->from_earliest;
 
     $start = $start->alter_coverage($tp, undef, $self->fillIn);
 
@@ -526,9 +547,11 @@ sub mustnt_end_sooner { # recursive on successor if any
 
     my $tp1 = $tp;
     if ( $until_latest && $tp > $until_latest ) {
-        croak "Can't end after maximal until_date" . (
-            $successor ? " (could do with a passed extender sub reference)"
-                       : q{}
+        FTM::Error::Time::Gap->throw(
+            "Can't end after maximal until_date" . (
+                $successor ? " (could do with a passed extender sub reference)"
+                           : q{}
+            )
         ) if !($successor && $extender);
         $extender->($until_latest, $successor);
         $tp1 = $until_latest;
@@ -550,7 +573,9 @@ around until_latest => sub {
     return $self->$wrapped(@_) // do {
         if ( my $successor = $self->successor ) {
             my $from_earliest = $successor->from_earliest
-                // croak "Cannot succeed at unknown point in time";
+                // FTM::Error::Time::Gap->throw(
+                       "Cannot succeed at unknown point in time"
+                   );
             $from_earliest->predecessor;
         }
         else { () }
@@ -580,7 +605,7 @@ sub _apply_variations {
                             : lc $apply eq 'bottom' ? 'bottom'
                             : lc $apply eq 'top'    ? 'top'
                             :     croak "apply = $apply"
-                            } // die $apply
+                            }
                          ;
 
         }
@@ -618,10 +643,14 @@ sub update {
 
     my $week_pattern = delete $args->{week_pattern};
     if ( $self->is_used && ( $args->{ref} || $week_pattern ) ) {
-        croak "You cannot change fillIn rhythm of a used track";
+        FTM::Error::Time::HasPast->throw(
+            "You cannot change fillIn rhythm of a used track"
+        );
     }
     elsif ( $args->{ref} && $week_pattern ) {
-        croak "Both ref and week_pattern passed which is ambiguous";
+        FTM::Error::Time::InvalidTrackData->throw(
+            "Both ref and week_pattern passed which is ambiguous"
+        );
     }
     elsif ( $week_pattern ) {
         my $old_fillIn = $self->fillIn;
@@ -676,7 +705,10 @@ sub update_variations {
         for my $old_var ( $new_var->{name} ? @$stored_variations : () ) {
             next if $old_var->name ne $new_var->{name};
             for ( $new_var->{ref} // () ) {
-                $_ = $inh_vars->{$_} // croak "No variation '$_' found"
+                $_ = $inh_vars->{$_}
+                    // FTM::Error::Time::InvalidTrackData->throw(
+                           "No variation '$_' found"
+                    );
             }
             $new_var = $old_var->new_alike( $new_var );
             $new_var->ensure_coverage_is_alterable;
@@ -936,6 +968,18 @@ sub DEMOLISH {
 }
 
 __PACKAGE__->meta->make_immutable;
+
+package FTM::Error::Time::Gap;
+use Moose;
+extends 'FTM::Error';
+
+package FTM::Error::Time::InvalidTrackData;
+use Moose;
+extends 'FTM::Error';
+
+package FTM::Error::Time::HasPast;
+use Moose;
+extends 'FTM::Error';
 
 __END__
 

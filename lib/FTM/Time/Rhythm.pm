@@ -7,7 +7,7 @@ use Moose;
 use Bit::Vector;
 use FTM::Time::CalendarWeekCycle;
 use FTM::Time::SlicedInSeconds;
-use Carp qw(carp croak);
+use Carp qw(croak);
 
 my %WDAYNUM; @WDAYNUM{
   qw|So Su Mo Di Tu Mi We Do Th Fr Sa |}
@@ -250,19 +250,25 @@ sub _gcf_minutes { # hour partitioner (greatest common factor)
 sub _get_number_of_wday {
     my $wday = shift;
     return $WDAYNUM{ ucfirst $wday }
-        // croak "Not a week day: $wday";
+        // FTM::Error::Time::InvalidSpec->throw(
+             "Not a week day: $wday"
+           );
 }
 
 sub _check_hour {
     my $h = shift;
     $h >= 0 && $h < 25
-        or croak "Not in hours range (0-24): $h";
+        or FTM::Error::Time::InvalidSpec->throw(
+            "Not in hours range (0-24): $h"
+        );
 }
 
 sub _check_minute {
     my $m = shift;
     $m >= 0 && $m < 60
-        or croak "Not in minutes range (0-59): $m";
+        or FTM::Error::Time::InvalidSpec->throw(
+            "Not in minutes range (0-59): $m"
+        );
 }
 
 sub _get_multivec_bitsetter {
