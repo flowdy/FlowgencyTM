@@ -11,7 +11,7 @@ sub import {
     # load FTM::User in the right mode
     my ($class, $mode, @args) = @_;
     require FTM::User;
-    if ( !defined($mode) and my $string = $ENV{FLOWGENCYTM_MODE} ) {
+    if ( !defined($mode) and my $string = $mode // $ENV{FLOWGENCYTM_MODE} ) {
         $mode = $string =~ s{^Backend:}{}i || $string =~ /:0$/       ? 'Backend'
               : $string =~ s{^Proxy:}{}i   || $string =~ /^[^a-z]+$/ ? 'Proxy'
               : croak "Environment variable FLOGENCYTM_MODE is invalid"
@@ -82,9 +82,9 @@ sub user {
                 dbicrow => database->resultset("User")->$retr($data)
                         // croak(qq{Could not find a user with id = '$user_id'}),
                 can_admin => $ADMINS{$user_id} // 0,
-            }
+            )
         }
-    );
+    };
 
     if ( my $max_users = $ENV{MAX_USERS_IN_CACHE} ) {
 

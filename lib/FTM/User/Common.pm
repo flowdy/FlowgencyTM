@@ -148,7 +148,7 @@ sub get_ranking {
     return {
         list => \@list
     };
-})}
+}
 
 sub get_task_data {
     my ($self, $task, $steps) = @_[0,1];
@@ -207,7 +207,7 @@ sub fast_bulk_update {
             $task = FlowgencyTM::user->tasks->$method($task || (), $data);
         }
         catch {
-            $errors{ $task || $tmp_name })
+            $errors{ $task || $tmp_name }
                  = index(ref($_), "FTM::Error::") == 0
                  ? $_->message
                  : $_;
@@ -267,29 +267,27 @@ sub dump_complex_settings { my ($user) = @_; return
 }
 
 sub realize_settings {
-    my ($user, $settings) = @_
-    if ( my $prio = $self->param('priorities') ) {
+    my ($self, $settings) = @_;
+    if ( my $prio = $settings->{'priorities'} ) {
         my (%prio,$i);
         for my $p ( split q{,}, $prio ) {
             $i++;
             next if !length $p;
             $prio{$p} = $i;
         }
-        $user->remap_priorities(%prio) if %prio;
+        $self->remap_priorities(%prio) if %prio;
     }
 
-    if ( defined(my $weights = $settings{weights}) ) {
-         $user->modify_weights(%$weights);
+    if ( defined(my $weights = $settings->{weights}) ) {
+         $self->modify_weights(%$weights);
     }
 
-    if ( defined(my $tm = $settings{change_time_model}) ) {
-        $user->update_time_model( $tm );
+    if ( defined(my $tm = $settings->{change_time_model}) ) {
+        $self->update_time_model( $tm );
     }
 
     return;
 }
-
-__PACKAGE__->meta->make_immutable;
 
 use FTM::Util::LinearNum2ColourMapper;
 use List::Util qw(min);
@@ -329,7 +327,7 @@ sub _dump_task {
           : (),
         due_in_hms => $due,
         active => $active,
-        $due ne $next ? (next_statechange_in_hms => $next) : (),
+        $next && $due ne $next ? (next_statechange_in_hms => $next) : (),
         open_since => $task->open_since,
         extended_info => open_task($task),
             

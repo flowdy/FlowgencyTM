@@ -5,7 +5,7 @@ use Moose;
 use Carp qw(croak);
 
 sub TRIGGERS { return [qw[
-    get_ranking get_task_data update_task open_task get_dynamics_of_task
+    get_ranking get_task_data open_task get_dynamics_of_task
     dump_complex_settings realize_settings
 ]]; }
 
@@ -39,7 +39,7 @@ has seqno => (
     is => 'ro',
     init_arg => undef,
     default => do { my $i; sub { ++$i } },
-}
+);
 
 my $IS_INITIALIZED;
 
@@ -53,7 +53,7 @@ INIT {
 }
 
 sub import {
-    my ($class, $mode, @args) = @_;
+    my ($class, $mode, $args) = @_;
     if ( $IS_INITIALIZED ) {
         croak "$class already initialized" if @_ > 1;
         return;
@@ -67,12 +67,14 @@ sub import {
 
     my $role = "FTM::User::$mode";
 
-    if ( $args ) {
-        eval "require $role" or die;
-        $role->import(@args);
-    }
-
     with $role;
+    if ( defined $args ) {
+        if ( !ref $args ) {
+            my ($port, $ip) = reverse split(':', $args, 2);
+            $args = { port => $port, ip => $ip };
+        }
+        $role->init($args);
+    }
 
     $class->meta->make_immutable;
     $IS_INITIALIZED = 1;
@@ -82,7 +84,7 @@ sub refetch_from_db {
     return shift->_dbicrow->discard_changes;
 }
 
-__PACKAGE__->meta->make_immutable;
+1;
 
 __END__
 

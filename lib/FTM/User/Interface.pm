@@ -5,10 +5,11 @@ use Moose::Role;
 use POE qw(Session);
 use POE::Component::IKC::Server;
 use POE::Component::IKC::Specifier;
+use Try::Tiny;
 
 my $server_properties;
 
-sub import {
+sub init {
     my ($class, $args) = @_;
     if ( $args && !ref $args ) {
         my ($port, $ip) = reverse split /:/, $args;
@@ -16,60 +17,65 @@ sub import {
             $ip ? (ip => $ip) : (),
             $port ? (port => $port) : (),
         };
-        
+    }    
+
     my $port = POE::Component::IKC::Server->spawn(
-      ip => '127.0.0.1',
-      port => 0,
-      %$args,
-      name => 'Backend',
+        ip => '127.0.0.1',
+        port => 0,
+        %$args,
+        name => 'Backend',
     );
     
-    $args->{port} ||= $port;
+    my $_start = sub {
+        my ($kernel, $heap) = @_[KERNEL, HEAP];
+
+        my $service_name = "FTM_User";
+        $kernel->alias_set($service_name);
+        $kernel->call(IKC => publish => $service_name, FTM::User::TRIGGERS() );
+
+    };
 
     POE::Session->create(
-        package_states => { 'FTM::User' => FTM::User::TRIGGERS }
+        package_states => [ 'FTM::User' => FTM::User::TRIGGERS() ],
+        inline_states  => { _start => $_start },
     );
+
+    $args->{port} ||= $port;
 
     $server_properties = $args;
     
-    undef &import;
-}
+} INIT { undef &import; }
 
 with 'FTM::User::Common';
 
-around FTM::User::TRIGGERS => sub {
+around FTM::User::TRIGGERS() => sub {
     my $orig = shift;
 
     # Prepare for being invoked by the user object
-    if ( ref $_[0] ) { goto $orig; } else { shift; }
+    if ( ref $_[0] ) { goto $orig; }
 
     my ($kernel, $heap, $request) = @_[KERNEL, HEAP, ARG0];
     my ($data, $rsvp) = @$request;
     my ($user_id, $wantarray) = @{ delete $data->{_context} }{
      qw( user_id   wantarray) 
-    }
+    };
 
+    my $self;
     my $output = try {
-        my $self = FlowgencyTM::user( $user_id );
+        $self = FlowgencyTM::user( $user_id );
+        # TODO: $self->incr_command_number();
         if ( !defined $wantarray ) {   $self->$orig( $data ); undef }
         elsif ( $wantarray       ) { [ $self->$orig( $data ) ] }
         else                       {   $self->$orig( $data ); }
     } catch {
-        if ( !(ref $_ && $_->isa("FTM::Error") ) { $_ = FTM::Error->new($_); }
-        $_->user_seqno($self->seqno);
-        $output->{_error} = $_;
+        if ( !(ref $_ && $_->isa("FTM::Error") ) ) { $_ = FTM::Error->new("$_"); }
+        $_->user_seqno($self->seqno); 
+        { _error => $_ };
     };
 
     $kernel->call(IKC => post => $rsvp, $output);
 
 };
-
-sub _start {
-    shift; my ($kernel, $heap) = @_[KERNEL, HEAP];
-    my $service_name = "FTM_User";
-    $kernel->alias_set($service_name);
-    $kernel->call(IKC => publish => $service_name, FTM::User::TRIGGERS);
-}
 
 sub server_properties {
     return %$server_properties;

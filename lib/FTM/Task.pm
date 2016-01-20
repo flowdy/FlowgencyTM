@@ -58,7 +58,7 @@ has progress => (
 has _tasks => ( 
     is => 'ro',
     weak_ref => 1,
-    isa => 'FTM::User::Tasks',
+    isa => 'FTM::User::Common::TaskManager',
     required => 1,
 );
 

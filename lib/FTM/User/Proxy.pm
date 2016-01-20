@@ -8,36 +8,39 @@ use Carp qw(croak);
 
 my $remote;
 
-sub import {
+sub init {
    my ($class, $args) = @_;
 
    $remote = POE::Component::IKC::ClientLite->spawn(
-       port    => ref $args ? $args->{port}
-                : $args // $ENV{FLOWGENCYTM_BACKEND_PORT}
-                        // croak "No port passed",
-       name    => "Client$$",
        timeout => 10,
+       ref $args ? %$args
+               : ( port => $args // $ENV{FLOWGENCYTM_BACKEND_PORT}
+                                 // croak "No port passed"
+                 ),
+       name    => "Client$$",
    );
 
+   die POE::Component::IKC::ClientLite::error() if !$remote;
 }
 
-for my $t ( FTM::User::TRIGGERS ) {
+for my $t (@{ FTM::User::TRIGGERS() }) {
     no strict 'refs';
     *$t = sub {
         my ($user, $data) = @_;
         $data->{_context} = {
-            user_id => $user->name,
+            user_id => $user->user_id,
             wantarray => wantarray
         };
         my @ret = $remote->post_respond('FTM_User/'.$t, $data);
+
+        # if we get an exception object, let's rethrow it
         if ( ref $ret[0] eq 'HASH' and my $e = $ret[0]->{_error} ) {
             $e->throw;
         }
-        @ret = @{ $ret[0] } if wantarray;
-        return @ret;
+        return wantarray ? @{ $ret[0] } : $ret[0];
+
     }
 }
 
-__PACKAGE__->meta->make_immutable();
 1;
 
