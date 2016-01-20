@@ -6,21 +6,34 @@ use POE qw(Session);
 use POE::Component::IKC::ClientLite;
 use Carp qw(croak);
 
-my $remote;
-
 sub init {
-   my ($class, $args) = @_;
+    my ($class, $args) = @_;
+ 
+    my $remote;
 
-   $remote = POE::Component::IKC::ClientLite->spawn(
-       timeout => 10,
-       ref $args ? %$args
-               : ( port => $args // $ENV{FLOWGENCYTM_BACKEND_PORT}
-                                 // croak "No port passed"
-                 ),
-       name    => "Client$$",
-   );
+    my %args = ref $args ? %$args : (
+        port => $args // $ENV{FLOWGENCYTM_BACKEND_PORT}
+                      // croak "No port passed"
+    );
+ 
+    my $ensure_connected = sub {
+        return $remote if $remote && $remote->connect();
+        croak POE::Component::IKC::ClientLite::error();
+    };
+ 
+    no warnings 'redefine';
+    *init = sub {
+        $remote = POE::Component::IKC::ClientLite->spawn(
+            timeout => 10, %args, name => "Client$$",
+        );
+ 
+        $ensure_connected->();
+ 
+        no warnings 'redefine';
+        *init = $ensure_connected;
 
-   die POE::Component::IKC::ClientLite::error() if !$remote;
+        $remote;
+    };
 }
 
 for my $t (@{ FTM::User::TRIGGERS() }) {
@@ -31,7 +44,7 @@ for my $t (@{ FTM::User::TRIGGERS() }) {
             user_id => $user->user_id,
             wantarray => wantarray
         };
-        my @ret = $remote->post_respond('FTM_User/'.$t, $data);
+        my @ret = init()->post_respond('FTM_User/'.$t, $data);
 
         # if we get an exception object, let's rethrow it
         if ( ref $ret[0] eq 'HASH' and my $e = $ret[0]->{_error} ) {
