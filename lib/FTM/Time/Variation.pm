@@ -2,6 +2,7 @@ use strict;
 
 package FTM::Time::Variation;
 use FTM::Types;
+use FTM::Error;
 use Moose;
 
 with 'FTM::Time::Structure::Link';
@@ -255,29 +256,6 @@ sub _change_ref_track {
 
 }
     
-__PACKAGE__->meta->make_immutable;
-
-package FTM::Error::Time::InterlacedVariations;
-use Moose;
-extends 'FTM::Error';
-
-has left => ( is => 'ro', isa => 'FTM::Time::Variation' );
-has right => ( is => 'ro', isa => 'FTM::Time::Variation' );
-
-has '+message' => ( required => 0 );
-
-around 'message' => sub {
-    my ($orig, $self) = (shift, @_);
-
-    if ( @_ > 2 ) { return $orig->(@_); }
-
-    return $orig->(shift) //
-        sprintf "Variations in %s may not be interlaced due to explicit dates: %s <-> %s",
-            $self->left->track->name,
-            $self->left->name // "left", $self->right->name // "right"
-        ;
-};
-
 __PACKAGE__->meta->make_immutable;
 
 1;

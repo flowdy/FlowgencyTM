@@ -5,6 +5,7 @@ package FTM::Time::Track;
 use Moose;
 use FTM::Time::Span;
 use FTM::Time::Variation;
+use FTM::Error;
 use Carp qw(croak);
 use Scalar::Util qw(blessed refaddr weaken);
 use List::MoreUtils qw(first_index);
@@ -968,18 +969,6 @@ sub DEMOLISH {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-package FTM::Error::Time::Gap;
-use Moose;
-extends 'FTM::Error';
-
-package FTM::Error::Time::InvalidTrackData;
-use Moose;
-extends 'FTM::Error';
-
-package FTM::Error::Time::HasPast;
-use Moose;
-extends 'FTM::Error';
 
 __END__
 

@@ -3,7 +3,7 @@ package FTM::Util::DependencyResolver;
 use strict;
 use Algorithm::Dependency::Ordered;
 use Algorithm::Dependency::Source::HoA;
-use Carp qw(croak);
+use FTM::Error;
 
 use base qw(Exporter);
 our @EXPORT_OK = qw(ordered);

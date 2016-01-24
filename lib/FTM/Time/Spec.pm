@@ -3,6 +3,7 @@ use strict;
 
 package FTM::Time::Spec;
 use Moose;
+use FTM::Error;
 use Carp qw(carp croak);
 use Time::Local;
 use Scalar::Util 'blessed';
@@ -428,10 +429,6 @@ sub is_past {
 }
 
 __PACKAGE__->meta->make_immutable;
-
-package FTM::Error::Time::InvalidSpec;
-use Moose;
-extends 'FTM::Error';
 
 1;
 
