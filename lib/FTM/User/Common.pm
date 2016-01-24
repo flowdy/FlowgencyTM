@@ -138,7 +138,15 @@ sub _build_tasks {
 
 sub get_ranking {
     my ($self, $data) = @_;
+    my $now;
+    if ( delete $data->{keep} ) {
+        use POSIX qw(strftime);
+        $now = delete($data->{now}) || strftime("%Y-%m-%d %H:%M:%S", localtime time);
+    }
+    else { $now = $data->{now} }
+  
     my @list = $self->tasks->list(%$data); 
+    $now = ref($list[0]) ? $list[0]->flowrank->_for_ts : $now;
     for my $t ( @list ) {
         next if !ref $t;
         my $d = _dump_task($t);
@@ -146,14 +154,25 @@ sub get_ranking {
         $t = $d;
     }
     return {
-        list => \@list
+        list => \@list, timestamp => $now,
+        tasks_count_total => $self->tasks->count,
     };
 }
 
 sub get_task_data {
     my ($self, $task, $steps) = @_[0,1];
 
-    $task = $self->get_task($task) if ref $task eq 'HASH';
+    if ( ref $task eq 'HASH' ) {
+        if ( my $t = $task->{task} ) {
+            $task = $self->get_task($t);
+        }
+        elsif ( my $tfls = $task->{lazystr} ) {
+            $task = $self->_parser->($tfls)->{task_obj};
+        }
+        else {
+            croak "No initial data supplied to get_task_data call";
+        }
+    }
 
     if ( $task ) {
         my %steps = map { $_->name => $_->dump }
@@ -228,20 +247,29 @@ sub open_task {
     my ($task, $user) = (pop, pop);
 
     if ( $user ) {
-        $task = $user->get_task($task);
+        $task = $user->get_task($task->{id});
         $task->open;
     }
     
-    return defined($task->is_open)
-        ? { focus => [
-                $task->archived_ts
-                    ? [ undef, $task->main_step_row ]
-                    : $task->current_focus,
-            ]
-          }
-        : undef
+    if ( defined($task->is_open) ) {
+        my @focus_steps = $task->archived_ts
+            ? [ undef, $task->main_step_row ]
+            : $task->current_focus
         ;
- 
+        for my $fs ( @focus_steps ) {
+            my %h;
+            @h{qw/ task_name name rendered_description checks done /} =
+               map { $_->task_row->name, $_->name,
+                     $_->description_rendered_if_possible, $_->checks, $_->done
+               } $fs->[1];
+            $fs->[1] = \%h;
+        }
+        return { focus => \@focus_steps }
+
+    }
+    else {
+        return undef
+    }
 
 }
 
@@ -488,8 +516,6 @@ sub get {
     return $self->cache->{$name} ||= do {
         my $t = $self->task_rs->find({ name => $name }) || return;
         $self->_build_task_obj($t);
-
-        
     };
 }
 
@@ -538,7 +564,7 @@ sub update {
         $self->cache->{$new_name} = delete $self->cache->{$existing_task_name};
     }
 
-    if ( $task->archived ) {
+    if ( $task->is_archived ) {
         delete $self->cache->{ $task->name };
     }
 

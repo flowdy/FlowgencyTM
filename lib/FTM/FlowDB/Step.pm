@@ -103,10 +103,10 @@ has future_focus_queue_len => (
     is => 'rw', isa => 'Num'
 );
 
-sub markdown_description {
+sub description_rendered_if_possible {
     my ($self) = @_;
 
-    my $d = $self->description // return;
+    my $d = $self->description // return undef;
 
     if ( eval "require Text::Markdown" ) {
         return _parse_markdown_description($d, incr_heading_level => 3 );

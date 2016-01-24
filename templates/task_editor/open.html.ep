@@ -5,7 +5,7 @@
 % if ( !$main_step ) {
 % return '<p class="error">No main_step passed (task closed)</p>';
 % }
-% if ( my $description = $main_step->markdown_description ) {
+% if ( my $description = $main_step->{rendered_description} ) {
 <div class="description"><%== $description %></div>
 % }
 <h3 style="margin-bottom:0;">Pending steps</h3>
@@ -13,8 +13,8 @@
 <ul class="pending-steps">
 % foreach my $step ( @$focus ) {
 % $step = $step->[1];
-<li><% if ( $main_step == $step ) { %><em>Complete and archive task <%= $step->task_row->name %><% if ( my $s_name = $step->name ) { %>.<%= $s_name %><% } %>:</em><% } else { %><%== $step->markdown_description %><% } %> <div class="checks" data-id="<%= $step->name %>" data-done="<%= $step->done %>"><strong>Done <%= $step->name || "task" %>?</strong>
-%== join "", (map { '<input type="checkbox" checked="checked">' } 1 .. $step->done), (map { '<input type="checkbox">' }  1 .. ($step->checks - $step->done));
+<li><% if ( $main_step == $step ) { %><em>Complete and archive task <%= $step->{task_name} %><% if ( my $s_name = $step->{name} ) { %>.<%= $s_name %><% } %>:</em><% } else { %><%== $step->{rendered_description} %><% } %> <div class="checks" data-id="<%= $step->{name} %>" data-done="<%= $step->{done} %>"><strong>Done <%= $step->{name} || "task" %>?</strong>
+%== join "", (map { '<input type="checkbox" checked="checked">' } 1 .. $step->{done}), (map { '<input type="checkbox">' }  1 .. ($step->{checks} - $step->{done}));
 </div></li>
 % }
 </ul>

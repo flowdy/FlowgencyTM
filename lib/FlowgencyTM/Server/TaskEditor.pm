@@ -1,7 +1,6 @@
 use strict;
 
 package FlowgencyTM::Server::TaskEditor;
-use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Try::Tiny;
 use Mojo::JSON qw(from_json encode_json);
@@ -20,7 +19,7 @@ sub form {
     else { $args->{task} = $self->_get_task; }
 
     $self->render(
-        FlowgencyTM::user->form_task_data($args},
+        FlowgencyTM::user->get_task_data($args),
         bare => $self->param('bare')
     );
 
@@ -52,7 +51,7 @@ sub post {
 sub open {
     my $self = shift;
     my $task = $self->_get_task;
-    $self->render( details => $user->open_task($task, 1) );
+    $self->render( details => FlowgencyTM::user->open_task({ id => $task }) );
 }
 
 sub fast_bulk_update {
@@ -70,7 +69,7 @@ sub fast_bulk_update {
     }
 
     try {
-        $self->stash('user')->fast_bulk_update(\%data);
+        FlowgencyTM::user->fast_bulk_update(\%data);
     }
     catch {
         while ( my ($task, $error) = each %$_ ) {
@@ -90,7 +89,7 @@ sub analyze {
     my $self = shift;
     my $task = $self->_get_task;
 
-    my $dynamics = $user->get_dynamics_of_task($task);
+    my $dynamics = FlowgencyTM::user->get_dynamics_of_task($task);
 
     $self->render( %$dynamics );
 }

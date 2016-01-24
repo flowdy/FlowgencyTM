@@ -1,10 +1,10 @@
-use strict;
-
 package FTM::User::Proxy;
+use strict;
 use Moose::Role;
 use POE qw(Session);
 use POE::Component::IKC::ClientLite;
 use Carp qw(croak);
+use FTM::Error;
 
 sub init {
     my ($class, $args) = @_;
@@ -37,22 +37,25 @@ sub init {
 }
 
 for my $t (@{ FTM::User::TRIGGERS() }) {
-    no strict 'refs';
-    *$t = sub {
+    my $t_sub = sub {
         my ($user, $data) = @_;
-        $data->{_context} = {
+        my $wantarray = wantarray;
+        my $ctx = $data->{_context} = {
             user_id => $user->user_id,
-            wantarray => wantarray
+            wantarray => $wantarray
         };
-        my @ret = init()->post_respond('FTM_User/'.$t, $data);
+        croak "Ctx: $ctx" if ref $ctx ne 'HASH';
+        my $ret = init()->post_respond('FTM_User/'.$t, $data);
 
-        # if we get an exception object, let's rethrow it
-        if ( ref $ret[0] eq 'HASH' and my $e = $ret[0]->{_error} ) {
-            $e->throw;
+        # if we get an exception object, let's unpack and rethrow it
+        if ( ref $ret eq 'HASH' and my $e = delete $ret->{_is_ftm_error} ) {
+            $e->throw(%{ $ret });
         }
-        return wantarray ? @{ $ret[0] } : $ret[0];
+        return $wantarray ? @$ret : $ret;
 
-    }
+    };
+    no strict 'refs';
+    *$t = $t_sub;
 }
 
 1;

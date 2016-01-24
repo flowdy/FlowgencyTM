@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+use strict;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use FlowgencyTM Backend => '127.0.0.1:42123';
+$ENV{FLOWDB_SQLITE_FILE}//="$Bin/../flow.db";
+FlowgencyTM::database();
+print "Server initialized, now run ...\n";
+FTM::User->await_requests_till_shutdown(); 

@@ -31,7 +31,7 @@
 
 <ol id="plans">
 % my $there_are_tasks_shown;
-% while ( my $task = $list->() ) {
+% while ( my $task = shift @$list ) {
 %     $there_are_tasks_shown++;
 %     if ( !ref $task and my $label = $task ) { $section = $info{$label}; next; }
 %     my $details = $task->{extended_info};
@@ -50,10 +50,10 @@
 </ol>
 
 % if ( $there_are_tasks_shown ) {
-<p>The ranking has been generated at: <%= $timestamp %>. Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $user->tasks->count %>) in logo tab "Filter". By clicking the title of a task, you may open or close it.</p>
+<p>The ranking has been generated at: <%= $timestamp %>. Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $tasks_count_total %>) in logo tab "Filter". By clicking the title of a task, you may open or close it.</p>
 <p>The page will warn you to reload in <span id="warn-reload-in-minutes"></span> minutes, but not until this window is refocussed.</p>
 % }
-% elsif ( $user->tasks->count ) {
+% elsif ( $tasks_count_total ) {
 <p>No tasks match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
 <p>The page will warn you to reload in <span id="warn-reload-in-minutes"></span> minutes, but not until this window is refocussed.</p>
 % }

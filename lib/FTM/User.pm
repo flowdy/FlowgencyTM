@@ -1,12 +1,11 @@
-use strict;
-
 package FTM::User;
+use strict;
 use Moose;
 use Carp qw(croak);
 
 sub TRIGGERS { return [qw[
     get_ranking get_task_data open_task get_dynamics_of_task
-    dump_complex_settings realize_settings
+    fast_bulk_update dump_complex_settings realize_settings
 ]]; }
 
 has _dbicrow => (

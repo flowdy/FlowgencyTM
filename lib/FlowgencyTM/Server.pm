@@ -31,13 +31,15 @@ sub startup {
   );
 
   $self->log->format(sub {
+      use POSIX qw(strftime);
       my ($time, $level, @lines) = @_;
+      $time = strftime( "%Y-%m-%d %H:%M:%S", localtime $time );
       my $usn = "FTM::U".( FTM::Error::last_user_seqno() // '?' );
-      my $prefix = "$usn [$time] [$level]"
-      return @lines > 1 ? $prefix . ":" . join("", map { "\n\t".$_ } @lines )
-           : $prefix . " " . $lines[0]
-           ;
-  }
+      return sprintf "$usn [$time] [$level] %s\n",
+          @lines > 1 ? ": ". join("", map { "\n\t".$_ } @lines )
+                     : " ".$lines[0]
+                     ;
+  });
 
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 

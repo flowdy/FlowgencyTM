@@ -48,7 +48,7 @@ sub init {
 
 with 'FTM::User::Common';
 
-around FTM::User::TRIGGERS() => sub {
+for my $func (@{ FTM::User::TRIGGERS() }) { around $func => sub {
     my $orig = shift;
 
     # Prepare for being invoked by the user object
@@ -56,7 +56,9 @@ around FTM::User::TRIGGERS() => sub {
 
     my ($kernel, $heap, $request) = @_[KERNEL, HEAP, ARG0];
     my ($data, $rsvp) = @$request;
-    my ($user_id, $wantarray) = @{ delete $data->{_context} }{
+    my $ctx = eval { delete $data->{_context} }
+        // die "No context object in call of $func";
+    my ($user_id, $wantarray) = @{$ctx}{
      qw( user_id   wantarray) 
     };
 
@@ -69,13 +71,13 @@ around FTM::User::TRIGGERS() => sub {
         else                       {   $self->$orig( $data ); }
     } catch {
         if ( !(ref $_ && $_->isa("FTM::Error") ) ) { $_ = FTM::Error->new("$_"); }
-        $_->user_seqno($self->seqno); 
-        { _error => $_ };
+        $_->user_seqno($self->seqno) if $self; 
+        $_->dump();
     };
 
     $kernel->call(IKC => post => $rsvp, $output);
 
-};
+}; }
 
 sub server_properties {
     return %$server_properties;
