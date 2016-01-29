@@ -6,30 +6,19 @@ extends 'Throwable::Error';
 
 use overload eq => sub { ref($_[0]) eq $_[1] };
 
-my $user_seqno;
-
 has user_seqno => (
     is => 'rw',
-    trigger => sub {
-        my ($self, $new) = @_;
-        $user_seqno = $new;
-    },
+);
+
+has http_status => (
+    is => 'rw',
+    isa => 'Num',
+    default => 500,
 );
 
 has _remote_stack_trace => (
     is => 'ro', isa => 'Str'
 );
-
-sub last_user_seqno { $user_seqno; }
-
-before throw => sub {
-    my ($self) = @_;
-    $user_seqno = $self->seqno if ref ($self);
-};
-
-sub DEMOLISH {
-    $user_seqno = undef;
-}
 
 sub dump {
     my ($self) = @_;
@@ -41,8 +30,7 @@ sub dump {
         push @frames, $next;
     }
     return {
-        message => $self->message,
-        user_seqno => $self->user_seqno,
+        (map { $_ => $self->$_ } qw(message user_seqno http_status)),
         _is_ftm_error => ref $self,
         _remote_stack_trace => join(
             "", map { $_->as_string . "\n" } @frames
@@ -60,6 +48,11 @@ override as_string => sub {
     else { super(); }
 };
 
+my $last_error;
+sub last_error { $last_error; }
+sub BUILD { $last_error = shift; die "last_error = ".ref($last_error) }
+sub DEMOLISH { $last_error = undef; }
+
 }
 
 package FTM::Error::IrresolubleDependency;
@@ -73,6 +66,33 @@ extends 'FTM::Error';
 package FTM::Error::Task::InvalidDataToStore;
 use Moose;
 extends 'FTM::Error';
+
+package FTM::Error::Task::MultiException;
+use Moose;
+extends 'FTM::Error';
+
+has '+message' => (
+    required => 0,
+    default => "Errors relating to various tasks processed, s. 'all' attribute",
+);
+
+has 'all' => (
+    is => 'rw',
+    isa => 'HashRef[Str|Object]',
+);
+
+augment dump => sub {
+    my $self = shift;
+    my $errors = $self->all;
+    my $status = 400;
+    for my $e ( values %$errors ) {
+        if ( $_ = eval { $e->can('message') } ) {
+            $e = $e->$_;
+        }
+        else { $status = 500; }
+    }
+    return all => $errors, http_status => 400;
+};
 
 package FTM::Error::Time::InvalidSpec;
 use Moose;

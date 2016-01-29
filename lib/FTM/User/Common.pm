@@ -1,11 +1,12 @@
-use strict;
-
 package FTM::User::Common;
+use strict;
 use Moose::Role;
 use FTM::Time::Model;
 use FTM::FlowRank;
 use JSON qw(from_json to_json);
 use Carp qw(carp croak);
+use FTM::Error;
+use Try::Tiny;
 
 has _time_model => (
     is => 'ro',
@@ -209,7 +210,7 @@ sub __legacy_form_task_data {
 sub fast_bulk_update {
     my ($self, $args) = @_;
 
-    my %errors;
+    my ($status, %errors);
 
     while ( my ($task, $data) = each %$args ) {
 
@@ -226,18 +227,16 @@ sub fast_bulk_update {
             $task = FlowgencyTM::user->tasks->$method($task || (), $data);
         }
         catch {
-            $errors{ $task || $tmp_name }
-                 = index(ref($_), "FTM::Error::") == 0
-                 ? $_->message
-                 : $_;
-
+            $status = index(ref($_), "FTM::Error::") == 0 ? $status || 400 : 500;
+            $errors{ $task || $tmp_name } = $_;
             return 0;
-
         };
 
     }
 
-    die \%errors if %errors;
+    FTM::Error::Task::MultiException->throw(
+        all => \%errors, http_status => $status,
+    ) if %errors;
 
     return;
 
@@ -274,9 +273,9 @@ sub open_task {
 }
 
 sub get_dynamics_of_task {
-    my ($user, $task_id) = @_;
+    my ($user, $args) = @_;
 
-    my $task = $user->get_task($task_id);
+    my $task = $user->get_task($args->{id});
     my $flowrank = $task->flowrank;
     return {
         title => $task->title,

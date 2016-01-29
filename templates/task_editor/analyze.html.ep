@@ -24,7 +24,7 @@
 <th>/weight</th>
 </tr>
 % for my $comp ( qw/priority due drift open timeneed/ ) {
-%     my $data = $dump->{components}{$comp};
+%     my $data = $flowrank->{components}{$comp};
 %     if ( !$data ) {
 <tr><td colspan="6">No data for component <%= $comp %></td></tr>
 %         next
@@ -38,7 +38,7 @@
 <td>/<%= $data->{weight} %></td>
 </tr>
 % }
-<tr style="outline-top: 1px solid black;"><th colspan="4" style="text-align:right;">Total:</th><td><%= sprintf '%0.3f', $dump->{score} %></td></tr>
+<tr style="outline-top: 1px solid black;"><th colspan="4" style="text-align:right;">Total:</th><td><%= sprintf '%0.3f', $flowrank->{score} %></td></tr>
 </table>
 </div>
 <div id="progress">

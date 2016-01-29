@@ -14,7 +14,7 @@ has _dbicrow => (
     required => 1,
     handles => [qw/
         user_id username email created salted_password password_equals
-        find_related insert invite update in_storage extprivacy
+        find_related insert invite update in_storage extprivacy appendix
     /],
     init_arg => "dbicrow",
 );
@@ -40,16 +40,7 @@ has seqno => (
     default => do { my $i; sub { ++$i } },
 );
 
-my $IS_INITIALIZED;
-
-INIT {
-    return if $IS_INITIALIZED;
-
-    # we are used with "()", normally suppressing import call, but as we are
-    # that important, we call it ourselves nevertheless:
-    __PACKAGE__->import();
-
-}
+my $IS_INITIALIZED; sub class_already_setup { return $IS_INITIALIZED; }
 
 sub import {
     my ($class, $mode, $args) = @_;

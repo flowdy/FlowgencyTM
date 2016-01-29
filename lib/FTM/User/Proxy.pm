@@ -18,7 +18,7 @@ sub init {
  
     my $ensure_connected = sub {
         return $remote if $remote && $remote->connect();
-        croak POE::Component::IKC::ClientLite::error();
+        throw FTM::Error::BackendConnectionFailed;
     };
  
     no warnings 'redefine';
@@ -56,6 +56,19 @@ for my $t (@{ FTM::User::TRIGGERS() }) {
     };
     no strict 'refs';
     *$t = $t_sub;
+}
+
+package FTM::Error::BackendConnectionFailed;
+use Moose;
+extends 'FTM::Error';
+
+has '+message' => (
+    required => 0,
+    default => "Could not connect to backend",
+);
+
+sub http_status {
+    return 503; # Temporarily unavailable
 }
 
 1;

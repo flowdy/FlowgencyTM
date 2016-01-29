@@ -72,12 +72,15 @@ sub fast_bulk_update {
         FlowgencyTM::user->fast_bulk_update(\%data);
     }
     catch {
-        while ( my ($task, $error) = each %$_ ) {
-            $errors{$task} = $error;
-            if ( ref $error ) {
-                $status ||= 400;
+        if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
+            my $errors = $_->all;
+            while ( my ($taskid, $error) = each %$errors ) {
+                $errors{$taskid} = $error;
             }
-            else { $status = 500; }
+            $status = $_->http_status;
+        }
+        else {
+            die $_;
         }
     };
 
@@ -89,7 +92,7 @@ sub analyze {
     my $self = shift;
     my $task = $self->_get_task;
 
-    my $dynamics = FlowgencyTM::user->get_dynamics_of_task($task);
+    my $dynamics = FlowgencyTM::user->get_dynamics_of_task({ id => $task });
 
     $self->render( %$dynamics );
 }

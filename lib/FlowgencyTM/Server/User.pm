@@ -60,7 +60,7 @@ sub settings {
     my %settings;
     $settings{weights} = \%weights if %weights;
     $settings{priorities} = $prio if $prio;
-    $settings{change_time_model} = $change_model if $change_model;
+    $settings{change_time_model} = from_json($change_model) if $change_model;
 
     if ( defined(my $appendix = $self->param("appendix")) ) {
         $user->appendix($appendix);

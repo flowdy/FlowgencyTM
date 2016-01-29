@@ -34,7 +34,8 @@ sub startup {
       use POSIX qw(strftime);
       my ($time, $level, @lines) = @_;
       $time = strftime( "%Y-%m-%d %H:%M:%S", localtime $time );
-      my $usn = "FTM::U".( FTM::Error::last_user_seqno() // '?' );
+      my $last_error = FTM::Error::last_error();
+      my $usn = "FTM::U".( $last_error ? $last_error->user_seqno() : '?' );
       return sprintf "$usn [$time] [$level] %s\n",
           @lines > 1 ? ": ". join("", map { "\n\t".$_ } @lines )
                      : " ".$lines[0]

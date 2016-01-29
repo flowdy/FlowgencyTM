@@ -11,6 +11,10 @@ sub import {
     # load FTM::User in the right mode
     my ($class, $mode, @args) = @_;
     require FTM::User;
+    if ( FTM::User->class_already_setup ) {
+        croak "FTM::User already initialized" if @_ > 1;
+        return;
+    }
     if ( !defined($mode) and my $string = $mode // $ENV{FLOWGENCYTM_MODE} ) {
         $mode = $string =~ s{^Backend:}{}i || $string =~ /:0$/       ? 'Backend'
               : $string =~ s{^Proxy:}{}i   || $string =~ /^[^a-z]+$/ ? 'Proxy'

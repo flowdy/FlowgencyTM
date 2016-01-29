@@ -1,6 +1,5 @@
-use strict;
-
 package FTM::User::Interface;
+use strict;
 use Moose::Role;
 use POE qw(Session);
 use POE::Component::IKC::Server;
