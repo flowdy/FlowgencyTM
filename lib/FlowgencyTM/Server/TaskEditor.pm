@@ -16,7 +16,9 @@ sub form {
         $args->{lazystr} = $lazystr;
         $self->stash( incr_prefix => 0 );
     }
-    else { $args->{task} = $self->_get_task; }
+    elsif ( my $id = $self->_get_task ) {
+        $args->{task} = $id;
+    }
 
     $self->render(
         FlowgencyTM::user->get_task_data($args),
@@ -64,12 +66,11 @@ sub fast_bulk_update {
 
         $data{$task} = from_json $data;
 
-        $errors{$task} = q{}; # empty error = no error;
-
+        $errors{ $task } = q{} unless $task =~ /^_NEW_TASK_/;
     }
 
     try {
-        FlowgencyTM::user->fast_bulk_update(\%data);
+        $errors{ $_ } = q{} for FlowgencyTM::user->fast_bulk_update(\%data); 
     }
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {

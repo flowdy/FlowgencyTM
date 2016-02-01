@@ -170,6 +170,9 @@ sub get_task_data {
         elsif ( my $tfls = $task->{lazystr} ) {
             $task = $self->_parser->($tfls)->{task_obj};
         }
+        elsif ( !%$task ) {
+            $steps = $task = undef;
+        }
         else {
             croak "No initial data supplied to get_task_data call";
         }
@@ -191,7 +194,7 @@ sub get_task_data {
     return
         steps => $steps, _priodir => $priodir,
         tracks => [ $self->get_available_time_tracks ],
-        id => $task->name,
+        id => $task && $task->name,
 }
 
 sub __legacy_form_task_data {
@@ -210,7 +213,7 @@ sub __legacy_form_task_data {
 sub fast_bulk_update {
     my ($self, $args) = @_;
 
-    my ($status, %errors);
+    my ($status, %errors, @success);
 
     while ( my ($task, $data) = each %$args ) {
 
@@ -225,6 +228,7 @@ sub fast_bulk_update {
 
         try {
             $task = FlowgencyTM::user->tasks->$method($task || (), $data);
+            push @success, $task->name;
         }
         catch {
             $status = index(ref($_), "FTM::Error::") == 0 ? $status || 400 : 500;
@@ -238,7 +242,7 @@ sub fast_bulk_update {
         all => \%errors, http_status => $status,
     ) if %errors;
 
-    return;
+    return @success;
 
 }
 

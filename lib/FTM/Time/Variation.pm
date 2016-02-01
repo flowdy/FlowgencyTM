@@ -34,6 +34,7 @@ has keep_for_referents => (
     is => 'rw',
     isa => 'Num',
     traits => ['Counter'],
+    default => 0,
     handles => {
         'incr_reference_count' => 'inc',
         'decr_reference_count' => 'dec',
