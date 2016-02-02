@@ -81,7 +81,7 @@ Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;v
 % if ( $std ) {
 <dt>Archive task</dt>
 <dd><p class="help">If you enter something in this field, the task is archived even if not all steps are completed, that is it will not show up any more. To view all tasks that have been archived (whether completed or not), please click the link "archive" in the filter menu.<br>
-The value 'done' is special: It is applied or deleted automatically depending on whether there are uncompleted steps.</p>
+The value 'done' is magic, of no use to set it manually: It is set or cleared by the system depending on whether there are uncompleted steps. By setting the special value '!PURGE!', you delete the task irrevocably, so be cautious.</p>
 <input name="archived_because" value="<%= $std->{archived_because} %>" placeholder="I archive this uncompleted task because ..." />
 </dd>
 % }
@@ -102,14 +102,11 @@ The value 'done' is special: It is applied or deleted automatically depending on
 % my $label = length $step ? $step : "MAIN ($id)";
 <option value="<%= $step %>"><%= $label %></option>
 % }
-</select></div>
+</select> <button class="save-btn">Save all changes</button></div>
 
 % if ( $bare_mode ) {
 <ul style="font-size:smaller;">
-<li>Fields marked with an <strong>asterisk (*)</strong> are required.<a style="font-weight:bold;" href="#" onclick="$(this).closest('ul').children().show().end().end().remove(); return false;"><br>Finished and ready to submit – but how? (2 more hints)</a></li>
-<li style="display:none;">Click the top-left &quot;filter&amp;refresh&quot; button to actually create or update this and any other touched tasks. If successful, you get a freshly re-ranked task list reflecting what you have submitted.</li>
-<li style="display:none;">If a general and vacuous <strong>error message</strong> pops up instead (&quot;HTTP POST failure...&quot;), admins may want, i.e. non-admin users may ask their admin to see the <code>server.log</code> file for details. Can't find how to solve the issue yourself? Please contact the developer and attach the relevant section of the log-file to the email, thank you.</li>
-
+<li>Fields marked with an <strong>asterisk (*)</strong> are required.</li>
 </ul>
 % }
 % else {

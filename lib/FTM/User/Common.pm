@@ -227,22 +227,31 @@ sub fast_bulk_update {
         $data->{step} //= '';
 
         try {
-            $task = FlowgencyTM::user->tasks->$method($task || (), $data);
-            push @success, $task->name;
+            $task = FlowgencyTM::user->tasks->$method($task || (), $data)
+                and push @success, $task->name; # except for deleted tasks
         }
         catch {
-            $status = index(ref($_), "FTM::Error::") == 0 ? $status || 400 : 500;
+
+            $status = index(ref($_), "FTM::Error::") == 0
+                ? $status || 400
+                :            500
+                ;
+
             $errors{ $task || $tmp_name } = $_;
-            return 0;
+
         };
 
     }
 
-    FTM::Error::Task::MultiException->throw(
-        all => \%errors, http_status => $status,
-    ) if %errors;
-
-    return @success;
+    if ( %errors ) {
+        $errors{ $_ } //= q{} for @success;
+        FTM::Error::Task::MultiException->throw(
+            all => \%errors, http_status => $status,
+        );
+    }
+    else {
+        return @success;
+    }
 
 }
 
@@ -584,9 +593,9 @@ sub delete {
     }
     else {
         carp "no task $name to delete";
-        return 0;
+        return;
     }
-    return 1;
+    return;
 }
     
 sub bind_tracks {

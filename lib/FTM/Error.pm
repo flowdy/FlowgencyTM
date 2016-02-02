@@ -50,7 +50,7 @@ override as_string => sub {
 
 my $last_error;
 sub last_error { $last_error; }
-sub BUILD { $last_error = shift; die "last_error = ".ref($last_error) }
+sub BUILD { $last_error = shift; }
 sub DEMOLISH { $last_error = undef; }
 
 }
