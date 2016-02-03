@@ -66,7 +66,6 @@ sub fast_bulk_update {
 
         $data{$task} = from_json $data;
 
-        $errors{ $task } = q{} unless $task =~ /^_NEW_TASK_/;
     }
 
     try {
@@ -74,10 +73,7 @@ sub fast_bulk_update {
     }
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
-            my $errors = $_->all;
-            while ( my ($taskid, $error) = each %$errors ) {
-                $errors{$taskid} = $error;
-            }
+            %errors = %{ $_->all };
             $status = $_->http_status;
         }
         else {

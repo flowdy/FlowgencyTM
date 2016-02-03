@@ -153,6 +153,10 @@ Ranking.prototype.dynamizechecks = function (plan) {
    plan.find(".pending-steps").find("a, :checkbox").click( function (e) {
        e.stopPropagation();
    });
+   plan.find(".task-btn-row").buttonset()
+       .find(".save-btn").click(
+           function (e) { e.preventDefault(); return ftm.rerank() }
+       );
 };
 
 Ranking.prototype.progressbar2canvas = function (bar) {
@@ -228,13 +232,20 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         steptree.register_substeps(fieldset.find("input[name=substeps]"), id);
         ftm.dynamize_taskeditor_step_fieldset(fieldset);
     });
-    steptree.select.change(function () {
+    var stepSwitcher = function () {
         te.find("fieldset").hide();
         $("#step-"+taskname+"-"+this.value).show();
         te.scrollTop();
         this.blur();
+    };
+    steptree.select.selectmenu({
+        width: "10em",
+        change: stepSwitcher
     }).data("manager", steptree);
-    te.find('select').last().change();
+    te.find(".save-btn").button().click(
+        function (e) { e.preventDefault(); ftm.rerank(); }
+    )
+    stepSwitcher.call(steptree.select.get(0));
 };
 
 Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
@@ -497,6 +508,7 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
         other_substeps.change();
         this.parent_of[step] = parent;
     }
+    this.select.selectmenu("refresh");
     return true;
 }
             
