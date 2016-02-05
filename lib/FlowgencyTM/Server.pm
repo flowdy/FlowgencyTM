@@ -4,6 +4,7 @@ use FTM::FlowDB;
 use Mojolicious 6.0;
 use Mojolicious::Sessions;
 use Mojo::Base 'Mojolicious';
+use POSIX qw(strftime);
 
 # use Tie::File;
 # tie my @SLOGAN => 'Tie::File', 'slogans.txt';
@@ -28,6 +29,7 @@ sub startup {
           }
           else { q{} }
       },
+      current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
   );
 
   $self->log->format(sub {
