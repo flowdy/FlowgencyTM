@@ -90,9 +90,9 @@ sub startup {
 
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
   $r->get( '/user/logout' )->to("user#logout");
-  my $admin = $auth->under(sub { shift->stash('user')->can_admin })
-      ->get('/admin');
-  $admin->get('/')->to('admin#dash');
+  $auth->get( '/user/terms' )->to("user#terms");
+  my $admin = $auth->under(sub { shift->stash('user')->can_admin })->any('/admin');
+  $admin->any('/')->to('admin#dash');
   $admin->get('/:action')->to(controller => 'admin');
 
   $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");

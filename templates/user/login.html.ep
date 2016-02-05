@@ -5,21 +5,27 @@
 %                              . "are expired and deleted. If you want to re-login:"
 %    : undef;
 % }
-<h2>Please login</h2>
+<h1>Please login</h1>
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
 % }
-<form method="post" action="/user/login" style="text-align:center;display:block;">
+<form method="post" action="/user/login">
+<div style="text-align:center;display:block;">
 % if ( my $t = param 'token' ) {
     <input type="hidden" name="token" value="<%= $t %>">
 % }
-    <label>User ID: <input name="user" type="text" value="<%= param('user') %>"></label>
+    <label>Login: <input name="user" type="text" value="<%= param('user') %>"></label>
     <label>Password:  <input name="password" type="password"></label>
     <input type="submit" value="log in">
+</div>
+
+<h2>Forgot your password?</h2>
+
+<p>And do you have a valid e-mail address in your user profile? Just input user id (or mail address) and a <em>new</em> password in the above fields and repeat it <input type="password" name="confirmpw" placeholder="here"> to make sure you have not mistyped it. Then, get an e-mail with a confirmation link to click for having it automatically activated on successful login: Click <input type="submit" value="Reset password">.</p> 
 </form>
 
-<h2>New users welcome!</h2>
+<p>Otherwise, you will have to register anew with a different username and a valid e-mail address. Please understand that I cannot move your tasks to your new account unless you can prove that you owned the old one.</p>
 
-<p>Want to use this installation of FlowgencyTM? To see if the concept matches your style of working?</p>
+<h2>Not registered yet?</h2>
 
-<p style="text-align:center;"><a id="invite-btn" href="/user/join">Get invited</a><script>$(function () { $("#invite-btn").button(); });</script></p>
+<p>Want to test FlowgencyTM? To see if the concept matches your style of working? Be welcome! <a id="invite-btn" href="/user/join">Accept the terms of use and fill in the registration form</a></p>

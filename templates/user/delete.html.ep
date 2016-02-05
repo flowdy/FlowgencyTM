@@ -1,0 +1,35 @@
+<h2>Deletion of user account</h2>
+
+<p>Please participate in the following survey. The record is stored in an anonymous.</p>
+
+<h3>Are you still interested in using FlowgencyTM, just not this demo instance?</h3>
+
+<p>Multiple selection is possible if you are not sure, yet.</p>
+
+<ul>
+    <li><label><input type="checkbox" name="onproductiveuse" value="myself"> I install the software on my own device if an easy-to-use installation routine is provided, so the database file is as safe from unauthorized access as any other document in my local storage.</label></li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="friend"> I will ask an IT-competent and trustworthy friend of mine to host it</label></li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="employer"> I prefer the service my employer hosts or plans to host, in-house or outsourced</label><ul>
+        <li><label><input type="radio" name="employer" value="supervised"> only if supervised by the local union or a potent staff association</label></li>
+        <li><label><input type="radio" name="employer" value="engage-against-monitoring"> I probably will engage against their practice of monitoring us if I stumble upon respective signs, and first and foremost stop using the tool at all.</label></li>
+        <li><label><input type="radio" name="employer" value="candowhatever"> I do not bother what they do with the data, so even if the staff gets monitored, I would rather see to be among the most productive in comparison.</label></li></ul>
+    </li>
+    <li><label><input type="checkbox" name="onproductiveuse" value="commercialservice">I would rather use a commercial service provided by a third party</label><ul>
+        <li><label><input type="radio" name="commercialservice" value="paid"> paid regularly on the basis of a subscription</label></li>
+        <li><label><input type="radio" name="commercialservice" value="sponsored"> having it sponsored by on-screen advertisements</label></li>
+        <li><label><input type="radio" name="commercialservice" value="datasale"> that claims use is at no charge, but deals the data underhand or hides such reservations in their terms and conditions.</label></li></ul>
+</li>
+    <li><input type="checkbox" name="onproductiveuse" value="none">No, FlowgencyTM is not my cup of tea.<ul>
+        <li><label><input type="radio" name="willnotuseftm" value="oranytool"> I will not use some tool of that kind any more.</label></li>
+        <li><label><input type="radio" name="willnotuseftm" value="return"></label> I will use again whatever I used before</label></li>
+        <li><label><input type="radio" name="willnotuseftm" value="still-looking"> I keep looking for a tool appropriate for me</label></li>
+</ul></li>
+</ul>
+
+<h3>Free-text commentary</h3>
+
+<p>How do you like the tool? What is good, what is missing, what could be improved and how?</p>
+
+<textarea style="width:95%;height:5em;" name="comment"></textarea>
+
+<p>Please note that this action is non-revertable: <input name="delete" value="Erase my account and all associated data"></p>

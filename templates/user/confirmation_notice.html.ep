@@ -1,0 +1,5 @@
+<h1>A confirmation link is on the way</h1>
+
+<p><%= $msg %>. Yet, it is not active till you login with the stored token. Just click the link that is sent to your mail address.</p>
+
+<p>Please note: FlowgencyTM distribution does not include an automatic mailing routine. In consequence, the provider of the service will have to send it manually if they do not have a custom one. So please be a little patient until tomorrow.</p>

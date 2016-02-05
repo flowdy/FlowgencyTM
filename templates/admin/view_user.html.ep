@@ -1,14 +1,18 @@
+<h1>User data for user id <%= $admined_user->user_id %></h1>
+
 <table>
-% my $props = $admined_user->get_columns;
-% while ( my ($field, $value) = each %$props ) {
+% my %props = $admined_user->get_columns;
+% while ( my ($field, $value) = each %props ) {
 <tr><td><%= $field %></td><td><%= $value %></td></tr>
 % }
+<tr><td>tasks_count</td><td><%= $admined_user->tasks->count %></td></tr>
 </table>
 
-% if ( my $ml = $admined_user ) {
+% if ( my $ml = $admined_user->mailoop ) {
+<h2>Confirmation record:</h2>
 <table>
-% my $props = $ml->get_columns;
-% while ( my ($field, $value) = each %$props ) {
+% my %props = $ml->get_columns;
+% while ( my ($field, $value) = each %props ) {
 <tr><td><%= $field %></td><td><%= $value %></td></tr>
 % }
 </table>

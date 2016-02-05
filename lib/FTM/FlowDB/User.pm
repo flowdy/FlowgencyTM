@@ -3,6 +3,7 @@ use strict;
 package FTM::FlowDB::User;
 use Digest::SHA qw(hmac_sha256_hex);
 use Moose;
+use Carp qw(croak);
 extends 'DBIx::Class::Core';
 
 __PACKAGE__->table('user');
@@ -59,14 +60,48 @@ sub password_equals {
     return hmac_sha256_hex($password, $salt) eq $stored_password;
 }
 
-sub invite {
-    my ($self) = @_;
-    my $token = _randomstring(40);
-    return $self->create_related("mailoop", {
-        type => "invite",
-        token => $token,
-        request_date => $self->created,
-    });
+sub needs_to_confirm {
+    my ($self, $type, $value, $token) = @_;
+
+    if ( !defined $type && defined $value ) {
+        $token //= $value;
+    }
+
+    # We take into account that requests requiring confirmation can overwrite
+    # each other. Either the right token is past or other conditions must be
+    # met. So, it may not happen that confirmation of reset passwords is sent
+    # to an unverified mail address. 
+    my $old_ml;
+    if ( $old_ml = $self->mailoop ) {
+        if ( defined $token ) {
+            FTM::Error::User::ConfirmationFailure->throw(
+                "Tokens are not identical"
+            ) if $old_ml->token ne $token;
+        }
+        elsif (
+            ($old_ml->type eq 'invite'
+                && !defined $old_ml->request_date )
+            || ($type && $type ne 'change_email'
+                   && $old_ml->type eq 'change_email'
+            )
+        ) {
+            FTM::Error::User::ConfirmationFailure->throw(
+                "Existing user confirmation token cannot be overwritten.".
+                " Please confirm it first by clicking the link sent by e-mail."
+            );
+        }
+        $old_ml->delete;
+    }
+    elsif ( !$type ) {
+        croak "No confirm token type passed (arg 1)";
+    }
+ 
+    $token = _randomstring(40);
+    return $type ? $self->create_related( mailoop => {
+                       type => $type, token => $token, value => $value,
+                   })
+                 : $old_ml
+                 ;
 }
 
 sub sqlt_deploy_hook {
@@ -85,5 +120,9 @@ sub _randomstring {
     my ($length) = @_;
     return join q{}, map { $chars[ int rand(62) ] } 1 .. $length;
 }
-    
+
+package FTM::Error::User::ConfirmationFailure;
+use Moose;
+extends 'FTM::Error';
+
 1;

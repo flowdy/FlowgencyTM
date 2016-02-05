@@ -132,7 +132,7 @@ sub new_user {
     });
 
     my $user = $users{$user_id} = FTM::User->new( dbicrow => $row );
-    if ( $invite ) { $row->invite }
+    if ( $invite ) { $user->needs_to_confirm('invite'); }
     elsif ( !defined $invite ) {      
         unshift @current_users, $user->user_id;
     }

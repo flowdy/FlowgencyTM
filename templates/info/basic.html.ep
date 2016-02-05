@@ -11,9 +11,9 @@
 <dt>Currently logged in as</dt>
 <dd>
 % if ( $user ) {
-<%= $user->user_id %>, created <%= $user->created %>, cached since <%= $user->cached_since_date %>
+<%= $user->user_id %>, created <%= $user->created %>
 % }
-<br>(<a href="/user/logout">Logout</a> | <a href="/user/login">Login</a> | <a href="/user/login#terms">Terms of use</a> | <a href="/user/login#register">Register new user</a>)
+<br>(<a href="/user/logout">Logout</a> | <a href="/user/login">Change user</a> | <a href="/user/delete">Good-bye survey, account deletion</a> | <a href="/user/terms">Terms of use</a> )
 </dl>
 
 <h2>About</h2>

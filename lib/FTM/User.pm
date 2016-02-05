@@ -14,7 +14,8 @@ has _dbicrow => (
     required => 1,
     handles => [qw/
         user_id username email created salted_password password_equals
-        find_related insert invite update in_storage extprivacy appendix
+        find_related insert needs_to_confirm update in_storage extprivacy
+        appendix delete
     /],
     init_arg => "dbicrow",
 );

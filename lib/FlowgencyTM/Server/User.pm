@@ -4,7 +4,7 @@ package FlowgencyTM::Server::User;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw(from_json encode_json);
-use Carp qw(croak);
+#use Carp qw(croak);
 
 sub settings {
     my ($self) = @_;
@@ -15,7 +15,7 @@ sub settings {
     if ( length $email ) {
          my $error;
          my $part = 'account';
-         for ( my ($account, $provider) = split /@/, $email ) {
+         for ( my ($account, $provider) = split /@/, $email, 2 ) {
              if ( !length ) {
                  $error = $part.' part is missing';
              }
@@ -31,11 +31,17 @@ sub settings {
              $errors{email} = 'Invalid address: '.ucfirst($error);
          }
          else {
-             $user->email($email);
+             if ( $user->email ne $email ) {
+                 $user->needs_to_confirm(change_email => $email)
+             }
+             else { 
+                 $email = undef;
+             }
              $user->username($self->param('username'));
          } 
     }
-    elsif ( $self->param('update') ) { $user->email(undef); }
+    elsif ( $self->param('update') ) { $user->email($email = undef); }
+    else { $email = undef; }
 
     if ( my $password = $self->param('password') ) {
         if ( !$user->password_equals($self->param('old_password')) ) {
@@ -71,7 +77,12 @@ sub settings {
     $user->update() if $self->param('update');
 
     if ( $self->param('update') && !%errors ) {
-        $self->redirect_to('home');
+        $email ? $self->render(
+                     'user/confirmation_notice',
+                     msg => 'You have changed your email'
+                 )
+               : $self->redirect_to('home')
+               ;
     }
     else {
         $self->stash( errors => \%errors, $user->dump_complex_settings );
@@ -90,13 +101,14 @@ sub join {
     my $password = $self->param("password");
 
     if ( !$email or $email !~ m{ \A [\w.-]+ @ [\w.-]+ . \w+ \z }xms ) {
-        croak "Email address passed is invalid";
+        FTM::Error::User::DataInvalid->throw("Email address passed is invalid");
     }
     if ( length($password) < 5 or $password !~ m{ \W }xms ) {
-        croak "Password is empty or too easy: ",
-              "It must be at least five characters long ",
-              "and contain one or more non-alphanumerics"
-        ;
+        FTM::Error::User::DataInvalid->throw(
+             "Password is empty or too easy: "
+            ."It must be at least five characters long "
+            ."and contain one or more non-alphanumerics"
+        );
     }
 
     my $will_accept = join "", map { $self->param($_) ? 1 : 0 } qw(
@@ -114,9 +126,16 @@ sub join {
         $user->salted_password($password);
         $user->update;
     }
-    else { $will_accept = 0 }
+    else {
+        FTM::Error::User::DataInvalid->throw(
+            "New user not accepted. The right terms of use must be selected",
+            http_status => 400
+        );
+    }
 
-    $self->render( accepted => $will_accept, orig_accept => $orig_accept );
+    $self->render(
+        'user/confirmation_notice', msg => 'Your user account is created'
+    );
 
 }
 
@@ -125,38 +144,56 @@ sub login {
 
     my $user_id = $self->param('user') // return;
     my $password = $self->param('password');
-    my $user = FlowgencyTM::database->resultset("User")->find($user_id);
-
-    my $on_success = sub {};
+    my $resetpw_confirm = $self->param('confirmpw');
+    my $user = FlowgencyTM::database->resultset("User")->find(
+        $user_id =~ m{@} ? { email => $user_id } : $user_id
+    );
+    my $token = $self->param('token');
+     
+    my $trigger = sub {};
 
     my $confirm;
-    if ( $confirm = $self->param('token') ) {
-        $confirm = $user->find_related(
-            mailoop => { token => $confirm }
+    if ( $resetpw_confirm ) {
+        FTM::Error::User::DataInvalid->throw(
+            "Password and confirm password differ."
+        ) if $resetpw_confirm ne $password;
+        $password = $user->salted_password($resetpw_confirm);
+        $user && $user->needs_to_confirm(
+            reset_password => $password, $token
         );
-        if ( !$confirm ) { $self->res->code(400); }
-        elsif ( $confirm->type eq 'invite' ) {
-            $on_success = sub { $confirm->delete };
-        }
+        $self->render(
+            'user/confirmation_notice',
+            msg => "You have reset your password"
+        );
+        return;
+    }
+    elsif ( $token ) {
+        $confirm = $user->needs_to_confirm( undef, $token )
+            // FTM::Error::User::ConfirmationFailure->throw(
+                  "There is nothing to be confirmed by the token",
+               );
+        if ( $confirm->type eq 'invite' ) {}
         elsif ( $confirm->type eq 'reset_password' ) {
             $user->password($confirm->value);
-            $on_success = sub { $user->update; $confirm->delete; };
+            $trigger = sub { shift() ? $user->update : $confirm->insert };
         }
         elsif ( $confirm->type eq 'change_email' ) {
             $user->update({ email => $confirm->value });
-            $on_success = sub { $confirm->delete; };
         }
         else {
-            croak "Unknown confirm type: ", $confirm->type;
+            die "Unknown confirm type: ", $confirm->type;
         }
     }
            
     if ( $user && $user->password_equals($password) ) {
-        $on_success->();
+        $trigger->(1);
         $self->session("user_id" => $user_id);
-        $self->redirect_to( $confirm ? "/user/settings" : "home");
+        $self->redirect_to(
+            $confirm && $confirm->type eq 'invite' ? "/user/settings" : "home"
+        );
     }
     else {
+        $trigger->(0);
         $self->render( retry_msg => 'authfailure' );
         return;
     }
@@ -172,6 +209,43 @@ sub logout {
     $self->render(template => "user/login", retry_msg => 'loggedOut' );
 
 }
+
+sub delete {
+    my $self = shift;
+    my $user = $self->stash('user');
+
+    if ( $self->param("delete") ) {
+        my $info = { created => $user->created, now => $self->stash('current_time') };
+        for my $p (qw(onproductiveuse employer commercialservice willnotuseftm comment)) {
+            $info->{$p} = $self->param($p) // next;
+        }
+
+        my $file = "gone_users.txt";
+        if ( -e $file ) {
+            open my $fh, '>>', $file or throw FTM::Error "Can't write to $file: $!";
+            print $fh encode_json($info), "\n";
+        }
+        else {
+            throw FTM::Error "Can't write to $file: does not exist";
+        }
+
+        $user->delete;
+
+        $self->session(expires => 1);
+
+    }
+
+}
+    
+sub terms {
+    my $self = shift;
+    my $xp = $self->stash('user')->extprivacy;
+    $self->render('user/signup', ext_privacy_defined => $xp || -1 );
+}
+
+package FTM::Error::User::DataInvalid;
+use Moose;
+extends 'FTM::Error';
 
 1;
 

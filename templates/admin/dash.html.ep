@@ -1,16 +1,77 @@
-% stash addScripts => ['admindash'];
+% stash addScripts => ['admin-dash'];
 
-<h2>Administration dash</h2>
+<h1>Administration dash</h1>
 
-<h3>Mail loop</h3>
+<h2>Mail loop</h2>
 
-<ul id="admin-mailoop-list">
-% while ( my $user = $mailoop->next ) {
+<form method="POST">
+<table id="admin-mailoop-list">
+% for my $user ( @$mailoop ) {
 %    my $ml = $user->mailoop;
-%    # if ( $ml->request_date is past and $ml->type eq 'invite') {
-%    #    $user->delete;
-%    #    next;
-%    #}
-<li data-userid="<%= $user->user_id %>"><a href="/admin/view_user?id=<%= $user->user_id %>"><%= $user->username || $user->user_id %></a><%= $user->extprivacy ? '*' : '' %> (mail: <a href="mailto:<%= $user->email %>"><%= $user->email %></a>) requests <button><%= $ml->type %></button> <button>allow w/o mail</button> <button>delete</button> <a href="<%= url_for('/user/login')->query({ token => $ml->token })->to_abs %>">login</a></li>
+<tr data-userid="<%= $user->user_id %>"><th><a href="/admin/view_user?id=<%= $user->user_id %>" class="name"><%= $user->username || $user->user_id %></a><%= $user->extprivacy ? '*' : '' %></th><td class="email"><a href="mailto:<%= $user->email %>"><%= $user->email %></a></td><td class="buttons">
+
+% my $action = "action-" . $user->user_id . "-sendmail";
+<input type="radio" id="<%= $action %>" name="action[<%= $user->user_id %>]" value="sendmail"><label class="sendmail" for="<%= $action %>"><%= $ml->type %></label>
+
+% $action =~ s{sendmail$}{allow};
+<input type="radio" id="<%= $action %>" name="action[<%= $user->user_id %>]" value="allow"><label for="<%= $action %>">allow tacitly</label>
+
+% $action =~ s{allow$}{delete};
+<input type="radio" id="<%= $action %>" name="action[<%= $user->user_id %>]" value="delete"><label for="<%= $action %>">delete</label></td><td><a class="login-link" href="<%= url_for('/user/login')->query({ token => $ml->token })->to_abs %>">login</a></td></tr>
 % }
-</ul>
+</table>
+
+<input type="submit">
+</form>
+
+<h2>Other users</h2>
+
+<p>
+% while ( my $user = $other_users->next ) {
+%     my $p = $user->extprivacy;
+<%== $p ? '<strong>' : '' %><a href="/admin/view_user?id=<%= $user->user_id %>"><%=
+        $user->username || $user->user_id
+    %></a><%== $p ? '</strong>' : '' %>
+% }
+
+
+<div style="display:none;" id="templates">
+<pre id="mail-invite">
+Hello NAME,
+
+thank you for registering to my FlowgencyTM testing instance. Please click the following link to login for the first time:
+
+LINK
+
+Please note that the link will expires after 1 week. If you missed it, please register anew.
+
+I hope you will like it!
+
+Kind regards
+The service provider
+</pre>
+<pre id="mail-reset_password">
+Hello NAME,
+
+in order to activate your new password, please click for once the following link to login with it:
+
+LINK
+
+Please note that the link will expire after 1 week. By loading the login form without that token as usually, your old password is expected, of course.
+
+Kind regards
+The service provider
+</pre>
+<pre id="mail-change_email">
+Hello NAME,
+
+in order to activate the new e-mail address, please click for once the following link to login:
+
+LINK
+
+Please note that the link will expire after 1 week. Without any action, your previous address remains in use, of course.
+
+Kind regards
+The service provider
+</pre>
+</div>

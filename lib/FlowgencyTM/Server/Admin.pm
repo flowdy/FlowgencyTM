@@ -1,16 +1,83 @@
 package FlowgencyTM::Server::Admin;
 use Mojo::Base 'Mojolicious::Controller';
 use Carp qw(croak);
+use POSIX qw(strftime);
 
 sub dash {
     my $self = shift;
-    my $mailoop = FlowgencyTM::database->resultset("User")
+    my $users = FlowgencyTM::database->resultset("User")
         ->search(
               { 'mailoop.type' => { '!=' => undef } },
               { join => 'mailoop' }
           );
 
-    $self->stash(mailoop => $mailoop);
+    my $expired_cond = { '<' => strftime(
+        '%Y-%m-%d %H:%M:%S', localtime( time - 7 * 86400 )
+    ) };
+
+    $users->search({ 'mailoop.request_date' => $expired_cond })->delete;
+
+    for my $p_name (@{ $self->req->params->names }) {
+
+        my $u = $p_name =~ m{ \A action \[ (\w+) \] \z }xms
+            ? $users->find($1) // next 
+            : next
+            ;
+
+        my $action = $self->param($p_name);
+
+        if ( $action eq 'sendmail' ) {
+            # mailed him
+            $u->mailoop->update({
+                request_date => $self->stash('current_time') // die
+            });
+        }
+        elsif ( $action eq 'allow' ) {
+            my $type = $u->mailoop->type;
+            my $accessor = $type eq 'change_email'   ? 'email'
+                         : $type eq 'reset_password' ? 'password'
+                         : undef
+                         ;
+            $u->$accessor($u->mailoop->value) if $accessor;
+            $u->mailoop->delete();
+            $u->update();
+        }
+        elsif ( $action eq 'delete' ) {
+            if ( $u->mailoop->type eq 'invite' ) {
+                $u->delete;
+            }
+            else { 
+                $u->mailoop->delete();
+            }
+        }
+        else {
+            croak "unsupported user action for user ", $u->user_id, ": ",
+                  $action;
+        }
+
+    }
+
+    my @mailoop_users = $users->search({ 'mailoop.request_date' => undef });
+    for my $user ( @mailoop_users ) {
+        if ( $user->mailoop->type eq 'change_email' ) {
+            $user->email($user->mailoop->value);
+        }
+    }
+
+    $self->stash(
+        mailoop => \@mailoop_users,
+        other_users => FlowgencyTM::database->resultset("User")
+            ->search_rs(
+                [ { 'mailoop.type' => undef },
+                  { 'mailoop.request_date' => { '!=' => undef } }
+                ],
+                { join => 'mailoop',
+                  select => [ 'user_id', 'username', 'extprivacy' ],
+                  order_by => { -desc => [ 'created '] },
+                }
+            )
+    );
+
 }
 
 sub view_user {

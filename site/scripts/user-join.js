@@ -1,6 +1,6 @@
 $(function () {
-    var submitbtn = $('input:submit').button(), terms_accept_bitmask = [0,0,0,0,0,0,0];
-    submitbtn.button("disable");
+    var regform = $('#registration'), terms_accept_bitmask = [0,0,0,0,0,0,0];
+    regform.hide();
     $('input[name=passw_confirm]').change(function (e) {
         var f = $(this);
         if ( f.closest("form").find("input[name=password]").val() != f.val() ) {
@@ -13,7 +13,7 @@ $(function () {
         $(this).click(function (e) {
             terms_accept_bitmask[i] = this.checked ? 1 : 0;
             var idx = parseInt(terms_accept_bitmask.join(""), 2);
-            submitbtn.button( idx == 117 || idx == 85 ? "enable" : "disable" );
+            regform[ idx == 117 || idx == 85 ? "show" : "hide" ]("fast");
         });
     });
  
