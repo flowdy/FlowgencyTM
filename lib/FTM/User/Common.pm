@@ -142,7 +142,11 @@ sub get_ranking {
     my $now;
     if ( delete $data->{keep} ) {
         use POSIX qw(strftime);
-        $now = delete($data->{now}) || strftime("%Y-%m-%d %H:%M:%S", localtime time);
+        $now = FTM::Time::Spec->now(
+            delete( $data->{now} ) || strftime(
+                "%Y-%m-%d %H:%M:%S", localtime time
+            )
+        );
     }
     else { $now = $data->{now} }
   
@@ -888,7 +892,7 @@ sub list {
     my ($self, %criteria) = @_;
     
     my ($desk, $tray, $drawer, $archive, $now)
-        = delete @criteria{ 'desk', 'tray', 'drawer', 'archive', 'now' };
+        = delete @criteria{qw[ desk tray drawer archive now ]};
 
     my %force_include;
     if ( my $tasknames = delete $criteria{force_include} ) {
