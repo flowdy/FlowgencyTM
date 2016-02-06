@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+use strict;
+
+use Mojo::Server::Hypnotoad;
+use FindBin qw($Bin);
+
+$ENV{FLOWGENCYTM_MODE} //= '127.0.0.1:42123';
+$ENV{MOJO_LISTEN} //= "http://127.0.0.1:3000";
+$ENV{PIDFILE} //= "$Bin/../hypnotoad.pid";
+$ENV{LOG} //= "$Bin/../hypnotoad.log";
+
+my $server = Mojo::Server::Hypnotoad->new;
+print "Starting server ...\n";
+$server->run("$Bin/server");
+print "Started server.\n";

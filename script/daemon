@@ -3,7 +3,8 @@
 # Find out the directory in which we reside
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/..
 source local.rc
-export FLOWGENCYTM_USER FLOWGENCYTM_ADMIN FLOWGENCYTM_MODE MOJO_PROXY MOJO_LISTEN FLOWDB_SQLITE_FILE
+export FLOWGENCYTM_USER FLOWGENCYTM_ADMIN PIDFILE FLOWGENCYTM_MODE FLOWDB_SQLITE_FILE \
+       MOJO_PROXY MOJO_LISTEN 
 [ -e "$PIDFILE" ] && read PID < "$PIDFILE"
 
 case "$1" in
