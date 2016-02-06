@@ -26,7 +26,15 @@
 <li>Schedule working and recreational periods to get proper estimates</li>
 </ul>
 
-<h2>Bug reports warmly welcome</h2>
+<h2>Credits & Attribution</h2>
+
+<p>External modules used in FlowgencyTM:<p>
+
+<ul>
+<li><a href="http://www.ama3.com/anytime/">Any+Time</a> – Date/Time picker by Andrew M. Andrews III, licensed under CC BY-NC-SA.</li>
+</ul>
+
+<h2>Bug reports welcome</h2>
 
 <p>FlowgencyTM is currently "alpha", therefore probably still good at causing frustration. Cheer up, please send bug-reports (as detailed as possible), questions and review to <a href="mailto:flowgencytm-dev@mailbox.org">flowgencytm-dev@mailbox.org</a>.</p>
 
