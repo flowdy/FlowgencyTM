@@ -17,7 +17,10 @@ sub startup {
   $self->sessions->cookie_name('FlowgencyTM');
 
   $self->config(
-      hypnotoad => { listen => [ $ENV{MOJO_LISTEN} ], pid_file => $ENV{PIDFILE}
+      hypnotoad => {
+          listen => [ $ENV{MOJO_LISTEN} ],
+          pid_file => $ENV{PIDFILE},
+          workers => 2,
   });
 
   $self->defaults(
@@ -36,10 +39,10 @@ sub startup {
       current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
   );
 
-  if ( $ENV{LOG} && -e $ENV{LOG} ) {
+  if ( my $l = $ENV{LOG} ) {
       use Mojo::Log;
-      unlink $ENV{LOG} or die "Could not delete old logfile $ENV{LOG}";
-      $self->log( Mojo::Log->new( path => $ENV{LOG}, level => 'warn' ) );
+      open my $fh, '>', $l or die "Could not open logfile $l to write: $!";
+      $self->log( Mojo::Log->new( handle => $fh, level => 'warn' ) );
   }
 
   $self->log->format(sub {
@@ -99,7 +102,7 @@ sub startup {
   });
 
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
-  $r->get( '/user/logout' )->to("user#logout");
+  $auth->get( '/user/logout' )->to("user#logout");
   $auth->get( '/user/terms' )->to("user#terms");
   $auth->get( '/user/delete' )->to("user#delete");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })->any('/admin');
