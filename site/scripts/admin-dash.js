@@ -5,7 +5,9 @@ $(function () {
         var action = $(this).text(), tr = $(this).closest("tr"),
             mailtext = $("#mail-" + action).text()
                 .replace(/\bNAME\b/, tr.find(".name").text())
-                .replace(/\bLINK\b/, tr.find(".login-link").attr("href"))
+                .replace(/\bLINK\b/, window.location.origin
+                                   + tr.find(".login-link").attr("href")
+                 )
             ;
 
         window.location.href
