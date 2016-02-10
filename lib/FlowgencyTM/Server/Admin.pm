@@ -11,11 +11,20 @@ sub dash {
               { join => 'mailoop' }
           );
 
-    my $expired_cond = { '<' => strftime(
-        '%Y-%m-%d %H:%M:%S', localtime( time - 7 * 86400 )
-    ) };
-
-    $users->search({ 'mailoop.request_date' => $expired_cond })->delete;
+    # Delete mailoop records that have been waiting for confirmation for more
+    # than one week, thus rendering the confirmation link invalid.
+    my $to_drop = $users->search({ 'mailoop.request_date' => {
+        '<' => strftime( '%Y-%m-%d %H:%M:%S', localtime( time - 7 * 86400 ) )
+    } });
+    while ( my $user = $to_drop->next ) {
+        my $ml = $user->mailoop;
+        if ( $ml->type eq 'invite' ) {
+            $user->delete;
+        }
+        else {
+            $ml->delete;
+        }
+    }
 
     for my $p_name (@{ $self->req->params->names }) {
 
