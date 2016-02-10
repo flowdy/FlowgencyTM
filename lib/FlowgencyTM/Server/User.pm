@@ -216,8 +216,15 @@ sub delete {
 
     if ( $self->param("delete") ) {
         my $info = { created => $user->created, now => $self->stash('current_time') };
-        for my $p (qw(onproductiveuse employer commercialservice willnotuseftm comment)) {
-            $info->{$p} = $self->param($p) // next;
+        my @fields = qw(
+            onproductiveuse employer commercialservice willnotuseftm comment
+        );
+        for my $p ( @fields ) {
+            my $array = $self->every_param($p) // next;
+            $info->{$p} = @$array < 2
+                ? ($array->[0] // next)
+                : join ", ", @$array
+                ;
         }
 
         my $file = "gone_users.txt";
@@ -230,9 +237,8 @@ sub delete {
         }
 
         $user->delete;
-
         $self->session(expires => 1);
-
+        $self->redirect_to("home");
     }
 
 }

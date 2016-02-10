@@ -6,6 +6,8 @@
 
 <p>Multiple selection is possible if you are not sure, yet.</p>
 
+<form method="get" action="<%= url_for %>">
+
 <ul>
     <li><label><input type="checkbox" name="onproductiveuse" value="myself"> I install the software on my own device if an easy-to-use installation routine is provided, so the database file is as safe from unauthorized access as any other document in my local storage.</label></li>
     <li><label><input type="checkbox" name="onproductiveuse" value="friend"> I will ask an IT-competent and trustworthy friend of mine to host it</label></li>
@@ -32,4 +34,6 @@
 
 <textarea style="width:95%;height:5em;" name="comment"></textarea>
 
-<p>Please note that this action is non-revertable: <input name="delete" value="Erase my account and all associated data"></p>
+<p>Please note that this action is non-revertable: <input type="submit" name="delete" value="Erase my account and all associated data"></p>
+
+</form>
