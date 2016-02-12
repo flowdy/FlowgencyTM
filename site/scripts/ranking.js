@@ -51,8 +51,17 @@ $(function () {
         return false;
     });
 
-    var new_task_count = 0;
-    $("a[href$='/newtask']").click(function (e) {
+    var new_task_count = 0,
+        new_task_icon = $(
+            '<a href="/newtask"><img src="/images/newtask-icon.png"></a><div class="menu">' 
+          + '<textarea style="width:90%;margin-right:5px;"'
+          + 'placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="5"></textarea>'
+          + '<p class="nav-button"><button>Create task &hellip;</button> (or click icon)</p>'
+          + '</div>'
+        )
+    ;
+    new_task_icon.replaceAll(".add-newtask-btn span")
+                 .click(function (e) {
         ++new_task_count;
         e.preventDefault();
         var newtask = $('<li>'),

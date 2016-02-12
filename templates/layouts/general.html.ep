@@ -49,11 +49,7 @@
     <p class="nav-button"><button style="width:100%">Reload with set options</button></p>
     </div>
 </div>
-    <div class="icon"><a href="/newtask"><img src="/images/newtask-icon.png"></a><div class="menu">
-        <textarea style="width:90%;margin-right:5px;" placeholder="If you know TreeFromLazyStr syntax, you may specify what to preset in the form" rows="5"></textarea>
-    <p class="nav-button"><button>Create task &hellip;</button> (or click icon)</p>
-        </div>
-    </div>
+    <div class="icon add-newtask-btn"><span style="color:grey;">↙ Click to reload the ranking of your to-dos.</div>
     <div class="icon"><a href="/user/settings"><img src="/images/settings-icon.png"></a>
     <div class="menu"><ul>
         <li><a href="/user/settings#authentication">Identity and Authentification</a></li>
