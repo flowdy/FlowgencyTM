@@ -61,11 +61,11 @@
 <h2>Get started</h2>
 
 <ol>
-<li><p>Make sure you have customized the time model. A 24/7 pattern is preset just because there is no reasonable default as it is a highly individual thing.</p></li>
+<li><p>Do you have customized the user settings <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle">? At least you should define your personal <a href="">time model</a>. A 24/7 pattern is preset as an deliberately unreasonable default. It is of little use to preset what applies to most people presumably, say traditional office hours, if that means to confuse the rest by spuriously vanishing tasks.</p></li>
 
-<li><p>Click the <img src="images/newtask-icon.png" alt="new task"style="height:1em;vertical-align:middle;"> icon and fill in the form. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in atomic (sub)steps. Repeat this for every task to do.</p></li>
+<li><p>Click the <img src="images/newtask-icon.png" alt="new task" style="height:1em;vertical-align:middle;"> icon and fill in the form. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in atomic (sub)steps. Repeat this for every task to do.</p></li>
 
-<li><p>Click the FlowgencyTM logo or the Filter icon left of it to submit data and to get a fresh ranking by a multi-dimensional urgency score. Prefer the logo to reset any filter options you might have set or kept previously. Keep in mind that you click it again once in a while, because the ranking is not automatically updated. Best click it to see what tasks are most urgent "now", i.e. when you are disposed to tasks that might have become in the meantime more urgent than the tasks currently in process.</p></li>
+<li><p>Click the <img src="images/filter-icon.png" alt="filter icon" style="height:1em;vertical-align:middle"> icon (or the "Save all changes" button of open tasks) to submit new or changed task data  and whenever you want a fresh ranking. You are reminded when you refocus the browser tab/window and the current ranking has been generated more than an hour ago.</p></li>
 
 <li><p>Check steps when done. Progress and urgency are oppositional: The former lets the task fall in the ranking and colours the task gradient indicator in the direction of green over blue and turquoise. The latter lets the task climb in the ranking and colours the indicator in the direction of red over blue and violet. As long as its blue-coloured, work is in balance, the flow feeling most likely.</li>
 </ol>
