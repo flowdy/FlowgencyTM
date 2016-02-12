@@ -4,7 +4,6 @@ use strict;
 package FlowgencyTM {
 use Carp qw(croak);
 our $VERSION = "0.8";
-use FTM::FlowDB;
 use FTM::Error;
 
 sub import {
@@ -37,6 +36,7 @@ my %DEFAULT_USER_DATA = (
 my %ADMINS = map { $_ => 1 } split /\W+/, $ENV{FLOWGENCYTM_ADMIN};
 
 sub database () {
+    require FTM::FlowDB;
     $db //= FTM::FlowDB->connect($ENV{FLOWDB_SQLITE_FILE});
 }
 
