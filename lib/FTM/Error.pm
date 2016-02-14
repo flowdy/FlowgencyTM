@@ -59,6 +59,10 @@ package FTM::Error::IrresolubleDependency;
 use Moose;
 extends 'FTM::Error';
 
+package FTM::Error::User::DataInvalid;
+use Moose;
+extends 'FTM::Error';
+
 package FTM::Error::Task::FailsToLoad;
 use Moose;
 extends 'FTM::Error';

@@ -127,7 +127,18 @@ sub new_user {
     my ($user_id, $data) = @_;
     $data //= {};
     my $invite = delete $data->{'-invite'};
-    my $row = database->resultset("User")->create({
+    my $user_exists = [
+        { user_id => $user_id },
+        $data->{email} ? { email => $data->{email} } : ()
+    ];
+    my $rs = database->resultset("User");
+    if ( $rs->search($user_exists) ) {
+        FTM::Error::User::DataInvalid->throw(
+            "A user with this id or email already exists"
+        );
+    }
+
+    my $row = $rs->create({
         %DEFAULT_USER_DATA, user_id => $user_id, %$data
     });
 

@@ -4,6 +4,7 @@ package FlowgencyTM::Server::User;
 use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw(from_json encode_json);
+use FTM::Error;
 #use Carp qw(croak);
 
 sub settings {
@@ -248,10 +249,6 @@ sub terms {
     my $xp = $self->stash('user')->extprivacy;
     $self->render('user/signup', ext_privacy_defined => $xp || -1 );
 }
-
-package FTM::Error::User::DataInvalid;
-use Moose;
-extends 'FTM::Error';
 
 1;
 
