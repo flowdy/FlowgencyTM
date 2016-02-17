@@ -189,9 +189,7 @@ sub login {
     if ( $user && $user->password_equals($password) ) {
         $trigger->(1);
         $self->session("user_id" => $user_id);
-        $self->redirect_to(
-            $confirm && $confirm->type eq 'invite' ? "/user/settings" : "home"
-        );
+        $self->redirect_to("home");
     }
     else {
         $trigger->(0);
