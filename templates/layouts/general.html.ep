@@ -56,6 +56,7 @@
         <li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
         <li><a href="/user/settings#set-priorities">Labeled priorities</a></li>
         <li><a href="/user/settings#configure-time-model">Time model</a></li>
+        <li><a href="/user/settings#appendix">Urgency threshold</a></li>
 %   if ( $user && $user->can_admin ) {
         <li><a href="/admin">Service administration</a></li>
 %   }
