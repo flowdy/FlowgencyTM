@@ -61,7 +61,7 @@
 <h2>Get started</h2>
 
 <ol>
-<li><p>Do you have customized the user settings <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle">? At least you should define your personal <a href="">time model</a>. A 24/7 pattern is preset as an deliberately unreasonable default. It is of little use to preset what applies to most people presumably, say traditional office hours, if that means to confuse the rest by spuriously vanishing tasks.</p></li>
+<li><p>Do you have customized the <a href="/user/settings">user settings <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle"></a>? In particular, you should define your personal time model because the default non-stop 24/7 pattern is probably not quite right for you or just anyone, but does not confuse people by hiding tasks spuriously either.</p></li>
 
 <li><p>Click the <img src="images/newtask-icon.png" alt="new task" style="height:1em;vertical-align:middle;"> icon and fill in the form. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in atomic (sub)steps. Repeat this for every task to do.</p></li>
 
