@@ -375,6 +375,8 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
 function StepTree (taskname) {
     var select_id = '#steps-for-' + taskname + '-tree', select = $(select_id),
         proto_fieldset = $("#step-" + taskname + "-_NEW_STEP_").detach();
+    if ( !proto_fieldset )
+        console.log("No new task with name " + taskname);
     proto_fieldset.attr('id',
         $(proto_fieldset).attr('id').replace('_NEW_STEP_', '')
     );

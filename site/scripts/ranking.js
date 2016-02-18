@@ -61,7 +61,7 @@ $(function () {
         )
     ;
     new_task_icon.replaceAll(".add-newtask-btn span")
-                 .click(function (e) {
+                 .first("a").click(function (e) {
         ++new_task_count;
         e.preventDefault();
         var newtask = $('<li>'),
@@ -72,7 +72,8 @@ $(function () {
         $('<div>Loading form for new task ...</div>').appendTo(newtask)
           .load(this.href + "?bare=1" + lazystr, function () {
             var te = newtask.find(".taskeditor"),
-                id = te.data('taskid') + new_task_count;
+                id = te.data('taskid');
+            if ( !id.toString().match(/\d$/) ) id += new_task_count;
             newtask.attr('id', 'task-' + id);
             newtask.data('id', id);
             te.data('taskid', id);
@@ -92,6 +93,12 @@ $(function () {
         $('#plans').prepend(newtask);
         $('#leftnav').hide();
     });
+    new_task_icon.find("button").click(function (e) {
+        e.preventDefault();
+        var icon = $(this).closest(".menu").prev("a");
+        if ( icon ) icon.click();
+        else console.log("No icon found");
+    });   
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
  
