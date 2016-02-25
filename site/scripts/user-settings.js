@@ -651,23 +651,22 @@ $(function () {
 
     }
 
-    function noop () {}
-
     function PropertyCollection (name, trackdata) {
 
-        var my = this;
+        var my = this, i = 1;
         this.name = name;
         if (!trackdata) return;
 
         this._docker = function () {
+            if ( !i ) return;
             console.log("Added variation " + this.name);
             var t = trackdata;
             if ( !t.variations ) t.variations = [];
             t.variations.push(my);
+            i--;
         }
         
     }
-    PropertyCollection.prototype._docker = noop;
 
     $("#update-settings-form").submit(function () {
        var time_model_data = {};
