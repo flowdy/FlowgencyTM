@@ -637,6 +637,7 @@ $(function () {
                         field = $('<dfn class="property">')
                             .text(proxy[key]).prop('title', key);
                         variation ? tab.children().first().after(field) : tab.prepend(field);
+                        field.before(" ");
                     }
                     else { field.text(proxy[key]); }
                 }   
