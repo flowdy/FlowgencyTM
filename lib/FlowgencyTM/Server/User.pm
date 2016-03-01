@@ -143,15 +143,17 @@ sub join {
 sub login {
     my $self = shift;
 
-    my $user_id = $self->param('user') // return;
-    my $password = $self->param('password');
+    my $user_id         = $self->param('user') // return;
+    my $password        = $self->param('password');
     my $resetpw_confirm = $self->param('confirmpw');
+    my $token           = $self->param('token');
+
+    my $trigger;
+
     my $user = FlowgencyTM::database->resultset("User")->find(
         $user_id =~ m{@} ? { email => $user_id } : $user_id
-    );
-    my $token = $self->param('token');
+    ) or goto USER_AUTH_FAILURE;
      
-    my $trigger = sub {};
 
     my $confirm;
     if ( $resetpw_confirm ) {
@@ -159,7 +161,7 @@ sub login {
             "Password and confirm password differ."
         ) if $resetpw_confirm ne $password;
         $password = $user->salted_password($resetpw_confirm);
-        $user && $user->needs_to_confirm(
+        $user->needs_to_confirm(
             reset_password => $password, $token
         );
         $self->render(
@@ -185,7 +187,11 @@ sub login {
             die "Unknown confirm type: ", $confirm->type;
         }
     }
-           
+
+USER_AUTH_FAILURE: # If no user is defined, run else clause.
+
+    $trigger //= sub {};
+
     if ( $user && $user->password_equals($password) ) {
         $trigger->(1);
         $self->session("user_id" => $user_id);
