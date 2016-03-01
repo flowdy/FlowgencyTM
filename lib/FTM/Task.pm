@@ -16,6 +16,7 @@ has _cursor => (
     builder => '_build_cursor',
     handles => {
         update_cursor           => 'update',
+        dump_timestages         => 'dump_timestages',
         probe_time_stages       => 'apply_stages',
         timestamp_at_net_second => 'timestamp_of_nth_net_second_since',
         scan_cursor_between     => 'slicing_between',

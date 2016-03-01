@@ -4,11 +4,14 @@ use strict;
 use Carp qw(croak carp);
 # use Scalar::Util qw(weaken); # apparently no more needed
 use List::Util qw(sum);
+use POSIX qw(strftime);
 use FTM::Types;
 use Moose;
 use FTM::Time::Cursor::Way;
 use FTM::Time::Spec;
 
+my @POSITION_SLOTS
+   = qw(elapsed_pres remaining_pres elapsed_abs remaining_abs);
 has _runner => (
     is => 'rw',
     isa => 'CodeRef',
@@ -65,14 +68,19 @@ sub apply_stages {
     }
 }
 
-sub update {
-    my ($self, $time) = @_;
-
+sub _get_unixtime {
+    my $time = shift;
     $time //= FTM::Time::Spec->now;
-
     if ( ref $time && $time->isa('FTM::Time::Spec') ) {
         $time = $time->epoch_sec;
     }
+    return $time;
+}
+
+sub update {
+    my ($self, $time) = @_;
+
+    $time = _get_unixtime($time);
 
     my @timeway = $self->_timeway->all;
     my @ids;
@@ -120,10 +128,11 @@ sub _build__runner {
     return sub {
         my ($time, $until) = @_;
 
-        my %ret = map { $_ => 0 } qw(elapsed_pres remaining_pres
-                                     elapsed_abs  elapsed_abs);
+        my %ret = map { $_ => 0 } @POSITION_SLOTS;
 
-        if ( $until ) {
+        my @dump;
+
+        if ( ref $until ) {
             return _splicing_between($slices, $time, $until);
         }
         else {
@@ -131,6 +140,16 @@ sub _build__runner {
             for ( @$slices ) {
                 $_->calc_pos_data($time,\%ret);
                 $i++ if !$ret{reach_for_next};
+                if ( $until && $until eq 'dump' ) {
+                    push @dump, {
+                        %ret,
+                        span => $_->span,
+                        until_date => strftime(
+                            "%Y-%m-%d %H:%M:%S",
+                            localtime( $_->position + $_->length )
+                        ),
+                    }
+                }
             }
             if ( delete $ret{reach_for_next}
               && $ret{remaining_pres} > $ret{seconds_until_switch}
@@ -147,7 +166,7 @@ sub _build__runner {
                 $ret{span} = \@rfn;
             }
             $_ = abs for $ret{seconds_until_switch} // ();
-            return \%ret;
+            return @dump ? @dump : \%ret;
         }
     }
 }
@@ -221,6 +240,39 @@ sub _splicing_between {
     }
 
     return \@sec;
+}
+
+sub dump_timestages {
+    my ($self, $ts) = @_;
+    $ts = _get_unixtime($ts);
+    my @stages = $self->_runner->($ts, "dump");
+    my @new_stages;
+    my $last = { map { $_ => 0 } @POSITION_SLOTS };
+    my ($s, $v);
+    my $ltrack = 0;
+    while ( $s = shift @stages ) {
+        for my $slot ( @POSITION_SLOTS ) {
+            $s->{ $slot } -= $last->{ $slot };
+        }
+        my $span = $s->{span};
+        $s->{span} = {
+             description => $span->rhythm->description,
+             vname => do { if ( $v = $span->variation ) { $v->name } },
+             $span->track == $ltrack ? () : do {
+                 $ltrack = $span->track;
+                 track => sprintf "%s [%s]", $ltrack->label, $ltrack->name;
+             },
+        };
+        for my $vname ( $s->{span}{vname} // () ) {
+            $vname .= ", originally defined in track ".$v->track->name
+                if $v->track != $ltrack;
+        }
+        push @new_stages, $s;
+    }    
+    continue {
+        $last = $s;
+    }
+    return $self->start_ts, @new_stages;
 }
 
 __PACKAGE__->meta->make_immutable;

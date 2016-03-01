@@ -295,14 +295,12 @@ sub get_dynamics_of_task {
     my $task = $user->get_task($args->{id});
     my $flowrank = $task->flowrank;
     my ($max_level, $steps_tree) = $task->main_step_row->dump_tree;
+    my ($from_date, @stages) = $task->dump_timestages;
     return {
         title => $task->title,
         flowrank => $flowrank ? $flowrank->dump : {},
         progress => $steps_tree,
-        max_level => $max_level,
-      # TODO:
-      # - progress: step hierarchy, foreach step done, checks, total_ratio, expenditure
-      # - time way: stages, spans and for each: net working and still seconds elapsed/remaining
+        timeway => { from_date => $from_date, stages => \@stages },
     };
     
 }

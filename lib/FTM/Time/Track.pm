@@ -332,6 +332,7 @@ sub BUILD {
     if ( my $vars = $args->{variations} ) {
         $self->update_variations($vars);
     }
+    $self->fillIn->track($self);
     return;
 }
 
@@ -386,6 +387,8 @@ around couple => sub {
         }
     }
             
+    $span->track($self);
+
     $self->$wrapped($span);
 
     if ( caller ne __PACKAGE__ ) {
