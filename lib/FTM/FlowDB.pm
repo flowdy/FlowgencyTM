@@ -4,7 +4,11 @@ package FTM::FlowDB;
 use base qw/DBIx::Class::Schema/;
 use Carp qw/croak/;
 
-__PACKAGE__->load_classes(qw|User Mailoop Task Step TimeStage|);
+__PACKAGE__->load_classes(qw|User Mailoop|,
+    eval { FTM::User->does("FTM::User::Proxy") }
+       ? ()
+       : qw|Task Step TimeStage|
+);
 
 sub import {
     my ($class, $dbh_ref, $filename) = @_;

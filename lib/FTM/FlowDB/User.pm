@@ -34,9 +34,9 @@ __PACKAGE__->add_column(created => {
 
 __PACKAGE__->set_primary_key('user_id');
 
-__PACKAGE__->has_many(tasks => 'FTM::FlowDB::Task',
-    'user_id',
-);
+unless ( eval { FTM::User->does("FTM::User::Proxy") } ) {
+    __PACKAGE__->has_many(tasks => 'FTM::FlowDB::Task', 'user_id' );
+}
 
 __PACKAGE__->might_have(mailoop => 'FTM::FlowDB::Mailoop', 'user_id');
 
