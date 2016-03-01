@@ -656,9 +656,7 @@ $(function () {
 
         var my = this, i = 1;
         this.name = name;
-        if (!trackdata) return;
-
-        this._docker = function () {
+        if (trackdata) this._docker = function () {
             if ( !i ) return;
             console.log("Added variation " + this.name);
             var t = trackdata;
@@ -666,7 +664,7 @@ $(function () {
             t.variations.push(my);
             i--;
         }
-        
+        else this._docker = function () {}
     }
 
     $("#update-settings-form").submit(function () {
