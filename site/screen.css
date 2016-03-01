@@ -285,12 +285,14 @@ ul.formlist li {
 
 #configure-timemodel-prototypes > div { display: none; }
 
-#aspects table { width: 100% }
-#aspects #progress-tab .title {
-    overflow:hidden;
+#aspects { position: relative; }
+#aspects table { width: 100%; }
+#aspects #progress-tab .headline {
     text-overflow: ellipsis;
-    height:1em;
+    white-space:nowrap;
+    width: 600px;
+    overflow:hidden;
 }
-#aspects #progress-tab .title.black-bullet:before { content:'• '; }
-#aspects #progress-tab .title.white-bullet:before { content:'◦ '; }
-#aspects #progress-tab .title.dash-bullet:before { content:'- '; }
+#aspects #progress-tab .description.black-bullet .headline:before { content:'• '; }
+#aspects #progress-tab .description.white-bullet .headline:before { content:'◦ '; }
+#aspects #progress-tab .description.dash-bullet .headline:before { content:'- '; }

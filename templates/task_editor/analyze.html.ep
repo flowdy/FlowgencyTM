@@ -4,6 +4,20 @@
 
 $("#aspects").tabs();
 
+$("#progress-tab .fullview").each(function () {
+    var description = $(this),
+        title = description.prev(".headline")
+        dialog = description.dialog({
+            autoOpen: false,
+            modal: true,
+            title: "Description for step " + title.find("strong").text()
+        })
+        ;
+    title.click(function (e) {
+        console.log("open dialog");
+        description.dialog("open");
+    });
+});
 
 });</script>
 % sub format_num {
@@ -55,12 +69,14 @@ $("#aspects").tabs();
 % while ( @stack and my $step = $stack[-1] ) {
 
 % if ( $render_current ) {
-      <tr><td class="title <%= $#stack && $bullets[ $step->{incr_pos} ] %>-bullet"
+      <tr><td class="description <%= $#stack && $bullets[ $step->{incr_pos} ] %>-bullet"
           style="text-indent:<%= $#stack %>em;">
 %# ◦•-
-           <strong><%= $step->{name} %>:</strong> <%= $step->{title} %>
-           <div class="description" style="display:none;">
-               <%= $step->{description} %>
+           <div class="headline">
+                <strong><%= $step->{name} %>:</strong> <%= $step->{title} %>
+           </div>
+           <div class="fullview">
+               <%== $step->{description} %>
            </div>
       </td>
       <td class="checks"><%= $step->{done} %>/<%= $step->{checks} %></td>
