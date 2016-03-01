@@ -463,6 +463,50 @@ sub dump {
     return \%data;
 }
 
+sub dump_tree {
+    my ($self) = @_;
+    my @substeps = $self->substeps(
+        {}, { order_by => { -asc => [ 'pos' ] } }
+    );
+
+    { # Let's move the concurrent substeps to the end
+      my $ss_length = @substeps;
+      while ( $ss_length-- ) {
+          last if int $substeps[0]->pos();
+          push @substeps, shift @substeps;
+      }
+    }
+
+    my $max_depth;
+    if ( @substeps ) {
+        my ($sub_ml, $pos) = (0, 0);
+        for my $s ( @substeps ) {
+            (my $ml, $s) = $s->dump_tree();
+            $sub_ml = $ml if $ml > $sub_ml;
+            if ( my $ipos = int $s->{pos} ) {
+                $pos = $ipos if $s->{incr_pos} = $ipos > $pos || 0;
+            }
+            else {
+                $s->{incr_pos} = -1;
+            }
+        }
+        $max_depth = 1 + $sub_ml;
+    }
+    else {
+        $max_depth = 0;
+    }
+
+    my $href = { $self->get_columns() };
+
+    ($href->{title}) = split /[\r\n]/, $href->{description}, 2;
+    $href->{description} = $self->description_rendered_if_possible; 
+    $href->{substeps} = \@substeps;
+    $href->{progress} = $self->calc_progress;
+
+    return $max_depth, $href;
+
+}
+
 1;
 
 __END__

@@ -1,6 +1,11 @@
 <h2><%= $title %></h2>
 
-<script>$(function () { $("#aspects").tabs(); });</script>
+<script>$(function () {
+
+$("#aspects").tabs();
+
+
+});</script>
 % sub format_num {
 %     my $num = shift;
 %     return $num if $num eq int $num;
@@ -9,11 +14,11 @@
 
 <div id="aspects">
 <ul>
-<li><a href="#components">FlowRank components</a></li>
-<li><a href="#progress">Progress</a></li>
-<li><a href="#timeway">Time way</a></li>
+<li><a href="#components-tab">FlowRank components</a></li>
+<li><a href="#progress-tab">Progress</a></li>
+<li><a href="#timeway-tab">Time way</a></li>
 </ul>
-<div id="components">
+<div id="components-tab">
 <table>
 <tr>
 <th></th>
@@ -41,8 +46,39 @@
 <tr style="outline-top: 1px solid black;"><th colspan="4" style="text-align:right;">Total:</th><td><%= sprintf '%0.3f', $flowrank->{score} %></td></tr>
 </table>
 </div>
-<div id="progress">
+
+<div id="progress-tab">
+<table>
+% my @stack = ( $progress );
+% my @bullets = qw(white black dash);
+% my $render_current = 1;
+% while ( @stack and my $step = $stack[-1] ) {
+
+% if ( $render_current ) {
+      <tr><td class="title <%= $#stack && $bullets[ $step->{incr_pos} ] %>-bullet"
+          style="text-indent:<%= $#stack %>em;">
+%# ◦•-
+           <strong><%= $step->{name} %>:</strong> <%= $step->{title} %>
+           <div class="description" style="display:none;">
+               <%= $step->{description} %>
+           </div>
+      </td>
+      <td class="checks"><%= $step->{done} %>/<%= $step->{checks} %></td>
+      <td class="progress"><%= sprintf '%.2f', $step->{progress} * 100 %>%</td>
+      <td class="expoftime_share"><%= $step->{expoftime_share} %></td>
+      </tr>
+%     $render_current = 0;
+% }
+
+%     my $ss = $step->{substeps};
+%     if ( $ss and $ss = shift @$ss ) {
+%         push @stack, $ss;
+%         $render_current = 1;
+%     }
+%     else { pop @stack; }
+% }
+</table>
 </div>
-<div id="timeway">
+<div id="timeway-tab">
 </div>
 </div> <!-- #aspects -->

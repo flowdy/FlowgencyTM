@@ -92,6 +92,7 @@ body > header {
    text-align:center;
    background-color:rgba(255,255,255,0.9);
    border-top: 2px solid darkgrey;
+   margin-top: 2em;
    width: 100%;
 }
 
@@ -284,3 +285,12 @@ ul.formlist li {
 
 #configure-timemodel-prototypes > div { display: none; }
 
+#aspects table { width: 100% }
+#aspects #progress-tab .title {
+    overflow:hidden;
+    text-overflow: ellipsis;
+    height:1em;
+}
+#aspects #progress-tab .title.black-bullet:before { content:'• '; }
+#aspects #progress-tab .title.white-bullet:before { content:'◦ '; }
+#aspects #progress-tab .title.dash-bullet:before { content:'- '; }
