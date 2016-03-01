@@ -132,7 +132,7 @@ sub new_user {
         $data->{email} ? { email => $data->{email} } : ()
     ];
     my $rs = database->resultset("User");
-    if ( $rs->search($user_exists) ) {
+    if ( $rs->search($user_exists)->count ) {
         FTM::Error::User::DataInvalid->throw(
             "A user with this id or email already exists"
         );
