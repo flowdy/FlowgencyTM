@@ -167,13 +167,12 @@ sub get_ranking {
 sub get_task_data {
     my ($self, $task, $steps) = @_[0,1];
 
-    my @tasks;
     if ( ref $task eq 'HASH' ) {
         if ( my $t = $task->{task} ) {
             $task = $self->get_task($t);
         }
         elsif ( my $tfls = $task->{lazystr} ) {
-            @tasks = $self->_parser->($tfls);
+            $task = $self->_parser->($tfls)->{task_obj};
         }
         elsif ( !%$task ) {
             $steps = $task = undef;
@@ -183,9 +182,6 @@ sub get_task_data {
         }
     }
 
-    if ( @tasks ) {
-
-    }
     if ( $task ) {
         my %steps = map { $_->name => $_->dump }
                         $task->main_step_row,
@@ -738,57 +734,35 @@ sub get_tfls_parser {
         my ($string, $modifier) = @_;
         @_ > 1 or $modifier = $common_modifier;
         my @tasks;
-        my @defs = $parser->parse($string);
-        my (%errors, $i);
+        my @defs = wantarray ? scalar $parser->parse($string)
+                 : $parser->parse($string);
         while ( my $href = shift @defs ) {
-            $i++;
             $modifier->() for $href;
             if ($dry_run) { push @tasks, $href; next }
             my ($name, $copy) = @{$href}{'name','copy'};
             my $task;
-            try {
-                if ( $copy ) {
-                    delete @{$href}{'name','copy'};
-                    $task = $self->copy( $name => $href );
-                }
-                elsif ( $name and $task = $self->get($name) ) {
-                    if ( $href->{step} ) {
-                        if ( my $name = delete $href->{rename_to} ) {
-                            $href->{name} = $name;
-                        }
-                        else { 
-                            delete $href->{name};
-                        }
+            if ( $copy ) {
+                delete @{$href}{'name','copy'};
+                $task = $self->copy( $name => $href );
+            }
+            elsif ( $name and $task = $self->get($name) ) {
+                if ( $href->{step} ) {
+                    if ( my $name = delete $href->{rename_to} ) {
+                        $href->{name} = $name;
                     }
-                    $task->store($href);
+                    else { 
+                        delete $href->{name};
+                    }
                 }
-                else {
-                    $task = $self->add($href);
-                }
-                $href->{task_obj} = $task;
-                push @tasks, $href;
+                $task->store($href);
             }
-            catch {
-
-                if ( index(ref($_), "FTM::Error::") ) {
-                    $href->{error} = $_;
-                    push @tasks, $href;
-                }
-                else {
-                    $errors{ $task->name || '_NEW_TASK_'.$i } = $_;
-                }
+            else {
+                $task = $self->add($href);
             }
+            $href->{task_obj} = $task;
+            push @tasks, $href;
         }
-
-        if ( %errors ) {
-            FTM::Error::Task::MultiException->throw(
-                all => \%errors, http_status => 500,
-            );
-        }
-        else {
-            return wantarray ? @tasks : $tasks[-1];
-        }
-
+        return wantarray ? @tasks : $tasks[-1];
     };
 
 }
