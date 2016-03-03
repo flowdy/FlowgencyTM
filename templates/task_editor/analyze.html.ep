@@ -96,5 +96,24 @@ $("#progress-tab .fullview").each(function () {
 </table>
 </div>
 <div id="timeway-tab">
+<p>From date <%= $timeway->{ from_date } %> &hellip;</p>
+<table>
+% for my $stage ( @{ $timeway->{ stages } } ) {
+%     if ( my $track = $stage->{span}{track} ) {
+      <tr><th><%= $track %></th><th>elapsed</th><th>remaining</th></tr>
+%     }
+%     my ($vname, $description) = @{ $stage->{span} }{ qw(vname description) }; 
+      <tr><td>
+%     if ( $vname ) { 
+          <%= $description ? $description . " [$vname]" : $vname %><br>
+%     }
+      <%= $stage->{span}{pattern} %>,
+      <nobr>until <strong><%= $stage->{until_date} %></strong></nobr>
+      </td>
+      <td><%= $stage->{elapsed_pres} %> (<%= $stage->{elapsed_abs} %>)</td>
+      <td><%= $stage->{remaining_pres} %> (<%= $stage->{remaining_abs} %>)</td>
+      </tr>
+% }
+</table>
 </div>
 </div> <!-- #aspects -->

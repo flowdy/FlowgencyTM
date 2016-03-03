@@ -146,7 +146,7 @@ sub _build__runner {
                         span => $_->span,
                         until_date => strftime(
                             "%Y-%m-%d %H:%M:%S",
-                            localtime( $_->position + $_->length )
+                            localtime( $_->position + $_->length - 1 )
                         ),
                     }
                 }
@@ -252,11 +252,17 @@ sub dump_timestages {
     my $ltrack = 0;
     while ( $s = shift @stages ) {
         for my $slot ( @POSITION_SLOTS ) {
-            $s->{ $slot } -= $last->{ $slot };
+            my $seconds = $s->{ $slot } - $last->{ $slot };
+            my $minutes = int( $seconds / 60 );
+            $seconds -= $minutes * 60;
+            my $hours   = int( $minutes / 60 );
+            $minutes -= $hours * 60;
+            $s->{ $slot } = sprintf "%d:%02d:%02d", $hours, $minutes, $seconds;
         }
         my $span = $s->{span};
         $s->{span} = {
-             description => $span->rhythm->description,
+             pattern => $span->rhythm->description,
+             description => $span->description,
              vname => do { if ( $v = $span->variation ) { $v->name } },
              $span->track == $ltrack ? () : do {
                  $ltrack = $span->track;
