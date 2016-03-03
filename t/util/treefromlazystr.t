@@ -1,8 +1,8 @@
 use strict;
 use Test::More;
-use FTM::User::Tasks;
+use FTM::User;
 
-my ($p) = FTM::User::Tasks->get_tfls_parser( -dry => 1 );
+my ($p) = FTM::User::Common::TaskManager->get_tfls_parser( -dry => 1 );
 
 is_deeply [ $p->parse('Dies ist einer ;0 Und das ein weiterer') ], [ { title => 'Dies ist einer' }, { title => 'Und das ein weiterer' } ], 'Two simple tasks (titles only)';
 
