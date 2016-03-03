@@ -1,4 +1,8 @@
-<h2><%= $title %></h2>
+<h2>Task urgency details</h2>
+
+<p>This view is mainly for debugging purposes. It does not really target normal users.</p>
+
+<p>Task: <%= $title %></p>
 
 <script>$(function () {
 
@@ -34,7 +38,7 @@ $("#progress-tab .fullview").each(function () {
 </ul>
 <div id="components-tab">
 <table>
-<tr>
+<tr class="header">
 <th></th>
 <th>lowermost</th>
 <th>raw</th>
@@ -66,6 +70,9 @@ $("#progress-tab .fullview").each(function () {
 % my @stack = ( $progress );
 % my @bullets = qw(white black dash);
 % my $render_current = 1;
+<tbody>
+<tr class="header"><th>order hint / Description (click to ext.)</th><th>checks</th><th>progress</th><th>exp.</th></tr>
+</tbody>
 % while ( @stack and my $step = $stack[-1] ) {
 
 % if ( $render_current ) {
@@ -96,22 +103,23 @@ $("#progress-tab .fullview").each(function () {
 </table>
 </div>
 <div id="timeway-tab">
-<p>From date <%= $timeway->{ from_date } %> &hellip;</p>
+<p>From date <%= $timeway->{ from_date } %> until &hellip;</p>
 <table>
 % for my $stage ( @{ $timeway->{ stages } } ) {
 %     if ( my $track = $stage->{span}{track} ) {
-      <tr><th><%= $track %></th><th>elapsed</th><th>remaining</th></tr>
+      <tr class="header"><th colspan="2"><%= $track %></th><th>elapsed</th><th>remaining</th></tr>
 %     }
 %     my ($vname, $description) = @{ $stage->{span} }{ qw(vname description) }; 
-      <tr><td>
+      <tr>
+      <td><%= $stage->{until_date} %></td>
+      <td>
 %     if ( $vname ) { 
           <%= $description ? $description . " [$vname]" : $vname %><br>
 %     }
-      <%= $stage->{span}{pattern} %>,
-      <nobr>until <strong><%= $stage->{until_date} %></strong></nobr>
+      <%= $stage->{span}{pattern} %>
       </td>
-      <td><%= $stage->{elapsed_pres} %> (<%= $stage->{elapsed_abs} %>)</td>
-      <td><%= $stage->{remaining_pres} %> (<%= $stage->{remaining_abs} %>)</td>
+      <td title="elapsed presence time only (absence substracted: <%= $stage->{elapsed_abs} %>)"><%= $stage->{elapsed_pres} %></td>
+      <td title="remaining presence time only (absence substracted: <%= $stage->{remaining_abs} %>)"><%= $stage->{remaining_pres} %></td>
       </tr>
 % }
 </table>

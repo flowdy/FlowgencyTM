@@ -295,7 +295,8 @@ sub get_dynamics_of_task {
     my $task = $user->get_task($args->{id});
     my $flowrank = $task->flowrank;
     my ($max_level, $steps_tree) = $task->main_step_row->dump_tree;
-    my ($from_date, @stages) = $task->dump_timestages;
+    my ($from_date, @stages)
+        = $task->dump_timestages( $task->flowrank->_for_ts );
     return {
         title => $task->title,
         flowrank => $flowrank ? $flowrank->dump : {},

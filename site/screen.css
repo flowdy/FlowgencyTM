@@ -286,11 +286,15 @@ ul.formlist li {
 #configure-timemodel-prototypes > div { display: none; }
 
 #aspects { position: relative; }
-#aspects table { width: 100%; }
+#aspects table { width: 100%; border: 1px solid lightgrey; border-collapse: collapse; }
+#aspects table td { border: 1px solid lightgrey; }
+#aspects table th { text-align: left; }
+#aspects table tr.header th { border-bottom: 1px solid black; }
+#aspects table tr + tr.header { border-collapse: none; }
 #aspects #progress-tab .headline {
     text-overflow: ellipsis;
     white-space:nowrap;
-    width: 600px;
+    width: 560px;
     overflow:hidden;
 }
 #aspects #progress-tab .description.black-bullet .headline:before { content:'• '; }

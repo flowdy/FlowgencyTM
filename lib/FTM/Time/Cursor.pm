@@ -247,12 +247,14 @@ sub dump_timestages {
     $ts = _get_unixtime($ts);
     my @stages = $self->_runner->($ts, "dump");
     my @new_stages;
-    my $last = { map { $_ => 0 } @POSITION_SLOTS };
+    my $cumulate = { map { $_ => 0 } @POSITION_SLOTS };
     my ($s, $v);
     my $ltrack = 0;
     while ( $s = shift @stages ) {
         for my $slot ( @POSITION_SLOTS ) {
-            my $seconds = $s->{ $slot } - $last->{ $slot };
+            $s->{ $slot } -= $cumulate->{ $slot };
+            $cumulate->{ $slot } += $s->{ $slot };
+            my $seconds = $s->{ $slot };
             my $minutes = int( $seconds / 60 );
             $seconds -= $minutes * 60;
             my $hours   = int( $minutes / 60 );
@@ -275,9 +277,6 @@ sub dump_timestages {
         }
         push @new_stages, $s;
     }    
-    continue {
-        $last = $s;
-    }
     return $self->start_ts, @new_stages;
 }
 
