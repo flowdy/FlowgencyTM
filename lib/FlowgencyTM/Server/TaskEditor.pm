@@ -74,6 +74,9 @@ sub fast_bulk_update {
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
             %errors = %{ $_->all };
+            for my $e ( values %errors ) {
+                $e = $e->message if ref $e;
+            }
             $status = $_->http_status;
         }
         else {

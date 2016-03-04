@@ -146,6 +146,7 @@ sub _update_subtask_if_any {
                 task => $self, parent => $parent, dbicrow => $subtask_row
             );
 
+            # Require correct timestages data (throws exception otherwise)
             $subtask->_cursor;
 
         }
@@ -497,9 +498,8 @@ sub _store_root_step {
         }
         $result = $row->insert;
 
-        FTM::Error::Task::InvalidDataToStore->throw(
-            "Cursor setup failed: $@"
-        ) if !eval { $self->_cursor };
+        # Require correct timestages data (throws exception otherwise)
+        $self->_cursor;
 
     }
 
