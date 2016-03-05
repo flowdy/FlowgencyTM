@@ -1,9 +1,10 @@
 % stash addScripts => [ 'user-join' ];
 % my $xp = stash 'ext_privacy_defined';
 
-<h1>Terms of Use: Special Agreement</h1>
-
 % if ( !$xp ) {
+<div id="terms-agreement">
+<h1>1. Terms of Use: Special Agreement</h1>
+
 <p><strong>When checking the terms below, beware of fake term(s).</strong> The registration form can be filled in once your selection covers all the binding ones. The terms are short and plain, but then quite different from those of other personalized sites. Anger can be avoided by having people actually read and explicitly accept them.</p>
 % }
 
@@ -60,7 +61,7 @@
 </del>
 % }
 
-<p>c. In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a secure, non-plaintext form (salted hash). My login name, my initial e-mail address, the date of account creation and extended privacy flag (s.b.) is fixed and saved on analogue paper upon account activation and may be disclosed only if the provider is forced so by the authorities, according to law. My IP address is not getting logged, which is why I should take note of my temporary user id displayed in error pages if I request support. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache. The provider is obliged to blank or pseudonymize all that personal data prior to publishing any example database extracts or dumps.</p>
+<p>c. In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a secure, non-plaintext form (salted hash). My IP address is not getting logged, which is why I should take note of my temporary user id displayed in error pages if I request support. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache. The provider is obliged to blank or pseudonymize all that personal data prior to publishing any example database extracts or dumps.</p>
 
 % if ( $xp > 1 ) {
 <h3>I can use the service with real data.</h3>
@@ -121,9 +122,13 @@
 
 </ol>
 
+<p>Where the registration form is? It will show up when the selection is right.</p>
+
 % if ( !$xp ) {
-<fieldset id="registration">
-<h2>Registration</h2>
+</div>
+
+<div id="registration">
+<h1>2. Registration</h1>
 
 <p><label>User login name: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label><br>
 <label>Full name: <input name="username" placeholder="(skip if inferrable from mail address)"></label><br>
@@ -132,7 +137,7 @@
 <p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
 <p style="text-align:right;"><input type="submit" name="join" value="register"></p>
 
-</fieldset>
+</div>
 
 
 </form>

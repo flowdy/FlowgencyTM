@@ -1,6 +1,6 @@
 $(function () {
-    var regform = $('#registration'), terms_accept_bitmask = [1,1,1,1,1,1,1];
-    regform.prop('disabled', true);
+    var terms_accept_bitmask = [1,1,1,1,1,1,1];
+    $("#registration").hide();
     $('input[name=passw_confirm]').change(function (e) {
         var f = $(this);
         if ( f.closest("form").find("input[name=password]").val() != f.val() ) {
@@ -33,7 +33,12 @@ $(function () {
                 }
             }
 
-            regform.prop('disabled', !ok );
+            if ( ok ) {
+                /* regform.show('fast');
+                terms.css({ overflow: 'hidden', height: 0 }); */
+                $("#registration").show('fast');
+                $("#terms-agreement").css({ height: 0, overflow: 'hidden' })
+            }
 
         });
     });
