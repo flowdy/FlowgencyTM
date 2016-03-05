@@ -655,4 +655,6 @@ $(function () {
 
     $("input[type=datetime]").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
 
+    $("#page").focus().blur(); // page to seize scrolling focus
+
 }); 
