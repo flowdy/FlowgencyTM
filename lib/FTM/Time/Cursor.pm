@@ -1,4 +1,3 @@
-
 package FTM::Time::Cursor;
 use strict;
 use Carp qw(croak carp);
@@ -29,6 +28,7 @@ has version => (
 has _timeway => (
     is => 'rw',
     isa => 'FTM::Time::Cursor::Way',
+    trigger => \&_must_have_working_time,
     required => 1,
 );
 
@@ -58,6 +58,17 @@ sub due_ts { shift->_timeway->end->until_date(@_)   }
 
 sub change_way {
     return shift->_timeway( FTM::Time::Cursor::Way->from_stage_hrefs(@_) );
+}
+
+sub _must_have_working_time {
+    my ($self, $newtw, $oldtw) = @_;
+    my %pos = $self->update( $self->start_ts );
+    if ( !$pos{ remaining_pres } ) {
+        $self->{_timeway} = $oldtw;
+        FTM::Error::Task::InvalidDataToStore->throw(
+            'No working time available in chosen period and track'
+        );
+    }
 }
 
 sub apply_stages {
@@ -113,7 +124,7 @@ sub update {
     };
 
     my $current_pos = $data->{elapsed_pres}
-        / ( $data->{elapsed_pres} + $data->{remaining_pres} )
+        / ( $data->{elapsed_pres} + $data->{remaining_pres} || 1 )
         ;
 
     return %$data, current_pos => $current_pos;
