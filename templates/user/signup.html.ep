@@ -2,6 +2,7 @@
 % my $xp = stash 'ext_privacy_defined';
 
 % if ( !$xp ) {
+<form action="/user/join" method="post">
 <div id="terms-agreement">
 <h1>1. Terms of Use: Special Agreement</h1>
 
@@ -25,9 +26,6 @@
 
 <h2>Conditions</h2>
 
-% if ( !$xp ) {
-<form action="/user/join" method="post">
-% }
 
 <ol id="terms">
 
