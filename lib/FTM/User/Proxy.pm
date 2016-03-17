@@ -36,7 +36,7 @@ sub init {
     };
 }
 
-for my $t (@{ FTM::User::TRIGGERS() }) {
+for my $t (@{ FTM::User::TRIGGERS() } ) {
     my $t_sub = sub {
         my ($user, $data) = @_;
         my $wantarray = wantarray;

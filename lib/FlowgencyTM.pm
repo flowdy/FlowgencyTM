@@ -64,7 +64,10 @@ sub user {
 
         my $i = _seek_user_in_queue($user_id);
         if ( defined $i ) {
-            delete($users{ splice @current_users, $i, 1 });
+            my $user = delete( $users{ splice @current_users, $i, 1 } );
+            if ( $user->DOES('FTM::User::Proxy') ) {
+                $user->dequeue_from_server;
+            }
         }
         else { croak "no user $user_id cached" }
 

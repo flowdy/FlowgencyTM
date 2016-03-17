@@ -36,7 +36,9 @@ sub init {
 
     POE::Session->create(
         package_states => [ 'FTM::User' => FTM::User::TRIGGERS() ],
-        inline_states  => { _start => $_start },
+        inline_states  => {
+            _start => $_start,
+        },
     );
 
     $args->{port} ||= $port;
@@ -47,36 +49,50 @@ sub init {
 
 with 'FTM::User::Common';
 
-for my $func (@{ FTM::User::TRIGGERS() }) { around $func => sub {
-    my $orig = shift;
+sub dequeue_from_server {
+    my $self = shift;
+    FlowgencyTM::user( $self->user_id => 0 );
+    return;
+}
 
-    # Prepare for being invoked by the user object
-    if ( ref $_[0] ) { goto $orig; }
+for my $func ( @{ FTM::User::TRIGGERS() } ) {
+    around $func => sub {
+        my $orig = shift;
 
-    my ($kernel, $heap, $request) = @_[KERNEL, HEAP, ARG0];
-    my ($data, $rsvp) = @$request;
-    my $ctx = eval { delete $data->{_context} }
-        // die "No context object in call of $func";
-    my ($user_id, $wantarray) = @{$ctx}{
-     qw( user_id   wantarray) 
+        # Prepare for being invoked by nothing
+        if ( !defined $_[0] ) { shift; }
+        # ... or by the user object
+        elsif ( ref $_[0] ) { goto $orig; }
+        
+
+        my ($kernel, $heap, $request) = @_[KERNEL, HEAP, ARG0];
+        my ($data, $rsvp) = @$request;
+        my $ctx = eval { delete $data->{_context} }
+            // die "No context object in call of $func";
+        my ($user_id, $wantarray) = @{$ctx}{
+         qw( user_id   wantarray) 
+        };
+
+
+        my $self;
+        my $output = try {
+            $self = FlowgencyTM::user( $user_id );
+            # TODO: $self->incr_command_number();
+            if ( !defined $wantarray ) {   $self->$orig( $data ); undef }
+            elsif ( $wantarray       ) { [ $self->$orig( $data ) ] }
+            else                       {   $self->$orig( $data ); }
+        } catch {
+            if ( !(ref $_ && $_->isa("FTM::Error") ) ) {
+                $_ = FTM::Error->new("$_");
+            }
+            $_->user_seqno($self->seqno) if $self; 
+            $_->dump();
+        };
+
+        $kernel->call(IKC => post => $rsvp, $output);
+
     };
-
-    my $self;
-    my $output = try {
-        $self = FlowgencyTM::user( $user_id );
-        # TODO: $self->incr_command_number();
-        if ( !defined $wantarray ) {   $self->$orig( $data ); undef }
-        elsif ( $wantarray       ) { [ $self->$orig( $data ) ] }
-        else                       {   $self->$orig( $data ); }
-    } catch {
-        if ( !(ref $_ && $_->isa("FTM::Error") ) ) { $_ = FTM::Error->new("$_"); }
-        $_->user_seqno($self->seqno) if $self; 
-        $_->dump();
-    };
-
-    $kernel->call(IKC => post => $rsvp, $output);
-
-}; }
+}
 
 sub server_properties {
     return %$server_properties;

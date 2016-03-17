@@ -6,6 +6,7 @@ use Carp qw(croak);
 sub TRIGGERS { return [qw[
     get_ranking get_task_data open_task get_dynamics_of_task
     fast_bulk_update dump_complex_settings realize_settings
+    dequeue_from_server
 ]]; }
 
 has _dbicrow => (
