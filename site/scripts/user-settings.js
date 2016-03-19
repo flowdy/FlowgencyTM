@@ -150,9 +150,9 @@ $(function () {
             dropInnerSpareRows: function () {
                 this.rows = this.rows.filter( function (r) {
                     var tr = r.tr;
-                    if ( r.calculate().indexOf("-@") == 0 && tr.next() ) {
-                        tr.hide("fast", function () { $(this).remove(); });
-                    }
+                    if ( r.calculate().indexOf("-@") == 0
+                           && tr.next().is('.week_days')
+                    ) tr.hide("fast", function () { $(this).remove(); });
                     else return true;
                 })
             },
