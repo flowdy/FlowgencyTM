@@ -666,10 +666,6 @@ sub update {
         ));
     }
 
-    for ( $args->{unmentioned_variations_from} // () ) {
-         $_ = [ split /\s*,\s*/, $_ ] if !ref; 
-    }
-
     if ( my $variations = delete $args->{variations} ) {
         $self->update_variations($variations);
     }
@@ -818,11 +814,13 @@ sub gather_dependencies {
     # Prior to track $id being constructed, all its parents must be ready
     my $parents_key = 'unmentioned_variations_from';
     if ( my $p = $self ? $self->parents : $data->{$parents_key} ) {
-        for my $p (
-            ref $p ? @$p : $self ? $p : $data->{$parents_key}
-        ) {
-            push @{$is_required{$p}}, \$p;
-        }
+        push @{ $is_required{$_} }, \$_ for @{
+            ref $p ? $p : do {
+                # normalize to array ref: (in-place modification!)
+                $_ = [ split /\W\s*/ ] for $data->{$parents_key};
+                $data->{ $parents_key }
+            }
+        };
     }
 
     for my $r ( $self ? $self->ref // () : $data->{ref} // () ) {
