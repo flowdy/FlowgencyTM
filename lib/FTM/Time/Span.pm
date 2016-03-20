@@ -72,14 +72,14 @@ sub _onchange_until {
     my ($self, $date, $old) = @_;
     my $dd = Delta_Days($old->date_components, $date->date_components);
     $self->rhythm->move_end($dd) if $dd;
-    delete $self->{_slice};
+    delete $self->{slice}; # cached slice is obsolete
 }
 
 sub _onchange_from {
     my ($self, $date, $old) = @_;
     my $dd = Delta_Days($old->date_components, $date->date_components);
     $self->rhythm->move_start($dd) if $dd;
-    delete $self->{_slice};
+    delete $self->{slice}; # cached slice is obsolete
 }
 
 sub from_string {
@@ -139,9 +139,9 @@ sub new_shared_rhythm {
 }
 
 sub _calc_slice {
-    my ($self, $from, $until) = @_;
+    my ($self, $from, $until) = (shift, @_);
 
-    if ( @_ > 1 ) {
+    if ( @_ ) {
         return $self->next if $from > $self->until_date;
         return             if $self->from_date > $until;
     }
@@ -154,23 +154,33 @@ sub _calc_slice {
     my $cursor_start = $from->epoch_sec;
     my $span_end = $self->until_date->last_sec + 1;
     my $cursor_end = $until->last_sec + 1;
+
     my ($ts_null) = $self->from_date->split_seconds_since_midnight;
     $_ -= $ts_null for $span_start, $span_end, $cursor_start, $cursor_end;
+
     my $rhythm = $self->rhythm;
 
     my ($start, $slice);
+    my $cache_ref = \do { my $void }; # do not cache any slices returned ...
+
     if ( $span_start >= $cursor_start && $span_end <= $cursor_end ) {
-        $start = $span_start;
+
         if ( my $s = $self->{slice} ) { return scalar $self->next, $s }
-        $slice = $rhythm->sliced($start, $span_end);
+
+        else {
+            $slice = $rhythm->sliced( $start = $span_start, $span_end );
+            $cache_ref = \$self->{slice} if @_; # ... except the 1st complete
+                # unless we get called implicitely by Moose on request anyway.
+        }
+
     }
     else {
         $start = max($span_start, $cursor_start);
-        $slice = $rhythm->sliced($start, min($span_end, $cursor_end));
+        $slice = $rhythm->sliced( $start, min($span_end, $cursor_end) );
     }
 
     return $cursor_end > $span_end ? scalar $self->next : undef,
-           FTM::Time::SlicedInSeconds->new(
+           $$cache_ref = FTM::Time::SlicedInSeconds->new(
                span => $self,
                position => $ts_null + $start,
                slicing => $slice,

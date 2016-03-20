@@ -18,7 +18,21 @@ my $model = modified_model(get_simple_model(), work => {
         until_date => '2016-01-06',
     }]
 });
-is $model->get_track("work")->variations->[2]->name, "jw16", "Modified model is okay.";
+my $variation = $model->get_track("work")->variations->[2];
+is $variation->name, "jw16", "Modified model is okay.";
+
+my $cursor = FTM::Time::Cursor->new(
+    timestages => [{
+        track => $model->get_track("work"),
+        until_date => '2016-01-07'
+    }],
+    start_ts => '21.12.2015'
+);
+my $span = $model->get_track("work")->start->next->next->next->next;
+ok $span->{slice}, 'fully-covered span knows its complete slice';
+ok !$span->next->{slice}, 'but the tail span has no slice';
+
+undef $model;
 
 sub test_model {
     my $model = shift;
