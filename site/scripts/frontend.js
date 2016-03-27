@@ -317,17 +317,19 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         table.find("select[name=track]").change(ts_updater);
         table.find("input[type=datetime]").each(dp_modifier);
         table.on('click', '.add-btn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             var myrow = $(this).parents("tr").first();
             var added = myrow.clone().insertAfter(myrow);
             added.find("input").removeAttr("id").removeClass("hasDatepicker")
                 .datetimepicker().each(dp_modifier).val("");
             added.find("option:selected").removeAttr("selected");
-            return false;
         });
         table.on("click", '.drop-btn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             $(this).parents("tr").first().remove();
             ts_updater(e);
-            return false;
         });
     });
 
