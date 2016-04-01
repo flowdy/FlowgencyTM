@@ -319,10 +319,11 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         table.on('click', '.add-btn', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var myrow = $(this).parents("tr").first();
-            var added = myrow.clone().insertAfter(myrow);
-            added.find("input").removeAttr("id").removeClass("hasDatepicker")
-                .datetimepicker().each(dp_modifier).val("");
+            var myrow = $(this).parents("tr").first(),
+                added = myrow.clone().insertAfter(myrow),
+                dtp = added.find("input");
+            // DateTimePicker(dtp);
+            dtp.removeAttr("id").each(dp_modifier).val("");
             added.find("option:selected").removeAttr("selected");
         });
         table.on("click", '.drop-btn', function (e) {
