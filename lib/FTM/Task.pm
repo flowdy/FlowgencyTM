@@ -161,7 +161,8 @@ sub _when_put_on_desk {
     my $self = shift;
     my $open_since_ts = $self->dbicrow->open_since;
     return if !$open_since_ts;
-    $_ = FTM::Time::Spec->parse_ts($_, $self->start_ts) for $open_since_ts;
+    $open_since_ts =
+        FTM::Time::Spec->parse_ts($open_since_ts, $self->start_ts);
     my %pos = $self->_cursor->update($open_since_ts);
     return $pos{elapsed_pres};
 }

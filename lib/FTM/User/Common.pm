@@ -346,12 +346,17 @@ my @basecolor = (0,0xC0,0xff);
 sub _dump_task {
     my ($task) = shift;
     return $task if !ref $task;
-    my ($due, $next, $active, $score, $drift, $time_position) = $task->flowrank
-        ? (map { $task->flowrank->$_ } qw(
-              due_in_hms next_statechange_in_hms active score drift
-              time_position
+    my (
+        $start_ts, $due_ts,
+        $due, $next, $active, $score, $drift, $time_position
+      )
+      = $task->flowrank
+        ? ($task->start_ts, $task->due_ts,
+           map { $task->flowrank->$_ } qw(
+               due_in_hms next_statechange_in_hms active score drift
+               time_position
           ))
-        : ()
+        : $task->dbicrow->from_date
         ;
 
     my $dump = {
@@ -366,11 +371,11 @@ sub _dump_task {
             checked_exp => $task->progress,
             time => $time_position,
         },
-        duedate => $task->due_ts,
-        startdate => $task->start_ts,
+        duedate => $due_ts,
+        startdate => $start_ts,
         $task->is_archived
           ? (
-              archiveddate => $task->archived_ts,
+              archiveddate => $task->dbicrow->archived_ts,
               archived_because => $task->dbicrow->archived_because
             )
           : (),
@@ -422,6 +427,14 @@ my $paused_blender = FTM::Util::LinearNum2ColourMapper->new({
 
 sub _progress_bar {
     my ($done, $rel_state, $active) = @_;
+    
+    return {
+       primary_color => \@basecolor,
+       orientation => "right",
+       primary_width => "100%",
+       secondary_color => 'grey',
+    } if !defined $rel_state;
+
     my $orient = $rel_state > 0 ? "right" : "left";
     my $other_opacity = 1 - abs($rel_state);
     my $blender = $active ? $blender : $paused_blender;
@@ -950,8 +963,11 @@ sub list {
     for my $task ( $rs->search(\%cond,$opts)->get_column('name')->all ) {
         $task = eval { $self->get($task) }
                 // die "Could not cache task $task: $@";
-        next if !($drawer & 2) && $task->start_ts > $now;
-        if ( $task->is_archived ) { push @in_archive, $task; }
+
+        if ( $task->is_archived ) {
+            delete $self->cache->{ $task->name };
+            push @in_archive, $task;
+        }
         elsif ( $task->start_ts > $now ) {
             $drawer & 2 or next;
             push @upcoming, $task;
