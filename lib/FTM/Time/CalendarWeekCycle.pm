@@ -256,34 +256,38 @@ FTM::Time::CalendarWeekCycle - To infer from a date the week and the day
 
 =head1 DESCRIPTION
 
-Personal time management sometimes needs do be kept in line with
-a staff roster of whatever kind. For instance, such a roster might
-define that one is on duty Mondays of I<even> weeks 9 to 13 o'clock.
-To map this to the raw number of seconds yielded by the system clock
-is not trivial at all. Think of the leap year: February has
-one more day. Note also that not all years cover 52 weeks, but some have one more or less according to the calendar. When using this module, the time manager
-probably is bound to local time vs. Greenwich Mean Time, meaning you
-must keep track of daylight save time shift. Thus, one day in spring has
-effectively 23 hours, one day in fall 25. As the cost of calculating
-hour and direction of DST shift is small in this module, you can use it to have
-a callback triggered with day object, hour 0-23 and positive or negative
-shift width parameters, so you can take special actions for those days.
+Personal time management sometimes needs do be kept in line with a staff roster
+of whatever kind. For instance, such a roster might define that one is on duty
+Mondays of I<even> weeks 9 to 13 o'clock.  To map this to the raw number of
+seconds yielded by the system clock is not trivial at all. Think of the leap
+year: February has one more day. Note also that not all years cover 52 weeks,
+but some have one more or less according to the calendar. When using this
+module, the time manager probably is bound to local time vs. Greenwich Mean
+Time, meaning you must keep track of daylight save time shift. Thus, one day
+in spring has effectively 23 hours, one day in fall 25. As the cost of
+calculating hour and direction of DST shift is small in this module, you
+can use it to have a callback triggered with day object, hour 0-23 and positive
+or negative shift width parameters, so you can take special actions for those
+days.  
 
 Note, however: To associate which weeks to which patterns of duty/non-duty or
 whatever times is beyond the scope of this class. You simply pass a callback
-that gets the respective calender week number. Its return value is expected to be an array ref containing the objects for the days of that week (you define the class and constructions of these objects), with the Sunday expected at index 0. The references to the objects are cached and returned "as is" by move_by_days() method. Also note that for the DST affected days they are passed "as is" to your DST handler which is responsible for cloning the object prior to any modification. Otherwise, these modifications would affect the same day in other weeks as well.
-
-=cut
-
-Die folgenden Absätze sollen nur in der Dokumentation des FlowgencyTM-Tools erscheinen, nicht jedoch im CPAN-Modul. Ich führe sie hier nur auf im Posting, in der Hoffnung, dass ihr den ursprünglichen Sinn und Zweck des Moduls versteht. 
+that gets the respective calender week number. Its return value is expected
+to be an array ref containing the objects for the days of that week (you define
+the class and constructions of these objects), with the Sunday expected at
+index 0. The references to the objects are cached and returned "as is" by
+C<move_by_days()> method. Also note that for the DST affected days they are
+passed "as is" to your DST handler which is responsible for cloning the object
+prior to any modification. Otherwise, these modifications would affect the
+same day in other weeks as well.  
 
 =begin comment
 
 =head1 THIS CLASS IN RELATION TO OTHER FTM::Time CLASSES
 
-By a FTM::Time::Track users can specify when they plan to work and when not, thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar. It is merely a chain of FTM::Time::Span instances that serve the purpose of telling apart work and leisure for every portion of every day between two FTM::Time::Spec's delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. FTM::Time::Rhythm is what really defines the interior of FTM::Time::Span. It is basically simply a pair of FTM::Time::CalendarWeekCycle instances bound to the same week pattern selector. These instances have to be kept in sync with the FTM::Time::Spec instances. While moving through the calendar, they have to deliver for every day the right object that is twice in a year modified because of daylight saving time adjustment (the first covers 23 hours, the second 25).
+By a C<FTM::Time::Track> users can specify when they plan to work and when not, thus limiting the increase of the time-dynamic dimensions of a task's urgency to certain areas in the calendar. It is merely a chain of C<FTM::Time::Span> instances that serve the purpose of telling apart work and leisure for every portion of every day between two C<FTM::Time::Spec>'s delimiting the span. A portion can be an hour, half an hour etc. up to a minute, depending on the resolution of the user-defined pattern. C<FTM::Time::Rhythm> is what really defines the interior of C<FTM::Time::Span>. It is basically simply a pair of C<FTM::Time::CalendarWeekCycle> instances bound to the same week pattern selector. These instances have to be kept in sync with the FTM::Time::Spec instances forming the from and until ends of the span. While moving through the calendar, they have to deliver for every day the right object. That object is modified because of daylight saving time adjustment twice in a year (the first covers 23 hours, the second 25).
 
-The day patterns are realized with Bit::Vector, where each bit denotes work (1) or leisure (0). These bits are copied into another, span-wide Bit::Vector, member "_atoms" of the FTM::Time::Rhythm instance, serving as cache from which FTM::Time::Slice instances are generated to map those portions of a day again to clusters of net or leisure seconds. These slices are then scanned by FTM::Time::Cursor objects associated with a Task object, in order to calculate its net working time progress, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the task's substantive progress. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowgencyTM can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
+The day patterns are realized with Bit::Vector. Each bit denotes work (1) or leisure (0). They are copied into another, span-wide Bit::Vector, part of the FTM::Time::Rhythm instance, serving as cache from which FTM::Time::SlicedInSeconds instances are generated to map those portions of a day again to clusters of net or leisure seconds, just to represent the changes between in resolution of seconds. These slices are scanned by FTM::Time::Cursor objects associated with a FTM::Task object, in order to calculate the net working time progress of the task, which is needed to figure out how near the deadline effectively is, and how much, additionally in which direction it diverges from the progress of the task itself. For both measurements it is very important to ignore the leisure phases between start and deadline, so FlowgencyTM can lessen the disposition to ponder about working stuff even when absent from duty (which is considered one of the factors causing the burnout syndrome). Tasks of which the cursor knows they are currently in leisure status are put into the virtual drawer that designed to be opened just when the user explicitly says so.
 
 =end comment
 
