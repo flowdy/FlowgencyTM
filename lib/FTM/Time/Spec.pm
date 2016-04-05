@@ -42,7 +42,7 @@ my $TS;
     goto RETURN if $TS && $priv && !@_;
     my $arg = @_  ? $_[0]
             : $TS ? goto RETURN
-            :       $ENV{FLOWTIME_TODAY} // time
+            :       $ENV{FLOWGENCYTM_INITIAL_TIME} // time
             ;
 
     if ( ref $arg ) {
