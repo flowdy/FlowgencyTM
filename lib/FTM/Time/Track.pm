@@ -886,7 +886,7 @@ sub timestamp_of_nth_net_second_since {
     my ($next_stage, $signal_slice, $last_sec) = do {
         if ( $early_pass and my $p = $early_pass->() ) {
             my $slice = $p->pass_after_slice;
-            $p, $slice, $slice->position + $slice->length;
+            $p, $slice, $slice->position + $slice->length - 1;
         }
         else { undef, undef, undef; }
     };
@@ -932,7 +932,7 @@ sub timestamp_of_nth_net_second_since {
                 $seek_from_ts, $find_pres_sec,
                 $coverage && ($coverage - $find_pres_sec)
               )
-            : 0
+            : (0, 0)
             ;
 
         $rem_abs += $plus_rem_abs;

@@ -71,6 +71,33 @@ sub test_progressing_cursor {
     ok $pos{remaining_pres} < 0, "cursor past due-date";
 }
 
+sub test_resolute_multitrack_cursor {
+    my $track1 = FTM::Time::Track->new({ name => 'Full', week_pattern => 'Mo-Su@0-23' });
+    my $track2 = FTM::Time::Track->new({ name => 'Free', week_pattern => 'Mo-Su@!0-23' });
+    my $cursor = FTM::Time::Cursor->new(
+        start_ts => FTM::Time::Spec->parse_ts("2016-04-05 08:10"),
+        timestages => [
+            { track => $track2, until_date => "+1w 0:00" },
+            { track => $track1, until_date => "+2w" },
+        ]
+    );
+    is $cursor->timestamp_of_nth_net_second_since(3 * 3600)."",
+        "2016-04-12 03:01:00", "switch from holiday to 24/7 work";
+
+    $cursor = FTM::Time::Cursor->new(
+        start_ts => FTM::Time::Spec->parse_ts("2016-04-05 08:10"),
+        timestages => [
+            { track => $track1, until_date => "+1w 0:00" },
+            { track => $track2, until_date => "+6d" },
+            { track => $track1, until_date => "+1d" },
+        ]
+    );
+    is $cursor->timestamp_of_nth_net_second_since(
+        2 * (15 * 3600 + 50 * 60 + 7 * 24 * 3600 + 60 )
+    )."", "2016-04-27 15:51:00", "Holiweek in 24/7 rhythm";
+       
+}
+
 sub test_multitrack_cursor {
 
     use Date::Calc qw(Today Monday_of_Week Week_of_Year
