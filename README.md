@@ -24,7 +24,7 @@ Seven longer key-points explain that:
 
  2. The user interface is implemented in HTML5 and Javascript, so it runs in your favourite web browser. The server component is included in the distribution, too. It is preconfigured to run on your local system from which it exclusively accepts requests.
 
- 3. The tasks are ranked by descending urgency. The ranking is updated when you click the Flowgency logo in the top left edge. You decide when any checks are committed and when you are mentally prepared for being occasionally confronted with other tasks that may have become suddenly more urgent than those you have just been working on.
+ 3. The tasks are ranked by descending urgency. The ranking is updated when you click the icon in the top left corner. You decide when any checks you did are committed and respected in the ranking, and when you are mentally prepared for being occasionally confronted with other tasks that may have become suddenly more urgent than those you are currently working on.
 
  4. In FlowgencyTM terms, priority is just one of several urgency dimensions, albeit the only that is directly entered and adjustable afterwards. The software distinguishes four other that depend on time:
 
@@ -67,24 +67,12 @@ Due to its architecture, it is technically possible to provide a FlowgencyTM ser
 After all a server is simply a program that communicates with other programs via a network interface, which can just as well be `localhost` (IP 127.0.0.1) to ensure that server and client are actually running on the same machine. Such so-called loopback interface is provided by any system that could likewise communicate with a remote machine via the internet. That way, a FlowgencyTM server listening to a localhost port is as safe against unauthorized access as the underlying SQLite database and any other locally stored file is.
 
 <a id="demo"></a>
-FlowgencyTM demo (planned)
---------------------------
+FlowgencyTM live demo
+---------------------
 
-It sounds like a contradiction to what is said above, but I encourage everyone who can (and plan myself) to host a FlowgencyTM demo service to let people find out, without having to install software, if the Flowgency tasks & time management concept sufficiently matches their individual working style.
+The project initiator hosts a FlowgencyTM demo service to let people find out, without having to install software, if the concept sufficiently matches their individual working style and the software helps them actually. Plus, I encourage doing this to everyone who can.
 
-### Available demo sites
-
-(No sites available, yet. If you have deployed an instance to be used under the terms below and you find FlowgencyTM has sufficient multi-user support in place: Just don't hesitate, please send me a link.)
-
-### Conditions of entry in the official list
-
-Every official test and demo site of FlowgencyTM (the "system") must comply to the following conditions:
-
- 1. The system allows use under the explicit restriction that *only fake data may be submitted*, because fake data does not need any privacy or security FlowgencyTM is not designed for ensuring in the first place. To submit data held as a trade secret or underlying some non-disclosure-agreement as well as data that violates or might violate other's rights must be expressedly disallowed. Also point out that all data is stored unencrypted and subject to being viewed and evaluated by the provider.
-
- 2. Users must accept that once they decide for using FlowgencyTM with real and productive data, they have to stop using the system and either install their own server locally if they can, or use a service hosted by someone of competence whom they know and trust personally.
-
- 3. Users must know that their accounts and all associated data are subject to being deleted without notice someday. You can configure a limit of user accounts and adapt it at any time and at your discretion considering server resources to spare.
+Please see [the official list of non-commercial FlowgencyTM demo services](http://humanetasking.net/try) and choose one. The short terms of use and the measure to have new users actually read them are deliberately designed so it is not possible to ignore the terms and to disclose naturally private data without one's expressed agreement. All public demo instances therefore comply to the ethic that data inherently belongs to the owning person's privacy.
 
 
 <a id="how-to-benefit"></a>
