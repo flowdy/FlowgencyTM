@@ -150,11 +150,12 @@ has force_receive_mode => (
 
 
 has parents => (
-    is => 'rw',
+    is => 'ro',
     isa => 'ArrayRef[FTM::Time::Track]',
     init_arg => 'unmentioned_variations_from',
-    default => sub { [] },
-    trigger => sub {
+    writer   => 'unmentioned_variations_from',
+    default  => sub { [] },
+    trigger  => sub {
         my ($self, $new_value, $old_value) = @_;
         if ( $old_value ) {
             for my $p (@$old_value) { $p->_drop_child($self); }
