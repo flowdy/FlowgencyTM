@@ -282,7 +282,7 @@ ul.formlist li {
 }
 #track-definitions .undefined-properties { text-align:right; color:grey; }
 #track-definitions .variations li + li { margin-top: .5em }
-
+#track-definitions .ui-tabs-nav .ui-icon { display: inline-block; }
 #configure-timemodel-prototypes > div { display: none; }
 
 #aspects { position: relative; }
