@@ -68,7 +68,7 @@
 
 <fieldset id="set-priorities">
 <legend>Priority levels</legend>
-<p>Separate the priority labels by comma. You may chain commas to indicate that the next labeled priority is more than one level higher than the last. In the priority level field of the task editor, you can assign the priority just as well by number, so these unlabeled in between are usable, too. Count up from left to right, start at 1.</p>
+<p>Separate the priority labels by comma. You may chain commas to indicate that the next labeled priority is more than one level higher than the previous. In the priority level field of the task editor, you can assign the priority just as well by number, so these unlabeled in between are usable, too. Count up from left to right, start at 1.</p>
 % my @chain;
 % while ( my ($label, $number) = each %$priorities ) {
 %   $chain[$number] = $label;
