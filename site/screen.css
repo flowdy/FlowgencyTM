@@ -14,10 +14,6 @@ body {
     position: relative;
 }
 
-#logo img {
-  /* width:200px; */
-}
-
 #icons-bar .menu {
    display:none;
    width:100%;
@@ -121,8 +117,6 @@ body > header h1 {
   font-size:1.1em;
   margin:15px 0;
   padding: 0 auto;
-  /* margin-left:320px;
-  margin-right:10px;*/
   overflow:hidden;
 }
 
@@ -145,8 +139,6 @@ body > header h1 {
 
 #plans > li {
   margin-bottom:10px;
-  border:3px solid #00C0FF;
-  /* margin-left: 215px; */
   padding:0.5em;
   overflow:hidden;
    border-top-left-radius:25px;
@@ -167,7 +159,6 @@ body > header h1 {
 
 #plans > li.paused {
   color:#625353;
-  border-color:darkgrey;
 }
 
 #plans header > h2 {
