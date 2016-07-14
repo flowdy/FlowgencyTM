@@ -474,20 +474,21 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
                 new_fieldset
             );
             /* Following code insp. by http://stackoverflow.com/questions/45888/ */
-            var selector = $(this.select);
-            var my_options = selector.find("option");
-            var selected = selector.val();
+            var selector = $(this.select),
+                my_options = selector.find("option").add(
+                   $( '<option>', { value: step, text: step + ' (new)' } )
+                ),
+                selected = selector.val()
+                ;
                  /* preserving original selection, step 1 */
-            
-            my_options.push($('<option>', { value: step, text: step + ' (new)' }));
-            my_options.sort(function(a,b) {
-                if (a.text > b.text) return 1;
-                else if (a.text < b.text) return -1;
-                else return 0
-            })
-            
             selector.empty();
-            my_options.each(function () { selector.append( this ); });
+            $.each(
+                my_options.toArray().sort(function(a,b) {
+                   a = a.text; b = b.text; return (a>b)?1:(a<b)?-1:0;
+                }),
+                function () { selector.append( this ); }
+            );
+
             selector.val(selected); /* preserving original selection, step 2 */
             return true;
         }
