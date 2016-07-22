@@ -169,17 +169,17 @@ FlowgencyTM could not even be thought of without the following Open source tools
 Contact and support
 -------------------
 
-    flowgencytm-dev at mailbox. org
+    flowgencytm-dev at humanetasking.net
+                  # ^^ --> "@"
+                  # remove spaces
 
-(Address split up for the sake of spam protection. Just glue it together and apply the "@" sign replacing "at".)
-
-Please note: FlowgencyTM is alpha. For me as the developer, support is rather to make the software better than to support you individually. But I'll do what my time permits.
+Please note: FlowgencyTM is beta. For me as the developer, support is rather to make the software better than to support you individually. But I'll do what my time permits.
 
 <a id="license"></a>
 Copyleft and License
 --------------------
 
-Copyright (C) 2012, 2013, 2014, 2015 Florian Heß
+Copyright (C) 2012, 2013, 2014, 2015, 2016 Florian Heß
 
 FlowgencyTM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
