@@ -91,7 +91,7 @@
 % if ( !$xp ) {
 <li><h3>I do not really read this</h3>
 <p>I do not quite understand but I neither care, I always ignored terms of use and will always ignore them because they are not legal anyway. Frankly, that kind of testing services is totally impossible in our world as we (do not) see.</p>
-<p style="text-align:right;"><label><input type="radio" name="ignoreterms"> Nope.</label> <label><input type="radio" name="ignoreterms" value="0"> You're kidding?</label></p>
+<p style="text-align:right;"><label><input type="radio" name="ignoreterms" value="1"> Nope.</label> <label><input type="radio" name="ignoreterms" value="0"> You're kidding?</label></p>
 </li>
 % }
 
