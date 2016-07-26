@@ -490,7 +490,6 @@ StepTree.prototype.create_or_reparent = function (step, parent) {
             );
 
             selector.val(selected); /* preserving original selection, step 2 */
-            return true;
         }
         else return false;
     }
