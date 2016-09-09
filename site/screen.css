@@ -100,7 +100,7 @@ body > header {
 #page {
    bottom: 0;
    left: 0;
-   overflow-y:auto;
+   overflow-y:scroll;
    padding:0 5px;
    position: absolute;
    right: 0;
