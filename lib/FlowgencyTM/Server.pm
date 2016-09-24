@@ -36,7 +36,6 @@ sub startup {
           }
           else { q{} }
       },
-      current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
   );
 
   if ( my $l = $ENV{LOG} ) {
@@ -64,7 +63,10 @@ sub startup {
       my $c = shift;
 
       my $is_remote = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
-      $c->stash( is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote );
+      $c->stash(
+          is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
+          current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
+      );
 
       if ( !$c->stash('hoster_info') ) {
           $c->stash( hoster_info => $is_remote ? '(private remote)' : '(local)' );
