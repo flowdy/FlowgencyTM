@@ -62,15 +62,17 @@ sub startup {
   my $r = $self->routes->under(sub {
       my $c = shift;
 
-      my $is_remote = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
+      my $is_remote
+          = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
+
       $c->stash(
           is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
           current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
       );
 
-      if ( !$c->stash('hoster_info') ) {
-          $c->stash( hoster_info => $is_remote ? '(private remote)' : '(local)' );
-      }
+      $c->stash(
+          hoster_info => $is_remote ? '(private remote)' : '(local)'
+      ) if !$c->stash('hoster_info');
 
       return 1;
   });
@@ -85,7 +87,23 @@ sub startup {
       # protected against manipulation (HMAC-SHA1 signature). Hence, if the
       # user id is defined, the user has certainly logged in properly.
       # Refer to `perldoc Mojolicious::Controller` if interested.
-      my $user_id = $c->session('user_id');
+      my $user_id = $c->accepts('', 'json')
+                  ? $self->authenticate_rest_user($c) || do {
+                        $c->res->code(401);
+                        $c->render( json => {
+                                error => 'REST-mode authorization failed',
+                                userinfo => $c->req->url->to_abs->userinfo,
+                                conditions_to_check => [
+                                    'use HTTPS in remote server mode',
+                                    'the user id exists and is activated',
+                                    'the right password is provided'
+                                ]
+                            }
+                        );
+                        return undef;
+                    }   
+                  : $c->session('user_id')
+                  ;
 
       if ( !$user_id and $user_id = $ENV{FLOWGENCYTM_USER} ) {
           $c->session( user_id => $user_id );
@@ -130,5 +148,22 @@ sub startup {
 my $started_time;
 BEGIN { $started_time = scalar localtime(); }
 sub get_started_time { $started_time; }
+
+sub authenticate_rest_user {
+    my ($self, $c) = @_;
+
+    return if !$c->req->is_secure && $c->stash('is_remote');
+
+    my ($user, $password) = split /:/, $c->req->url->to_abs->userinfo, 2;
+
+    return if !$user;
+
+    for ( FlowgencyTM::user($user) // () ) {
+        $_->can_login && $_->password_equals($password) or return;
+    } 
+
+    return $user;
+
+}
 
 1;
