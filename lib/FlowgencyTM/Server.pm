@@ -91,11 +91,10 @@ sub startup {
                   ? $self->authenticate_rest_user($c) || do {
                         $c->res->code(401);
                         $c->render( json => {
-                                error => 'REST-mode authorization failed',
-                                userinfo => $c->req->url->to_abs->userinfo,
+                                error => 'Not authorized to use REST API',
                                 conditions_to_check => [
-                                    'use HTTPS in remote server mode',
-                                    'the user id exists and is activated',
+                                    'With a remote server, connect by HTTPS',
+                                    'the user id must exist and be activated',
                                     'the right password is provided'
                                 ]
                             }
@@ -132,14 +131,15 @@ sub startup {
   $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");
 
   # Normal route to controller
-  $auth->get('/')->to('ranking#list')->name('home');
+  $auth->get('/')->to('task_list#todos')->name('home');
+  $auth->get( '/tasks')->to('task_list#tasks');
+  $auth->post('/tasks')->to('task_editor#fast_bulk_update');
   
   $auth->get('/info')->to('info#basic');
-  $auth->post('/update')->to('task_editor#fast_bulk_update');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $auth->any([qw/GET POST/] => '/user/settings')
        ->to('user#settings');
-  $auth->get('/task/archive')->to("ranking#archived");
+  $auth->get('/task/archive')->to("task_list#archived");
   $auth->any([qw/GET POST/] => '/task/:id/:action')
        ->to(controller => 'task_editor');
 
@@ -159,10 +159,10 @@ sub authenticate_rest_user {
     return if !$user;
 
     for ( FlowgencyTM::user($user) // () ) {
-        $_->can_login && $_->password_equals($password) or return;
+        return $user if $_->can_login && $_->password_equals($password);
     } 
 
-    return $user;
+    return;
 
 }
 

@@ -1,10 +1,10 @@
 use strict;
 
-package FlowgencyTM::Server::Ranking;
+package FlowgencyTM::Server::TaskList;
 use Mojo::Base 'Mojolicious::Controller';
 use Carp qw(croak);
 
-sub list {
+sub todos {
     my $self = shift;
   
     my %args;
@@ -35,4 +35,20 @@ sub list {
     return;
 }
 
+sub all {
+    my ($self, $archive_only) = @_;
+    my $tasks_it = FlowgencyTM::database->resultset("FlowDB::Task")->search(
+        { user_id => $self->stash('user')->user_id,
+          $archive_only ? archived_ts => { '!=' => undef } : (),
+        }, { -columns => [qw/name title start_ts archived_because archived_ts/] }
+    );
+
+    my $tasks;
+    while ( my $task = $tasks_it->next ) {
+        $tasks->{ $task->name } = { $tasks->columns };
+    }
+
+    $self->render( json => $tasks );
+
+}
 1;
