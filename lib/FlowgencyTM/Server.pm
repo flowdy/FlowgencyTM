@@ -77,6 +77,14 @@ sub startup {
       return 1;
   });
 
+  $self->hook( before_render => sub {
+      my ($c, $args) = @_;
+      my $tmpl = $args->{template};
+      $tmpl && $tmpl eq 'exception' or return;
+      $c->accepts('json') || $self->mode eq 'production' or return;
+      error_handler( $c => delete $args->{exception} );
+  });
+
   my $auth = $r->under(sub {
       my $c = shift;
 
@@ -87,20 +95,19 @@ sub startup {
       # protected against manipulation (HMAC-SHA1 signature). Hence, if the
       # user id is defined, the user has certainly logged in properly.
       # Refer to `perldoc Mojolicious::Controller` if interested.
+      # If the REST application programing interface is used, there is no
+      # cookie. To stay "RESTful", we choose a different approach by relying
+      # on Authentication header.
       my $user_id = $c->accepts('', 'json')
-                  ? $self->authenticate_rest_user($c) || do {
-                        $c->res->code(401);
-                        $c->render( json => {
-                                error => 'Not authorized to use REST API',
-                                conditions_to_check => [
-                                    'With a remote server, connect by HTTPS',
-                                    'the user id must exist and be activated',
-                                    'the right password is provided'
-                                ]
-                            }
-                        );
-                        return undef;
-                    }   
+                  ? $self->authenticate_rest_user($c)
+                    || FTM::Error::User::NotAuthorized->throw(
+                           http_status => 401, 
+                           message => 'User may not use REST API. '
+                              . 'Conditions to check: '
+                              . 'a) With a remote server, connect by HTTPS. '
+                              . 'b) The user must be registered and activated. '
+                              . 'c) The right password is provided.'
+                       )
                   : $c->session('user_id')
                   ;
 
@@ -132,17 +139,30 @@ sub startup {
 
   # Normal route to controller
   $auth->get('/')->to('task_list#todos')->name('home');
-  $auth->get( '/tasks')->to('task_list#tasks');
-  $auth->post('/tasks')->to('task_editor#fast_bulk_update');
-  
-  $auth->get('/info')->to('info#basic');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
+  $auth->post('/newtask')->to('task_editor#form', new => 'task' );
+
+  my $tasks = $auth->get( '/tasks')->to('task_list#all');
+  $tasks->any( [qw|PATCH POST|] => '/')->to('task_editor#fast_bulk_update');  
+  $tasks->get('/:name')->to('task_list#single');
+  $tasks->get('/:name/form')->to('task_editor#form');
+  $tasks->post('/:name/form')->to('task_editor#form', new => 0 );
+  $tasks->patch('/:name')->to('task_editor#form', new => 0 );
+  $tasks->put('/:name')->to('task_editor#form', reset => 1);
+  $tasks->delete('/:name')->to('task_editor#purge');
+  $tasks->get('/:name/:action')->to('task_editor#$action');
+  $tasks->post('/:name/open')->to("task_editor#open", ensure => 1);
+  $tasks->post('/:name/close')->to("task_editor#open", ensure => 0);
+  $tasks->get('/:name/steps/:step')->to('task_list#single');
+  $tasks->post('/:name/steps')->to('task_editor#form', new => 'step');
+  $tasks->put('/:name/steps/:step')->to('task_editor#form', reset => 1);
+  $tasks->patch('/:name/steps/:step')->to('task_editor#form', new => 0);
+  $tasks->delete('/:name/steps/:step')->to('task_editor#purge');
+
   $auth->any([qw/GET POST/] => '/user/settings')
        ->to('user#settings');
-  $auth->get('/task/archive')->to("task_list#archived");
-  $auth->any([qw/GET POST/] => '/task/:id/:action')
-       ->to(controller => 'task_editor');
 
+  $auth->get('/info')->to('info#basic');
 }
 
 my $started_time;
@@ -166,4 +186,33 @@ sub authenticate_rest_user {
 
 }
 
+sub error_handler {
+    my ($c, $x) = @_;
+    my $stash = $c->stash;
+    my ($user) = delete @{$stash}{'user', 'is_remote', 'hoster_info'};
+    if ( index( ref $x, 'FTM::Error' ) == 0 ) {
+        $c->res->code( $x->http_status // 500 );
+        my ($type) = ref($x) =~ /^FTM::Error::(.+)$/;
+        $type //= 'General error';
+        $c->stash(
+            message => $type || $user->can_admin ? $x->message
+                : "Something went wrong in backend (details in server log)",
+            error => $type,
+            user_seqno => $x->user_seqno
+        );
+    }
+    else {
+        $c->stash(
+            error => 'Internal Server Error',
+            message => $user->can_admin ? $x
+                : "Something went wrong (details in server log)",
+        );
+    }
+ 
+    if ( $c->accepts('', 'json') ) {
+        my $stash = $c->stash;
+        $args->{json} = $stash;
+    }
+
+}
 1;

@@ -449,15 +449,18 @@ sub dump {
     my ($self) = @_;
     my %data = $self->get_columns;
     if ( my $prow = $self->parent_row ) {
-        $data{parent_id} = $prow->name;
-        $data{link_id} = join ".", map { $_->task, $_->name }
+        $data{parent} = $prow->name;
+        $data{link} = join ".", map { $_->task, $_->name }
              $self->link_row // ();
     }
     if ( my $srow = $self->subtask_row ) {
-        my $data = $data{subtask_data} = { $srow->get_columns };
-        $data->{timeway} = [
+        my %subtask_data = $srow->get_columns;
+        $subtask_data{timestages} = [
             map {{ $_->get_columns }} $srow->timestages
-        ], 
+        ]; 
+        while ( my ($key, $value) = each %subtask_data ) {
+            $data{$key} = $value;
+        }
     }
     $data{substeps} = $self->substeps_chain;
     return \%data;

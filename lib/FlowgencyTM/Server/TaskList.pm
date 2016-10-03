@@ -2,6 +2,7 @@ use strict;
 
 package FlowgencyTM::Server::TaskList;
 use Mojo::Base 'Mojolicious::Controller';
+use List::Util qw(first);
 use Carp qw(croak);
 
 sub todos {
@@ -36,19 +37,55 @@ sub todos {
 }
 
 sub all {
-    my ($self, $archive_only) = @_;
-    my $tasks_it = FlowgencyTM::database->resultset("FlowDB::Task")->search(
-        { user_id => $self->stash('user')->user_id,
-          $archive_only ? archived_ts => { '!=' => undef } : (),
-        }, { -columns => [qw/name title start_ts archived_because archived_ts/] }
-    );
+  # GET /tasks
+    my $self = shift;
+    my %args = (map({ $_ => 1 } qw/desk tray archive/), drawer => 3 );
+    my $list = $self->stash("user")->get_ranking(\%args);
 
-    my $tasks;
-    while ( my $task = $tasks_it->next ) {
-        $tasks->{ $task->name } = { $tasks->columns };
+    my %tasks;
+    while ( my $t = shift @$list ) {
+        next if !ref $t;
+        $tasks{ $t->{name} } = $t;
     }
 
-    $self->render( json => $tasks );
+    $self->render( json => \%tasks );
+}
 
+sub single {
+  # GET /tasks/:name
+  # GET /tasks/:name/steps/:step
+    my $self = shift;
+    
+    my $id = $self->_get_task;
+    my $user = $self->stash("user");
+
+    if ( my $step = $self->stash('step') ) {
+        my $task = $user->get_task_data({ task => $id })
+            or FTM::Error::ObjectNotFound->throw(
+                message => "Could not find a task '$task'", http_status => 404
+            );
+        $step = $task->{step}{$step}
+            || FTM::Error::ObjectNotFound->throw(
+                message => "Could not find a step '$step'", http_status => 404
+            );
+        $c->render( json => $step );
+    }    
+    else {
+        my %args;
+        for my $p_name (@{ $self->req->params->names }) {
+            $args{$p_name} = $self->param($p_name);
+        }
+        $args{force_include} = $id;
+        my $render_data = $user->get_ranking(\%args);
+        my $list = $render_data->{list};
+        my $task = first({ $_->{name} eq $id } @$list)
+            // FTM::Error::ObjectNotFound->throw(
+                message => "Could not find a $task", http_status => 404
+            );
+        @$list = $task;
+        $c->respond_to( json => $task, html => $render_data );
+    } 
+
+    return;
 }
 1;

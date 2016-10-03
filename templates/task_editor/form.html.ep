@@ -6,7 +6,12 @@
 % my $tree = stash('tree') // [];
 % my $incr_prefix = stash 'incr_prefix';
 % my ($prio_max, $prio_avg) = delete @{$_priodir}{'_max', '_avg'};
-% my $steps = stash('steps') // { '' => { subtask_data => {} } };
+% my $data = stash('data') // { steps => {} };
+% my @TASK_FIELDS = qw(
+%     incr_name_prefix title priority timestages archived_because
+% );
+% my $steps = delete $data->{steps};
+% $steps->{''} = $data;
 % my @priorities = map { [ $_, $_priodir->{$_} ] } sort { $_priodir->{$a} <=> $_priodir->{$b} } keys %$_priodir;
 <p id="error-msg">
 % if ( my $message = stash 'message' ) {
@@ -20,13 +25,15 @@
 <fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>">
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
 <dl class="fields">
-% my $std = $step->{subtask_data};
+% my $std = do { my %s; for my $f ( @TASK_FIELDS ) {
+%     $s{$f} = delete $step->{$f} // next;
+% } %s ? \%s : undef };
 % if ( $std ) {
 % if ( !$name && $incr_prefix ) {
 <dt>ID prefix</dt>
 <dd class="input">
 <p class="help">A name for a task is found automatically on creation. Sometimes you may want to provide a prefix consisting of alphabetical characters. If the prefix exists, a number is appended and incremented until the ID is unique. You may suggest the number where the incrementing is to start.</p>
-<p class="input"><input name="incr_name_prefix"></p>
+<p class="input"><input name="incr_name_prefix" value="<%= $std->{incr_name_prefix} %>"></p>
 % }
 <dt>Title *</dt>
 <dd class="input"><input type="text" value="<%= $std->{title} %>" name="title" ></dd>
@@ -43,7 +50,7 @@
 <div class="input">
 <table class="time-stages">
 <tr><th>Time track</th><th>until</th></tr>
-% my $timeway = $std->{timeway} // [{ track => 'default' }];
+% my $timeway = $std->{timestages} // [{ track => 'default' }];
 % for my $stage ( @$timeway ) {
 <tr><td><select name="track">
 <option value="">-- Select suitable timetrack --</option>
@@ -88,21 +95,30 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 </fieldset>
 % end
 
+% while ( $steps ) {
 <form data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
 
-% for my $step (values %$steps) {
-%=    $render_fieldset->($step);
-% }
+%   for my $step (values %$steps) {
+%=      $render_fieldset->($step);
+%   }
 
-%= $render_fieldset->({ name => '_NEW_STEP_' });
+%=  $render_fieldset->({ name => '_NEW_STEP_' });
 
-% my $step_switcher_id = sprintf "steps-for-%s-tree", $id // "_NEW_TASK_";
-<div style="text-align:right;"><label for="<%= $step_switcher_id %>">Switch step:</label> <select id="<%= $step_switcher_id %>" name="step">
-% for my $step ( sort keys %$steps ) {
-% my $label = length $step ? $step : "MAIN ($id)";
-<option value="<%= $step %>"><%= $label %></option>
+%   my $step_switcher_id = sprintf "steps-for-%s-tree", $id // "_NEW_TASK_";
+    <div style="text-align:right;">
+    <label for="<%= $step_switcher_id %>">Switch step:</label>
+    <select id="<%= $step_switcher_id %>" name="step">
+%   for my $step ( sort keys %$steps ) {
+%       my $label = length $step ? $step : "MAIN ($id)";
+        <option value="<%= $step %>"><%= $label %></option>
+%   }
+    </select>
+    <button class="save-btn">Save all changes</button></div>
+    </form>
 % }
-</select> <button class="save-btn">Save all changes</button></div>
+% continue {
+%   $steps = delete $steps->{ '-next' };
+% }
 
 % if ( $bare_mode ) {
 <ul style="font-size:smaller;">
@@ -116,7 +132,6 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 
 <textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
 <input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
-</form>
 % }
 
 

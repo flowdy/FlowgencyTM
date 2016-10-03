@@ -13,7 +13,6 @@ has user_seqno => (
 has http_status => (
     is => 'rw',
     isa => 'Num',
-    default => 500,
 );
 
 has _remote_stack_trace => (
@@ -55,11 +54,19 @@ sub DEMOLISH { $last_error = undef; }
 
 }
 
+package FTM::Error::ObjectNotFound;
+use Moose;
+extends 'FTM::Error';
+
 package FTM::Error::IrresolubleDependency;
 use Moose;
 extends 'FTM::Error';
 
 package FTM::Error::User::DataInvalid;
+use Moose;
+extends 'FTM::Error';
+
+package FTM::Error::User::NotAuthorized;
 use Moose;
 extends 'FTM::Error';
 

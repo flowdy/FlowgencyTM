@@ -34,7 +34,10 @@ has tasks => (
     isa => 'FTM::User::Common::TaskManager',
     init_arg => undef,
     builder => '_build_tasks',
-    handles => { 'get_task' => 'get', 'search_tasks' => 'search' },
+    handles => {
+        'get_task' => 'get', 'search_tasks' => 'search',
+        '_parser' => 'get_tfls_parser',
+    },
     lazy => 1,
 );
 
@@ -118,8 +121,6 @@ sub update_time_model {
     });
 };
 
-sub _parser { shift->tasks->get_tfls_parser; }
-
 sub _build_tasks {
     my $self = shift;
     FTM::User::Common::TaskManager->new({
@@ -165,29 +166,53 @@ sub get_ranking {
 }
 
 sub get_task_data {
-    my ($self, $task, $steps) = @_[0,1];
+    my ($self, $task) = @_;
+    my ($data, $name);
+
+    my $process_all_get_chain_start = sub {
+        my ($sub, $first, $last) = (pop, undef, {});
+        for ( @_ ) { $sub->($_); }
+        continue {
+            $last->{ '-next' } = $_;
+            $last = $_; $first //= $_;
+        }
+        return $first;
+    };
 
     if ( ref $task eq 'HASH' ) {
         if ( my $t = $task->{task} ) {
             $task = $self->get_task($t);
         }
-        elsif ( my $tfls = $task->{lazystr} ) {
-            $task = $self->_parser->($tfls)->{task_obj};
+        elsif ( my $t = $task->{tasks} ) {
+            $data = $process_all_get_chain_start->(
+                @$t => sub { $_ = $self->get_task($t) }
+            );
+        }
+        elsif ( my $tfls = delete $task->{lazystr} ) {
+            my %options = %$task;
+            my @TASK_FIELDS = (FTM::FlowDB::Task->columns, 'incr_name_prefix');
+            $steps = $process_all_get_chain_start->(
+                $self->_parser( %options, -dry => 1 )->($tfls) => sub {
+                    for my $std_field ( @TASK_FIELDS ) {
+                        my $value = delete $_->{ $std_field } or next;
+                        $_->{subtask_data}{ $std_field } = $value;
+                    }
+                }
+            );
         }
         elsif ( !%$task ) {
-            $steps = $task = undef;
+            $data = $task = undef;
         }
         else {
             croak "No initial data supplied to get_task_data call";
         }
     }
 
-    if ( $task ) {
-        my %steps = map { $_->name => $_->dump }
-                        $task->main_step_row,
-                        $task->steps
-        ;
-        $steps = \%steps; 
+    if ( $task && ref $task ne 'HASH' ) {
+        $steps = { map { $_->name => $_->dump } $task->steps };
+        $data = $task->main_step_row->dump;
+        $data->{steps} = $steps; 
+        $name = $task->name;
     }
 
     my $priodir = $self->get_labeled_priorities;
@@ -196,55 +221,118 @@ sub get_task_data {
     @{$priodir}{'_max','_avg'} = ($priocol->max, $priocol->func('AVG') );
 
     return
-        steps => $steps, _priodir => $priodir,
+        data => $data, _priodir => $priodir, id => $name,
         tracks => [ $self->get_available_time_tracks ],
-        id => $task && $task->name,
 }
 
-sub __legacy_form_task_data {
-    my ($self, $args) = @_;
-
-    my $task;
-
-    if ( defined( my $lazystr = $args->{lazystr} ) ) {
-        $task = _parser($self)->($lazystr)->{task_obj};
+my %RESET = (
+    task => {
+        map( { $_ => undef } FTM::FlowDB::Task->list_properties ),
+        timestages => [], substeps => ''
+    },
+    step => {
+        description => undef, done => 0, checks => 1, expoftime_share => 1,
+        link => undef, parent => undef, pos => undef, substeps => '',
     }
-    else { $task = $self->get_task($args->{task}); }
-
-    return $self->get_task_data($task);
-}
+);
 
 sub fast_bulk_update {
     my ($self, $args) = @_;
 
     my ($status, %errors, @success);
 
+    my ($reset, $create) = delete @{$args};
+    my $parser; 
+
+    my $error_handler = sub {
+        my ($name, $e) = @_;
+        $status = index( ref $e, "FTM::Error::" ) == 0
+            ? $status || $e->http_status || 400
+            :                               500
+            ;
+        $errors{ $name } = $e;
+    };
+
+    my $resetter = sub {
+        my ($data, $steps, $slot) = (
+            shift, $data->{steps} // {}, $RESET{'task'}
+        );
+        for my $href ( $data, values %$steps ) {
+            while ( my ($key, $value) = each %$slot ) {
+                next if exists $href->{$key};
+                $href->{$key} = $value;
+            }
+        }
+        continue { $slot = $RESET{'step'} }
+    };
+
     while ( my ($task, $data) = each %$args ) {
 
-        my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
+        if ( ref $data ) {
 
-        my $method = $tmp_name ? 'add'
-                   : $data->{copy} || $data->{incr_name_prefix} ? 'copy'
-                   : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
-                   : 'update';
-
-        $data->{step} //= '';
-
-        try {
-            $task = FlowgencyTM::user->tasks->$method($task || (), $data)
-                and push @success, $task->name; # except for deleted tasks
-        }
-        catch {
-
-            $status = index(ref($_), "FTM::Error::") == 0
-                ? $status || 400
-                :            500
+            my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
+    
+            my $method
+                = $create eq 'task' || $tmp_name                ? 'add'
+                : $data->{copy} || $data->{incr_name_prefix}    ? 'copy'
+                : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
+                :                                                 'update'
                 ;
+    
+            $data->{step} //= '';
+    
+            if ( my $std = delete $data->{ subtask_data } ) {
+                while ( my ($key, $value) = each %$std ) {
+                    next if exists $data->{$key};
+                    $data->{$key} = $value;
+                }
+            }
 
-            $errors{ $task || $tmp_name } = $_;
+            $resetter->($data) if $reset;
 
-        };
-
+            try {
+                my $expected                 # Check existence:
+                    = !defined($create) ?  0 #  - no, does not matter
+                    : $create eq 'step' ?  1 #  - task must, step must not
+                    :                     -1 #  - both task and step must exist
+                    ;
+                my $tasks = FlowgencyTM::user->tasks;
+                if ( $expected ) { PRECONDITION_CHECK: {
+                    $expected++;
+                    my $t = $tasks->get($task);
+                    if ( !$t ) {
+                        FTM::Error::Task::InvalidDataToStore->throw(
+                            http_status => 409,
+                            message => "Task $task does not exist",
+                        ) if $create ne 'task';
+                        last PRECONDITION_CHECK;
+                    }
+                    for my $step ( keys %$data ) {
+                        next if !$step;
+                        FTM::Error::Task::InvalidDataToStore->throw(
+                            http_status => 409,
+                            message => "Step ", $step, "for task ", $task,
+                                $expected ? "does not exist" : "already exists"
+                        ) if $expected xor $t->step($step);
+                    }
+                }} # end of single iteration block in if-clause
+                $task = $tasks->$method( $task || (), $data )
+                    and push @success, $task->name; # except for deleted tasks
+            }
+            catch {
+                $error_handler->( ($tmp_name || $task) => $_ );
+            };
+        }
+        elsif ( $name eq '_NEW_TASKS' ) {
+            push @success, map { $_->{task_obj}->name }
+                           $self->_parser( -create => $create )->($data);
+        }
+        else {
+            $parser //= $self->_parser;
+            my $task = try { $parser->($data) } catch {
+                $error_handler->( ($tmp_name || $task) => $_ )
+            };
+        }
     }
 
     if ( %errors ) {
@@ -313,6 +401,25 @@ sub dump_complex_settings { my ($user) = @_; return
     weights => { $user->weights },
     priorities => $user->get_labeled_priorities,
     time_model => $user->dump_time_model,
+}
+
+sub delete_obj {
+    my ($self, $what) = @_;
+    ...
+
+    my ($task, $step) = @{$what}{'task', 'step'};
+
+    $task = $self->get_task($task) or return task => 0;
+
+    if ( $step ) {
+        $step = $task->step($step) or return step => 0;
+        $step->delete;
+        return step => 1;
+    }
+    else {
+        $self->_tasks->delete( $task->name );
+        return task => 1;
+    } 
 }
 
 sub realize_settings {
@@ -614,7 +721,7 @@ sub delete {
         $row->delete;
     }
     else {
-        carp "no task $name to delete";
+        croak "no task $name to delete";
         return;
     }
     return;
@@ -732,7 +839,7 @@ sub recalculate_dependencies {
 
 sub get_tfls_parser {
     my ($self, %opts) = @_;
-    my $dry_run = delete $opts{'-dry'};
+    my ($dry_run, $create) = delete @opts{'-dry', '-create'};
     my $common_modifier = delete $opts{'-modifier'} // sub {};
     my $parser = FTM::Util::TreeFromLazyStr->new({
         create_twig => \&_parse_taskstep_title,
@@ -760,7 +867,7 @@ sub get_tfls_parser {
                 delete @{$href}{'name','copy'};
                 $task = $self->copy( $name => $href );
             }
-            elsif ( $name and $task = $self->get($name) ) {
+            elsif ( $name && !$create and $task = $self->get($name) ) {
                 if ( $href->{step} ) {
                     if ( my $name = delete $href->{rename_to} ) {
                         $href->{name} = $name;
@@ -772,6 +879,8 @@ sub get_tfls_parser {
                 $task->store($href);
             }
             else {
+                croak "Task $name does not exist"
+                    if defined $create && !$create;
                 $task = $self->add($href);
             }
             $href->{task_obj} = $task;

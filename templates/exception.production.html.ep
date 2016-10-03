@@ -1,17 +1,14 @@
-% my $e = FTM::Error->last_error;
-% my ($type) = ref($e) =~ m/^FTM::Error::(.+)/;
-
 <h1>An error occurred</h1>
 
 <pre class="error">
-<%= $type ? $e->message : $user->can_admin ? ( ref $e ? $e->message : $e ) : "General error (s. log file)" %>
+<%= $message %>
 </pre>
 
 <p>If you want to make a bug report or ask the provider for support, please tell them the following metadata too, so they can find probably more information in the log file:</p>
 
-<p>Type: <code><%= $type || 'General server-side error' %></code> |
-% if (my $user_seqno = $e->user_seqno ) {
-Temporary FlowgencyTM user number: <code><%= $e->user_seqno %></code> |
+<p>Type: <code><%= $error %></code> |
+% if ($user_seqno) {
+Temporary FlowgencyTM user number: <code><%= $user_seqno %></code> |
 % }
 Time: <code><%= $current_time %></code></p>
 

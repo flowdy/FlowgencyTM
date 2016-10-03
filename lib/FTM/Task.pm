@@ -463,7 +463,7 @@ sub _store_root_step {
 
         $self->_handle_subtask_data_of( $data );
 
-        if ( my $l = delete $data->{link_id} ) {
+        if ( my $l = delete $data->{link} ) {
             $self->_tasks->link_step_row( $row => $l );
         }
         
@@ -555,7 +555,7 @@ sub _store_steps_below {
         if ( %$step ) {
             $step->{name} //= $name;
             my ($parent, $is_parent, $link)
-                = delete @{$step}{ 'parent', 'is_parent', 'link_id' };
+                = delete @{$step}{ 'parent', 'is_parent', 'link' };
             # Commented out that since steps hash can contain data to store
             # without there being hierarchical reorganisation:
             # die "Substep $name is missing its parent" if !defined $parent;
