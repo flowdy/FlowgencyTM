@@ -59,33 +59,20 @@ sub single {
     my $id = $self->_get_task;
     my $user = $self->stash("user");
 
-    if ( my $step = $self->stash('step') ) {
-        my $task = $user->get_task_data({ task => $id })
-            or FTM::Error::ObjectNotFound->throw(
-                message => "Could not find a task '$task'", http_status => 404
-            );
-        $step = $task->{step}{$step}
-            || FTM::Error::ObjectNotFound->throw(
-                message => "Could not find a step '$step'", http_status => 404
-            );
-        $c->render( json => $step );
-    }    
-    else {
-        my %args;
-        for my $p_name (@{ $self->req->params->names }) {
-            $args{$p_name} = $self->param($p_name);
-        }
-        $args{force_include} = $id;
-        my $render_data = $user->get_ranking(\%args);
-        my $list = $render_data->{list};
-        my $task = first({ $_->{name} eq $id } @$list)
-            // FTM::Error::ObjectNotFound->throw(
-                message => "Could not find a $task", http_status => 404
-            );
-        @$list = $task;
-        $c->respond_to( json => $task, html => $render_data );
-    } 
+    for my $p_name (@{ $self->req->params->names }) {
+        $args{$p_name} = $self->param($p_name);
+    }
+    $args{force_include} = $id;
+    my $render_data = $user->get_ranking(\%args);
+    my $list = $render_data->{list};
+    my $task = first({ $_->{name} eq $id } @$list)
+        // FTM::Error::ObjectNotFound->throw(
+            type => 'task', name => $id
+        );
+    @$list = $task;
+    $c->respond_to( json => $task, html => $render_data );
 
     return;
+
 }
 1;

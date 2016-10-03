@@ -18,8 +18,7 @@ sub form {
   # PATCH /tasks/:name/steps/:step, stash: new => 0
 
     my $self = shift;
-    my ($task, @res_tasks); 
-    my %data;
+    my ($task, %res, @res_tasks); 
     my $args = {};
     my $new_flag = $self->stash('new') // '';
     my $lazystr = $self->req->content_type eq 'text/plain'
@@ -29,43 +28,74 @@ sub form {
     my $step = $self->stash('step');
 
     if ( $self->req->method eq 'GET' ) {
+
         if ( defined $lazystr ) {
             $args->{lazystr} = $lazystr;
             $self->stash( incr_prefix => 1 );
         }
+        elsif ( my $d = $self->every_param('copy') ) {
+            $args->{tasks} = $d;
+        }
         else { $args = { task => $task }; }       
-        %data = $self->stash("user")->get_task_data($args);
+
+        %res = $self->stash("user")->get_task_data($args);
+
+        FTM::Error::ObjectNotFound->throw( type => 'task', name => $task )
+            if !$data{data};
+
+        if ( $step ) {
+            $step &&= $data{data}{steps}{$step}
+                || FTM::Error::ObjectNotFound->throw(
+                    type => 'step', name => $step
+                );
+            $self->render( json => $step );
+            return;
+        }
+        elsif ( $data{data}{ '-next' } ) {
+            my $task = $data{data};
+            my @tasks = $task;
+            while ( my $next = delete $tasks[-1]{ '-next' } ) {
+                push @tasks, $next;
+            }
+            $res{data} = \@tasks;
+        }
     }
+
     elsif ( $new_flag eq "task" ) {
-        $args = { _NEW_TASKS => $lazystr };
+        $args = $lazystr ? { _NEW_TASKS => $lazystr } : do {
+            my $tasks = decode_json $self->req->body;
+            my (%tasks, $count);
+            for my $t ( ref $tasks eq 'ARRAY' ? @$tasks : $tasks ) {
+                $tasks{ ( '_NEW_TASK_' . ++$count ) } = $t;
+            }
+            \%tasks;
+        };
         $args->{ '-create' } = 1; 
         @res_tasks = $self->stash("user")->fast_bulk_update($args);
     }
+
     elsif ( my $id = $self->_get_task ) {
-        my $ahref = decode_json($self->req->body);
-        $args->{$id} = $step ? { $step => $ahref } : $ahref;
+        my $ahref = $ahref->{$id} = decode_json $self->req->body;
+        if ( $step ) { $ahref->{step} = $step }
         @{$args}{'-reset','-create'} = ( $self->stash('reset'), $new_flag);
         @res_tasks = $self->stash("user")->fast_bulk_update($args);
     }
+
     else {
         croak "Server::TaskEditor::form(): general call error";
     }
 
     if ( @res_tasks ) {
-        %data = $self->stash("user")->get_task_data({ tasks => \@res_tasks });
+        %res = $self->stash("user")->get_task_data({ tasks => \@res_tasks });
     }
     
-    if ( $self->req->accept('', 'json')
+    if ( $$self->accept('', 'json')
       || index( $self->req->content_type, '/json' ) > 0
     ) {
-        my ($steps, @steps) = ($data{steps}, ());
-        while ( $steps ) { push @steps, $steps; }
-        continue { $steps = $steps->{ '-next' }; }
-        $data{steps} = \@steps if @steps > 1;
-        $self->render( json => $step ? $data[0]->{$step} : \%data );
+        $self->render( json => \%res );
     }
     else {
-        $self->render( %data, bare => $self->param('bare') );
+        $self->render( %res, bare => $self->param('bare') );
     }
 
     return;

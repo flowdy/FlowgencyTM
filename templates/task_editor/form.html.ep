@@ -12,6 +12,7 @@
 % );
 % my $steps = delete $data->{steps};
 % $steps->{''} = $data;
+% if ( $id ) { ($data->{incr_name_prefix}) = $id =~ /(\w+?)\d+$/; }
 % my @priorities = map { [ $_, $_priodir->{$_} ] } sort { $_priodir->{$a} <=> $_priodir->{$b} } keys %$_priodir;
 <p id="error-msg">
 % if ( my $message = stash 'message' ) {

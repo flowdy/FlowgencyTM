@@ -170,7 +170,8 @@ sub get_task_data {
     my ($data, $name);
 
     my $process_all_get_chain_start = sub {
-        my ($sub, $first, $last) = (pop, undef, {});
+        my ($first, $last) = (undef, {});
+        my $sub = ref $_[-1] eq 'CODE' ? pop : sub {};
         for ( @_ ) { $sub->($_); }
         continue {
             $last->{ '-next' } = $_;
@@ -191,13 +192,8 @@ sub get_task_data {
         elsif ( my $tfls = delete $task->{lazystr} ) {
             my %options = %$task;
             my @TASK_FIELDS = (FTM::FlowDB::Task->columns, 'incr_name_prefix');
-            $steps = $process_all_get_chain_start->(
-                $self->_parser( %options, -dry => 1 )->($tfls) => sub {
-                    for my $std_field ( @TASK_FIELDS ) {
-                        my $value = delete $_->{ $std_field } or next;
-                        $_->{subtask_data}{ $std_field } = $value;
-                    }
-                }
+            $data = $process_all_get_chain_start->(
+                $self->_parser( %options, -dry => 1 )->($tfls)
             );
         }
         elsif ( !%$task ) {
@@ -246,7 +242,7 @@ sub fast_bulk_update {
 
     my $error_handler = sub {
         my ($name, $e) = @_;
-        $status = index( ref $e, "FTM::Error::" ) == 0
+        $status = index( ref $e, "FTM::Error" ) == 0
             ? $status || $e->http_status || 400
             :                               500
             ;
@@ -271,23 +267,27 @@ sub fast_bulk_update {
         if ( ref $data ) {
 
             my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
-    
+
+            my $reset = $reset;
+            
+            my $incr = $data->{incr_name_prefix};
+            if ( !$data->{step} && $incr =~ s{(!!?)$}{} ) {
+                $data->{name} = delete $data->{incr_name_prefix};
+                unless ( $create = length($1) == 1 && 'task' ) {
+                    $task = delete $data->{name};
+                }
+                $reset = 1;
+            }
+
             my $method
                 = $create eq 'task' || $tmp_name                ? 'add'
-                : $data->{copy} || $data->{incr_name_prefix}    ? 'copy'
+                : delete $data->{copy}                          ? 'copy'
                 : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
                 :                                                 'update'
                 ;
     
             $data->{step} //= '';
     
-            if ( my $std = delete $data->{ subtask_data } ) {
-                while ( my ($key, $value) = each %$std ) {
-                    next if exists $data->{$key};
-                    $data->{$key} = $value;
-                }
-            }
-
             $resetter->($data) if $reset;
 
             try {
@@ -301,14 +301,13 @@ sub fast_bulk_update {
                     $expected++;
                     my $t = $tasks->get($task);
                     if ( !$t ) {
-                        FTM::Error::Task::InvalidDataToStore->throw(
+                        FTM::Error::ObjectNotFound->throw(
                             http_status => 409,
-                            message => "Task $task does not exist",
+                            type => 'task', name => $task
                         ) if $create ne 'task';
                         last PRECONDITION_CHECK;
                     }
-                    for my $step ( keys %$data ) {
-                        next if !$step;
+                    if ( my $step = $data->{step} ) {
                         FTM::Error::Task::InvalidDataToStore->throw(
                             http_status => 409,
                             message => "Step ", $step, "for task ", $task,

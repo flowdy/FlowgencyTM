@@ -58,6 +58,24 @@ package FTM::Error::ObjectNotFound;
 use Moose;
 extends 'FTM::Error';
 
+has +http_status => (
+    default => 404,
+);
+
+has type => (
+    isa => 'Str', required => 1
+);
+
+has name => (
+    isa => 'Str', required => 1
+);
+
+around message => sub {
+    my ($orig, $self) = @_;
+    return $self->$orig() // sprintf "No %s '%s' found",
+        $self->type, $self->name;
+};
+
 package FTM::Error::IrresolubleDependency;
 use Moose;
 extends 'FTM::Error';
@@ -69,6 +87,10 @@ extends 'FTM::Error';
 package FTM::Error::User::NotAuthorized;
 use Moose;
 extends 'FTM::Error';
+
+has +http_status = (
+    default => 401
+);
 
 package FTM::Error::Task::FailsToLoad;
 use Moose;

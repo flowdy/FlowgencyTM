@@ -61,7 +61,7 @@ function Ranking (args) {
     };
 
     this.rerank = function (e) {
-        var url = '/';
+        var url = '/todo';
         function rerank () {
             var n = $.param(nextload);
             window.location.href = url + ( n ? '?' + n : '' );
@@ -80,7 +80,7 @@ function Ranking (args) {
                 }
                 str_params[i] = JSON.stringify(changes);
             });
-            $.post('/update', str_params).done(function (response) {
+            $.post('/tasks', str_params).done(function (response) {
                 var tasks = Object.keys( response );
                 nextload.force_include = tasks.join(",");
                 delete nextload.update_tasks;

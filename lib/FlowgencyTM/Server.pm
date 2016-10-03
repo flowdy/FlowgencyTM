@@ -138,22 +138,24 @@ sub startup {
   $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");
 
   # Normal route to controller
-  $auth->get('/')->to('task_list#todos')->name('home');
+  $auth->get('/')->to(sub { shift->redirect_to('home'); });
+  $auth->get('/todo')->to('task_list#todos')->name('home');
+  $auth->get('/todo/:name')->to('task_list#single');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $auth->post('/newtask')->to('task_editor#form', new => 'task' );
 
   my $tasks = $auth->get( '/tasks')->to('task_list#all');
   $tasks->any( [qw|PATCH POST|] => '/')->to('task_editor#fast_bulk_update');  
-  $tasks->get('/:name')->to('task_list#single');
-  $tasks->get('/:name/form')->to('task_editor#form');
-  $tasks->post('/:name/form')->to('task_editor#form', new => 0 );
+  $tasks->get('/:name')->to('task_editor#form');
   $tasks->patch('/:name')->to('task_editor#form', new => 0 );
   $tasks->put('/:name')->to('task_editor#form', reset => 1);
   $tasks->delete('/:name')->to('task_editor#purge');
+  $tasks->get('/:name/form')->to('task_editor#form');
+  $tasks->post('/:name/form')->to('task_editor#form', new => 0 );
   $tasks->get('/:name/:action')->to('task_editor#$action');
   $tasks->post('/:name/open')->to("task_editor#open", ensure => 1);
   $tasks->post('/:name/close')->to("task_editor#open", ensure => 0);
-  $tasks->get('/:name/steps/:step')->to('task_list#single');
+  $tasks->get('/:name/steps/:step')->to('task_editor#form');
   $tasks->post('/:name/steps')->to('task_editor#form', new => 'step');
   $tasks->put('/:name/steps/:step')->to('task_editor#form', reset => 1);
   $tasks->patch('/:name/steps/:step')->to('task_editor#form', new => 0);
