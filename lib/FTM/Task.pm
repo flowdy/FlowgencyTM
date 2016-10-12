@@ -770,6 +770,14 @@ sub is_to_complete_otherwise_archive {
 
 }
  
+sub dump {
+    my $self = shift;
+    my $steps = { map { $_->name => $_->dump } $self->steps };
+    my $data = $self->main_step_row->dump;
+    $data->{steps} = $steps; 
+    return $data;
+}
+
 __PACKAGE__->meta->make_immutable();
 
 __END__

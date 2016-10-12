@@ -165,35 +165,66 @@ sub get_ranking {
     };
 }
 
+sub _inspire {
+    my ($self, $href) = @_;
+    my $copy = delete $href->{copy};
+    my %init;
+
+    if ( $copy &&= $self->get_task($copy) ) {
+        $copy = $copy->dump;
+    }
+    else { $copy = {} }
+
+    my $s = $href->{steps};
+    my %steps = ( '' => $href, $s ? %$s : () );
+    while ( my ($name, $step) = each %steps ) {
+        $step->{_init} = 1;
+        my $copy = $copy->{$name} // next;
+        while ( my ($field, $value) = each %$copy ) {
+            $step->{$field} //= $value;
+        }
+        for my $name ( split /\W/, $step->{substeps} // '' ) {
+            $href->{$name} //= $copy->{$name};
+        }
+    }
+    
+    for ( $href->{priority} // () ) {
+        $_ = $self->_priorities->{"n:$_"} if /\D/;
+    }
+
+}
+
 sub get_task_data {
     my ($self, $task) = @_;
     my ($data, $name);
 
+    my $task_dumper = sub {
+        my $task = $self->get_task(shift) // return;
+        return $task->dump;
+    };
+
     my $process_all_get_chain_start = sub {
-        my ($first, $last) = (undef, {});
         my $sub = ref $_[-1] eq 'CODE' ? pop : sub {};
-        for ( @_ ) { $sub->($_); }
-        continue {
-            $last->{ '-next' } = $_;
-            $last = $_; $first //= $_;
-        }
+        my ($first, $last) = (shift, {});
+        for ( $first, @_ ) { $sub->($self, $_); }
+        continue { $last = $last->{ '-next' } = $_; }
         return $first;
     };
 
     if ( ref $task eq 'HASH' ) {
         if ( my $t = $task->{task} ) {
-            $task = $self->get_task($t);
+            $data = $task_dumper->($t);
         }
-        elsif ( my $t = $task->{tasks} ) {
+        elsif ( $t = $task->{tasks} ) {
             $data = $process_all_get_chain_start->(
-                @$t => sub { $_ = $self->get_task($t) }
+                @$t => sub { $_ = $task_dumper->($_) }
             );
         }
         elsif ( my $tfls = delete $task->{lazystr} ) {
             my %options = %$task;
             my @TASK_FIELDS = (FTM::FlowDB::Task->columns, 'incr_name_prefix');
             $data = $process_all_get_chain_start->(
-                $self->_parser( %options, -dry => 1 )->($tfls)
+                $self->_parser( %options, -dry => 1 )->($tfls) => \&_inspire
             );
         }
         elsif ( !%$task ) {
@@ -204,20 +235,13 @@ sub get_task_data {
         }
     }
 
-    if ( $task && ref $task ne 'HASH' ) {
-        $steps = { map { $_->name => $_->dump } $task->steps };
-        $data = $task->main_step_row->dump;
-        $data->{steps} = $steps; 
-        $name = $task->name;
-    }
-
     my $priodir = $self->get_labeled_priorities;
     my $priocol = $self->tasks->task_rs
         ->search({ archived_because => undef })->get_column('priority');
     @{$priodir}{'_max','_avg'} = ($priocol->max, $priocol->func('AVG') );
 
     return
-        data => $data, _priodir => $priodir, id => $name,
+        presets => $data, _priodir => $priodir, id => $name,
         tracks => [ $self->get_available_time_tracks ],
 }
 
@@ -227,8 +251,8 @@ my %RESET = (
         timestages => [], substeps => ''
     },
     step => {
-        description => undef, done => 0, checks => 1, expoftime_share => 1,
-        link => undef, parent => undef, pos => undef, substeps => '',
+        map( { $_ => undef } qw( description link parent pos ) ),
+        done => 0, checks => 1, expoftime_share => 1, substeps => '',
     }
 );
 
@@ -237,7 +261,7 @@ sub fast_bulk_update {
 
     my ($status, %errors, @success);
 
-    my ($reset, $create) = delete @{$args};
+    my ($reset, $create) = delete @{$args}{'-reset','-create'};
     my $parser; 
 
     my $error_handler = sub {
@@ -250,9 +274,9 @@ sub fast_bulk_update {
     };
 
     my $resetter = sub {
-        my ($data, $steps, $slot) = (
-            shift, $data->{steps} // {}, $RESET{'task'}
-        );
+        my $data = shift;
+        my $steps = $data->{steps} // {};
+        my $slot = $RESET{'task'};
         for my $href ( $data, values %$steps ) {
             while ( my ($key, $value) = each %$slot ) {
                 next if exists $href->{$key};
@@ -264,9 +288,9 @@ sub fast_bulk_update {
 
     while ( my ($task, $data) = each %$args ) {
 
-        if ( ref $data ) {
+        my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
 
-            my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
+        if ( ref $data ) {
 
             my $reset = $reset;
             
@@ -279,9 +303,10 @@ sub fast_bulk_update {
                 $reset = 1;
             }
 
+            my $copy = delete $data->{copy};
             my $method
                 = $create eq 'task' || $tmp_name                ? 'add'
-                : delete $data->{copy}                          ? 'copy'
+                : $copy                                         ? 'copy'
                 : ($data->{archived_because}//q{}) eq '!PURGE!' ? 'delete'
                 :                                                 'update'
                 ;
@@ -315,14 +340,14 @@ sub fast_bulk_update {
                         ) if $expected xor $t->step($step);
                     }
                 }} # end of single iteration block in if-clause
-                $task = $tasks->$method( $task || (), $data )
+                $task = $tasks->$method( $copy || $task || (), $data )
                     and push @success, $task->name; # except for deleted tasks
             }
             catch {
                 $error_handler->( ($tmp_name || $task) => $_ );
             };
         }
-        elsif ( $name eq '_NEW_TASKS' ) {
+        elsif ( $task eq '_NEW_TASKS' ) {
             push @success, map { $_->{task_obj}->name }
                            $self->_parser( -create => $create )->($data);
         }
@@ -404,7 +429,6 @@ sub dump_complex_settings { my ($user) = @_; return
 
 sub delete_obj {
     my ($self, $what) = @_;
-    ...
 
     my ($task, $step) = @{$what}{'task', 'step'};
 
@@ -636,7 +660,7 @@ sub _build_task_obj {
 sub _next_unused_name {
     my ($self, $prefix) = @_;
     $prefix //= q{};
-    my $min = max(
+    my $max = max(
         $prefix =~ s{ 0* (\d+) \z }{}xms ? $1 : 0,
         $self->task_rs->search(
             [ \qq{rtrim(me.name,"0123456789")=='$prefix'} ],
@@ -646,17 +670,25 @@ sub _next_unused_name {
         )->get_column('number')->max() || 0,
     );
 
-    return $prefix.($min+1);
+    return $prefix.($max+1);
     
 }
 
 sub get {
     my ($self, $name) = @_;
 
-    return $self->cache->{$name} ||= do {
-        my $t = $self->task_rs->find({ name => $name }) || return;
-        $self->_build_task_obj($t);
-    };
+    my $c = $self->cache;
+    return $_ if $_ = $c->{$name};
+
+    my $t = $self->task_rs->find({ name => $name }) || return;
+    $t = $self->_build_task_obj($t);
+
+    if ( $t->is_archived ) {
+        return $t;
+    }
+    else {
+        return $c->{$name} = $t;
+    }
 }
 
 sub add {
@@ -683,8 +715,9 @@ sub copy {
     my $base_row = $self->tasks_rs->find($existing_task_name)
         // croak "No task with name $existing_task_name found";
 
-    my $name = delete $md_href->{name}
-            // $self->_next_unused_name($existing_task_name);
+    my $name = delete $md_href->{name} // $self->_next_unused_name(
+                   delete $md_href->{incr_name_prefix} // $existing_task_name
+               );
 
     return $self->cache->{$name}
          = $base_row->result_source->storage->txn_do(sub {
@@ -1073,7 +1106,6 @@ sub list {
                 // die "Could not cache task $task: $@";
 
         if ( $task->is_archived ) {
-            delete $self->cache->{ $task->name };
             push @in_archive, $task;
         }
         elsif ( $task->start_ts > $now ) {

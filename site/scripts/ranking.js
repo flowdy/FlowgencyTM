@@ -35,14 +35,17 @@ $(function () {
                     '<div class="extended-info" ><em>Loading ...</em></div>'
                 );
             ext.appendTo(plan);
-            ext.load("/task/" + plan.data("id") + "/open", function () {
+            $.post("/tasks/" + plan.data("id") + "/open", {}, function (response) {
+                ext.find("em").replaceWith(response);
                 ftm.dynamizechecks(plan);
             });
             plan.addClass("open");
             plan.data('isOpen', true);
             header.unbind("click").click(toggler.bind(plan));
         });
-    }).end().on('click', '.edit-btn', function (e) {
+    });
+
+    $('#plans').on('click', '.edit-btn', function (e) {
         e.preventDefault();
         var url = this.href;
         $(this).parents(".extended-info").load(url + '?bare=1', function () {
@@ -65,13 +68,13 @@ $(function () {
     ;
 
     new_task_icon.replaceAll(".add-newtask-btn span")
-        .first("a").click(insert_new_task_form)
-        .find("button").click(function (e) {
-            e.preventDefault();
-            var icon = $(this).closest(".menu").prev("a");
-            if ( icon ) icon.click();
-            else console.log("No icon found");
-        });   
+        .first("a").click(insert_new_task_form);
+    new_task_icon.find("button").click(function (e) {
+        e.preventDefault();
+        var icon = $(this).closest(".menu").prev("a");
+        if ( icon ) icon.click();
+        else console.log("No icon found");
+    });   
 
     $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
  
@@ -106,14 +109,16 @@ $(function () {
     function insert_new_task_form (e) {
         e.preventDefault();
         var lazystr = $(this).next().find("textarea").val();
+        console.log("Inserting new task form (lazystr: " + lazystr + ")");
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         var newtasks = $('<li>Loading form(s) for new task(s) ...</li>');
-        newtasks.load(this.href + "?bare=1" + lazystr, function () {
-            $(this).find(".taskeditor").each(function () {
+        $.get(this.href + "?bare=1" + lazystr, function (ntdata) {
+            ntdata = $(ntdata);
+            newtasks.hide().append(ntdata);
+            newtasks.find(".taskeditor").each(function () {
                 ++new_task_count;
                 var nt = $("<li>"),
-                    header = $("<header><h2>").appendTo(nt)
-                               .children().first().text(
+                    header = $("<header><h2>").children().first().text(
                                   "New task #" + new_task_count
                              ),
                     te = $(this),
@@ -138,22 +143,22 @@ $(function () {
                 ftm.dynamize_taskeditor(te);
 
                 var title = te.find(":input[name=title]").first();
-                title.change(function () {
+         
+                function put_newtitle_into_header (e) {
                     $(header).text(this.value);
-                });
-                if ( title.val().length ) title.change();
+                }
 
-                te.find(":input").filter(function() {
-                    return Object.hasProperty(this, 'selected')
-                        ? this.selected : $(this).val().length
-                        ? true : false
-                        ;
-                }).change();
-                nt.replace(te);
-                nt.append(te);
+                title.on('change', put_newtitle_into_header);
+                if ( title.val().length )
+                    put_newtitle_into_header.apply(title.get(0));
+
+                te.wrap(nt).before(header);
+
              });
-        });
-        $('#plans').prepend(newtasks);
+             newtasks.children().prependTo('#plans');
+             newtasks.remove();
+        }, 'html');
+        $('#plans').before(newtasks);
         $('#leftnav').hide();
     }
 

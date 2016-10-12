@@ -22,16 +22,11 @@ sub todos {
   
     my $tasks = $self->stash('user')->get_ranking( \%args );
   
-    if ( $self->accepts('', 'json') ) {
-        $self->render( json => $tasks );
-    }
-    else {  
-        $self->res->headers->cache_control('max-age=1, no-cache');
-        $self->render(
-            %$tasks,
-            force_include => \@force_include,
-        );
-    }
+    $self->res->headers->cache_control('max-age=1, no-cache');
+    $self->render(
+        %$tasks,
+        force_include => \@force_include,
+    );
 
     return;
 }
@@ -52,25 +47,25 @@ sub all {
 }
 
 sub single {
-  # GET /tasks/:name
-  # GET /tasks/:name/steps/:step
+  # GET /todo/:name
     my $self = shift;
     
     my $id = $self->_get_task;
     my $user = $self->stash("user");
 
+    my %args;
     for my $p_name (@{ $self->req->params->names }) {
         $args{$p_name} = $self->param($p_name);
     }
     $args{force_include} = $id;
     my $render_data = $user->get_ranking(\%args);
     my $list = $render_data->{list};
-    my $task = first({ $_->{name} eq $id } @$list)
-        // FTM::Error::ObjectNotFound->throw(
+    my $task = first { $_->{name} eq $id } @$list;
+    FTM::Error::ObjectNotFound->throw(
             type => 'task', name => $id
-        );
+    ) if !$task;
     @$list = $task;
-    $c->respond_to( json => $task, html => $render_data );
+    $self->respond_to( json => $task, html => $render_data );
 
     return;
 

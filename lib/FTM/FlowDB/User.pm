@@ -14,7 +14,8 @@ __PACKAGE__->add_columns(qw/
 
 __PACKAGE__->add_column(extprivacy => {
     data_type => 'TINYINT',
-    default_value => 0
+    default_value => 0,
+    is_nullable => 1, # for showcase users
 });
 
 __PACKAGE__->add_column('appendix' => {

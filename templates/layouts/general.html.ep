@@ -31,8 +31,8 @@
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
             <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
             <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks">later</label>
-            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
-            <input id="list-future-tasks" type="checkbox" name="drawer" <%== $filteropts{"drawer"} & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
+            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
+            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
         </li>
         <li>Search tasks:<br />
         <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>
@@ -69,6 +69,9 @@
   </header>
 
 <div id="page">
+% if ( $showcase_mode ) {
+<p class="showcase-note">Please note: You are just viewing what showcase user '<%= $user->username %>' has entered. You cannot submit anything, which is why actions might be without effect or even yield errors about unauthorized access. Please <a href="/user/login">register/login as a regular user</a> in order to test FlowgencyTM further.<p>
+% }
 <%= content %>
 
 <footer>

@@ -253,16 +253,23 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         task_name = fieldset.parent().data("taskid");
     var step_name = fieldset.attr('id').replace("step-" + task_name + "-","");
     if (step_name == '') step_name = null;
-    var step = ftm.get( task_name, step_name );
+    var step = ftm.get( task_name, step_name ),
+        init = fieldset.data('init') || {};
+
     function update (field) {
         if ( field.type == "radio" || field.type == "checkbox"
             ? field.defaultChecked == field.checked
             : field.defaultValue == field.value
-           ) step.drop(field.name);
-        else step[field.name] = field.value;
-        console.info("Changed field " + field.name + " for step "
-            + step.name + " to " + step[field.name]
-        );
+           ) {
+            step.drop(field.name);
+            console.info(field.name + " reset.");
+        }
+        else {
+            step[field.name] = field.value;
+            console.info("Changed field " + field.name + " for step "
+                + step.name + " to " + step[field.name]
+            );
+        }
         ftm.reg_changes();   
     };
 
@@ -362,7 +369,6 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
             }
             var current = dl.accordion("option", "active"),
                 next = current + 1 === acc_length ? 0 : current + 1;
-                // dl.accordion("activate",next); // pre jQuery UI 1.10
             dl.accordion("option", "active", next);
             dl.find(".ui-accordion-header-active").focus();
             e.preventDefault();
@@ -373,6 +379,14 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
         .data("acceptChangeHandler")(default_change_handler);
 
     fieldset.find("input[type=datetime]").each(function() { DateTimePicker.apply(this); });
+
+    remaining_fields.unshift('priority', 'checks', 'timestages', 'substeps');
+    remaining_fields.forEach(function (field) {
+        var value = init[field];
+        if ( value === undefined ) return;
+        update({ name: field, value: value });
+    });
+        
 };
 
 function StepTree (taskname) {

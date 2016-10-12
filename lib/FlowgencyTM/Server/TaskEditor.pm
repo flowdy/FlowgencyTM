@@ -18,47 +18,46 @@ sub form {
   # PATCH /tasks/:name/steps/:step, stash: new => 0
 
     my $self = shift;
-    my ($task, %res, @res_tasks); 
     my $args = {};
     my $new_flag = $self->stash('new') // '';
-    my $lazystr = $self->req->content_type eq 'text/plain'
-        ? $self->req->body
-        : $self->param('lazystr')
-        ;
+
+    my $lazystr
+        = ($self->req->headers->content_type//q{}) eq 'text/plain'
+        ? $self->req->body : $self->param('lazystr');
+
     my $step = $self->stash('step');
 
+    my ($task, %res, @res_tasks); 
+
     if ( $self->req->method eq 'GET' ) {
+
+        my $t = $self->every_param('copy');
 
         if ( defined $lazystr ) {
             $args->{lazystr} = $lazystr;
             $self->stash( incr_prefix => 1 );
         }
-        elsif ( my $d = $self->every_param('copy') ) {
-            $args->{tasks} = $d;
+        elsif ( @$t ) {
+            $args->{tasks} = $t;
         }
-        else { $args = { task => $task }; }       
+        elsif ( $t = $self->_get_task ) {
+            $args->{task} = $t;
+        }
 
         %res = $self->stash("user")->get_task_data($args);
 
         FTM::Error::ObjectNotFound->throw( type => 'task', name => $task )
-            if !$data{data};
+            if %$args && !$res{presets};
 
         if ( $step ) {
-            $step &&= $data{data}{steps}{$step}
+            $step = $res{presets}{steps}{$step}
                 || FTM::Error::ObjectNotFound->throw(
                     type => 'step', name => $step
                 );
             $self->render( json => $step );
             return;
         }
-        elsif ( $data{data}{ '-next' } ) {
-            my $task = $data{data};
-            my @tasks = $task;
-            while ( my $next = delete $tasks[-1]{ '-next' } ) {
-                push @tasks, $next;
-            }
-            $res{data} = \@tasks;
-        }
+
     }
 
     elsif ( $new_flag eq "task" ) {
@@ -75,23 +74,17 @@ sub form {
     }
 
     elsif ( my $id = $self->_get_task ) {
-        my $ahref = $ahref->{$id} = decode_json $self->req->body;
+        my $ahref = $args->{$id} = decode_json $self->req->body;
         if ( $step ) { $ahref->{step} = $step }
         @{$args}{'-reset','-create'} = ( $self->stash('reset'), $new_flag);
         @res_tasks = $self->stash("user")->fast_bulk_update($args);
     }
 
     else {
-        croak "Server::TaskEditor::form(): general call error";
+        croak "Server::TaskEditor::form(): missing task name";
     }
 
-    if ( @res_tasks ) {
-        %res = $self->stash("user")->get_task_data({ tasks => \@res_tasks });
-    }
-    
-    if ( $$self->accept('', 'json')
-      || index( $self->req->content_type, '/json' ) > 0
-    ) {
+    if ( $self->stash("is_restapi_req") ) {
         $self->render( json => \%res );
     }
     else {
@@ -101,30 +94,6 @@ sub form {
     return;
 
 }
-
-sub post {
-    #
-    # OBSOLETE:
-    #
-    # my $self = shift;
-    # my $task = $self->_get_task;
-    # my $sub = $task ? sub { $_->{oldname} = $task->name } : sub {};
-
-    # my $tfls = $self->param('tfls');
-    # try { _parser->( $tfls, $sub ); }
-    # catch {
-    #      my $e = shift;
-    #      $self->render(
-    #          action => 'form', message => $e, input => $tfls,
-    #          FlowgencyTM::user->get_task_data($task)
-    #      );
-    #      0;
-    # } or return;
-
-    # $self->redirect_to('home');
-    #
-}
-
 sub open {
   # GET /tasks/:name/open
   # POST /tasks/:name/open, ensure => 1
@@ -135,24 +104,24 @@ sub open {
         id => $task,
         ensure => $self->stash('ensure'),
     });
-    $self->render( details => $open );
+    $self->render( id => $task, details => $open );
 }
 
 sub fast_bulk_update {
     my $self = shift;
 
     my ($data, %errors, $status);
-    my $ct = $self->req->content_type;
-    if ( $ct eq 'text/plain' ) {
+    my $ct = $self->req->headers->content_type;
+    if ( index( $ct, 'text/plain' ) == 0 ) {
         my $count;
         for my $t ( $self->_parser( -dry => 1 )->($self->req->body) ) {
             $data->{ $t->{name} || ( '_NEW_TASK_' . ++$count ) } = $t;
         }
     }
-    elsif ( $ct eq 'application/json' ) {
+    elsif ( index($ct, 'application/json') > -1 ) {
         $data = decode_json $self->req->body;
     }
-    elsif ( $ct eq 'application/x-www-form-urlencoded' ) {
+    elsif ( index($ct, 'application/x-www-form-urlencoded') == 0 ) {
         for my $task (@{ $self->req->params->names }) {
             my $tdata = $self->param($task);
             $data->{$task} = from_json $tdata;
@@ -160,10 +129,12 @@ sub fast_bulk_update {
     }
     else {
         FTM::Error::->throw(
-            "fast_bulk_update called "
-            . ( $ct ? "with unsupported type of request body content: $ct"
-                    : "without mandatory request body content"
-            )
+            http_status => 400,
+            message =>
+                "fast_bulk_update called " . (
+                    $ct ? "with unsupported type of request body content: $ct"
+                        : "without mandatory request body content"
+                )
         )
     }
 
@@ -177,6 +148,9 @@ sub fast_bulk_update {
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
             %errors = %{ $_->all };
+            while ( my ($task, $e) = each %errors ) {
+                $self->app->log->error("Form processing failed for task $task: '$e'");
+            }
             for my $e ( values %errors ) {
                 $e = $e->can('message') ? $e->message : "$e" if ref $e;
             }
@@ -195,16 +169,23 @@ sub analyze {
     my $self = shift;
     my $task = $self->_get_task;
 
-    my $dynamics = FlowgencyTM::user->get_dynamics_of_task({ id => $task });
+    my $dynamics = FlowgencyTM::user->get_dynamics_of_task({ id => $task,  });
 
-    $self->render( %$dynamics );
+    if ( my $o = $self->param('only') ) {
+        $dynamics = $dynamics->{$o} // FlowgencyTM::ObjectNotFound->throw(
+            "Analysis aspect not known: $o"
+        );
+    }
+
+    $self->render(
+        $self->stash('is_restapi_req') ? (json => $dynamics) : %$dynamics
+    );
 }
 
 sub purge {
   # DELETE /tasks/:name
   # DELETE /tasks/:name/steps/:step
     my $self = shift;
-    my $task = $self->get_task;
     $self->stash("user")->delete_obj({
         task => $self->get_task,
         step => $self->stash("step"),
@@ -215,21 +196,6 @@ sub _get_task {
     my $self = shift;
     my $id = $self->stash('name');
     return $id;
-}
-
-sub _markdown {
-    my ($text, %opts) = @_;
-    
-    return $text if !eval "require Text::Markdown";
-
-    if ( my $add = $opts{incr_heading_level} ) {
-        my $h = '#' x $add;
-        $text =~ s{ ^ (\#+) }{$h.$1}egxms;
-        $text =~ s{ ^ ([^\n]+) \n ([=-])\2+ }
-                  { $h .( $2 eq '-' ? '##' : '#' ).' '.$1 }egxms;
-    }
-
-    return Text::Markdown::Markdown($text);
 }
 
 1;

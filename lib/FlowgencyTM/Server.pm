@@ -9,6 +9,8 @@ use POSIX qw(strftime);
 # use Tie::File;
 # tie my @SLOGAN => 'Tie::File', 'slogans.txt';
 
+my @INIT_STASH_SLOTS = qw(user is_restapi_req layout is_remote hoster_info);
+
 # This method will run once at server start
 sub startup {
   my $self = shift;
@@ -49,7 +51,7 @@ sub startup {
       my ($time, $level, @lines) = @_;
       $time = strftime( "%Y-%m-%d %H:%M:%S", localtime $time );
       my $last_error = FTM::Error::last_error();
-      my $usn = "FTM::U".( $last_error ? $last_error->user_seqno() : '?' );
+      my $usn = "FTM::U".( $last_error ? $last_error->user_seqno // '-' : '?' );
       return sprintf "$usn [$time] [$level] %s\n",
           @lines > 1 ? ": ". join("", map { "\n\t".$_ } @lines )
                      : " ".$lines[0]
@@ -65,9 +67,14 @@ sub startup {
       my $is_remote
           = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
 
+      my $ct = $c->req->headers->content_type;
+
       $c->stash(
           is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
+          is_restapi_req => $ct ? $ct ne 'application/x-www-form-encoded'
+                          :       $c->accepts('', 'json'),
           current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
+          showcase_mode => 0,
       );
 
       $c->stash(
@@ -75,18 +82,31 @@ sub startup {
       ) if !$c->stash('hoster_info');
 
       return 1;
+
   });
 
   $self->hook( before_render => sub {
       my ($c, $args) = @_;
+
       my $tmpl = $args->{template};
-      $tmpl && $tmpl eq 'exception' or return;
-      $c->accepts('json') || $self->mode eq 'production' or return;
-      error_handler( $c => delete $args->{exception} );
+      my $is_restapi_req = $c->stash('is_restapi_req');
+      prepare_error( $c => delete $args->{exception} )
+          if $tmpl && $tmpl eq 'exception' && (
+              $is_restapi_req || $self->mode eq 'production'
+          );
+
+      $args->{json} //= do {
+          my %stash = %{ $c->stash };
+          delete @stash{ @INIT_STASH_SLOTS };
+          \%stash;
+      } if $is_restapi_req;
+
   });
 
   my $auth = $r->under(sub {
       my $c = shift;
+
+      my $is_restapi_req = $c->stash('is_restapi_req');
 
       # Prevent autologin unless server is requested from the same machine
       local $ENV{FLOWGENCYTM_USER} = undef if $c->stash('is_remote');
@@ -96,29 +116,25 @@ sub startup {
       # user id is defined, the user has certainly logged in properly.
       # Refer to `perldoc Mojolicious::Controller` if interested.
       # If the REST application programing interface is used, there is no
-      # cookie. To stay "RESTful", we choose a different approach by relying
-      # on Authentication header.
-      my $user_id = $c->accepts('', 'json')
-                  ? $self->authenticate_rest_user($c)
-                    || FTM::Error::User::NotAuthorized->throw(
-                           http_status => 401, 
-                           message => 'User may not use REST API. '
-                              . 'Conditions to check: '
-                              . 'a) With a remote server, connect by HTTPS. '
-                              . 'b) The user must be registered and activated. '
-                              . 'c) The right password is provided.'
-                       )
-                  : $c->session('user_id')
-                  ;
+      # cookie. To stay "RESTful", we rely on HTTP header "Authentification".
+      my $user_id = $c->session('user_id') || $self->authenticate_user($c);
 
       if ( !$user_id and $user_id = $ENV{FLOWGENCYTM_USER} ) {
-          $c->session( user_id => $user_id );
+          $c->session( user_id => $user_id ) unless $is_restapi_req;
       }
 
-      my $user = defined($user_id) && FlowgencyTM::user( $user_id );
-      if ( $user && $user->can_login ) {
-          $c->stash( user => $user );
+      if ( $user_id and my $u = FlowgencyTM::user( $user_id ) ) {
+          $c->stash( user => $u );
           return 1;
+      }
+      elsif ( $is_restapi_req || $c->req->method ne "GET" ) {
+          FTM::Error::User::NotAuthorized->throw(
+              http_status => 401, 
+              message => 'Unauthorized Access. '
+                  . 'The user must be registered and activated. '
+                  . 'If it is a regular user, provide the right password. '
+                  . 'If a showcase user, only view requests are allowed.'
+          );
       }
       else {
           $c->redirect_to("/user/login");
@@ -138,28 +154,29 @@ sub startup {
   $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");
 
   # Normal route to controller
-  $auth->get('/')->to(sub { shift->redirect_to('home'); });
   $auth->get('/todo')->to('task_list#todos')->name('home');
   $auth->get('/todo/:name')->to('task_list#single');
   $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
   $auth->post('/newtask')->to('task_editor#form', new => 'task' );
-
-  my $tasks = $auth->get( '/tasks')->to('task_list#all');
-  $tasks->any( [qw|PATCH POST|] => '/')->to('task_editor#fast_bulk_update');  
-  $tasks->get('/:name')->to('task_editor#form');
-  $tasks->patch('/:name')->to('task_editor#form', new => 0 );
-  $tasks->put('/:name')->to('task_editor#form', reset => 1);
-  $tasks->delete('/:name')->to('task_editor#purge');
-  $tasks->get('/:name/form')->to('task_editor#form');
-  $tasks->post('/:name/form')->to('task_editor#form', new => 0 );
-  $tasks->get('/:name/:action')->to('task_editor#$action');
-  $tasks->post('/:name/open')->to("task_editor#open", ensure => 1);
-  $tasks->post('/:name/close')->to("task_editor#open", ensure => 0);
-  $tasks->get('/:name/steps/:step')->to('task_editor#form');
-  $tasks->post('/:name/steps')->to('task_editor#form', new => 'step');
-  $tasks->put('/:name/steps/:step')->to('task_editor#form', reset => 1);
-  $tasks->patch('/:name/steps/:step')->to('task_editor#form', new => 0);
-  $tasks->delete('/:name/steps/:step')->to('task_editor#purge');
+  $auth->get('/' => sub { shift->redirect_to('home'); });
+  $auth->get("/tasks")->to("tasks_list#all");
+  $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#fast_bulk_update');  
+  $auth->get('/tasks/:name')->to('task_editor#form');
+  $auth->patch('/tasks/:name')->to('task_editor#form', new => 0 );
+  $auth->put('/tasks/:name')->to('task_editor#form', reset => 1);
+  $auth->delete('/tasks/:name')->to('task_editor#purge');
+  $auth->get('/tasks/:name/form')->to('task_editor#form');
+  $auth->post('/tasks/:name/form')->to('task_editor#form', new => 0 );
+  $auth->get('/tasks/:name/:action')->to('task_editor#$action');
+  $auth->post('/tasks/:name/open')->to("task_editor#open", ensure => 1);
+  $auth->post('/tasks/:name/close')->to(
+      controller => "task_editor", action => "open", ensure => 0
+  );
+  $auth->get('/tasks/:name/steps/:step')->to('task_editor#form');
+  $auth->post('/tasks/:name/steps')->to('task_editor#form', new => 'step');
+  $auth->put('/tasks/:name/steps/:step')->to('task_editor#form', reset => 1);
+  $auth->patch('/tasks/:name/steps/:step')->to('task_editor#form', new => 0);
+  $auth->delete('/tasks/:name/steps/:step')->to('task_editor#purge');
 
   $auth->any([qw/GET POST/] => '/user/settings')
        ->to('user#settings');
@@ -171,27 +188,27 @@ my $started_time;
 BEGIN { $started_time = scalar localtime(); }
 sub get_started_time { $started_time; }
 
-sub authenticate_rest_user {
+sub authenticate_user {
     my ($self, $c) = @_;
-
-    return if !$c->req->is_secure && $c->stash('is_remote');
 
     my ($user, $password) = split /:/, $c->req->url->to_abs->userinfo, 2;
 
     return if !$user;
 
-    for ( FlowgencyTM::user($user) // () ) {
-        return $user if $_->can_login && $_->password_equals($password);
-    } 
+    my $u = FlowgencyTM::user($user) // return;
 
-    return;
+    return $user
+        if ( $u->can_login && $password && $u->password_equals($password) )
+        or ( !defined $u->ext_privacy && $c->req->method eq 'GET'
+          && $c->stash("showcase_mode" => 1)
+           )
+        ;
 
 }
 
-sub error_handler {
+sub prepare_error {
     my ($c, $x) = @_;
-    my $stash = $c->stash;
-    my ($user) = delete @{$stash}{'user', 'is_remote', 'hoster_info'};
+    my $user = $c->stash("user");
     if ( index( ref $x, 'FTM::Error' ) == 0 ) {
         $c->res->code( $x->http_status // 500 );
         my ($type) = ref($x) =~ /^FTM::Error::(.+)$/;
@@ -210,11 +227,5 @@ sub error_handler {
                 : "Something went wrong (details in server log)",
         );
     }
- 
-    if ( $c->accepts('', 'json') ) {
-        my $stash = $c->stash;
-        $args->{json} = $stash;
-    }
-
 }
 1;
