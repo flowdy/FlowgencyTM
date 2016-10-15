@@ -97,7 +97,10 @@ sub startup {
 
       $args->{json} //= do {
           my %stash = %{ $c->stash };
-          delete @stash{ @INIT_STASH_SLOTS };
+          delete @stash{
+              @INIT_STASH_SLOTS,
+              grep /^mojo\./, %stash
+          };
           \%stash;
       } if $is_restapi_req;
 
@@ -106,39 +109,18 @@ sub startup {
   my $auth = $r->under(sub {
       my $c = shift;
 
-      my $is_restapi_req = $c->stash('is_restapi_req');
-
-      # Prevent autologin unless server is requested from the same machine
-      local $ENV{FLOWGENCYTM_USER} = undef if $c->stash('is_remote');
-          
-      # Rely on Mojolicious in that the session cookie be cryptographically
-      # protected against manipulation (HMAC-SHA1 signature). Hence, if the
-      # user id is defined, the user has certainly logged in properly.
-      # Refer to `perldoc Mojolicious::Controller` if interested.
-      # If the REST application programing interface is used, there is no
-      # cookie. To stay "RESTful", we rely on HTTP header "Authentification".
-      my $user_id = $c->session('user_id') || $self->authenticate_user($c);
-
-      if ( !$user_id and $user_id = $ENV{FLOWGENCYTM_USER} ) {
-          $c->session( user_id => $user_id ) unless $is_restapi_req;
-      }
-
-      if ( $user_id and my $u = FlowgencyTM::user( $user_id ) ) {
-          $c->stash( user => $u );
-          return 1;
-      }
-      elsif ( $is_restapi_req || $c->req->method ne "GET" ) {
-          FTM::Error::User::NotAuthorized->throw(
-              http_status => 401, 
-              message => 'Unauthorized Access. '
-                  . 'The user must be registered and activated. '
-                  . 'If it is a regular user, provide the right password. '
-                  . 'If a showcase user, only view requests are allowed.'
-          );
-      }
-      else {
+      if ( authenticate_user($c) ) { return 1; }
+      elsif ( !$c->stash('is_restapi_req') && $c->req->method eq "GET" ) {
           $c->redirect_to("/user/login");
           return undef;
+      }
+      else {
+          FTM::Error::User::NotAuthorized->throw(
+              'Unauthorized Access. '
+            . 'The user must be registered and activated. '
+            . 'If it is a regular user, provide the right password. '
+            . 'If it is a showcase user, only GET requests are allowed.'
+          );
       }
 
   });
@@ -156,26 +138,25 @@ sub startup {
   # Normal route to controller
   $auth->get('/todo')->to('task_list#todos')->name('home');
   $auth->get('/todo/:name')->to('task_list#single');
-  $auth->get('/newtask')->to('task_editor#form', incr_prefix => 1);
-  $auth->post('/newtask')->to('task_editor#form', new => 'task' );
   $auth->get('/' => sub { shift->redirect_to('home'); });
+  $auth->any( [qw|GET POST|] => '/task-form')->to('task_editor#form');
   $auth->get("/tasks")->to("tasks_list#all");
-  $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#fast_bulk_update');  
-  $auth->get('/tasks/:name')->to('task_editor#form');
-  $auth->patch('/tasks/:name')->to('task_editor#form', new => 0 );
-  $auth->put('/tasks/:name')->to('task_editor#form', reset => 1);
+  $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#handle_multi');  
+  $auth->get('/tasks/:name')->to('task_editor#handle_single');
+  $auth->patch('/tasks/:name')->to('task_editor#handle_single');
+  $auth->put('/tasks/:name')->to('task_editor#handle_single', reset => 1 );
   $auth->delete('/tasks/:name')->to('task_editor#purge');
   $auth->get('/tasks/:name/form')->to('task_editor#form');
-  $auth->post('/tasks/:name/form')->to('task_editor#form', new => 0 );
+  $auth->post('/tasks/:name/form')->to('task_editor#handle_single' );
   $auth->get('/tasks/:name/:action')->to(controller => 'task_editor');
   $auth->post('/tasks/:name/open')->to("task_editor#open", ensure => 1);
   $auth->post('/tasks/:name/close')->to(
       controller => "task_editor", action => "open", ensure => 0
   );
-  $auth->get('/tasks/:name/steps/:step')->to('task_editor#form');
-  $auth->post('/tasks/:name/steps')->to('task_editor#form', new => 'step');
-  $auth->put('/tasks/:name/steps/:step')->to('task_editor#form', reset => 1);
-  $auth->patch('/tasks/:name/steps/:step')->to('task_editor#form', new => 0);
+  $auth->get('/tasks/:name/steps/:step')->to('task_editor#handle_single');
+  $auth->post('/tasks/:name/steps')->to('task_editor#handle_single', step => '' );
+  $auth->put('/tasks/:name/steps/:step')->to('task_editor#handle_single', reset => 1);
+  $auth->patch('/tasks/:name/steps/:step')->to('task_editor#handle_single');
   $auth->delete('/tasks/:name/steps/:step')->to('task_editor#purge');
 
   $auth->any([qw/GET POST/] => '/user/settings')
@@ -194,21 +175,45 @@ my $started_time;
 BEGIN { $started_time = scalar localtime(); }
 sub get_started_time { $started_time; }
 
+# Rely on Mojolicious in that the session cookie be cryptographically
+# protected against manipulation (HMAC-SHA1 signature). Hence, if the
+# user id is defined, the user has certainly logged in properly.
+# Refer to `perldoc Mojolicious::Controller` if interested.
+# If the REST application programing interface is used, there is no
+# cookie. To stay "RESTful", we rely on HTTP header "Authentification".
+      
 sub authenticate_user {
-    my ($self, $c) = @_;
+    my $c = shift;
 
-    my ($user, $password) = split /:/, $c->req->url->to_abs->userinfo, 2;
+    my ($user, my $password)
+        = split /:/, $c->req->url->to_abs->userinfo, 2;
 
-    return if !$user;
+    my $further_check;
 
-    my $u = FlowgencyTM::user($user) // return;
+    if ( $user ) { $further_check = 1 }
+    elsif ( $user = $c->session('user_id') ) {
+        $c->stash( showcase_mode => $c->session('showcase_mode') );
+    }
+    elsif ( !$c->stash('is_remote') and $user = $ENV{FLOWGENCYTM_USER} ) {
+        $c->session( user_id => $user );
+    }
+    
+    $user &&= FlowgencyTM::user($user) or return; 
 
-    return $user
-        if ( $u->can_login && $password && $u->password_equals($password) )
-        or ( !defined $u->ext_privacy && $c->req->method eq 'GET'
-          && $c->stash("showcase_mode" => 1)
-           )
-        ;
+    if ( $further_check ) {
+        if ( $password && $password =~ /\S/ ) {
+            $user->password_equals($password) or return;
+        }
+        elsif ( !defined $u->extprivacy && $c->req->method eq 'GET' ) {
+            $c->stash( showcase_mode => 1 );
+        }
+        else { return; }
+    }
+
+    $user->can_login or return;
+
+    $c->stash( user => $user );
+    return $user;
 
 }
 

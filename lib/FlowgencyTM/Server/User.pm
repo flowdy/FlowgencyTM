@@ -147,15 +147,18 @@ sub login {
     my $password        = $self->param('password');
     my $resetpw_confirm = $self->param('confirmpw');
     my $token           = $self->param('token');
-
-    my $trigger;
-
     my $user = FlowgencyTM::database->resultset("User")->find(
         $user_id =~ m{@} ? { email => $user_id } : $user_id
-    ) or goto USER_AUTH_FAILURE;
-     
+    );
+    
+    if ( !$user ) {
+        $self->render( retry_msg => 'authfailure' );
+        return;
+    }
 
+    my $trigger = sub {};
     my $confirm;
+
     if ( $resetpw_confirm ) {
         FTM::Error::User::DataInvalid->throw(
             "Password and confirm password differ."
@@ -188,11 +191,11 @@ sub login {
         }
     }
 
-USER_AUTH_FAILURE: # If no user is defined, run else clause.
-
-    $trigger //= sub {};
-
-    if ( $user && $user->password_equals($password) ) {
+    if ( !( $password || defined $user->extprivacy ) ) {
+        $self->session( showcase_mode => 1 );
+        $self->redirect_to("home");          
+    }
+    elsif ( $password && $user->password_equals($password) ) {
         $trigger->(1);
         $self->session("user_id" => $user_id);
         $self->redirect_to("home");
@@ -200,7 +203,6 @@ USER_AUTH_FAILURE: # If no user is defined, run else clause.
     else {
         $trigger->(0);
         $self->render( retry_msg => 'authfailure' );
-        return;
     }
 
 }
@@ -228,7 +230,7 @@ sub delete {
             my $array = $self->every_param($p) // next;
             $info->{$p} = @$array < 2
                 ? ($array->[0] // next)
-                : join ", ", @$array
+                : CORE::join( ", ", @$array )
                 ;
         }
 

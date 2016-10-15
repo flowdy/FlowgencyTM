@@ -5,7 +5,7 @@ use Carp qw(croak);
 
 sub TRIGGERS { return [qw[
     get_ranking get_task_data open_task get_dynamics_of_task
-    fast_bulk_update delete_obj
+    apply_task_changes delete_obj
     dump_complex_settings realize_settings dequeue_from_server
 ]]; }
 

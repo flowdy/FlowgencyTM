@@ -7,82 +7,35 @@ use Mojo::JSON qw(from_json encode_json);
 use Carp qw(croak);
 
 sub form {
-  # GET /newtask, stash: incr_prefix => 1
-  # POST /newtask, stash: new => 'task'
-  # PATCH /tasks/:name, stash: new => 0
-  # GET /tasks/:name
-  # PUT /tasks/:name, stash: reset => 1
-  # POST /tasks/:name/form, stash: new => 0
-  # POST /tasks/:name/steps, stash: new => 'step'
-  # PUT /tasks/:name/steps/:step, stash: reset => 1
-  # PATCH /tasks/:name/steps/:step, stash: new => 0
+  # GET /task-form, stash
+  # POST /task-form, stash
 
     my $self = shift;
     my $args = {};
-    my $new_flag = $self->stash('new') // '';
 
     my $lazystr
         = ($self->req->headers->content_type//q{}) eq 'text/plain'
         ? $self->req->body : $self->param('lazystr');
 
-    my $step = $self->stash('step');
-
     my ($task, %res, @res_tasks); 
 
-    if ( $self->req->method eq 'GET' ) {
+    my $t = $self->every_param('copy');
 
-        my $t = $self->every_param('copy');
-
-        if ( defined $lazystr ) {
-            $args->{lazystr} = $lazystr;
-            $self->stash( incr_prefix => 1 );
-        }
-        elsif ( @$t ) {
-            $args->{tasks} = $t;
-        }
-        elsif ( $t = $self->_get_task ) {
-            $args->{task} = $t;
-        }
-
-        %res = $self->stash("user")->get_task_data($args);
-
-        FTM::Error::ObjectNotFound->throw( type => 'task', name => $task )
-            if %$args && !$res{presets};
-
-        if ( $step ) {
-            $step = $res{presets}{steps}{$step}
-                || FTM::Error::ObjectNotFound->throw(
-                    type => 'step', name => $step
-                );
-            $self->render( json => $step );
-            return;
-        }
-
+    if ( defined $lazystr ) {
+        $args->{lazystr} = $lazystr;
+        $self->stash( incr_prefix => 1 );
+    }
+    elsif ( @$t ) {
+        $args->{tasks} = $t;
+    }
+    elsif ( $t = $self->_get_task ) {
+        $args->{task} = $t;
     }
 
-    elsif ( $new_flag eq "task" ) {
-        $args = $lazystr ? { _NEW_TASKS => $lazystr } : do {
-            my $tasks = decode_json $self->req->body;
-            my (%tasks, $count);
-            for my $t ( ref $tasks eq 'ARRAY' ? @$tasks : $tasks ) {
-                $tasks{ ( '_NEW_TASK_' . ++$count ) } = $t;
-            }
-            \%tasks;
-        };
-        $args->{ '-create' } = 1; 
-        @res_tasks = $self->stash("user")->fast_bulk_update($args);
-    }
+    %res = $self->stash("user")->get_task_data($args);
 
-    elsif ( my $id = $self->_get_task ) {
-        my $ahref = $args->{$id} = decode_json $self->req->body;
-        if ( $step ) { $ahref->{step} = $step }
-        @{$args}{'-reset','-create'} = ( $self->stash('reset'), $new_flag);
-        @res_tasks = $self->stash("user")->fast_bulk_update($args);
-    }
-
-    else {
-        croak "Server::TaskEditor::form(): missing task name";
-    }
+    FTM::Error::ObjectNotFound->throw( type => 'task', name => $task )
+        if %$args && !$res{presets};
 
     if ( $self->stash("is_restapi_req") ) {
         $self->render( json => \%res );
@@ -94,6 +47,7 @@ sub form {
     return;
 
 }
+
 sub open {
   # GET /tasks/:name/open
   # POST /tasks/:name/open, ensure => 1
@@ -107,19 +61,68 @@ sub open {
     $self->render( id => $task, details => $open );
 }
 
-sub fast_bulk_update {
+sub handle_single {
     my $self = shift;
-
-    my ($data, %errors, $status);
-    my $ct = $self->req->headers->content_type;
-    if ( index( $ct, 'text/plain' ) == 0 ) {
-        my $count;
-        for my $t ( $self->_parser( -dry => 1 )->($self->req->body) ) {
-            $data->{ $t->{name} || ( '_NEW_TASK_' . ++$count ) } = $t;
+    my $id = $self->_get_task;
+    my $step = $self->stash('step');
+    my $meth = $self->req->method;
+    my $commit;
+    my $ahref = $commit->{$id} = from_json $self->req->body;
+    if ( $step ) { $ahref->{step} = $step }
+    @{$commit}{'-reset','-create'} = (
+        $self->stash('reset'),
+        defined $step && !length $step,
+    );
+    
+    my $user = $self->stash("user");
+    try {
+        $commit && $user->apply_task_changes($commit);
+        my %res = $user->get_task_data({ task => $id });
+        my $presets = $res{presets};
+        $presets = $presets->{steps}{$step} if $step;
+        $self->render( json => $presets );
+    }
+    catch {
+        if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
+            die $_->all->{ $id };
+        }
+        else {
+            die $_;
         }
     }
+}
+
+sub handle_multi {
+    my $self = shift;
+
+    my ($commit, %errors, $status);
+    my $ct = $self->req->headers->content_type;
+    if ( index( $ct, 'text/plain' ) == 0 ) {
+        $commit = { -LAZYSTR => $self->req->body };
+    }
     elsif ( index($ct, 'application/json') > -1 ) {
-        $data = decode_json $self->req->body;
+        $commit = from_json $self->req->body;
+        if ( ref $commit eq 'ARRAY' ) {
+            my ($count,%defs);
+            for ( @$commit ) {
+                $defs{ $_->{name} || ( '_NEW_TASK_' . ++$count ) } = $_;
+            }
+            $commit = \%defs;
+        }
+        elsif ( ref $commit eq 'HASH' ) {
+            my $ti = $commit->{title};
+            if ( $ti and !ref $ti ) {
+                $commit = { '_NEW_TASK_0' => $commit }
+            }
+        }
+        else {
+            FTM::Error::->throw(
+                http_status => 400,
+                message =>
+                    "Malformed content: expected json data-structure, "
+                  . "but got a string"
+            )
+        }
     }
     elsif ( index($ct, 'application/x-www-form-urlencoded') == 0 ) {
         for my $task (@{ $self->req->params->names }) {
@@ -147,7 +150,7 @@ sub fast_bulk_update {
     }
 
     try {
-        $errors{ $_ } = q{} for FlowgencyTM::user->fast_bulk_update($data); 
+        $errors{ $_ } = q{} for FlowgencyTM::user->apply_task_changes($data); 
     }
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {

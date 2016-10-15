@@ -256,7 +256,7 @@ my %RESET = (
     }
 );
 
-sub fast_bulk_update {
+sub apply_task_changes {
     my ($self, $args) = @_;
 
     my ($status, %errors, %success);
@@ -330,7 +330,7 @@ sub fast_bulk_update {
                     :                     -1 #  - both task and step must exist
                     ;
                 my $tasks = FlowgencyTM::user->tasks;
-                if ( $expected ) { PRECONDITION_CHECK: {
+                if ( $expected ) {
                     $expected++;
                     my $t = $tasks->get($task);
                     if ( !$t ) {
@@ -338,9 +338,8 @@ sub fast_bulk_update {
                             http_status => 409,
                             type => 'task', name => $task
                         ) if $create ne 'task';
-                        last PRECONDITION_CHECK;
                     }
-                    if ( my $step = $data->{step} ) {
+                    elsif ( my $step = $data->{step} ) {
                         FTM::Error::Task::InvalidDataToStore->throw(
                             http_status => 409,
                             message => "Step ", $step, "for task ", $task,
