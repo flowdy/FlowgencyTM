@@ -167,7 +167,7 @@ sub startup {
   $auth->delete('/tasks/:name')->to('task_editor#purge');
   $auth->get('/tasks/:name/form')->to('task_editor#form');
   $auth->post('/tasks/:name/form')->to('task_editor#form', new => 0 );
-  $auth->get('/tasks/:name/:action')->to('task_editor#$action');
+  $auth->get('/tasks/:name/:action')->to(controller => 'task_editor');
   $auth->post('/tasks/:name/open')->to("task_editor#open", ensure => 1);
   $auth->post('/tasks/:name/close')->to(
       controller => "task_editor", action => "open", ensure => 0
@@ -182,6 +182,12 @@ sub startup {
        ->to('user#settings');
 
   $auth->get('/info')->to('info#basic');
+
+  $r->any('/*whatever' => {whatever => ''} => sub {
+     my $c        = shift;
+     my $whatever = $c->param('whatever');
+     $c->render(text => "<h1>Sorry, requested resource not found</h1><p>URL <code>/$whatever</code> did not match a route provided by the server.", status => 404);
+   });
 }
 
 my $started_time;
