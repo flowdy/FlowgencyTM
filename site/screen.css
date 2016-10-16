@@ -157,6 +157,14 @@ body > header h1 {
   position: relative;
 }
 
+#plans .task-body {
+  display: none;
+}
+
+#plans li.open .task-body {
+  display: block;
+}
+
 #plans > li.paused {
   color:#625353;
 }
@@ -174,8 +182,7 @@ body > header h1 {
 }
 
 #plans .ranking-data {
-  text-align:right;
-  font-size:small;
+  text-align: right;
 }
 
 #plans .detail {

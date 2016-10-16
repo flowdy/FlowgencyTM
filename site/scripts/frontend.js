@@ -153,10 +153,6 @@ Ranking.prototype.dynamizechecks = function (plan) {
    plan.find(".pending-steps").find("a, :checkbox").click( function (e) {
        e.stopPropagation();
    });
-   plan.find(".task-btn-row").buttonset()
-       .find(".save-btn").click(
-           function (e) { e.preventDefault(); return ftm.rerank() }
-       );
 };
 
 Ranking.prototype.progressbar2canvas = function (bar) {

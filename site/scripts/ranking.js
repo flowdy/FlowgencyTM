@@ -1,24 +1,5 @@
 $(function () {
     var ftm = $('#mainicon').data('FlowgencyTM');
- 
-    var toggler = function () {
-        var plan = $(this),
-            ext = plan.find(".extended-info"),
-            task = ftm.get(plan.data("id")),
-            ots = plan.data("openSince");
-        if ( ots && !confirm(
-            "NOTE: This task has been opened " + ots + ". Are you sure you "
-          + "want to close it, possibly loosing the ranking boost arising from "
-          + "how long it is open now?"
-        ) ) return;
-        ext.toggle();
-        plan.toggleClass("open");
-        var isShown = !ext.is(":hidden");
-        if ( plan.data("isOpen") != isShown )
-            task.open_since = isShown ? 'now' : null;
-        else task.drop("open_since");
-        ftm.reg_changes();
-    };
 
     $('#plans').children().each(function () {
         var plan = $(this);
@@ -27,28 +8,23 @@ $(function () {
         ftm.progressbar2canvas(plan.find(".progressbar"));
         if ( isOpen ) {
             ftm.dynamizechecks(plan);
-            plan.find("h2").click(toggler.bind(plan));
-        }
-        else plan.find("h2").click(function () {
-            var header = $(this),
-                ext = $(
-                    '<div class="extended-info" ><em>Loading ...</em></div>'
-                );
-            ext.appendTo(plan);
-            $.post("/tasks/" + plan.data("id") + "/open", {}, function (response) {
-                ext.find("em").replaceWith(response);
-                ftm.dynamizechecks(plan);
-            });
             plan.addClass("open");
-            plan.data('isOpen', true);
-            header.unbind("click").click(toggler.bind(plan));
+        }
+        
+        plan.find("h2").click(function () {
+            plan.toggleClass("open");
         });
+        plan.find(".task-btn-row").buttonset()
+            .find(".save-btn").click(
+                function (e) { e.preventDefault(); return ftm.rerank() }
+            ).end()
+            .find(".open-close").click(toggler.bind(plan));
     });
 
     $('#plans').on('click', '.edit-btn', function (e) {
         e.preventDefault();
         var url = this.href;
-        $(this).parents(".extended-info").load(url + '?bare=1', function () {
+        $(this).parents(".task-body").load(url + '?bare=1', function () {
             ftm.dynamize_taskeditor($(this).find(".taskeditor"));
         });
         return false;
@@ -105,6 +81,43 @@ $(function () {
     });
         
     $("#warn-reload-in-minutes").text(minutes);
+
+    function opener () {
+        var plan = $(this),
+            ext = $(
+                '<div class="extended-info" ><em>Loading ...</em></div>'
+            );
+        ext.insertBefore(plan.find(".task-btn-row"));
+        $.post("/tasks/" + plan.data("id") + "/open", {}, function (response) {
+            ext.find("em").replaceWith(response);
+            ftm.dynamizechecks(plan);
+        });
+        plan.data('isOpen', true);
+    }
+
+    function toggler () {
+        var plan = $(this),
+            ext = plan.find(".extended-info"),
+            task = ftm.get(plan.data("id")),
+            ots = plan.data("openSince");
+        if ( ots && !confirm(
+            "NOTE: This task has been opened " + ots + ". Are you sure you "
+          + "want to close it, possibly loosing the ranking boost arising from "
+          + "that?"
+        ) ) return;
+
+        if ( ext.get(0) ) ext.toggle();
+        else opener.apply(plan);
+        
+        var isShown = !ext.is(":hidden");
+        if ( plan.data("isOpen") != isShown ) {
+            task.open_since = isShown ? 'now' : null;
+            plan.toggleClass("open");
+        }
+
+        else task.drop("open_since");
+        ftm.reg_changes();
+    };
 
     function insert_new_task_form (e) {
         e.preventDefault();

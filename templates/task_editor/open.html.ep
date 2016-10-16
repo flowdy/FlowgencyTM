@@ -6,7 +6,10 @@
 % return '<p class="error">No main_step passed (task closed)</p>';
 % }
 % if ( my $description = $main_step->{rendered_description} ) {
-<div class="description"><%== $description %></div>
+<div class="description">
+<h3>Description</h3>
+<%== $description %>
+</div>
 % }
 <h3 style="margin-bottom:0;">Pending steps</h3>
 <p style="font-size:small;margin-top:0;color:gray;">Steps done or depending on these are not displayed.</p>
@@ -18,5 +21,4 @@
 </div></li>
 % }
 </ul>
-<p class="task-btn-row"><button class="save-btn">Save all changes</button><a class="edit-btn" href="/tasks/<%= $id %>/form">Edit</a></p>
 
