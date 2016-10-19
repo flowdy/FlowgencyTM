@@ -138,6 +138,10 @@ sub fast_bulk_update {
         )
     }
 
+    $self->app->log->debug(
+        "fast_bulk_update got following data to process: " . encode_json($data)
+    );
+
     if ( $self->req->method eq 'PATCH' ) {
         $data->{ '-create' } = 0;
     }

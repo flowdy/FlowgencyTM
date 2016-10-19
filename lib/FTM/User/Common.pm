@@ -290,8 +290,16 @@ sub fast_bulk_update {
 
         my $tmp_name = $task =~ s/^(_NEW_TASK_\d+)$// && $1;
 
-        if ( ref $data ) {
+        if ( ref $data eq 'HASH' ) {
 
+            # skip when there is nothing to process
+            next if keys(%$data) == 1
+                  ? $data->{steps} && ( !%{ $data->{steps} }
+                      || !grep { %$_ } values %{ $data->{steps} }
+                    )
+                  : !%$data
+                  ;
+            
             my $reset = $reset;
             
             my $incr = $data->{incr_name_prefix};
