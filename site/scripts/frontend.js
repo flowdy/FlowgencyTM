@@ -589,85 +589,54 @@ return {
 }; })(); /* END of FlowgencyTM namespace */
 
 $(function () {
-    var ftm = new FlowgencyTM.Ranking();
-    $('#mainicon').data('FlowgencyTM', ftm);
-    function reloadHandler (e) {
+
+    /* Following code activates the menus of the icons in that it opens after
+     * half a second the mouse cursor hovers the icon, or respectively for
+     * touch devices when the icon is tapped the first time in a couple of taps
+     */
+    $( "#icons-bar .icon" ).has(".menu").each(function () {
+        $(this).children("a").first().mouseenter(function (e) {
+            var link = $(this), tmout_open = setTimeout(menu_open, 500),
+                menu = link.next(".menu");
+            $("body > header .menu:visible").each(function () {
+                if ( this !== menu.get(0) ) menuCloser();
+            });
+            menu.mouseleave(function (e) {
+                var tmout_close = setTimeout(function () {
+                    menuCloser.apply(menu);
+                }, 500);
+                menu.mouseenter(function () { clearTimeout(tmout_close); });
+            });
+            link.mouseleave(function () {
+                clearTimeout(tmout_open);
+            });
+            function menu_open () {
+                showMenuHandler.apply(link, [e, menu]);
+            }
+        }).click(showMenuHandler);
+    });
+
+    function triggerMainAction (e) {
+        var mainAction = $(this).data('mainAction');
+        if ( !mainAction ) return;
         e.preventDefault();
         $(this).off('click').click(showMenuHandler);
-        ftm.resetfilter();
-        ftm.rerank(e);
+        mainAction(e);
     }
-    function showMenuHandler (e) {
-        var menu = $(this).next(".menu:hidden"); 
+
+    function menuCloser (e) {
+        var menu = $(this).closest(".menu");
+        e && e.preventDefault();
+        menu.removeClass("visible");
+        $("body > header").removeClass("backgr-page");
+    }
+
+    function showMenuHandler (e, menu) {
+        menu = menu || $(this).next(".menu"); 
         e.preventDefault();
-        if ( menu.length ) {
-            console.log("Hidden menu found");
-            menu.addClass("visible");
-            $("header").addClass("backgr-page");
-        }
+        $(this).off('click').click(triggerMainAction);
+        menu.addClass("visible").find("close-btn").click(menuCloser);
+        $("body > header").addClass("backgr-page");
     }
-    $( "#icons-bar .icon:first-child > a" ).mouseenter(function () {
-        link = $(this);
-        setTimeout(function () {
-            link.off('click').click(reloadHandler);
-        }, 20);
-    }).click(showMenuHandler);
 
-    $("#settime").change(function (e) {
-        ftm.nextload.now = this.time.value;
-        ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
-        console.info(
-            "Changed time to " + ftm.nextload.now
-            + " (keep: " + ftm.nextload.keep + ")"
-        );
-    }).each(function () { if (this.time.value) $(this).change(); });
-
-    $("#icons-bar .icon:first-child button").click(function (e) {
-       console.log("button clicked");
-       e.preventDefault();
-       ftm.rerank(e);
-    }).button({ width: "100%" });
-
-    $("#icons-bar .icon:nth-child(2) button").click(function (e) {
-        $(this).closest(".icon").children("a").first().click();
-    });
-    
-    $("#list-opts").buttonset();
-    $("#list-opts input").each(function () {
-        function update () {
-            ftm.nextload[this.name] ^= this.value;
-            console.log(
-                "New value of " + this.name + " is " + ftm.nextload[this.name]
-            );
-        }
-        $(this).click(update);
-        if ( this.checked ) update.apply(this);
-    });
-
-    $("#query").change(function (e) {
-        ftm.nextload[this.name] = this.value;
-        if ( this.value.length ) {
-           ftm.nextload.archive
-               = $("#with-archive").prop("disabled", false)
-                 .is(":checked") ? 1 : 0;
-        }
-        else {
-           $("#with-archive").prop("disabled", true);
-           ftm.nextload.drop("query");
-           ftm.nextload.drop("archive");
-        }
-
-        console.log(
-            "New value of " + this.name + " is " + ftm.nextload[this.name]
-        );
-    }).each(function () { if (this.value) $(this).change(); });
-
-    $("#with-archive").change(function (e) {
-        ftm.nextload.archive = $(this).is(":checked") ? 1 : 0;
-    });
-
-    $("input[type=datetime]").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
-
-    $("#page").focus().blur(); // page to seize scrolling focus
-
-}); 
+});

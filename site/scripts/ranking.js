@@ -1,6 +1,70 @@
 $(function () {
-    var ftm = $('#mainicon').data('FlowgencyTM');
+    var ftm = new FlowgencyTM.Ranking();
 
+    var new_task_count = 0, new_task_icon = $("#icons-bar .icon:nth-child(2)");
+
+    $("#mainicon").data('mainAction',
+        function (e) { ftm.resetfilter(); ftm.rerank(e); }
+    );
+
+    new_task_icon.children("a").data('mainAction', insert_new_task_form);
+
+    $("#settime").change(function (e) {
+        ftm.nextload.now = this.time.value;
+        ftm.nextload.keep = $(this).find("input[name='keep']:checked").val();
+        console.info(
+            "Changed time to " + ftm.nextload.now
+            + " (keep: " + ftm.nextload.keep + ")"
+        );
+    }).each(function () { if (this.time.value) $(this).change(); });
+
+    $("#icons-bar .icon:first-child button").click(function (e) {
+       console.log("button clicked");
+       e.preventDefault();
+       ftm.rerank(e);
+    }).button({ width: "100%" });
+
+    $("#icons-bar .icon:nth-child(2) button").click(function (e) {
+        $(this).closest(".icon").children("a").first().click();
+    });
+    
+    $("#list-opts").buttonset();
+    $("#list-opts input").each(function () {
+        function update () {
+            ftm.nextload[this.name] ^= this.value;
+            console.log(
+                "New value of " + this.name + " is " + ftm.nextload[this.name]
+            );
+        }
+        $(this).click(update);
+        if ( this.checked ) update.apply(this);
+    });
+
+    $("#query").change(function (e) {
+        ftm.nextload[this.name] = this.value;
+        if ( this.value.length ) {
+           ftm.nextload.archive
+               = $("#with-archive").prop("disabled", false)
+                 .is(":checked") ? 1 : 0;
+        }
+        else {
+           $("#with-archive").prop("disabled", true);
+           ftm.nextload.drop("query");
+           ftm.nextload.drop("archive");
+        }
+
+        console.log(
+            "New value of " + this.name + " is " + ftm.nextload[this.name]
+        );
+    }).each(function () { if (this.value) $(this).change(); });
+
+    $("#with-archive").change(function (e) {
+        ftm.nextload.archive = $(this).is(":checked") ? 1 : 0;
+    });
+
+    $("input[type=datetime]").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
+
+    $("#page").focus().blur(); // page to seize scrolling focus
     $('#plans').children().each(function () {
         var plan = $(this);
         var isOpen = plan.find(".extended-info").length;
@@ -30,21 +94,6 @@ $(function () {
         return false;
     });
 
-    var new_task_count = 0,
-        new_task_icon = $(
-            '<a href="/newtask"><img src="/images/newtask-icon.png"></a>'
-          + '<div class="menu">' 
-            + '<textarea style="width:90%;margin-right:5px;" '
-              + 'placeholder="Optional preset definition"'
-              + 'rows="5"></textarea>'
-            + '<p class="nav-button"><button>New task &hellip;</button> '
-              + '(or click icon)</p>'
-          + '</div>'
-        )
-    ;
-
-    new_task_icon.replaceAll(".add-newtask-btn span")
-        .first("a").click(insert_new_task_form);
     new_task_icon.find("button").click(function (e) {
         e.preventDefault();
         var icon = $(this).closest(".menu").prev("a");
@@ -121,11 +170,11 @@ $(function () {
 
     function insert_new_task_form (e) {
         e.preventDefault();
-        var lazystr = $(this).next().find("textarea").val();
+        var lazystr = $("header .add-new-task-btn textarea").val();
         console.log("Inserting new task form (lazystr: " + lazystr + ")");
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         var newtasks = $('<li>Loading form(s) for new task(s) ...</li>');
-        $.get(this.href + "?bare=1" + lazystr, function (ntdata) {
+        $.get("/newtask" + "?bare=1" + lazystr, function (ntdata) {
             ntdata = $(ntdata);
             newtasks.hide().append(ntdata);
             newtasks.find(".taskeditor").each(function () {

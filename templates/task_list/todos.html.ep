@@ -78,3 +78,41 @@
 </ol>
 
 % }
+    <div id="additions-to-layout" style="display:none;">
+    <div class="menu">&nearr; Click to refresh with default options<ul>
+        <li id="list-opts">List tasks:<br >
+% my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
+            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
+            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks">later</label>
+            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
+            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
+        </li>
+        <li>Search tasks:<br />
+        <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>
+        <span><input id="with-archive" type="checkbox" disabled="disabled" checked="checked" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/?archive=1&desk=0">archive</a></span> 
+        </li>
+        <li><form id="settime"><label>Set time:<br />
+        <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
+% if ( !$is_remote ) {
+        <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
+        <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
+% }
+        </form></li>
+    </ul>
+    <p class="nav-button"><button style="width:100%">Reload with set options</button></p>
+    </div>
+            <a href="/newtask"><img src="/images/newtask-icon.png"></a>
+            <div class="menu"> 
+            <textarea style="width:90%;margin-right:5px;"
+              placeholder="Optional preset definition"
+              rows="5"></textarea>
+            <p class="nav-button"><button>New task &hellip;</button>
+              (or click icon)</p>
+            </div>
+        
+
+    </div>
+    <script type="text/javascript">
+        $("#additions-to-layout > .menu").first().appendTo("#icons-bar .icon:first");
+        $("#additions-to-layout > *").appendTo($("#icons-bar .icon:nth-child(2)").empty());
+    </script> 
