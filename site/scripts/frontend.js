@@ -598,14 +598,16 @@ $(function () {
         $(this).children("a").first().mouseenter(function (e) {
             var link = $(this), tmout_open = setTimeout(menu_open, 500),
                 menu = link.next(".menu");
-            $("body > header .menu:visible").each(function () {
-                if ( this !== menu.get(0) ) menuCloser();
-            });
-            menu.mouseleave(function (e) {
-                var tmout_close = setTimeout(function () {
-                    menuCloser.apply(menu);
-                }, 500);
-                menu.mouseenter(function () { clearTimeout(tmout_close); });
+            link.parent().mouseleave(function (e) {
+                var iconarea = $(this),
+                    tmout_close = setTimeout(function () {
+                        menuCloser.apply(menu);
+                        menu.off('mouseenter');
+                    }, 500)
+                ;
+                iconarea.mouseenter(function () {
+                    clearTimeout(tmout_close);
+                });
             });
             link.mouseleave(function () {
                 clearTimeout(tmout_open);
@@ -627,7 +629,7 @@ $(function () {
     function menuCloser (e) {
         var menu = $(this).closest(".menu");
         e && e.preventDefault();
-        menu.removeClass("visible");
+        menu.slideUp(400, function () { menu.removeClass("visible") });
         $("body > header").removeClass("backgr-page");
     }
 
@@ -635,7 +637,10 @@ $(function () {
         menu = menu || $(this).next(".menu"); 
         e.preventDefault();
         $(this).off('click').click(triggerMainAction);
-        menu.addClass("visible").find("close-btn").click(menuCloser);
+        menu.css({ display: 'none' }).addClass("visible")
+            .find("close-btn").click(menuCloser)
+            ;
+        menu.slideDown();
         $("body > header").addClass("backgr-page");
     }
 
