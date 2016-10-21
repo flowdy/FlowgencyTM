@@ -1,5 +1,6 @@
 $(function () {
     var ftm = new FlowgencyTM.Ranking();
+    $('#mainicon').data('FlowgencyTM', ftm);
 
     var new_task_count = 0, new_task_icon = $("#icons-bar .icon:nth-child(2)");
 
