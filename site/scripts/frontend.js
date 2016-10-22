@@ -595,6 +595,7 @@ $(function () {
      * touch devices when the icon is tapped the first time in a couple of taps
      */
     $( "#icons-bar .icon" ).has(".menu").each(function () {
+        $(this).find(".close-btn").click(menuCloser);
         $(this).children("a").first().mouseenter(function (e) {
             var link = $(this), tmout_open = setTimeout(menu_open, 500),
                 menu = link.next(".menu");
@@ -631,14 +632,17 @@ $(function () {
         e && e.preventDefault();
         menu.slideUp(400, function () { menu.removeClass("visible") });
         $("body > header").removeClass("backgr-page");
+        menu.prev("a").off("click").click(showMenuHandler);
     }
 
     function showMenuHandler (e, menu) {
-        menu = menu || $(this).next(".menu"); 
+        if ( menu ) {
+            if ( menu.is(":visible") ) return;
+        }
+        else menu = $(this).next(".menu");
         e.preventDefault();
         $(this).off('click').click(triggerMainAction);
         menu.css({ display: 'none' }).addClass("visible")
-            .find("close-btn").click(menuCloser)
             ;
         menu.slideDown();
         $("body > header").addClass("backgr-page");

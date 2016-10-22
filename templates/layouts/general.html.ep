@@ -29,7 +29,7 @@
 </div>
     <div class="icon add-newtask-btn"><span style="color:grey;">↙ Click to reload the ranking of your to-dos.</div>
     <div class="icon"><a href="/user/settings"><img src="/images/settings-icon.png"></a>
-    <div class="menu"><ul>
+    <div class="menu">User settings: <img src="/images/close-btn.svg" class="close-btn" /><ul>
         <li><a href="/user/settings#authentication">Identity and Authentification</a></li>
         <li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
         <li><a href="/user/settings#set-priorities">Labeled priorities</a></li>

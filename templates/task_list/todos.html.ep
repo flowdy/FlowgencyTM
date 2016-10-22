@@ -79,7 +79,7 @@
 
 % }
     <div id="additions-to-layout" style="display:none;">
-    <div class="menu">&nearr; Click to refresh with default options<ul>
+    <div class="menu">More options: <img class="close-btn" src="/images/close-btn.svg" /><ul>
         <li id="list-opts">List tasks:<br >
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
             <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
@@ -103,8 +103,9 @@
     </div>
             <a href="/newtask"><img src="/images/newtask-icon.png"></a>
             <div class="menu"> 
+            Optional preset definition: <img class="close-btn" src="/images/close-btn.svg" /></button>
             <textarea style="width:90%;margin-right:5px;"
-              placeholder="Optional preset definition"
+              placeholder="Lazy String syntax (write-only, but type-fast)"
               rows="5"></textarea>
             <p class="nav-button"><button>New task &hellip;</button>
               (or click icon)</p>
