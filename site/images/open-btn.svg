@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="48"
+   height="48"
+   id="svg4318">
+  <defs
+     id="defs4320" />
+  <metadata
+     id="metadata4323">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1">
+    <path
+       d="m 22.83215,39.223294 1.94933,-1.888822 16.450452,-15.957707 1.568971,-1.521434 -7.801638,0 -8.42405,8.169039 0,-27.53267549 -7.183569,0 0,27.38140049 -7.77571,-8.017764 -7.5725666,0 1.4911741,1.534393 15.4087845,15.88424 1.888822,1.94933 z"
+       id="rect2987-3"
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#00c0ff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:39.29999924;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
+    <path
+       d="m 4.0584992,44.003153 c 38.7272738,0 38.7272738,0 38.7272738,0"
+       id="path3767-6"
+       style="fill:none;stroke:#00c0ff;stroke-width:5.73993587;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    <rect
+       width="36.638004"
+       height="36.35622"
+       x="5.0385408"
+       y="4.7902102"
+       id="rect3792"
+       style="color:#000000;fill:none;stroke:#00c0ff;stroke-width:1.95729494;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+  </g>
+</svg>
