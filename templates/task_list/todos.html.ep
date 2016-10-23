@@ -7,7 +7,8 @@
 %     my $checked_expenditure_progress = int($task->{progress_pc}{checked_exp} * 100)."%";
       <div class="progressbar" title="progress: <%= $time_progress %> of time elapsed : <%= $checked_expenditure_progress %> of expenditure checked" style="text-align:<%= $orient %>; background-color:<%= $secondary_color %>"><span class="erledigt" style="background-color:<%= $primary_color %>;width:<%= $primary_width %>;">&nbsp;</span></div>
       </header>
-      <div class="task-body"><div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %></div>
+      <div class="task-body"><div class="ranking-data">Due <time><%= $task->{duedate} %></time>, effectively <%= $task->{due_in_hms} %> left<% if (my $next = $task->{next_statechange_in_hms}) { %>, <%= $task->{active} ? 'active' : 'paused' %> for <%= $next %> <% } %> // <%= $task->{priority} %> &rArr; <a href="/tasks/<%= $task->{name} %>/analyze" title="Explain urgency score">~<%= sprintf '%.3f', $task->{score} %></a>
+ </div>
 %     end
 % my $upcoming_section = begin
 %     my $task = shift;
@@ -47,10 +48,7 @@
           </div>
 %     }
 <p class="task-btn-row">
-% if ( !$label ) {
-<a href="/tasks/<%= $task->{name} %>/analyze" title="Explain urgency score (<%= sprintf("~%.3f", $task->{score}) %>">Explain rank</a>
-% }
-<button class="open-close">Open/Close</button><a class="edit-btn" href="/tasks/<%= $task->{name} %>/form">Edit</a><button class="copy-btn">Copy</button><button class="archive-btn">Archive</button><button class="save-btn">Save changes</button></p>
+<button style="display:none;" class="save-btn">Update all &amp; reload</button><button style="display:none;" class="reset-btn">Reset</button><button class="icon open-close">Open</button><a class="icon edit-btn" href="/tasks/<%= $task->{name} %>/form">Edit</a><button class="icon copy-btn">Copy</button><button class="icon archive-btn">Archive</button></p>
       </div></li>
 % }
 </ol>
@@ -79,7 +77,9 @@
 
 % }
     <div id="additions-to-layout" style="display:none;">
-    <div class="menu">More options: <img class="close-btn" src="/images/close-btn.svg" /><ul>
+    <div class="menu">
+        <p>&neArr; Click logo to submit changes and reload the ranking <em>with default options</em>.<hr>
+        More options (then use button below): <img class="close-btn" src="/images/close-btn.svg" /><ul>
         <li id="list-opts">List tasks:<br >
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
             <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>

@@ -102,7 +102,7 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 % end
 
 % while ( $steps ) {
-<form data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
+<form id="taskform-<%= $id %>" data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
 
 %   for my $step (values %$steps) {
 %=      $render_fieldset->($step);

@@ -4,6 +4,11 @@ $(function () {
 
     var new_task_count = 0, new_task_icon = $("#icons-bar .icon:nth-child(2)");
 
+    var switchOpenClass = [
+        [{ icon: "ui-icon-folder-open" }, 'Open'],
+        [{ icon: "ui-icon-folder-close" }, 'Close']
+    ];
+
     $("#mainicon").data('mainAction',
         function (e) { ftm.resetfilter(); ftm.rerank(e); }
     );
@@ -83,7 +88,10 @@ $(function () {
             .find(".save-btn").click(
                 function (e) { e.preventDefault(); return ftm.rerank() }
             ).end()
-            .find(".open-close").click(toggler.bind(plan));
+            .find(".open-close").click(toggler.bind(plan))
+                .button("option", "icon", switchOpenClass[isOpen][0])
+                .button("option", "label", switchOpenClass[isOpen][1])
+            ;
     });
 
     $('#plans').on('click', '.edit-btn', function (e) {
@@ -149,24 +157,30 @@ $(function () {
         var plan = $(this),
             ext = plan.find(".extended-info"),
             task = ftm.get(plan.data("id")),
-            ots = plan.data("openSince");
-        if ( ots && !confirm(
-            "NOTE: This task has been opened " + ots + ". Are you sure you "
-          + "want to close it, possibly loosing the ranking boost arising from "
-          + "that?"
+            ots = plan.data("openSince"),
+            isShown = ext.is(":visible");
+        if ( isShown && ots && !confirm(
+            "This task has been opened " + ots + ". Are you sure you "
+          + "want to close it?\n\nThe longer a task is open, the higher is its score by default. "
+          + "By closing it, you will loose this ranking boost and the task might drop."
         ) ) return;
 
         if ( ext.get(0) ) ext.toggle();
         else opener.apply(plan);
         
-        var isShown = !ext.is(":hidden");
+        isShown = !ext.is(":hidden");
         if ( plan.data("isOpen") != isShown ) {
             task.open_since = isShown ? 'now' : null;
             plan.toggleClass("open");
+            console.log("Open task: " + task.open_since);
         }
-
         else task.drop("open_since");
-        ftm.reg_changes();
+
+        plan.children(".task-btn-row").find(".open-close")
+            .button("option", "icon", switchOpenClass[isShown?1:0][0])
+            .button("option", "label", switchOpenClass[isShown?1:0][1])
+            ;
+
     };
 
     function insert_new_task_form (e) {
@@ -191,6 +205,7 @@ $(function () {
                 nt.attr('id', 'task-' + id);
                 nt.data('id', id);
                 te.data('taskid', id);
+                te.attr('id', 'taskform-' + id);
                 console.log('New task with id ' + id);
                 te.find('fieldset').each(function () {
                     var new_id = $(this).attr('id')

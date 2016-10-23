@@ -37,39 +37,25 @@ function Ranking (args) {
         }
     };
 
-    this.reg_changes = (function () {
-        var dirty = false;
-        return function (get_only) {
-            if ( get_only ) return dirty;
-            if ( !dirty ) {
-                $("#slogan").text(
-                    "\u2b03 Please click the logo to submit your changes "
-                     + "and to return to the refreshed ranking."
-                );
-                dirty = true;
-            }
-        };
-    })();
-
     this.check_done = function (task, step, done) {
         if ( step.length == 0 ) step = null;
         step = this.get(task, step);
         if ( done == null ) step.drop("done");
         else step.done = done;
         console.log("Checked: " + step.done);
-        this.reg_changes();
     };
 
     this.rerank = function (e) {
-        var url = '/todo';
+        var url = '/todo',
+            params = nextload.update_tasks,
+            str_params;
         function rerank () {
             var n = $.param(nextload);
             window.location.href = url + ( n ? '?' + n : '' );
         }
         if (e) e.preventDefault();
-        if ( this.reg_changes(1) ) {
-            var params = nextload.update_tasks;
-            var str_params = {};
+        if ( Object.keys(params).length ) {
+            str_params = {};
             Object.keys(params).forEach(function (i) {
                 var changes = params[i], steps = changes.steps,
                     manager = $("#steps-for-" + i + "-tree").data("manager")
@@ -86,8 +72,8 @@ function Ranking (args) {
                 delete nextload.update_tasks;
                 rerank();
             }).fail(function (jqXHR, textStatus) {
-                var errors = JSON.parse( jqXHR.responseText );
                 console.log("error JSON: " + jqXHR.responseText );
+                var errors = JSON.parse( jqXHR.responseText );
                 $("#plans > li").each(function () {
                     var li = $(this), id = li.data("id"), err = errors[ id ];
                     if ( err ) {
@@ -112,12 +98,42 @@ function Ranking (args) {
         return false;
     };
 
+    this.reset_task = function (id) {
+        delete nextload.update_tasks[id];
+    };
+
 }
 
 Ranking.prototype.dynamizechecks = function (plan) {
-   var ftm = this;
-   var checklines = plan.find(".checks");
-   var dyn_checkline = function (checkline) {
+   var ftm = this,
+       checklines = plan.find(".checks"),
+       submitBtns = plan.find(".save-btn, .reset-btn");
+
+   checklines.each(function () {
+       var checkline = $(this);
+       checkline.children().each(function () {
+           var progressor = dyn_checkline(checkline);
+           $(this).change(progressor);
+       });
+   });
+   plan.find(".pending-steps li").click(function () {
+       $(this).find(":checkbox").not(':checked').first().click();
+   });
+   plan.find(".pending-steps").find("a, :checkbox").click( function (e) {
+       e.stopPropagation();
+   });
+
+
+   plan.find(".task-btn-row .reset-btn").click(function (e) {
+       e.preventDefault();
+       ftm.reset_task(plan.data("id"));
+       plan.find(":checkbox").each(function () {
+           this.checked = this.defaultChecked
+       });
+       submitBtns.hide();
+   });
+
+   function dyn_checkline (checkline) {
        return function (e) {
            var check_count,
                previous = this.previousSibling,
@@ -138,21 +154,10 @@ Ranking.prototype.dynamizechecks = function (plan) {
            check_count = checkline.children(":checked").length;
            if ( checkline.data('done') == check_count ) check_count = null;
            ftm.check_done( plan.data('id'), checkline.data('id'), check_count );
+           submitBtns.show();
        };
-   };
-   checklines.each(function () {
-       var checkline = $(this);
-       checkline.children().each(function () {
-           var progressor = dyn_checkline(checkline);
-           $(this).change(progressor);
-       });
-   });
-   plan.find(".pending-steps li").click(function () {
-       $(this).find(":checkbox").not(':checked').first().click();
-   });
-   plan.find(".pending-steps").find("a, :checkbox").click( function (e) {
-       e.stopPropagation();
-   });
+   }
+
 };
 
 Ranking.prototype.progressbar2canvas = function (bar) {
@@ -231,7 +236,7 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
     var stepSwitcher = function () {
         te.find("fieldset").hide();
         $("#step-"+taskname+"-"+this.value).show();
-        te.scrollTop();
+        window.location.href = "#taskform-" + taskname;
         this.blur();
     };
     steptree.select.selectmenu({
@@ -266,7 +271,6 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
                 + step.name + " to " + step[field.name]
             );
         }
-        ftm.reg_changes();   
     };
 
     fieldset.find("input[name=priority]").change(function () {
@@ -599,6 +603,9 @@ $(function () {
         $(this).children("a").first().mouseenter(function (e) {
             var link = $(this), tmout_open = setTimeout(menu_open, 500),
                 menu = link.next(".menu");
+            setTimeout(function () {
+                link.off('click').click(triggerMainAction);
+            }, 20);
             link.parent().mouseleave(function (e) {
                 var iconarea = $(this),
                     tmout_close = setTimeout(function () {
@@ -630,7 +637,7 @@ $(function () {
     function menuCloser (e) {
         var menu = $(this).closest(".menu");
         e && e.preventDefault();
-        menu.slideUp(400, function () { menu.removeClass("visible") });
+        menu.slideUp(100, function () { menu.removeClass("visible") });
         $("body > header").removeClass("backgr-page");
         menu.prev("a").off("click").click(showMenuHandler);
     }
@@ -644,7 +651,7 @@ $(function () {
         $(this).off('click').click(triggerMainAction);
         menu.css({ display: 'none' }).addClass("visible")
             ;
-        menu.slideDown();
+        menu.slideDown(100);
         $("body > header").addClass("backgr-page");
     }
 
