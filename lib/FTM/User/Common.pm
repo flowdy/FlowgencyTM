@@ -349,7 +349,7 @@ sub fast_bulk_update {
                     }
                 }} # end of single iteration block in if-clause
                 $task = $tasks->$method( $copy || $task || (), $data )
-                    and push @success, $task->name; # except for deleted tasks
+                    and push @success, $tmp_name // $task->name; # except for deleted tasks
             }
             catch {
                 $error_handler->( ($tmp_name || $task) => $_ );

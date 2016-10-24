@@ -83,6 +83,7 @@ function Ranking (args) {
                             );
                     }
                     else if ( err !== undefined ) {
+                        console.log( "Deleting submitted changeset for task " + id );
                         li.hide('fast');
                         delete nextload.update_tasks[ id ];
                     }
