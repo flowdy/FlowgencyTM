@@ -192,8 +192,14 @@ sub login {
     }
 
     if ( !( $password || defined $user->extprivacy ) ) {
-        $self->session( showcase_mode => 1 );
-        $self->redirect_to("home");          
+        if ( $self->req->method eq 'GET' ) {
+            $self->stash( showcase_username => $user->username );
+            return;
+        }
+        else {
+            $self->session( user_id => $user_id, showcase_mode => 1 );
+            $self->redirect_to("home");
+        }
     }
     elsif ( $password && $user->password_equals($password) ) {
         $trigger->(1);
@@ -201,8 +207,8 @@ sub login {
         $self->redirect_to("home");
     }
     else {
-        $trigger->(0);
-        $self->render( retry_msg => 'authfailure' );
+        $trigger->(0) if $self->req->method eq 'POST';
+        $self->render( $password ? (retry_msg => 'authfailure') : () );
     }
 
 }

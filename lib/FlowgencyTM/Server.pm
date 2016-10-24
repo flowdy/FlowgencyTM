@@ -71,7 +71,7 @@ sub startup {
 
       $c->stash(
           is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
-          is_restapi_req => $ct ? $ct ne 'application/x-www-form-encoded'
+          is_restapi_req => $ct ? $ct ne 'application/x-www-form-urlencoded'
                           :       $c->accepts('', 'json'),
           current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
           showcase_mode => 0,
@@ -192,7 +192,8 @@ sub authenticate_user {
 
     if ( $user ) { $further_check = 1 }
     elsif ( $user = $c->session('user_id') ) {
-        $c->stash( showcase_mode => $c->session('showcase_mode') );
+        $further_check = $c->session('showcase_mode');
+        $c->stash( showcase_mode => $further_check );
     }
     elsif ( !$c->stash('is_remote') and $user = $ENV{FLOWGENCYTM_USER} ) {
         $c->session( user_id => $user );
@@ -204,8 +205,15 @@ sub authenticate_user {
         if ( $password && $password =~ /\S/ ) {
             $user->password_equals($password) or return;
         }
-        elsif ( !defined $u->extprivacy && $c->req->method eq 'GET' ) {
-            $c->stash( showcase_mode => 1 );
+        elsif ( !defined $user->extprivacy ) {
+            if ( $c->req->method eq 'GET' ) {
+                $c->stash( showcase_mode => 1 );
+            }
+            else {
+                $password = $c->param("_showcase_password");
+                $user->password_equals($password//'') or return;
+                $c->session( showcase_mode => 0 );
+            }
         }
         else { return; }
     }

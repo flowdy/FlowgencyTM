@@ -19,6 +19,10 @@
     <input type="submit" value="log in">
 </div>
 
+% if ( my $u = stash 'showcase_username' ) {
+<p><%= $u %> is a showcase user. Under a showcase user's hood, you hopefully get an impression of how FlowgencyTM can be used for instance. Please leave the password field empty, it is only needed for maintenance.</p>
+% }
+
 <h2>Forgot your password?</h2>
 
 <p>And do you have a valid e-mail address in your user profile? Just input user id (or mail address) and a <em>new</em> password in the above fields and repeat it <input type="password" name="confirmpw" placeholder="here"> to make sure you have not mistyped it. Then, get an e-mail with a confirmation link to click for having it automatically activated on successful login: Click <input type="submit" value="Reset password">.</p> 

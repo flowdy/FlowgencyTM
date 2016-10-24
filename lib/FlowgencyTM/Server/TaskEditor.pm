@@ -127,7 +127,7 @@ sub handle_multi {
     elsif ( index($ct, 'application/x-www-form-urlencoded') == 0 ) {
         for my $task (@{ $self->req->params->names }) {
             my $tdata = $self->param($task);
-            $data->{$task} = from_json $tdata;
+            $commit->{$task} = from_json $tdata;
         }
     }
     else {
@@ -142,15 +142,15 @@ sub handle_multi {
     }
 
     $self->app->log->debug(
-        "fast_bulk_update got following data to process: " . encode_json($data)
+        "fast_bulk_update got following data to process: " . encode_json($commit)
     );
 
     if ( $self->req->method eq 'PATCH' ) {
-        $data->{ '-create' } = 0;
+        $commit->{ '-create' } = 0;
     }
 
     try {
-        $errors{ $_ } = q{} for FlowgencyTM::user->apply_task_changes($data); 
+        $errors{ $_ } = q{} for FlowgencyTM::user->apply_task_changes($commit); 
     }
     catch {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
