@@ -185,7 +185,7 @@ $(function () {
 
     function insert_new_task_form (e) {
         e.preventDefault();
-        var lazystr = $("header .add-new-task-btn textarea").val();
+        var lazystr = $("header .add-newtask-btn textarea").val();
         console.log("Inserting new task form (lazystr: " + lazystr + ")");
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         var newtasks = $('<li>Loading form(s) for new task(s) ...</li>');
