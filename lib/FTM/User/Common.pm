@@ -960,7 +960,8 @@ sub _parse_taskstep_title {
         push @{$data{tags}}, $1;
     }
 
-    return { oldname => $head } if !%data and $head =~ /^[a-z]\S+$/;
+    return { oldname => $head }
+        if !%data && $parent && $head =~ /^[a-z]\S+$/;
 
     if ( $head ) {
         s/^\s+//, s/\s+$// for $head;
