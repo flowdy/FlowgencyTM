@@ -8,7 +8,7 @@
 % my ($prio_max, $prio_avg) = delete @{$_priodir}{'_max', '_avg'};
 % my $presets = stash( 'presets' ) // { title=>'', steps => {} };
 % my @TASK_FIELDS = qw(
-%     incr_name_prefix title priority timestages archived_because
+%     incr_name_prefix title priority from_date timestages archived_because
 % );
 % my $steps = delete $presets->{steps};
 % delete $presets->{'name'};
