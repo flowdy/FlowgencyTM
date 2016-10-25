@@ -120,24 +120,25 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 %   }
     </select>
     <button class="save-btn">Save all changes</button></div>
+
+%   if ( $bare_mode ) {
+    <ul style="font-size:smaller;">
+       <li>Fields marked with an <strong>asterisk (*)</strong> are required.</li>
+    </ul>
+%   }
+%   else {
+    <div style="text-align:right;"><input type="submit" name="parse_json" value="Send"></div>
+
+    <p>Create or edit a task:</p>
+
+    <textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
+    <input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
+%   }
+
     </form>
 % }
 % continue {
 %   $steps = delete $steps->{ '-next' };
-% }
-
-% if ( $bare_mode ) {
-<ul style="font-size:smaller;">
-<li>Fields marked with an <strong>asterisk (*)</strong> are required.</li>
-</ul>
-% }
-% else {
-<div style="text-align:right;"><input type="submit" name="parse_json" value="Send"></div>
-
-<p>Create or edit a task:</p>
-
-<textarea cols="80" name="tfls"><%= $input // '' %></textarea><br>
-<input type="submit" name="parse_tfls" value="Parse TreeFromLazyStr syntax">
 % }
 
 

@@ -153,10 +153,14 @@ sub fast_bulk_update {
         if ( ref $_ eq 'FTM::Error::Task::MultiException' ) {
             %errors = %{ $_->all };
             while ( my ($task, $e) = each %errors ) {
-                $self->app->log->error("Form processing failed for task $task: '$e'");
-            }
-            for my $e ( values %errors ) {
-                $e = $e->can('message') ? $e->message : "$e" if ref $e;
+                next if !$e->{error};
+                for my $e ( values %$e ) {
+                    $e = $e->can('message') ? $e->message : "$e" if ref $e;
+                    $self->app->log->error(
+                        "Form processing failed for task $task: '$e'"
+                    );
+                    last; # expect hash to contain only one key/value pair
+                }
             }
             $status = $_->http_status;
         }

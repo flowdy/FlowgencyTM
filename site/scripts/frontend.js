@@ -2,7 +2,7 @@ var FlowgencyTM = (function namespace() {
 
 function Ranking (args) {
     
-    var nextload = { update_tasks: {} };
+    var nextload = { update_tasks: {} }, force_include = [];
    
     var stepFields = [
         'description', 'expoftime_share', 'checks', 'done', 'substeps'
@@ -48,8 +48,10 @@ function Ranking (args) {
     this.rerank = function (e) {
         var url = '/todo',
             params = nextload.update_tasks,
-            str_params;
+            str_params; 
         function rerank () {
+            if ( force_include.length )
+                nextload.force_include = force_include.join(",");
             var n = $.param(nextload);
             window.location.href = url + ( n ? '?' + n : '' );
         }
@@ -67,25 +69,29 @@ function Ranking (args) {
                 str_params[i] = JSON.stringify(changes);
             });
             $.post('/tasks', str_params).done(function (response) {
-                var tasks = Object.keys( response );
-                nextload.force_include = tasks.join(",");
+                var task;
+                $.each( Object.keys( response ), function (i,task) {
+                     force_include.push(task);
+                });
                 delete nextload.update_tasks;
                 rerank();
             }).fail(function (jqXHR, textStatus) {
                 console.log("error JSON: " + jqXHR.responseText );
                 var errors = JSON.parse( jqXHR.responseText );
                 $("#plans > li").each(function () {
-                    var li = $(this), id = li.data("id"), err = errors[ id ];
-                    if ( err ) {
+                    var li = $(this), id = li.data("id"), status = errors[ id ];
+                    if ( status === undefined ) return;
+                    else if ( status.success ) {
+                        $("<p>\u2713 This task has been processed successfully</p>")
+                            .insertBefore(li.find(".taskeditor"));
+                        force_include.push( status.success );
+                        delete nextload.update_tasks[ id ];
+                    }
+                    else {
                         $('<div class="error"><h3>Sorry, the following error occurred:</h3>')
-                            .append('<pre>' + err + '</pre>').insertBefore(
+                            .append('<pre>' + status.error + '</pre>').insertBefore(
                                 li.find(".taskeditor")
                             );
-                    }
-                    else if ( err !== undefined ) {
-                        console.log( "Deleting submitted changeset for task " + id );
-                        li.hide('fast');
-                        delete nextload.update_tasks[ id ];
                     }
                 });
                 $("#plans").before(

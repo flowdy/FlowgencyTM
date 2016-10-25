@@ -118,7 +118,7 @@ has '+message' => (
 
 has 'all' => (
     is => 'rw',
-    isa => 'HashRef[Str|Object]',
+    isa => 'HashRef[HashRef[Object|Str]]',
 );
 
 augment dump => sub {

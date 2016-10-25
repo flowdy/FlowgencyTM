@@ -259,7 +259,7 @@ my %RESET = (
 sub fast_bulk_update {
     my ($self, $args) = @_;
 
-    my ($status, %errors, @success);
+    my ($status, %errors, %success);
 
     my ($reset, $create) = delete @{$args}{'-reset','-create'};
     my $parser; 
@@ -270,7 +270,7 @@ sub fast_bulk_update {
             ? $status || $e->http_status || 400
             :                               500
             ;
-        $errors{ $name } = $e;
+        $errors{ $name }{error} = $e;
     };
 
     my $resetter = sub {
@@ -348,16 +348,22 @@ sub fast_bulk_update {
                         ) if $expected xor $t->step($step);
                     }
                 }} # end of single iteration block in if-clause
-                $task = $tasks->$method( $copy || $task || (), $data )
-                    and push @success, $tmp_name // $task->name; # except for deleted tasks
+
+                if ( $task = $tasks->$method( $copy || $task || (), $data ) ) {
+                    $success{ $tmp_name || $task->name } = $task->name;
+                }
+                else {
+                    # forget about deleted tasks
+                }
             }
             catch {
                 $error_handler->( ($tmp_name || $task) => $_ );
             };
         }
         elsif ( $task eq '_NEW_TASKS' ) {
-            push @success, map { $_->{task_obj}->name }
-                           $self->_parser( -create => $create )->($data);
+            my $name;
+            %success = map { $name = $_->{task_obj}->name; $name => $name }
+                       $self->_parser( -create => $create )->($data);
         }
         else {
             $parser //= $self->_parser;
@@ -368,13 +374,15 @@ sub fast_bulk_update {
     }
 
     if ( %errors ) {
-        $errors{ $_ } //= q{} for @success;
+        while ( my ($key, $task) = each %success ) {
+            $errors{ $key } //= { success => $task };
+        }
         FTM::Error::Task::MultiException->throw(
             all => \%errors, http_status => $status,
         );
     }
     else {
-        return @success;
+        return values %success;
     }
 
 }
