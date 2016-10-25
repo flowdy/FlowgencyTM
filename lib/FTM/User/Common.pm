@@ -346,7 +346,7 @@ sub apply_task_changes {
                                 $expected ? "does not exist" : "already exists"
                         ) if $expected xor $t->step($step);
                     }
-                }} # end of single iteration block in if-clause
+                } # end of single iteration block in if-clause
 
                 if ( $task = $tasks->$method( $copy || $task || (), $data ) ) {
                     $success{ $tmp_name || $task->name } = $task->name;
