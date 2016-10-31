@@ -144,6 +144,7 @@ sub startup {
   $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#handle_multi');  
   $auth->get('/tasks/:name')->to('task_editor#handle_single');
   $auth->patch('/tasks/:name')->to('task_editor#handle_single');
+  $auth->post('/tasks/:name')->to('task_editor#handle_single', new => 'task' );
   $auth->put('/tasks/:name')->to('task_editor#handle_single', reset => 1 );
   $auth->delete('/tasks/:name')->to('task_editor#purge');
   $auth->get('/tasks/:name/form')->to('task_editor#form');
@@ -154,7 +155,7 @@ sub startup {
       controller => "task_editor", action => "open", ensure => 0
   );
   $auth->get('/tasks/:name/steps/:step')->to('task_editor#handle_single');
-  $auth->post('/tasks/:name/steps')->to('task_editor#handle_single', step => '' );
+  $auth->post('/tasks/:name/steps')->to('task_editor#handle_single', new => 'step' );
   $auth->put('/tasks/:name/steps/:step')->to('task_editor#handle_single', reset => 1);
   $auth->patch('/tasks/:name/steps/:step')->to('task_editor#handle_single');
   $auth->delete('/tasks/:name/steps/:step')->to('task_editor#purge');

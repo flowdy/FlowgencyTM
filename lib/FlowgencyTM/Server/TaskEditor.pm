@@ -65,14 +65,12 @@ sub handle_single {
     my $self = shift;
     my $id = $self->_get_task;
     my $step = $self->stash('step');
+    my $new = $self->stash('new') // '';
     my $meth = $self->req->method;
     my $commit;
     my $ahref = $commit->{$id} = from_json $self->req->body;
     if ( $step ) { $ahref->{step} = $step }
-    @{$commit}{'-reset','-create'} = (
-        $self->stash('reset'),
-        defined $step && !length $step,
-    );
+    @{$commit}{'-reset','-create'} = ( $self->stash('reset'), $new );
     
     my $user = $self->stash("user");
     try {
