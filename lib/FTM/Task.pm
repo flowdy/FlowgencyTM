@@ -773,7 +773,7 @@ sub is_to_complete_otherwise_archive {
 sub dump {
     my $self = shift;
     my $steps = { map { $_->name => $_->dump } $self->steps };
-    my $data = $self->main_step_row->dump;
+    my $data = delete $steps->{''};
     $data->{steps} = $steps; 
     return $data;
 }
