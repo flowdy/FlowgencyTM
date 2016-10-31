@@ -101,7 +101,7 @@
     </ul>
     <p class="nav-button"><button style="width:100%">Reload with set options</button></p>
     </div>
-            <a href="/newtask"><img src="/images/newtask-icon.png"></a>
+            <a href="/task-form"><img src="/images/newtask-icon.png"></a>
             <div class="menu"> 
             Optional preset definition: <img class="close-btn" src="/images/close-btn.svg" /></button>
             <textarea style="width:90%;margin-right:5px;"

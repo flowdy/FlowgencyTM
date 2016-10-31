@@ -189,7 +189,7 @@ $(function () {
         console.log("Inserting new task form (lazystr: " + lazystr + ")");
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
         var newtasks = $('<li>Loading form(s) for new task(s) ...</li>');
-        $.get("/newtask" + "?bare=1" + lazystr, function (ntdata) {
+        $.get("/task-form" + "?bare=1" + lazystr, function (ntdata) {
             ntdata = $(ntdata);
             newtasks.hide().append(ntdata);
             newtasks.find(".taskeditor").each(function () {

@@ -47,59 +47,10 @@ function Ranking (args) {
 
     this.rerank = function (e) {
         var url = '/todo',
-            params = nextload.update_tasks,
-            str_params; 
-        function rerank () {
-            if ( force_include.length )
-                nextload.force_include = force_include.join(",");
-            var n = $.param(nextload);
-            window.location.href = url + ( n ? '?' + n : '' );
-        }
+            params = nextload.update_tasks;
         if (e) e.preventDefault();
         if ( Object.keys(params).length ) {
-            str_params = {};
-            Object.keys(params).forEach(function (i) {
-                var changes = params[i], steps = changes.steps,
-                    manager = $("#steps-for-" + i + "-tree").data("manager")
-                    ;
-                if ( manager ) for ( var step in steps ) {
-                    if ( manager.parent_of[step] == null )
-                        delete steps[step];
-                }
-                str_params[i] = JSON.stringify(changes);
-            });
-            $.post('/tasks', str_params).done(function (response) {
-                var task;
-                $.each( Object.keys( response ), function (i,task) {
-                     force_include.push(task);
-                });
-                delete nextload.update_tasks;
-                rerank();
-            }).fail(function (jqXHR, textStatus) {
-                console.log("error JSON: " + jqXHR.responseText );
-                var errors = JSON.parse( jqXHR.responseText );
-                $("#plans > li").each(function () {
-                    var li = $(this), id = li.data("id"), status = errors[ id ];
-                    if ( status === undefined ) return;
-                    else if ( status.success ) {
-                        $("<p>\u2713 This task has been processed successfully</p>")
-                            .insertBefore(li.find(".taskeditor"));
-                        force_include.push( status.success );
-                        delete nextload.update_tasks[ id ];
-                    }
-                    else {
-                        $('<div class="error"><h3>Sorry, the following error occurred:</h3>')
-                            .append('<pre>' + status.error + '</pre>').insertBefore(
-                                li.find(".taskeditor")
-                            );
-                    }
-                });
-                $("#plans").before(
-                    '<p class="error">'
-                  + jqXHR.status + " " + jqXHR.statusText
-                  + ' – Please fix the errors shown in the task block(s) below:</p>'
-                );
-            });
+            showcaseMode_popupNotice(function () { submitChanges(params); });
         }
         else rerank();
         return false;
@@ -109,6 +60,58 @@ function Ranking (args) {
         delete nextload.update_tasks[id];
     };
 
+    function rerank () {
+        if ( force_include.length )
+            nextload.force_include = force_include.join(",");
+        var n = $.param(nextload);
+        window.location.href = url + ( n ? '?' + n : '' );
+    }
+
+    function submitChanges (params) {
+        var str_params = {};
+        Object.keys(params).forEach(function (i) {
+            var changes = params[i], steps = changes.steps,
+                manager = $("#steps-for-" + i + "-tree").data("manager")
+                ;
+            if ( manager ) for ( var step in steps ) {
+                if ( manager.parent_of[step] == null )
+                    delete steps[step];
+            }
+            str_params[i] = JSON.stringify(changes);
+        });
+        $.post('/tasks', str_params).done(function (response) {
+            var task;
+            $.each( Object.keys( response ), function (i,task) {
+                 force_include.push(task);
+            });
+            delete nextload.update_tasks;
+            rerank();
+        }).fail(function (jqXHR, textStatus) {
+            console.log("error JSON: " + jqXHR.responseText );
+            var errors = JSON.parse( jqXHR.responseText );
+            $("#plans > li").each(function () {
+                var li = $(this), id = li.data("id"), status = errors[ id ];
+                if ( status === undefined ) return;
+                else if ( status.success ) {
+                    $("<p>\u2713 This task has been processed successfully</p>")
+                        .insertBefore(li.find(".taskeditor"));
+                    force_include.push( status.success );
+                    delete nextload.update_tasks[ id ];
+                }
+                else {
+                    $('<div class="error"><h3>Sorry, the following error occurred:</h3>')
+                        .append('<pre>' + status.error + '</pre>').insertBefore(
+                            li.find(".taskeditor")
+                        );
+                }
+            });
+            $("#plans").before(
+                '<p class="error">'
+              + jqXHR.status + " " + jqXHR.statusText
+              + ' – Please fix the errors shown in the task block(s) below:</p>'
+            );
+        });
+    }
 }
 
 Ranking.prototype.dynamizechecks = function (plan) {
@@ -593,10 +596,31 @@ function DateTimePicker (inline) {
     return;
 } 
 
+    function showcaseMode_popupNotice (callback, e) {
+        var dialog = $("#showcase-note");
+        if ( !dialog.length ) return callback(e);
+        dialog.dialog({
+            minWidth: 500,
+            buttons: {
+                "Okay": function () {
+                    return callback(e);
+                },
+                "Cancel": function () {
+                    $(this).dialog( "close" );
+                },
+                "Sign up": function () {
+                    window.location.href = "/user/join";
+                }
+            },
+            modal: true,
+        });
+    }
+
 return {
     Ranking: Ranking,
     DateTimePicker: DateTimePicker,
-    ObjectCacheProxy: ObjectCacheProxy
+    ObjectCacheProxy: ObjectCacheProxy,
+    showcaseMode_popupNotice: showcaseMode_popupNotice
 }; })(); /* END of FlowgencyTM namespace */
 
 $(function () {
@@ -631,6 +655,17 @@ $(function () {
                 showMenuHandler.apply(link, [e, menu]);
             }
         }).click(showMenuHandler);
+    });
+
+    $("#showcase-note").hide();
+
+    $("#page").on('click', ':submit', function (e) {
+        var form = $(this).closest("form");
+        e.preventDefault();
+        if ( form.get(0).method.toLowerCase() == "post" )
+            FlowgencyTM.showcaseMode_popupNotice(
+                function () { form.submit(); }, e
+            );
     });
 
     function triggerMainAction (e) {

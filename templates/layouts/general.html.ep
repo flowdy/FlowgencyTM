@@ -48,7 +48,15 @@
 
 <div id="page">
 % if ( $showcase_mode ) {
-<p class="showcase-note">Please note: You are just viewing what showcase user '<%= $user->username %>' has entered. You cannot submit anything, which is why actions might be without effect or even yield errors about unauthorized access. Please <a href="/user/login">register/login as a regular user</a> in order to test FlowgencyTM further.<p>
+<p><strong>Please note:</strong> This is what showcase user <%= $user->username %> sees in FlowgencyTM.</p>
+<div id="showcase-note" title="Guests are not authorized to submit data">
+
+<p>As you have logged in to a showcase user's account with a blank password, you are in a guest session.</p>
+
+<p>You can refresh the ranking with default or custom options; temporarily open and close tasks; make ephemeral changes, likewise void on reload; and click regular links to navigate the user's realm. Any actions are blocked, however, that would affect the user's data permanently. You can neither create and change tasks, nor alter settings as the time model. Push your luck and click "Okay" to convince yourself. You will get an error.</p>
+
+<p>For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
+</div>
 % }
 <%= content %>
 

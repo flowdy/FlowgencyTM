@@ -143,7 +143,19 @@ sub join {
 sub login {
     my $self = shift;
 
-    my $user_id         = $self->param('user') // return;
+    my $user_id         = $self->param('user');
+
+    if ( !$user_id ) {
+        $self->stash( showcase_users => {
+            map { $_->user_id => $_->username }
+            FlowgencyTM::database->resultset("User")->search(
+                { extprivacy => undef },
+                { columns => ['user_id', 'username' ] }
+            )
+        });
+        return;
+    }
+
     my $password        = $self->param('password');
     my $resetpw_confirm = $self->param('confirmpw');
     my $token           = $self->param('token');

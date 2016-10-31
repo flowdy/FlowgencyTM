@@ -1,3 +1,4 @@
+% stash addScripts => ['user_login'];
 % for ( $retry_msg // () ) {
 %     $_ = $_ eq 'authfailure' ? "Authentication failed: User does not exist "
 %                              . "or the password was wrong."
@@ -10,26 +11,34 @@
     <p class="error"><%= $retry_msg %></p>
 % }
 <form method="post" action="/user/login">
-<div style="text-align:center;display:block;">
+<div style="text-align:center;">
 % if ( my $t = param 'token' ) {
     <input type="hidden" name="token" value="<%= $t %>">
 % }
-    <label>Login: <input name="user" type="text" value="<%= param('user') %>"></label>
-    <label>Password:  <input name="password" type="password"></label>
-    <input type="submit" value="log in">
-</div>
+    <input name="user" type="text" placeholder="user id or email" value="<%= param('user') %>">
+    <input name="password" type="password"
+        placeholder="<%= stash('showcase_username') ? "Guest, leave it blank" : "Password" %>">
+    <input style="display:none;" type="password" name="confirmpw" placeholder="repeat it here">
+    <input type="submit" value="Login">
 
-% if ( my $u = stash 'showcase_username' ) {
-<p><%= $u %> is a showcase user. Under a showcase user's hood, you hopefully get an impression of how FlowgencyTM can be used for instance. Please leave the password field empty, it is only needed for maintenance.</p>
+<br><a id="forgotpw" href="javascript:void(0)">I forgot my password</a>
+
+</div></form>
+
+% my $u = stash 'showcase_users';
+% if ( $u && %$u ) {
+<p>This demo instance of FlowgencyTM includes following showcase users:</p>
+<ul class="showcasers">
+%   while ( my ($userid, $username) = each %$u ) {
+    <li><a href="javascript:void(0);" data-showcaserId="<%= $userid %>"><%= $username %></a></li>
+%   }
+</ul>
+<p>Under a showcase user's account, you have read-only access. You hopefully get a pleasant impression of how FlowgencyTM can be used for example.</p>
+% }
+% elsif ( $u = stash 'showcase_username' ) {
+<p><%= $u %> is a showcase user. After logging in to such an account without password, you have read-only access. You hopefully get a pleasent impression of how FlowgencyTM can be used for instance.</p>
 % }
 
-<h2>Forgot your password?</h2>
+<p>Want to test FlowgencyTM? To see if the concept matches your style of working? Be welcome!</p>
 
-<p>And do you have a valid e-mail address in your user profile? Just input user id (or mail address) and a <em>new</em> password in the above fields and repeat it <input type="password" name="confirmpw" placeholder="here"> to make sure you have not mistyped it. Then, get an e-mail with a confirmation link to click for having it automatically activated on successful login: Click <input type="submit" value="Reset password">.</p> 
-</form>
-
-<p>Otherwise, you will have to register anew with a different username and a valid e-mail address. Please understand that I cannot move your tasks to your new account unless you can prove that you owned the old one.</p>
-
-<h2>Not registered yet?</h2>
-
-<p>Want to test FlowgencyTM? To see if the concept matches your style of working? Be welcome! <a id="invite-btn" href="/user/join">Accept the terms of use and fill in the registration form</a></p>
+<p style="text-align:center;" id="invite-btn"><a href="/user/join">Get an account to play with</a></p>
