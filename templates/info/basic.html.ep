@@ -16,14 +16,11 @@
 <br>(<a href="/user/logout">Logout</a> | <a href="/user/login">Change user</a> | <a href="/user/delete">Good-bye survey, account deletion</a> | <a href="/user/terms">Terms of use</a> )
 </dl>
 
-<h2>About</h2>
-
-<p>FlowgencyTM – Your personal task &amp; time management tool.</p>
+<h2>Help</h2>
 
 <ul>
-<li>Multitask step by step</li>
-<li>Balance opponent progress and urgency</li>
-<li>Schedule working and recreational periods to get proper estimates</li>
+<li><a href="http://humanetasking.net">project website</a></li>
+<li><a href="/help/faq">Online help / Frequently Asked Questions</a></li>
 </ul>
 
 <h2>Credits & Attribution</h2>

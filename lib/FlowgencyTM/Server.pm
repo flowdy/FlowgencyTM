@@ -9,8 +9,6 @@ use POSIX qw(strftime);
 # use Tie::File;
 # tie my @SLOGAN => 'Tie::File', 'slogans.txt';
 
-my @INIT_STASH_SLOTS = qw(user is_restapi_req layout is_remote hoster_info);
-
 # This method will run once at server start
 sub startup {
   my $self = shift;
@@ -40,6 +38,7 @@ sub startup {
       },
   );
 
+
   if ( my $l = $ENV{LOG} ) {
       use Mojo::Log;
       open my $fh, '>', $l or die "Could not open logfile $l to write: $!";
@@ -61,69 +60,13 @@ sub startup {
   unshift @{$self->static->paths}, $self->home->rel_dir('site');
 
   # Router
-  my $r = $self->routes->under(sub {
-      my $c = shift;
+  my $r = $self->routes->under(\&initialize_stash);
 
-      my $is_remote
-          = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
+  $self->helper( 'reply.client_error' => \&prepare_client_error );
 
-      my $ct = $c->req->headers->content_type;
+  $self->hook( before_render => \&restapi_reply_jsonifier );
 
-      $c->stash(
-          is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
-          is_restapi_req => $ct ? $ct ne 'application/x-www-form-urlencoded'
-                          :       $c->accepts('', 'json'),
-          current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
-          showcase_mode => 0,
-      );
-
-      $c->stash(
-          hoster_info => $is_remote ? '(private remote)' : '(local)'
-      ) if !$c->stash('hoster_info');
-
-      return 1;
-
-  });
-
-  $self->hook( before_render => sub {
-      my ($c, $args) = @_;
-
-      my $tmpl = $args->{template};
-      my $is_restapi_req = $c->stash('is_restapi_req');
-      prepare_error( $c => delete $args->{exception} )
-          if $tmpl && $tmpl eq 'exception' && (
-              $is_restapi_req || $self->mode eq 'production'
-          );
-
-      $args->{json} //= do {
-          my %stash = %{ $c->stash };
-          delete @stash{
-              @INIT_STASH_SLOTS,
-              grep /^mojo\./, %stash
-          };
-          \%stash;
-      } if $is_restapi_req;
-
-  });
-
-  my $auth = $r->under(sub {
-      my $c = shift;
-
-      if ( authenticate_user($c) ) { return 1; }
-      elsif ( !$c->stash('is_restapi_req') && $c->req->method eq "GET" ) {
-          $c->redirect_to("/user/login");
-          return undef;
-      }
-      else {
-          FTM::Error::User::NotAuthorized->throw(
-              'Unauthorized Access. '
-            . 'The user must be registered and activated. '
-            . 'If it is a regular user, provide the right password. '
-            . 'If it is a showcase user, only GET requests are allowed.'
-          );
-      }
-
-  });
+  my $auth = $r->under(\&require_user_otherwise_login_or_fail);
 
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
   $auth->get( '/user/logout' )->to("user#logout");
@@ -140,9 +83,9 @@ sub startup {
   $auth->get('/todo/:name')->to('task_list#single');
   $auth->get('/' => sub { shift->redirect_to('home'); });
   $auth->any( [qw|GET POST|] => '/task-form')->to('task_editor#form');
-  $auth->get("/tasks")->to("tasks_list#all");
+  $auth->get("/tasks")->to("task_list#all");
   $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#handle_multi');  
-  $auth->get('/tasks/:name')->to('task_editor#handle_single');
+  $auth->get('/tasks/:name')->to('task_editor#form');
   $auth->patch('/tasks/:name')->to('task_editor#handle_single');
   $auth->post('/tasks/:name')->to('task_editor#handle_single', new => 'task' );
   $auth->put('/tasks/:name')->to('task_editor#handle_single', reset => 1 );
@@ -164,18 +107,66 @@ sub startup {
        ->to('user#settings');
 
   $auth->get('/info')->to('info#basic');
+  $r->get('/help/*file' => \&render_online_help);
 
-  $r->any('/*whatever' => {whatever => ''} => sub {
-     my $c        = shift;
-     my $whatever = $c->param('whatever');
-     $c->render(text => "<h1>Sorry, requested resource not found</h1><p>URL <code>/$whatever</code> did not match a route provided by the server.", status => 404);
-   });
 }
 
 my $started_time;
 BEGIN { $started_time = scalar localtime(); }
 sub get_started_time { $started_time; }
 
+sub initialize_stash {
+    my $c = shift;
+
+    my $is_remote
+        = index( $ENV{MOJO_LISTEN}//q{}, $c->tx->remote_address ) < 0;
+
+    my $ct = $c->req->headers->content_type;
+
+    $c->stash(
+        is_remote => !defined($ENV{FLOWGENCYTM_USER}) || $is_remote,
+        is_restapi_req => $c->accepts('', 'json' )
+                       || $ct && $ct ne 'application/x-www-form-urlencoded',
+        current_time => strftime('%Y-%m-%d %H:%M:%S', localtime time),
+        showcase_mode => 0,
+    );
+
+    $c->stash(
+        hoster_info => $is_remote ? '(private remote)' : '(local)'
+    ) if !$c->stash('hoster_info');
+
+    return 1;
+
+}
+
+sub require_user_otherwise_login_or_fail {
+    my $c = shift;
+
+    my $is_restapi_req = $c->stash('is_restapi_req');
+
+    if ( my $u = authenticate_user($c) ) {
+        $c->stash( user => $u );
+        return 1;
+    }
+
+    elsif ( !$is_restapi_req && $c->req->method eq "GET" ) {
+        $c->redirect_to("/user/login");
+    }
+
+    else {
+        $c->reply->client_error(
+            message => 'To fulfil your request requires user identification: '
+              . 'The user must be registered and their account activated. '
+              . 'If it is a regular user, authenticate with right password. '
+              . 'When seeing a showcase user, only GET requests are allowed.',
+            error => "Access Denied",
+            http_status => 401,
+        );
+    }
+
+    return undef;
+
+}
 # Rely on Mojolicious in that the session cookie be cryptographically
 # protected against manipulation (HMAC-SHA1 signature). Hence, if the
 # user id is defined, the user has certainly logged in properly.
@@ -221,31 +212,93 @@ sub authenticate_user {
 
     $user->can_login or return;
 
-    $c->stash( user => $user );
     return $user;
 
 }
 
-sub prepare_error {
-    my ($c, $x) = @_;
-    my $user = $c->stash("user");
-    if ( index( ref $x, 'FTM::Error' ) == 0 ) {
-        $c->res->code( $x->http_status // 500 );
-        my ($type) = ref($x) =~ /^FTM::Error::(.+)$/;
-        $type //= 'General error';
-        $c->stash(
-            message => $type || $user->can_admin ? $x->message
-                : "Something went wrong in backend (details in server log)",
-            error => $type,
-            user_seqno => $x->user_seqno
+sub prepare_client_error {
+    my $c = shift;
+    my $x = @_ > 1 ? { @_ } : shift;
+    my %args;
+
+    # Case 1: We have got a genuine application error object of
+    #         which we know the interface.
+    if ( (my $xclass = ref $x) =~ s{^FTM::Error\b}{} ) {
+        # consider rather Scalar::Util::blessed ... Yes, I did
+        $xclass =~ s{^::}{};
+        %args = (
+            error => $xclass || "General error",
+            message => $x->message,
+            user_seqno => $x->user_seqno, 
         );
+        $c->res->code( $x->http_status );
     }
+
+    # Case 2: We have got a plain hash of arguments to use directly
+    elsif ( ref $x eq 'HASH' ) { %args = %$x; }
+
+    # Otherwise, we have got an exception thrown from other, third-party 
+    # code. You should design your production-mode exception template so
+    # that it displays only $error and $message, not $exception, because
+    # this might allow potential attackers to examine your server's
+    # vulnerabilities.
     else {
+        my $u = $c->stash("user");
         $c->stash(
-            error => 'Internal Server Error',
-            message => $user->can_admin ? $x
-                : "Something went wrong (details in server log)",
+            error => "Internal server error",
+            message => $u && $u->can_admin ? (ref $x ? "$x" : $x)
+                     : "Oops, something went wrong. (A more detailed "
+                     . "error message logged server-side. Ask the admin.)"
+                     ,
         );
+        return;
     }
+
+    return $c->render( template => 'exception.production', %args );
+
 }
+
+sub restapi_reply_jsonifier {
+    my ($c, $args) = @_;
+
+    return if !$c->stash('is_restapi_req')
+           || $args->{json};
+
+    my %stash = ( %{ $c->stash }, %$args );
+    delete @stash{ # general slots of internal interest ...
+        qw(snapshot user template is_restapi_req layout
+           is_remote hoster_info cb action controller
+        ),
+        grep { /^mojo\./ } keys %stash
+    };
+
+    $args->{json} = \%stash;
+
+}
+
+sub render_online_help {
+    require Text::Markdown;
+    my $c = shift;
+
+    my $file = $c->stash("file");
+
+    if ( $file =~ m{(^|\/)\.} ) {
+        return $c->reply->not_found;
+    }
+    elsif ( $file =~ m{\.(\w{3,4})$} ) {
+        return $c->reply->static( "../doc/online-help/" . $file );
+    }
+
+    $file = $c->app->home->rel_file(
+        "doc/online-help/" . ( $file || "faq" ) . ".md"
+    );
+
+    open my $fh, '<', $file or return $c->reply->not_found;
+    binmode $fh, ':utf8';
+
+    $c->stash( layout => undef ) if $c->param('bare');
+    $c->render( text => Text::Markdown::markdown(do { local $/; <$fh> }) );
+
+}
+
 1;

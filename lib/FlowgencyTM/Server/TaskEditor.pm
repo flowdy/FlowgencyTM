@@ -3,7 +3,8 @@ use strict;
 package FlowgencyTM::Server::TaskEditor;
 use Mojo::Base 'Mojolicious::Controller';
 use Try::Tiny;
-use Mojo::JSON qw(from_json encode_json);
+use Mojo::JSON qw(from_json encode_json decode_json);
+use Encode qw(decode_utf8);
 use Carp qw(croak);
 
 sub form {
@@ -34,8 +35,13 @@ sub form {
 
     %res = $self->stash("user")->get_task_data($args);
 
-    FTM::Error::ObjectNotFound->throw( type => 'task', name => $task )
-        if %$args && !$res{presets};
+    if ( %$args && !$res{presets} ) {
+        my $e = FTM::Error::ObjectNotFound->new(
+            type => 'task', name => $task
+        );
+        $self->reply->client_error($e);
+        return;
+    }
 
     if ( $self->stash("is_restapi_req") ) {
         $self->render( json => \%res );
@@ -63,12 +69,13 @@ sub open {
 
 sub handle_single {
     my $self = shift;
+    $self->stash("is_restapi_req" => 1);
     my $id = $self->_get_task;
     my $step = $self->stash('step');
     my $new = $self->stash('new') // '';
     my $meth = $self->req->method;
     my $commit;
-    my $ahref = $commit->{$id} = from_json $self->req->body;
+    my $ahref = $commit->{$id} = decode_json $self->req->body;
     if ( $step ) { $ahref->{step} = $step }
     @{$commit}{'-reset','-create'} = ( $self->stash('reset'), $new );
     
@@ -92,14 +99,14 @@ sub handle_single {
 
 sub handle_multi {
     my $self = shift;
-
+    $self->stash("is_restapi_req" => 1);
     my ($commit, %errors, $status);
     my $ct = $self->req->headers->content_type;
     if ( index( $ct, 'text/plain' ) == 0 ) {
-        $commit = { -LAZYSTR => $self->req->body };
+        $commit = { -LAZYSTR => decode_utf8($self->req->body) };
     }
     elsif ( index($ct, 'application/json') > -1 ) {
-        $commit = from_json $self->req->body;
+        $commit = decode_json $self->req->body;
         if ( ref $commit eq 'ARRAY' ) {
             my ($count,%defs);
             for ( @$commit ) {
@@ -114,12 +121,12 @@ sub handle_multi {
             }
         }
         else {
-            FTM::Error::->throw(
+            return $self->reply->client_error({
                 http_status => 400,
                 message =>
                     "Malformed content: expected json data-structure, "
                   . "but got a string"
-            )
+            });
         }
     }
     elsif ( index($ct, 'application/x-www-form-urlencoded') == 0 ) {
@@ -129,14 +136,14 @@ sub handle_multi {
         }
     }
     else {
-        FTM::Error::->throw(
+        return $self->reply->client_error({
             http_status => 400,
             message =>
                 "fast_bulk_update called " . (
                     $ct ? "with unsupported type of request body content: $ct"
                         : "without mandatory request body content"
                 )
-        )
+        });
     }
 
     $self->app->log->debug(
@@ -181,9 +188,11 @@ sub analyze {
     my $dynamics = FlowgencyTM::user->get_dynamics_of_task({ id => $task,  });
 
     if ( my $o = $self->param('only') ) {
-        $dynamics = $dynamics->{$o} // FlowgencyTM::ObjectNotFound->throw(
-            "Analysis aspect not known: $o"
-        );
+        $dynamics = $dynamics->{$o};
+        $self->reply->client_error({
+            error => "ObjectNotFound",
+            message => "Analysis aspect not known: $o",
+        }) if !$dynamics;
     }
 
     $self->render(

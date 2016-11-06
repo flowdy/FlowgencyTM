@@ -773,6 +773,9 @@ sub is_to_complete_otherwise_archive {
 sub dump {
     my $self = shift;
     my $steps = { map { $_->name => $_->dump } $self->steps };
+    for my $v ( values %$steps ) {
+        delete @{$v}{qw/task_id parent_id step_id/};
+    }
     my $data = delete $steps->{''};
     $data->{steps} = $steps; 
     return $data;

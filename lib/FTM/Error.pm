@@ -48,9 +48,12 @@ override as_string => sub {
 };
 
 my $last_error;
+use Scalar::Util qw(weaken);
 sub last_error { $last_error; }
-sub BUILD { $last_error = shift; }
-sub DEMOLISH { $last_error = undef; }
+sub BUILD {
+    $last_error = shift;
+    weaken($last_error);
+}
 
 }
 

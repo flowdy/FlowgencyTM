@@ -448,16 +448,20 @@ sub and_below {
 sub dump {
     my ($self) = @_;
     my %data = $self->get_columns;
-    if ( my $prow = $self->parent_row ) {
+    my $prow = $self->parent_row;
+    if ( $prow && $prow->name ) {
         $data{parent} = $prow->name;
         $data{link} = join ".", map { $_->task, $_->name }
              $self->link_row // ();
     }
     if ( my $srow = $self->subtask_row ) {
         my %subtask_data = $srow->get_columns;
-        $subtask_data{timestages} = [
-            map {{ $_->get_columns }} $srow->timestages
-        ]; 
+        delete $subtask_data{ main_step_id };
+        for my $t ( $srow->timestages ) {
+            $t = { $t->get_columns };
+            delete $t->{task_id};
+            push @{$subtask_data{timestages}}, $t;
+        }
         while ( my ($key, $value) = each %subtask_data ) {
             $data{$key} = $value;
         }

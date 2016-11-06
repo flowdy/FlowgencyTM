@@ -46,8 +46,7 @@ function Ranking (args) {
     };
 
     this.rerank = function (e) {
-        var url = '/todo',
-            params = nextload.update_tasks;
+        var params = nextload.update_tasks;
         if (e) e.preventDefault();
         if ( Object.keys(params).length ) {
             showcaseMode_popupNotice(function () { submitChanges(params); });
@@ -64,7 +63,7 @@ function Ranking (args) {
         if ( force_include.length )
             nextload.force_include = force_include.join(",");
         var n = $.param(nextload);
-        window.location.href = url + ( n ? '?' + n : '' );
+        window.location.href = '/todo' + ( n ? '?' + n : '' );
     }
 
     function submitChanges (params) {
@@ -79,7 +78,7 @@ function Ranking (args) {
             }
             str_params[i] = JSON.stringify(changes);
         });
-        $.post('/tasks', str_params).done(function (response) {
+        $.post('/tasks', str_params, "json").done(function (response) {
             var task;
             $.each( Object.keys( response ), function (i,task) {
                  force_include.push(task);
@@ -88,8 +87,10 @@ function Ranking (args) {
             rerank();
         }).fail(function (jqXHR, textStatus) {
             console.log("error JSON: " + jqXHR.responseText );
-            var errors = JSON.parse( jqXHR.responseText );
-            $("#plans > li").each(function () {
+            var errors = JSON.parse( jqXHR.responseText ), generic_error;
+            if ( errors.message !== undefined )
+                generic_error = errors.message;
+            else $("#plans > li").each(function () {
                 var li = $(this), id = li.data("id"), status = errors[ id ];
                 if ( status === undefined ) return;
                 else if ( status.success ) {
@@ -108,7 +109,9 @@ function Ranking (args) {
             $("#plans").before(
                 '<p class="error">'
               + jqXHR.status + " " + jqXHR.statusText
-              + ' – Please fix the errors shown in the task block(s) below:</p>'
+              + ( generic_error ? '<br><code>' + generic_error + '</code>'
+                  : ' – Please fix the errors shown in the task block(s) below:</p>'
+                )
             );
         });
     }
