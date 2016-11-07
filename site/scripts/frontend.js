@@ -606,13 +606,18 @@ function DateTimePicker (inline) {
             minWidth: 500,
             buttons: {
                 "Okay": function () {
-                    return callback(e);
+                    $(this).dialog( "close" );
+                    callback(e);
+                    $("#page").get(0).scrollTo(0,0);
                 },
                 "Cancel": function () {
                     $(this).dialog( "close" );
                 },
+                "Reset": function () {
+                    location.reload(true);
+                },
                 "Sign up": function () {
-                    window.location.href = "/user/join";
+                    location.href = "/user/join";
                 }
             },
             modal: true,
@@ -665,7 +670,7 @@ $(function () {
     $("#page").on('click', ':submit', function (e) {
         var form = $(this).closest("form");
         e.preventDefault();
-        if ( form.get(0).method.toLowerCase() == "post" )
+        if ( form.length && form.get(0).method.toLowerCase() == "post" )
             FlowgencyTM.showcaseMode_popupNotice(
                 function () { form.submit(); }, e
             );
