@@ -227,11 +227,9 @@ sub prepare_client_error {
         # consider rather Scalar::Util::blessed ... Yes, I did
         $xclass =~ s{^::}{};
         %args = (
+            %{ $x->dump(0) },
             error => $xclass || "General error",
-            message => $x->message,
-            user_seqno => $x->user_seqno, 
         );
-        $c->res->code( $x->http_status );
     }
 
     # Case 2: We have got a plain hash of arguments to use directly
@@ -254,6 +252,7 @@ sub prepare_client_error {
         return;
     }
 
+    $c->res->code( delete $args{http_status} // 500 );
     return $c->render( template => 'exception.production', %args );
 
 }

@@ -20,7 +20,7 @@ has _remote_stack_trace => (
 );
 
 sub dump {
-    my ($self) = @_;
+    my ($self, $with_internals) = @_;
     my $stack_trace = $self->stack_trace;
     my (@frames);
     while ( my $next = $stack_trace->next_frame ) {
@@ -30,10 +30,12 @@ sub dump {
     }
     return {
         (map { $_ => $self->$_ } qw(message user_seqno http_status)),
-        _is_ftm_error => ref $self,
-        _remote_stack_trace => join(
-            "", map { $_->as_string . "\n" } @frames
-        ),
+        $with_internals // 1 ? (
+            _is_ftm_error => ref $self,
+            _remote_stack_trace => join(
+                "", map { $_->as_string . "\n" } @frames
+            )
+        ) : (),
         inner(),
     };
 }
@@ -134,7 +136,7 @@ augment dump => sub {
         }
         else { $status = 500; }
     }
-    return all => $errors, http_status => 400;
+    return all => $errors, http_status => $status;
 };
 
 package FTM::Error::Time::InvalidSpec;
