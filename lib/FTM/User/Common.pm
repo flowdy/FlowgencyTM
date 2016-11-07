@@ -389,12 +389,20 @@ sub apply_task_changes {
 sub open_task {
     my ($task, $user) = (pop, pop);
 
+    my $is_open;
     if ( $user ) {
+        my $ensure = $task->{ensure};
         $task = $user->get_task($task->{id});
-        $task->open;
+        if ( defined $ensure ) {
+            if ( $ensure ) { $task->open; }
+            else { $task->close; return; }
+            $is_open = $task->is_open;
+        }
+        else { $is_open = 0 }
     }
+    else { $is_open = $task->is_open }
     
-    if ( defined($task->is_open) ) {
+    if ( defined($is_open) ) {
         my @focus_steps = $task->archived_ts
             ? [ undef, $task->main_step_row ]
             : $task->current_focus
@@ -407,7 +415,7 @@ sub open_task {
                } $fs->[1];
             $fs->[1] = \%h;
         }
-        return { focus => \@focus_steps }
+        return { is_open => $task->is_open, focus => \@focus_steps }
 
     }
     else {

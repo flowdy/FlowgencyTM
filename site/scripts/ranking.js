@@ -146,14 +146,15 @@ $(function () {
                 '<div class="extended-info" ><em>Loading ...</em></div>'
             );
         ext.insertBefore(plan.find(".task-btn-row"));
-        $.post("/tasks/" + plan.data("id") + "/open", {}, function (response) {
+        $.get("/tasks/" + plan.data("id") + "/open", {}, function (response) {
             ext.find("em").replaceWith(response);
             ftm.dynamizechecks(plan);
+            ftm.get(plan.data("id")).open_since = 'now';
         });
         plan.data('isOpen', true);
     }
 
-    function toggler () {
+    function toggler (e) {
         var plan = $(this),
             ext = plan.find(".extended-info"),
             task = ftm.get(plan.data("id")),
@@ -165,6 +166,7 @@ $(function () {
           + "By closing it, you will loose this ranking boost and the task might drop."
         ) ) return;
 
+        e && e.preventDefault();
         if ( ext.get(0) ) ext.toggle();
         else opener.apply(plan);
         
