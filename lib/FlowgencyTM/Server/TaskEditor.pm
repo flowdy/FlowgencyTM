@@ -32,6 +32,9 @@ sub form {
     elsif ( $t = $self->_get_task ) {
         $args->{task} = $t;
     }
+    else {
+        $self->stash( incr_prefix => 1 );
+    }
 
     %res = $self->stash("user")->get_task_data($args);
 
