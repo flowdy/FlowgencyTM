@@ -226,12 +226,17 @@ sub login {
 }
 
 sub logout {
-    my $self = shift;
+    my ($self) = @_;
 
     FlowgencyTM::user( $self->session('user_id') => 0 );
     $self->session(expires => 1);
 
-    $self->render(template => "user/login", retry_msg => 'loggedOut' );
+    # $self->stash( retry_msg => 'loggedOut' );
+
+    $self->render(
+        text => '<h1>Log out</h1>'
+              . '<p>You have been logged out. Session cookie deleted.</p>'
+    )
 
 }
 
