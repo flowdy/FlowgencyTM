@@ -131,10 +131,14 @@ augment dump => sub {
     my $errors = $self->all;
     my $status = 400;
     for my $e ( values %$errors ) {
-        if ( $_ = eval { $e->can('message') } ) {
-            $e = $e->$_;
+        my $x = \$e->{error};
+        if ( $_ = eval { $$x->can('message') } ) {
+            $$x = $$x->$_;
         }
-        else { $status = 500; }
+        else {
+            $status = 500;
+            $$x = "$$x" if ref $$x;
+        }
     }
     return all => $errors, http_status => $status;
 };
