@@ -47,10 +47,13 @@ for my $t (@{ FTM::User::TRIGGERS() } ) {
         croak "Ctx: $ctx" if ref $ctx ne 'HASH';
         my $ret = init()->post_respond('FTM_User/'.$t, $data);
 
+        delete $data->{_context};
+
         # if we get an exception object, let's unpack and rethrow it
         if ( ref $ret eq 'HASH' and my $e = delete $ret->{_is_ftm_error} ) {
             $e->throw(%{ $ret });
         }
+  
         return $wantarray ? @$ret : $ret;
 
     };
