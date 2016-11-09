@@ -667,7 +667,7 @@ $(function () {
 
     $("#showcase-note").hide();
 
-    $("#page").on('click', ':submit', function (e) {
+    $("#page").on('click', 'input[type=submit]', function (e) {
         var form = $(this).closest("form");
         e.preventDefault();
         if ( form.length && form.get(0).method.toLowerCase() == "post" )
