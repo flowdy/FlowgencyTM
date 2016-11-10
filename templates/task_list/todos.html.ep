@@ -104,8 +104,8 @@
             <a href="/task-form"><img src="/images/newtask-icon.png"></a>
             <div class="menu"> 
             Optional preset definition: <img class="close-btn" src="/images/close-btn.svg" /></button>
-            <textarea style="width:90%;margin-right:5px;"
-              placeholder="Lazy String syntax (write-only, but type-fast)"
+            <textarea style="width:97%;margin-right:5px;"
+              placeholder="You can input initial task data using LazyString syntax."
               rows="5"></textarea>
             <p class="nav-button"><button>New task &hellip;</button>
               (or click icon)</p>

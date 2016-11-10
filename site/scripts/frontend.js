@@ -245,7 +245,7 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         var id = fieldset.data('stepid');
         steptree.register_substeps(fieldset.find("input[name=substeps]"), id);
         ftm.dynamize_taskeditor_step_fieldset(fieldset);
-    });
+    }).first().find('dl').accordion("option", "active", 1);
     var stepSwitcher = function () {
         te.find("fieldset").hide();
         $("#step-"+taskname+"-"+this.value).show();

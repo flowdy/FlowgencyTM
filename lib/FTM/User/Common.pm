@@ -911,8 +911,8 @@ sub get_tfls_parser {
         my ($string, $modifier) = @_;
         @_ > 1 or $modifier = $common_modifier;
         my @tasks;
-        my @defs = wantarray ? scalar $parser->parse($string)
-                 : $parser->parse($string);
+        my @defs = wantarray ? $parser->parse($string)
+                 : scalar $parser->parse($string);
         while ( my $href = shift @defs ) {
             $modifier->() for $href;
             if ($dry_run) { push @tasks, $href; next }

@@ -10,10 +10,7 @@
 % my @TASK_FIELDS = qw(
 %     incr_name_prefix title priority from_date timestages archived_because
 % );
-% my $steps = delete $presets->{steps};
-% delete $presets->{'name'};
-% $steps->{''} = $presets;
-% if ( $id ) { ($presets->{incr_name_prefix}) = $id =~ /(\w+?)\d+$/; }
+% 
 % my @priorities = map { [ $_, $_priodir->{$_} ] } sort { $_priodir->{$a} <=> $_priodir->{$b} } keys %$_priodir;
 <p id="error-msg">
 % if ( my $message = stash 'message' ) {
@@ -28,7 +25,7 @@
 %         my $h = delete $step->{_init};
 %         ref $h ? $h : $h ? $step : 0;
 %     };
-<fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>" data-init='<%= include json => $init %>'>
+<fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>" data-init='<%= Mojo::JSON::to_json($init) %>'>
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
 <dl class="fields">
 % my $std = do { my %s; for my $f ( @TASK_FIELDS ) {
@@ -101,7 +98,11 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 </fieldset>
 % end
 
-% while ( $steps ) {
+% while ( $presets ) {
+%     my ($steps, $next) = delete @{$presets}{ 'steps', '-next' };
+%     delete $presets->{'name'};
+%     $steps->{''} = $presets;
+%     if ( $id ) { ($presets->{incr_name_prefix}) = $id =~ /(\w+?)\d+$/; }
 <form id="taskform-<%= $id %>" data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
 
 %   for my $step (values %$steps) {
@@ -136,9 +137,5 @@ The value 'done' is magic, of no use to set it manually: It is set or cleared by
 %   }
 
     </form>
+%   $presets = $next;
 % }
-% continue {
-%   $steps = delete $steps->{ '-next' };
-% }
-
-
