@@ -107,7 +107,7 @@ sub startup {
        ->to('user#settings');
 
   $auth->get('/info')->to('info#basic');
-  $r->get('/help/*file' => \&render_online_help);
+  $r->get('/help/*file' => { file => 'index' } => \&render_online_help);
 
 }
 
@@ -296,7 +296,10 @@ sub render_online_help {
     binmode $fh, ':utf8';
 
     $c->stash( layout => undef ) if $c->param('bare');
-    $c->render( text => Text::Markdown::markdown(do { local $/; <$fh> }) );
+    $c->render( text => Text::Markdown::markdown(do {
+        local $/;
+        <$fh>.qq{\n\n[&larr; Back to index](/help/)}
+    }) );
 
 }
 

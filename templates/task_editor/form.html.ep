@@ -27,29 +27,28 @@
 %     };
 <fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>" data-init='<%= Mojo::JSON::to_json($init) %>'>
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
+<p><a href="/help/task-editor">What to enter into the fields of the Task editor?</a></p>
 <dl class="fields">
 % my $std = do { my %s; for my $f ( @TASK_FIELDS ) {
 %     $s{$f} = delete $step->{$f} // next;
 % } %s ? \%s : undef };
 % if ( $std ) {
 % if ( !$name && $incr_prefix ) {
-<dt>ID prefix</dt>
+<dt>Identifier prefix</dt>
 <dd class="input">
-<p class="help">A name for a task is found automatically on creation. Sometimes you may want to provide a prefix consisting of alphabetical characters. If the prefix exists, a number is appended and incremented until the ID is unique. You may suggest the number where the incrementing is to start.</p>
 <p class="input"><input name="incr_name_prefix" value="<%= $std->{incr_name_prefix} %>"></p>
 % }
 <dt>Title *</dt>
 <dd class="input"><input type="text" value="<%= $std->{title} %>" name="title" ></dd>
 <dt>Priority level *</dt>
-<dd><p class="help">Dedicate the maximum number you ever assigned (currently <%= $prio_max %>, average <%= sprintf '%.2f', $prio_avg %>) for first priority tasks only. Those tasks with that level will be no more first priority once you input an even higher level for this task.</p>
+<dd>
 <p class="input"><% for ( @priorities ) { my ($label, $num) = @$_; %><label><input type="radio" name="priority" value="<%= $num %>" <%= $num == $std->{priority} ? 'checked' : '' %>><%= $label %></label><% } %><input type="radio" name="priority"><input type="number" min="1" value="<%= $std->{priority} %>"></p>
 </dd>
 <dt>Start date</dt>
-<dd><p class="help">You need to set it only if you want the task to start at a later date/time.</p>
-<p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"></p>
+<dd>
+<p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"> (Default: now)</p>
 </dd>
 <dt>Time stages *</dt>
-<dd><p class="help">Associate the task to a time track you can define and modify in the settings,  and specify the due date. You may also specify points of time when the task shall change the track.</p>
 <div class="input">
 <table class="time-stages">
 <tr><th>Time track</th><th>until</th></tr>
@@ -71,18 +70,15 @@
 % else {
 <dt>Description *</dt>
 % }
-<dd><p class="help">If you have installed the markdown package or, precisely, the Text::Markdown CPAN module (optional; you can do it later but use the syntax already), it is loaded automatically and you can have clickable links, inline emphasis, headings and the like. Please note that heading levels are automatically increased by 3.</p>
+<dd>
 <div class="input"><textarea name="description" rows="5" style="width:90%"><%= $step->{description} %></textarea></div></dd>
 <dt>Expenditure of time share</dt>
-<dd><p class="help">By how much shall the completion of this step advance the overall progress?<br>
-To estimate this value right, imagine the expenditure of time used by the superordinate step (or task, alternatively) as a pie to be shared with all subordinate steps incl. this one <em>and additionally</em> each of its own subordinate steps. The pieces are equal in size but of any number in total. However, you may allocate to this step more than one. When in doubt, better leave the default of 1.</p>
+<dd>
 <p class="input">Allocate: <input type="number" name="expoftime_share" min="1" value="<%= $step->{expoftime_share} // 1 %>" /> piece of superordinate time share</p>
 </dd>
 <dt>Subordinate steps</dt>
-<dd><p class="help">For naming steps the following characters are allowed: A-Z,a-z,0-9. If you want multiple steps, separate them by one of the following separators, depending on meaning:
-<ul style="font-size:smaller;">
-<li>Use <strong>/</strong> (slash) or <strong>|</strong> (vertical bar) to group steps among which the order of completion is irrelevant.</li><li>Separate steps or step groups by <strong>,</strong> (comma) to indicate that the order does matter.</li><li><strong>;</strong> (semicolon) instead of comma signals a final special group of steps not depending on any other one. Each is always displayed until completed.</li></ul>
-<p><input type="text" name="substeps" value="<%= $step->{substeps} %>"></p></dd>
+<dd>
+<p><input type="text" name="substeps" value="<%= $step->{substeps} %>" style="width:100%"></p></dd>
 <dt>Step progress</dt>
 <dd><p class="input">
 % $step->{checks} //= 1;
@@ -90,9 +86,8 @@ To estimate this value right, imagine the expenditure of time used by the supero
 Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;vertical-align:middle;" name="done" value="<%= $step->{done} %>"> &rArr; <span><%= $step->{done} %></span> of <input type="number" name="checks" style="width:2em;" min="0" value="<%= $step->{checks} %>" ><br></p></dd>
 % if ( $std ) {
 <dt>Archive task</dt>
-<dd><p class="help">If you enter something in this field, the task is archived even if not all steps are completed, that is it will not show up any more. To view all tasks that have been archived (whether completed or not), please click the link "archive" in the filter menu.<br>
-The value 'done' is magic, of no use to set it manually: It is set or cleared by the system depending on whether there are uncompleted steps. By setting the special value '!PURGE!', you delete the task irrevocably, so be cautious.</p>
-<input name="archived_because" value="<%= $std->{archived_because} %>" placeholder="I archive this uncompleted task because ..." />
+<dd>
+<input name="archived_because" value="<%= $std->{archived_because} %>" style="width:100%" placeholder="I archive this uncompleted task because ..." />
 </dd>
 % }
 </fieldset>

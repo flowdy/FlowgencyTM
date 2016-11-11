@@ -1,6 +1,6 @@
 <h2>Task urgency details</h2>
 
-<p>This is the dynamic data of task &quot;<%= $title %>&quot; [<%= $name %>], describing the state at <%= $timestamp %>. You may follow the explanations under the tables to understand the current ranking position and the list of pending steps, in the hope they make the inner workings sufficiently transparent.</p>
+<p>This is the dynamic data of task &quot;<%= $title %>&quot; [<%= $name %>], describing the state at <%= $timestamp %>. You might want to <a href="/help/task-urgency-analysis">read first to understand</a> the current ranking position and the list of pending steps.</p>
 
 <script>$(function () {
 
@@ -62,12 +62,6 @@ $("#progress-tab .fullview").each(function () {
 <tr><th colspan="4" style="border-top: 1px solid black;text-align:right;">Total:</th><td style="border-top: 1px solid black;"><%= sprintf '%0.3f', $flowrank->{score} %></td></tr>
 </table>
 
-<p>The <var>priority</var> is selected or set by you in the task properties.</p>
-
-<p>The <var>due</var> value is indicated in net working time seconds available according your configured time model and the time stages specified in the task properties (s. timeway tab). Its weight should be negative, thus its scale is reversed. The value <var>open</var> is indicated in net working time seconds for which the task has been open.</p>
-
-<p><var>drift</var> and <var>timeneed</var> result from calculations involving the overall progress of the task (s. progress tab, topmost line starting with ":") in relation to the net working time. The drift indicates by how much the bigger progress of both exceeds the smaller. If the bigger is the passage of time, the drift is positive, representing the time pressure. Otherwise, if it is the progress, negative. The timeneed is an estimate based on your current working speed, i.e. extrapolating the drift to all time available. As it considers also the still time, timeneed is actually the relation of the number of real time seconds probably needed for task completion to how many remain till the set due-date.</p>
-
 </div>
 
 <div id="progress-tab">
@@ -107,10 +101,6 @@ $("#progress-tab .fullview").each(function () {
 % }
 </table>
 
-<p>The black bullet before a step description indicates that the step appears on the pending list not until all prior steps have been done. The unfilled bullet means that the order of action is less strict, in that the step can be done before or after the preceeding white-bulleted steps up to and including the last black-bulleted one. A dash indicates least strictness: Though displayed at the end, those steps can be done before, after or between the other steps below the same superordinate one.</p>
-
-<p>The percent progress of a step results from the done checks divided by all checks, multiplied with 100% and the number of expenditure of time shares assigned to the step in question. Add the <em>progresses</em> of its direct substeps if any, each multiplied with the respective expenditure of time shares as well. The sum needs then to be divided by the involved expenditure of time shares in total.</p>
-
 </div>
 <div id="timeway-tab">
 <p>From date <%= $timeway->{ from_date } %> until &hellip;</p>
@@ -134,6 +124,5 @@ $("#progress-tab .fullview").each(function () {
 % }
 </table>
 
-<p>The net working time values are, like the still absence times in the underlying tooltips, indicated in the format "H:MM:SS". When a pattern notation in the second column is not prepended with description plus the name of the related variation and its original track (if different), it represents the default/fallback rhythm of the according track.</p>
 </div>
 </div> <!-- #aspects -->

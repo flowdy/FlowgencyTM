@@ -47,8 +47,10 @@
   </header>
 
 <div id="page">
+<%= content %>
+
 % if ( $showcase_mode ) {
-<p><strong>Please note:</strong> This is what showcase user <%= $user->username %> sees in FlowgencyTM.</p>
+<p>Please note: This is what showcase user <em><%= $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
 <div id="showcase-note" title="Guests are not authorized to submit data">
 
 <p>As you have logged in to a showcase user's account with a blank password, you are in a guest session.</p>
@@ -58,8 +60,6 @@
 <p>For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
 </div>
 % }
-<%= content %>
-
 <footer>
 FlowgencyTM <%== $hoster_info %>
 <br><span id="subfooter">FlowgencyTM is open source under the terms of GNU GPL v3. | &copy; 2015 Florian L. Heß | <a href="http://www.github.com/flowdy/FlowgencyTM">Code repository</a> on GitHub</span>

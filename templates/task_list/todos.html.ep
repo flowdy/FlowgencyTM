@@ -54,13 +54,10 @@
 </ol>
 
 % if ( $there_are_tasks_shown ) {
-<p>By clicking the title of a task, more info and buttons are displayed under it. You may open a task permanently with the respective button. Its rank increases with the time it is open, which is why tasks are closed by default.</p>
-<p>The ranking has been generated at: <%= $timestamp %>. Listed <%= $there_are_tasks_shown %> tasks matching any of the selected types in <em>List tasks</em> setting (total: <%= $tasks_count_total %>) in logo tab "Filter".</p>
-<p>The page will warn you to reload in <span id="warn-reload-in-minutes"></span> minutes, but not until this window is refocussed.</p>
+<p>Listed <%= $there_are_tasks_shown %> of <%= $tasks_count_total %> tasks at <%= $timestamp %>. Show more information about a closed task, or close an open one temporarily by clicking its title. Reload notice shows up when window is refocussed in <span id="warn-reload-in-minutes"></span> minutes or later.</p>
 % }
 % elsif ( $tasks_count_total ) {
-<p>No tasks match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
-<p>The page will warn you to reload in <span id="warn-reload-in-minutes"></span> minutes, but not until this window is refocussed.</p>
+<p>No tasks currently match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
 % }
 % else {
 <h2>Get started</h2>
@@ -72,7 +69,7 @@
 
 <li><p>Click the <img src="images/filter-icon.png" alt="filter icon" style="height:1em;vertical-align:middle"> icon (or the "Save all changes" button of open tasks) to submit new or changed task data  and whenever you want a fresh ranking. You are reminded when you refocus the browser tab/window and the current ranking has been generated more than an hour ago.</p></li>
 
-<li><p>Check steps when done. Progress and urgency are oppositional: The former lets the task fall in the ranking and colours the task gradient indicator in the direction of green over blue and turquoise. The latter lets the task climb in the ranking and colours the indicator in the direction of red over blue and violet. As long as its blue-coloured, work is in balance, the flow feeling most likely.</li>
+<li><p>Check steps when done. Go to third step.</li>
 </ol>
 
 % }

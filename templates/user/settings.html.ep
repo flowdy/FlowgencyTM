@@ -1,5 +1,8 @@
 % stash addScripts => ['user-settings'];
-<h2>Change your User Profile settings</h2>
+<h1>Change your User Profile settings</h1>
+
+<p><a href="/help/user-settings">Help</a></p>
+
 <ul>
 <li><a href="#set-weights">Weights of ranking criteria</a></li>
 <li><a href="#set-priorities">Priority levels<a></li>
@@ -33,7 +36,7 @@
 <form id="update-settings-form" method="POST">
 <fieldset id="authentication">
 <legend>Basic settings for user account <strong><%= $user->user_id %></strong></legend>
-<p class="info">If you run the server locally, as is recommended because time use is highly private, you do not need to input anything here.</p>
+<p class="info">If you run the server locally, you do not need to input anything here.</p>
 
 <label style="display:block;"><input id="change-password" type="checkbox"> Change stored password</label>
 <fieldset id="change-password-fieldset" disabled="disabled" style="display:none">
@@ -56,7 +59,6 @@
 </fieldset>
 <fieldset id="set-weights">
 <legend>Weights of the ranking criteria</legend>
-<p>The FlowgencyTM ranking score ("FlowRank") is mathematically just a simple product comprising the following dimensions of urgency. By default, they are equally weighted, but you may adjust that to your liking. Please note: It is of no use changing it too often. The mind will need some time to get accustomed.</p>
 <table>
 % my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your checking steps as done. This is additionally visualized by a variadic colour gradient under the task title.", open => "If and for how long the task has been open", timeneed => "When the task will be done as compared to when you planned it should be done. This is inferred from your average working speed once you make the first check.");
 % while ( my ($key, $hint) = splice @hints, 0, 2 ) {
@@ -68,7 +70,6 @@
 
 <fieldset id="set-priorities">
 <legend>Priority levels</legend>
-<p>Separate the priority labels by comma. You may chain commas to indicate that the next labeled priority is more than one level higher than the previous. In the priority level field of the task editor, you can assign the priority just as well by number, so these unlabeled in between are usable, too. Count up from left to right, start at 1.</p>
 % my @chain;
 % while ( my ($label, $number) = each %$priorities ) {
 %   $chain[$number] = $label;
@@ -79,19 +80,13 @@
 %     $l = '';
 % }
 % my $value = join ",", @chain;
-<input type="text" name="priorities" value="<%= $value %>">
+<span><input type="text" name="priorities" value="<%= $value %>" style="width:100%;box-sizing:border-box;"></span>
 %
 </fieldset>
 
 <fieldset id="configure-time-model">
 <legend>Time Model</legend>
 <input name="time_model_changes" type="hidden">
-<p>Tasks are linked to time tracks so FlowgencyTM knows when they are active or when they pause, that is when they rank up according to higher urgency score to reflect need of more checks, just like hungry nestlings cheep for worms. You can define as many tracks as you find necessary to match how you work. The model is very flexible, but beware, an overcomplicated model would confuse you, so would effectively be a productivity hindrance.</p>
-
-<p>If you want to create further tracks, give them distinct names that may not contain space, punctuation or other special characters, only a-z, A-Z, 0-9 and _. Make sure you set a descriptive label by which you can select it in the task editor. Then, set either week_pattern or a week_pattern_of_track to shape the fill-in used initially and in gaps between variations if any. All linkages between tracks are checked for circular dependencies (successor, too).</p>
-
-<p>Variations can have names with the same restriction as for track names. You may set any one of week_pattern, week_pattern_of_track ignoring or section_of_track including variations if any, or ref. If you set none, the properties of track fill-in are implied. Give the variation a description, from_date and until_date at least. In case of ref, however, all properties not mentioned are implied from the referenced variation that must originate in the upper hierarchy of the track.</p>
-
 % my @trackfields = qw(label week_pattern week_pattern_of_track unmentioned_variations_from force_receive_mode default_inherit_mode from_earliest until_latest successor);
 % my @varfields = qw(description week_pattern week_pattern_of_track section_of_track ref apply from_date until_date inherit_mode);
 % my @tracks = sort { $time_model->{$a}{label} cmp $time_model->{$b}{label} } keys %$time_model;
@@ -217,9 +212,7 @@ be a new
 
 <fieldset id="appendix">
 <legend>Flowgency rank threshold for closed tasks</legend>
-<p>Unless you checked the list option "later", and if at least one of your tasks to do is open, any further closed task is listed only if the following inequation holds true for it: <code style="font-size:125%;background-color:yellow;"><var title="FlowRank score of a closed task">uₜ</var> &gt; <var title="minimum FlowRank score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum FlowRank score among open tasks">ǔₒ</var> &minus; <var title="maximum FlowRank score among listed tasks">û</var>)</code>.</p><ul><li><var>uₜ</var>: FlowRank score of a closed task, <var>ǔₒ</var>: minimum FlowRank score among open tasks, <var>û</var>: maximum FlowRank score among listed tasks,</li><li><var>c</var>: coefficient that you can adjust here, currently it is <strong id="coefficient-c-value"><%= $user->appendix %></strong>:
-<input style="vertical-align:middle;margin:0" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>.
-If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least and the most urgent task.</li></ul>
+<p>Currently <strong id="coefficient-c-value"><%= $user->appendix %></strong>: <input style="vertical-align:middle;margin:0;width:80%" name="appendix" type="range" max="1" min="0" step="0.05" value="<%= $user->appendix %>" onchange='$("#coefficient-c-value").text(Number(this.value).toFixed(2));'>.</p>
 
 </fieldset>
 <input type="submit" name="update" value="Update Profile">
