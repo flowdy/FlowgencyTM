@@ -233,7 +233,9 @@ sub prepare_client_error {
     }
 
     # Case 2: We have got a plain hash of arguments to use directly
-    elsif ( ref $x eq 'HASH' ) { %args = %$x; }
+    elsif ( ref $x eq 'HASH' ) {
+        %args = ( (map { $_ => undef } qw(user_seqno message error)), %$x);
+    }
 
     # Otherwise, we have got an exception thrown from other, third-party 
     # code. You should design your production-mode exception template so
