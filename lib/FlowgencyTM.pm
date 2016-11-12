@@ -3,7 +3,7 @@ use strict;
 
 package FlowgencyTM {
 use Carp qw(croak);
-our $VERSION = "0.8";
+use version; our $VERSION = qv("v0.9.0");
 use FTM::Error;
 
 sub import {
