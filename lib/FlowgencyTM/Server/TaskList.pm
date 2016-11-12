@@ -31,19 +31,11 @@ sub todos {
     return;
 }
 
-sub all {
+sub dump_all {
   # GET /tasks
     my $self = shift;
-    my %args = (map({ $_ => 1 } qw/desk tray archive/), drawer => 3 );
-    my $list = $self->stash("user")->get_ranking(\%args)->{list};
-
-    my %tasks;
-    while ( my $t = shift @$list ) {
-        next if !ref $t;
-        $tasks{ $t->{name} } = $t;
-    }
-
-    $self->render( json => \%tasks );
+    my $dump = $self->stash("user")->get_task_data();
+    $self->render( json => $dump );
 }
 
 sub single {

@@ -234,6 +234,14 @@ sub get_task_data {
             croak "No initial data supplied to get_task_data call";
         }
     }
+    elsif ( !defined $task ) {
+        my $names = $self->tasks->task_rs->get_column('name');
+        my %tasks;
+        while ( my $task = $names->next ) {
+            $tasks{$task} = $task_dumper->($task);
+        }
+        return \%tasks;
+    }
 
     my $priodir = $self->get_labeled_priorities;
     my $priocol = $self->tasks->task_rs

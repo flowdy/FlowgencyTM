@@ -83,7 +83,7 @@ sub startup {
   $auth->get('/todo/:name')->to('task_list#single');
   $auth->get('/' => sub { shift->redirect_to('home'); });
   $auth->any( [qw|GET POST|] => '/task-form')->to('task_editor#form');
-  $auth->get("/tasks")->to("task_list#all");
+  $auth->get("/tasks")->to("task_list#dump_all");
   $auth->any( [qw|PATCH POST|] => '/tasks')->to('task_editor#handle_multi');  
   $auth->get('/tasks/:name')->to('task_editor#form');
   $auth->patch('/tasks/:name')->to('task_editor#handle_single');
