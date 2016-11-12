@@ -96,6 +96,7 @@ Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;v
 % while ( $presets ) {
 %     my ($steps, $next) = delete @{$presets}{ 'steps', '-next' };
 %     delete $presets->{'name'};
+%     while ( my ($step, $props) = each %$steps ) { $props->{name} //= $step }
 %     $steps->{''} = $presets;
 %     if ( $id ) { ($presets->{incr_name_prefix}) = $id =~ /(\w+?)\d+$/; }
 <form id="taskform-<%= $id %>" data-taskid="<%= $id // "_NEW_TASK_" %>" method='post' action="/task/<%= $id // 0 %>/post" class="taskeditor">
