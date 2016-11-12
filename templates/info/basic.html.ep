@@ -1,26 +1,10 @@
-<dl>
-<dt>FlowgencyTM version</dt>
-<dd><%== sprintf '%s, rev. <tt>%s</tt>', $version, $commit_id %>
-</dd>
-% if ( $changes ) {
-<dt>Uncommitted changes</dt>
-<dd><%= $changes %></dd>
-% }
-<dt>Server running since / recently restarted at</dt>
-<dd><%= $server_started %></dd>
-<dt>Currently logged in as</dt>
-<dd>
-% if ( $user ) {
-<%= $user->user_id %>, created <%= $user->created %>
-% }
-<br>(<a href="/user/logout">Logout</a> | <a href="/user/login">Change user</a> | <a href="/user/delete">Good-bye survey, account deletion</a> | <a href="/user/terms">Terms of use</a> )
-</dl>
-
 <h2>Help</h2>
 
 <ul>
-<li><a href="http://humanetasking.net">project website</a></li>
-<li><a href="/help/faq">Online help / Frequently Asked Questions</a></li>
+<li><a href="http://humanetasking.net">Project website humanetasking.net</a></li>
+<li><a href="/help/">Online help / Frequently Asked Questions</a></li>
+<li><a href="https://github.com/flowdy/FlowgencyTM">GitHub Repository</a></li>
+
 </ul>
 
 <h2>Credits & Attribution</h2>
@@ -46,6 +30,38 @@
 <p>You should have received a copy of the GNU General Public License
 along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
 
-<h2>Fork me</h2>
+<h2>Server info</h2>
 
-<p>FlowgencyTM proudly hosted on GitHub: <a href="https://github.com/flowdy/FlowgencyTM">https://github.com/flowdy/FlowgencyTM</a></p>
+<dl>
+<dt>FlowgencyTM version</dt>
+<dd><%== sprintf '%s, rev. <tt>%s</tt>', $version, $commit_id %>
+</dd>
+% if ( $changes ) {
+<dt>Uncommitted changes</dt>
+<dd><%= $changes %></dd>
+% }
+<dt>Server running since / recently restarted at</dt>
+<dd><%= $server_started %></dd>
+<dt>Currently logged in as</dt>
+</dl>
+
+% if ( $user ) {
+<h2>User info</h2>
+
+<p>
+You are currently logged in as <%= $user->user_id %>, created <%= $user->created %>.
+% if ( !defined $user->extprivacy ) {
+     This is a showcase user account, allowing guest viewers to login without password.
+% }
+</p>
+% }
+
+<h2>Actions</h2>
+
+<ul><li><a href="/user/logout">Logout</a>: Delete session cookie</li>
+<li><a href="/user/login">Change user</a>: Replace session with another user's</li>
+<li><a href="/user/delete">Good-bye</a>: Survey prior to account deletion</li>
+<li><a href="/user/terms">Terms of use</a>: Legal terms <%= $is_remote ? 'you have accepted on registration' : 'for other users if this FlowgencyTM instance were publicly available' %></li>
+<li><a href="/tasks">Tasks download</a>: All your tasks in JSON format, ready for importing somewhere else</li>
+</ul>
+
