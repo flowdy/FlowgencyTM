@@ -2,7 +2,10 @@ $(function () {
     var ftm = new FlowgencyTM.Ranking();
     $('#mainicon').data('FlowgencyTM', ftm);
 
-    var new_task_count = 0, new_task_icon = $("#icons-bar .icon:nth-child(2)");
+    var new_task_count = 0,
+        new_task_icon = $("#icons-bar .icon:nth-child(2)"),
+        list_opts = $("#list-opts input:not(:first-child)")
+        ;
 
     var switchOpenClass = [
         [{ icon: "ui-icon-folder-open" }, 'Open'],
@@ -12,6 +15,13 @@ $(function () {
     $("#mainicon").data('mainAction',
         function (e) { ftm.resetfilter(); ftm.rerank(e); }
     );
+
+    $("#more-options").click(function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        $(this).replaceWith("<hr><p>Use button below:</p>");
+        $("#list-options-pane").show();
+    });
 
     new_task_icon.children("a").data('mainAction', insert_new_task_form);
 
@@ -25,7 +35,6 @@ $(function () {
     }).each(function () { if (this.time.value) $(this).change(); });
 
     $("#icons-bar .icon:first-child button").click(function (e) {
-       console.log("button clicked");
        e.preventDefault();
        ftm.rerank(e);
     }).button({ width: "100%" });
@@ -35,7 +44,7 @@ $(function () {
     });
     
     $("#list-opts").buttonset();
-    $("#list-opts input").each(function () {
+    list_opts.each(function () {
         function update () {
             ftm.nextload[this.name] ^= this.value;
             console.log(
@@ -44,6 +53,12 @@ $(function () {
         }
         $(this).click(update);
         if ( this.checked ) update.apply(this);
+    });
+    $("#list-all-tasks").click(function () {
+        var checked = this.checked;
+        list_opts.each(function () {
+            if ( checked ^ this.checked ) $(this).click();
+        });
     });
 
     $("#query").change(function (e) {
@@ -110,8 +125,6 @@ $(function () {
         else console.log("No icon found");
     });   
 
-    $("form.taskeditor").each(function () { ftm.dynamize_taskeditor($(this)) });
- 
     $("body").click(function (e) {
        if ( e.target.nodeName == "BODY" ) window.scroll(0,0);
     });

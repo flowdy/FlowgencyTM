@@ -27,7 +27,7 @@
     <nav id="icons-bar">
     <div class="icon"><a id="mainicon" href="/todo"><img src="/images/filter-icon.png"></a>
 </div>
-    <div class="icon add-newtask-btn"><span style="color:grey;">↙ Click to reload the ranking of your to-dos.</div>
+    <div class="icon add-newtask-btn"><span style="position:relative;top:1em;color:grey;">&lArr; Click left icon to return to your to-dos.</div>
     <div class="icon"><a href="/user/settings"><img src="/images/settings-icon.png"></a>
     <div class="menu">User settings: <img src="/images/close-btn.svg" class="close-btn" /><ul>
         <li><a href="/user/settings#authentication">Identity and Authentification</a></li>
@@ -53,9 +53,7 @@
 <p>Please note: This is what showcase user <em><%= $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
 <div id="showcase-note" title="Guests are not authorized to submit data">
 
-<p>As you have logged in to a showcase user's account with a blank password, you are in a guest session.</p>
-
-<p>You can refresh the ranking with default or custom options; temporarily open and close tasks; make ephemeral changes, likewise void on reload; and click regular links to navigate the user's realm. Any actions are blocked, however, that would affect the user's data permanently. You can neither create and change tasks, nor alter settings as the time model. Push your luck and click "Okay" to convince yourself. You will get an error.</p>
+<p>Logged in to a showcase user's account with a blank password, you can only view everything. Entries and changes cannot be submit.</p>
 
 <p>For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
 </div>

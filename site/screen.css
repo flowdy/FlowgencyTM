@@ -22,7 +22,8 @@ body {
    padding:3px;
 }
 
-#icons-bar .menu > ul {
+#icons-bar .menu > ul,
+#list-options-pane > ul {
    list-style-type: none;
    list-style-position:inside;
    margin-left: 0;
@@ -41,7 +42,11 @@ header.backgr-page { z-index:10; }
 /* overriding a jquery-ui style */
 .menu .ui-buttonset { margin-right:0 }
 
-#icons-bar .menu > ul > li, a.button {
+#list-options-pane { display: none; }
+
+#icons-bar .menu > ul > li,
+#list-options-pane > ul > li,
+a.button {
    margin-bottom: 0.5em;
    padding: 0.5em;
    color:#4d4d4d;

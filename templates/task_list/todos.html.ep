@@ -75,37 +75,40 @@
 % }
     <div id="additions-to-layout" style="display:none;">
     <div class="menu">
-        <p>&neArr; Click logo to submit changes and reload the ranking <em>with default options</em>.<hr>
-        More options (then use button below): <img class="close-btn" src="/images/close-btn.svg" /><ul>
-        <li id="list-opts">List tasks:<br >
+        <p class="help">Save your checks, changes and new tasks if any.
+           Then refresh ranking <em>with defaults</em>.
+        <button class="ui-button ui-widget ui-default-state" id="more-options">More options <img class="close-btn" style="vertical-align:middle;height:1em;margin-left:.25em" src="/images/open-btn.svg" /></button></p><div id="list-options-pane">
+        <ul>
+        <li id="list-opts">List tasks:
+           <input id="list-all-tasks" type="checkbox"><label for="list-all-tasks" title="all">4x:</label>
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
-            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks">urgent</label>
-            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks">later</label>
-            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks">paused</label>
-            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks">future</label>
+            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks" title="urgent">U</label>
+            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks" title="paused">P</label>
+            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks" title="later">L</label>
+            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks" title="future">F</label>
         </li>
-        <li>Search tasks:<br />
+        <li>Search tasks:
         <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>
         <span><input id="with-archive" type="checkbox" disabled="disabled" checked="checked" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/todo?archive=1&desk=0">archive</a></span> 
         </li>
-        <li><form id="settime"><label>Set time:<br />
-        <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime" style="width:75%"></label><br>
+        <li><form id="settime"><label>Set time:
+        <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime"></label><br>
 % if ( !$is_remote ) {
         <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
         <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>
 % }
         </form></li>
     </ul>
-    <p class="nav-button"><button style="width:100%">Reload with set options</button></p>
+    <p class="nav-button"><button style="width:100%">Reload with set options</button></p></div>
     </div>
             <a href="/task-form"><img src="/images/newtask-icon.png"></a>
             <div class="menu"> 
-            Optional preset definition: <img class="close-btn" src="/images/close-btn.svg" /></button>
+            Get form for a new task: <img class="close-btn" src="/images/close-btn.svg" /></button>
             <textarea style="width:97%;margin-right:5px;"
-              placeholder="You can input initial task data using LazyString syntax."
+              placeholder="Experts have fields filled automatically: Input preset definition in LazyString syntax ..."
               rows="5"></textarea>
-            <p class="nav-button"><button>New task &hellip;</button>
-              (or click icon)</p>
+            <p class="nav-button"><a href="/help/lazy-string">LazyString syntax?</a> <button>New task &hellip;</button>
+              </p>
             </div>
         
 

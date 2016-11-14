@@ -640,11 +640,11 @@ $(function () {
     $( "#icons-bar .icon" ).has(".menu").each(function () {
         $(this).find(".close-btn").click(menuCloser);
         $(this).children("a").first().mouseenter(function (e) {
-            var link = $(this), tmout_open = setTimeout(menu_open, 500),
-                menu = link.next(".menu");
-            setTimeout(function () {
-                link.off('click').click(triggerMainAction);
-            }, 20);
+            var link = $(this), menu = link.next(".menu"),
+                tmout_open = setTimeout(function () {
+                    link.off('click').click(triggerMainAction);
+                    showMenuHandler.apply(link, [e, menu]);
+                }, 20);
             link.parent().mouseleave(function (e) {
                 var iconarea = $(this),
                     tmout_close = setTimeout(function () {
@@ -659,9 +659,6 @@ $(function () {
             link.mouseleave(function () {
                 clearTimeout(tmout_open);
             });
-            function menu_open () {
-                showMenuHandler.apply(link, [e, menu]);
-            }
         }).click(showMenuHandler);
     });
 

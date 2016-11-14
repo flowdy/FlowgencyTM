@@ -1,5 +1,26 @@
 $(function () {
 
+    var focus = window.location.hash;
+
+    if ( focus ) {
+        console.log("To target " + focus);
+        focus = focus.replace(/^#/, '');
+        $("h2").each(function (i) {
+            console.log(this.firstChild.nodeValue);
+            if ( focus == $(this).attr('id') ) {
+                focus = i;
+                console.log(i);
+                return false;
+            }
+            else {
+                console.log("h2#" + $(this).attr('id'));
+            }
+        });
+    }
+    else focus = false;
+
+    $("#update-settings-form").accordion({ heightStyle: "content", collapsible: true, active: focus });
+
     $("#set-email").click(function () {
         var f = $('#email');
         if ( this.checked ) {
