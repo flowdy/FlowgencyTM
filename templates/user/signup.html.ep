@@ -1,15 +1,17 @@
+% title "Join testers";
 % stash addScripts => [ 'user-join' ];
 % my $xp = stash 'ext_privacy_defined';
 
+<h2>Join the FlowgencyTM testers</h2>
 % if ( !$xp ) {
 <form action="/user/join" method="post">
-<div id="terms-agreement">
-<h1>1. Terms of Use: Special Agreement</h1>
 
 <p><strong>When checking the terms below, beware of fake term(s).</strong> The registration form can be filled in once your selection covers all the binding ones. The terms are short and plain, but then quite different from those of other personalized sites. Anger can be avoided by having people actually read and explicitly accept them.</p>
 % }
 
-<h2>Definitions</h2>
+<h2>1. Terms of Use: Special Agreement</h2>
+
+<h3>Definitions</h3>
 
 <dl>
 <dt>Service</dt>
@@ -24,13 +26,13 @@
 </dt>
 </dl>
 
-<h2>Conditions</h2>
+<h3>Conditions</h3>
 
 
 <ol id="terms">
 
 <li>
-<h3>I know what I am just signing up to</h3>
+<h4>I know what I am just signing up to</h4>
 
 <p>I have read what FlowgencyTM is, roughly how it works and also understand that this demo service is provided "as is" so interested people can test it, without local installation, particularly with regard to their personal working style.</p>
 
@@ -39,7 +41,7 @@
 <p>There is no promise of a sufficient uptime or reliability, however, since the software is still under active development. The service may be shut down without further notice, only its entry would be removed from the list of testing services on the official site.</p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="checkwhatisftm" value="1"> I accept</label> <label><input type="radio" name="checkwhatisftm" value="0"> You're kidding?</label></p>
+<p style="text-align:right;"><label><input type="radio" name="checkwhatisftm" value="1"> I know what FlowgencyTM is</label> <label><input type="radio" name="checkwhatisftm" value="0"> You're kidding?</label></p>
 % }
 
 </li>
@@ -50,7 +52,7 @@
 <del>
 % }
 
-<h3>I use it with <em>test data</em> only</h3>
+<h4>I use it with <em>test data</em> only</h4>
 <p>a. Accordingly the data I will enter after login is declared non-productive, which means I do not depend on it in my job in any way. Once I decide to use the tool with real data in my work, I cease using this service and either install the open-source tool locally or have it hosted by someone trustworthy and willing to accept the ethical responsibility for privacy.</p>
 
 <p>b. I try to reflect roughly how my job is really like. But I also affirm that the data of my tasks and my time model will be substantially fictitious and crafted without creative efforts, therefore worth neither privacy nor copyright. Particularly I make sure the data does not underlie foreign copyright and does not relate to real people, including myself, or facts subject to institutional or industrial secrecy (ger.: <em lang="de-DE">Es handelt sich daher weder um personenbezogene noch um anderweitig schutzwürdige Daten im Sinne deutschen Rechts</em>). Concerning that data specifically, the provider may freely publish and exchange it, licensed under <a href="http://creativecommons.org/publicdomain/zero/1.0/deed.en">CC-0</a>, e.g. as representative samples in the effort to solve software errors in cooperation with others, without the need for asking my permission in any single case.</p>
@@ -62,7 +64,7 @@
 <p>c. In contrast to that, I rely on my email address and full name being kept confidential and the password stored in a secure, non-plaintext form (salted hash). My IP address is not getting logged, which is why I should take note of my temporary user id displayed in error pages if I request support. By clicking the "logout" button or link in the info page, I can easily delete my session cookie from browser cache. The provider is obliged to blank or pseudonymize all that personal data prior to publishing any example database extracts or dumps.</p>
 
 % if ( $xp > 1 ) {
-<h3>I can use the service with real data.</h3>
+<h4>I can use the service with real data.</h4>
 <p>d. I am a family member, a friend or an acquaintance of the provider and therefore claim privacy for my task and time model data as well. Nothing of my data must be contained in public or exchanged data dumps.</p>
 % }
 % elsif ( !$xp ) {
@@ -70,12 +72,12 @@
 % }
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="privacywarning" value="1"> I accept</label> <label><input type="radio" name="privacywarning" value="0"> I want extended privacy for real data</label></p>
+<p style="text-align:right;"><label><input type="radio" name="privacywarning" value="1"> My content will be fictitious</label> <label><input type="radio" name="privacywarning" value="0"> I want extended privacy for real data</label></p>
 % }
 
 </li>
 
-<li><h3>I sign up of my own free will</h3>
+<li><h4>I sign up of my own free will</h4>
 
 <p>I am of age according to my jurisdiction and I have not been persuaded or pressured by anyone to use or even just try FlowgencyTM, neither in an expressed nor in a subtle way. The Humane Tasking initiative advertises the tool in an informative way that is not aggressive or invasive in my eyes. I sign up voluntarily as I know that otherwise I would not happen to like and benefit from it anyway.</p>
 
@@ -84,58 +86,59 @@
 <p>According to the disclaimer of the GNU General Public License the tool underlies, I take for granted that the tool is realized to the best of the inventor's knowledge and belief. As it is, according to the license, provided without warranty of fitness for any purpose, however, I would not hold the service provider and/or the developer(s) liable if effects of my usage of any sort turn out negative.</p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="voluntaryuse" value="1">I agree</label> <label><input type="radio" name="voluntaryuse" value="0"> You're kidding?</label></p>
+<p style="text-align:right;"><label><input type="radio" name="voluntaryuse" value="1">It is my decision</label> <label><input type="radio" name="voluntaryuse" value="0"> Not really.</label></p>
 % }
 </li>
 
 % if ( !$xp ) {
-<li><h3>I do not really read this</h3>
-<p>I do not quite understand but I neither care, I always ignored terms of use and will always ignore them because they are not legal anyway. Frankly, that kind of testing services is totally impossible in our world as we (do not) see.</p>
+<li><h4>I do not really read this</h4>
+<p>I do not quite understand but I neither care, I always ignored terms of use and will always ignore them because I think they are not legal anyway.</p>
 <p style="text-align:right;"><label><input type="radio" name="ignoreterms" value="1"> Nope.</label> <label><input type="radio" name="ignoreterms" value="0"> You're kidding?</label></p>
 </li>
 % }
 
-<li>
-<h3>I tell the provider how I like the tool</h3>
+<li><h4>I tell the provider how I like the tool</h4>
 <p>I will give feedback, at the latest when I cease using the service. If it turns out too bad, I will give it nevertheless and be ready to simply smile, should the provider / the developers not be able to handle it as equanimously as they promise to.</label></p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="promisefeedback" value="1"> Promise</label> <label><input type="radio" name="promisefeedback" value="0">You're kidding?</label></p>
+<p style="text-align:right;"><label><input type="radio" name="promisefeedback" value="1"> I will tell him</label> <label><input type="radio" name="promisefeedback" value="0">You're kidding?</label></p>
 % }
 </li>
 
 % if ( !$xp ) {
-<li><h3>I am open to paying for real use of the service by all data or money!</h3>
+<li><h4>I am open to paying for real use of the service by all data or money!</h4>
 <p>If the provider changes their mind to set-up a commercial service, presumably the next big(-data) thing and "for free" of course, I will be obliged to stick to it for my lifetime whatever the price may be. And if I do not agree to marriage with a squirrel to get freed in turn from prevailing foreign rule of time, then for the rest of my life I will re-read this article again and again in a cold cabin without wi-fi access and regret having accepted it. <span style="color:white">;-)</span></p>
 <p style="text-align:right;"><label><input type="radio" name="dontcheck" value="1"> I accept</label> <label><input type="radio" name="dontcheck" value="0"> You're kidding?</label></p>
 </li>
 % }
 
-<li><h3>My user account can be deleted any time</h3>
+<li><h4>My user account can be deleted any time</h4>
 <p>Considering their age, all user accounts are increasingly at risk of deletion. The service provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this online service that is intentionally provided free of advertisement at no charge.</p>
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="deletion" value="1"> Okay.</label> <label><input type="radio" name="deletion" value="0"> You're kidding?</label></p>
+<p style="text-align:right;"><label><input type="radio" name="deletion" value="1"> It is okay when my account is terminated some day</label> <label><input type="radio" name="deletion" value="0"> You're kidding?</label></p>
 % }
 </li>
 
 </ol>
 
-<p>Where the registration form is? It will show up when the selection is right.</p>
-
 % if ( !$xp ) {
+
+<div id="faq">
+<h3>Why is the registration form below not accessible?</h3> 
+<p>It will be once you prove you have read, understood and accepted the binding terms. All pairs require decision. Not all left-hand buttons are "right". Please use common sense. Re-read the terms and check your selection. </p>
 </div>
 
-<div id="registration">
-<h1>2. Registration</h1>
+<h2>2. Registration</h2>
 
-<p><label>User login name: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label><br>
-<label>Full name: <input name="username" placeholder="(skip if inferrable from mail address)"></label><br>
+<fieldset id="registration">
+<p><label>User login name: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
+<label>Full name: <input name="username" placeholder="(optional)"></label><br>
 <label>Mail address: <input name="email" type="text"></label></p>
 
-<p><label>Password: <input name="password" type="password">=<input name="passw_confirm" type="password" placeholder="repeat"></label></p>
+<p><label>Your password: <input name="password" type="password"></label><br>
+<label>Please repeat: <input name="passw_confirm" type="password"></label></p>
 <p style="text-align:right;"><input type="submit" name="join" value="register"></p>
-
-</div>
+</fieldset>
 
 
 </form>

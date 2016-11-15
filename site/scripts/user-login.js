@@ -14,7 +14,7 @@ $(function () {
         change: function (e) {
             $(":input[name=user]").val( $(this).find(":selected").val() );
             $(":input[name=password]").prop("placeholder", "(Leave blank)");
-            $(":submit").focus();
+            $(":submit").css({ fontWeight: "bold" }).focus();
         }
     });
 });

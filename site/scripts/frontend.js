@@ -669,7 +669,7 @@ $(function () {
         e.preventDefault();
         if ( form.length && form.get(0).method.toLowerCase() == "post" )
             FlowgencyTM.showcaseMode_popupNotice(
-                function () { form.submit(); }, e
+                function () { $(e.target).unbind(e).click(); }, e
             );
     });
 

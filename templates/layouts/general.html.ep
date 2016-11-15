@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>FlowgencyTM</title>
+  <title>FlowgencyTM<% if (my $t = title) { %>: <%= $t %><% } %></title>
 <!--[if IE]>
   <script src="http://html5shiv.googlecode.com/
      svn/trunk/html5.js" type="text/javascript">
@@ -50,12 +50,10 @@
 <%= content %>
 
 % if ( $showcase_mode ) {
-<p>Please note: This is what showcase user <em><%= $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
-<div id="showcase-note" title="Guests are not authorized to submit data">
+<p>Please note: This is what showcase user <em><%= stash( 'user' ) && $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
+<div id="showcase-note" title="View-only sessions">
 
-<p>Logged in to a showcase user's account with a blank password, you can only view everything. Entries and changes cannot be submit.</p>
-
-<p>For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
+<p>Logged in to a showcase user's account with a blank password, you can only view everything. For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
 </div>
 % }
 <footer>

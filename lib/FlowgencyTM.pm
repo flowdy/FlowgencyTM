@@ -31,7 +31,7 @@ my %DEFAULT_USER_DATA = (
     priorities => q[{"pile":1,"whentime":2,"soon":3,"urgent":5}], 
     weights => q[{"priority":1,"drift":1,"due":-1,"open":1,"timeneed":1}],
     time_model => q[{"default":{"label":"Default track not yet configured (hence 24/7)","week_pattern":"Mo-Su@0-23","unmentioned_variations_from":["private"]},"private":{"label":"Off, i.e. urgency frozen","week_pattern":"Mo-Su@!0-23","default_inherit_mode":"impose"}}],
-    ext_privacy => 0,
+    extprivacy => 0,
 );
 
 my %ADMINS = map { $_ => 1 } split /\W+/, $ENV{FLOWGENCYTM_ADMIN};
