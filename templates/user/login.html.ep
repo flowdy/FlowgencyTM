@@ -10,7 +10,9 @@
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
 % }
-<form style="float:left;" method="post" action="/user/login">
+<form method="post" action="/user/login">
+<div style="float:left;">
+<h2 style="margin-top:0;">Regular user</h2>
 % if ( my $t = param 'token' ) {
     <input type="hidden" name="token" value="<%= $t %>">
 % }
@@ -18,16 +20,14 @@
     <input name="password" type="password"
         placeholder="<%= stash('showcase_username') ? "Guest, leave it blank" : "Password" %>"><br>
     <input style="display:none;" type="password" name="confirmpw" placeholder="repeat it here"><br>
-    <input type="submit" value="Login">
 
 <br><a id="forgotpw" href="javascript:void(0)">I forgot my password</a>
-
-</form>
+</div>
 
 % my $u = stash 'showcase_users';
-<div style="margin-left:30%;padding-left:1em;border-left:1px solid #00c0ff;">
-% if ( $u && %$u ) {
+<div style="margin-left:40%;padding-left:1em;border-left:1px solid #00c0ff;">
 <h2>Showcase guest sessions</h2>
+% if ( $u && %$u ) {
 <p>Under a showcase user's account, you can view everything. Restricted to read-only access, you hopefully get an impression of how FlowgencyTM could be used for example.</p>
 <select id="showcasers">
     <option value="">– Select a showcase user –</option>
@@ -37,15 +37,15 @@
 </select>
 % }
 % elsif ( $u = stash 'showcase_username' ) {
-<p><%= $u %> is a showcase user. After logging in to such an account without password, you have read-only access. You can view everything and get an impression of how FlowgencyTM can be used for instance.</p>
+<p><%= $u %> is a showcase user. After logging in to such an account without password, you have view-only access. You can look around and get an impression of how FlowgencyTM can be used for instance.</p>
 % }
 % else {
-<br style="clear:left;">
+<p>This FlowgencyTM instance has no showcase users.</p>
 % }
 </div>
+<p style="text-align:center;clear:both;"><input type="submit" value="Login"></p>
+</form>
 
 <h2>Not registered, yet?</h2>
 
-<p>Want to get your hands dirty with testing FlowgencyTM? To see if the concept matches your style of working? Be welcome!</p>
-
-<p style="text-align:center;" id="invite-btn"><a href="/user/join">Join FlowgencyTM testers</a></p>
+<p id="invite-btn">Want to see if the concept matches your style of working? Be welcome! <a href="/user/join">Join FlowgencyTM testers</a></p>

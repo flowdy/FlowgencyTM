@@ -71,7 +71,7 @@ sub startup {
   $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
   $auth->get( '/user/logout' )->to("user#logout");
   $auth->get( '/user/terms' )->to("user#terms");
-  $auth->get( '/user/delete' )->to("user#delete");
+  $auth->any( [qw/GET POST/] => '/user/delete' )->to("user#delete");
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })->any('/admin');
   $admin->any('/')->to('admin#dash');
   $admin->get('/:action')->to(controller => 'admin');

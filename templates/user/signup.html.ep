@@ -2,7 +2,6 @@
 % stash addScripts => [ 'user-join' ];
 % my $xp = stash 'ext_privacy_defined';
 
-<h2>Join the FlowgencyTM testers</h2>
 % if ( !$xp ) {
 <form action="/user/join" method="post">
 
@@ -123,23 +122,31 @@
 
 % if ( !$xp ) {
 
+<h2>2. Registration</h2>
+
+<fieldset id="registration" style="float:left;width:20em;">
+<dl>
+<dt><label for="user-id">Wanted login name:</label></dt>
+<dd><input style="width:100%;box-sizing:border-box;" id="user-id" name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></dd>
+<dt><label for="username">Your full name:</label></dt>
+<dd><input style="width:100%;box-sizing:border-box;" id="username" name="username" placeholder="(optional)" /></dd>
+<dt><label for="email">Mail address:</dt>
+<dd><input style="width:100%;box-sizing:border-box;" id="email" name="email" type="text"><dd>
+<dt><label for="password">Your password:</dt>
+<dd><input style="width:100%;box-sizing:border-box;" name="password" type="password"></dd>
+<dt><label>Please repeat:</label></dt>
+<dd><input style="width:100%;box-sizing:border-box;" name="passw_confirm" type="password"></dd>
+</dl>
+
+<p><input type="submit" name="join" value="register"></p>
+</fieldset>
+
 <div id="faq">
 <h3>Why is the registration form below not accessible?</h3> 
 <p>It will be once you prove you have read, understood and accepted the binding terms. All pairs require decision. Not all left-hand buttons are "right". Please use common sense. Re-read the terms and check your selection. </p>
 </div>
 
-<h2>2. Registration</h2>
-
-<fieldset id="registration">
-<p><label>User login name: <input name="user" placeholder="allowed: a-z, A-Z, 0-9, _" type="text" value="<%= param('user') %>"></label>
-<label>Full name: <input name="username" placeholder="(optional)"></label><br>
-<label>Mail address: <input name="email" type="text"></label></p>
-
-<p><label>Your password: <input name="password" type="password"></label><br>
-<label>Please repeat: <input name="passw_confirm" type="password"></label></p>
-<p style="text-align:right;"><input type="submit" name="join" value="register"></p>
-</fieldset>
-
+<br style="clear:left;">
 
 </form>
 % }

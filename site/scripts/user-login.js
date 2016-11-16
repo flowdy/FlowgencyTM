@@ -17,4 +17,8 @@ $(function () {
             $(":submit").css({ fontWeight: "bold" }).focus();
         }
     });
+
+    if ( $(":input[name=user]").val() )
+        $(":submit").css({ fontWeight: "bold" }).focus();
+
 });

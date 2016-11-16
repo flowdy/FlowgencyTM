@@ -47,13 +47,16 @@
   </header>
 
 <div id="page">
+% if ( my $t = title ) {
+<h1><%= $t %></h1>
+% }
 <%= content %>
 
 % if ( $showcase_mode ) {
 <p>Please note: This is what showcase user <em><%= stash( 'user' ) && $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
-<div id="showcase-note" title="View-only sessions">
+<div id="showcase-note" title="Guest session under a showcase user's account">
 
-<p>Logged in to a showcase user's account with a blank password, you can only view everything. For full (test-)use of FlowgencyTM, you are welcome to sign up for a regular account. For use with real data, please install this open-source tool on your own device instead.</p>
+<p>You can <em>view</em> everything. For full (test-)use of FlowgencyTM, including support of permanent entry and change, you are welcome to sign up for a regular account.</p>
 </div>
 % }
 <footer>

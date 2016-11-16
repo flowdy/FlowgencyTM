@@ -244,7 +244,7 @@ sub delete {
     my $self = shift;
     my $user = $self->stash('user');
 
-    if ( $self->param("delete") ) {
+    if ( $self->req->method eq "POST" ) {
         my $info = { created => $user->created, now => $self->stash('current_time') };
         my @fields = qw(
             onproductiveuse employer commercialservice willnotuseftm comment

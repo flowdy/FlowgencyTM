@@ -671,6 +671,7 @@ $(function () {
             FlowgencyTM.showcaseMode_popupNotice(
                 function () { $(e.target).unbind(e).click(); }, e
             );
+        else return true;
     });
 
     function triggerMainAction (e) {
