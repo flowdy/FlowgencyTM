@@ -48,7 +48,13 @@
           </div>
 %     }
 <p class="task-btn-row">
-<button style="display:none;" class="save-btn">Update all &amp; reload</button><button style="display:none;" class="reset-btn">Reset</button><button class="icon open-close">Open</button><a class="icon edit-btn" href="/tasks/<%= $task->{name} %>/form">Edit</a><button class="icon copy-btn">Copy</button><button class="icon archive-btn">Archive</button></p>
+<button style="display:none;" class="save-btn">Update all &amp; reload</button>
+<button style="display:none;" class="reset-btn">Reset</button>
+<button class="icon open-close">Open</button>
+<a class="icon edit-btn" href="/tasks/<%= $task->{name} %>/form">Edit</a>
+<button class="icon copy-btn">Copy</button>
+<button class="icon archive-btn">Archive</button>
+</p>
       </div></li>
 % }
 </ol>
@@ -75,17 +81,16 @@
 % }
     <div id="additions-to-layout" style="display:none;">
     <div class="menu">
-        <p class="help">Save your checks, changes and new tasks if any.
-           Then refresh ranking <em>with defaults</em>.
-        <button class="ui-button ui-widget ui-default-state" id="more-options">More options <img class="close-btn" style="vertical-align:middle;height:1em;margin-left:.25em" src="/images/open-btn.svg" /></button></p><div id="list-options-pane">
+        <img class="close-btn" src="/images/close-btn.svg"/><p class="help">Save your checks, changes and new tasks if any, then refresh ranking.
+        <button class="ui-button ui-widget ui-default-state" id="more-options">Show options</button></p><div id="list-options-pane">
         <ul>
-        <li id="list-opts">List tasks:
-           <input id="list-all-tasks" type="checkbox"><label for="list-all-tasks" title="all">4x:</label>
+        <li id="list-opts">List tasks:<br>
+           <input id="list-all-tasks" type="checkbox"><label for="list-all-tasks" title="all">all:</label>
 % my %filteropts = map { my $p = param($_); $_ => $p } qw(desk tray drawer);
-            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks" title="urgent">U</label>
-            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks" title="paused">P</label>
-            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks" title="later">L</label>
-            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks" title="future">F</label>
+            <input id="list-desk-tasks" type="checkbox" <%== $filteropts{"desk"} // !defined($filteropts{"desk"}) ? 'checked="checked"' : '' %> name="desk" value="1"> <label for="list-desk-tasks" title="urgent">urgent</label>
+            <input id="list-paused-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 1 ? 'checked="checked"' : '' %> value="1" /> <label for="list-paused-tasks" title="paused">paused</label>
+            <input id="list-tray-tasks" type="checkbox" name="tray" <%== $filteropts{"tray"} ? 'checked="checked"' : '' %> value="1" /> <label for="list-tray-tasks" title="later">later</label>
+            <input id="list-future-tasks" type="checkbox" name="drawer" <%== ($filteropts{"drawer"}||0) & 2 ? 'checked="checked"' : '' %> value="2" /> <label for="list-future-tasks" title="future">future</label>
         </li>
         <li>Search tasks:
         <input id="query" value="<%= param("query") %>" name="query" placeholder="query terms"><br>

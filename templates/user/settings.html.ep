@@ -47,11 +47,11 @@
 
 <h2 id="set-weights">Weights of the ranking criteria</h2>
 <div>
-<table>
+<table id="set-weights-table">
 % my @hints = ( priority => "cf. Priority levels", due => "The less net seconds are available, the more urgent is the task. Because of that reverse linear relationship, this weight should be negative.", drift => "Drift between time progress and progress of your checking steps as done. This is additionally visualized by a variadic colour gradient under the task title.", open => "If and for how long the task has been open", timeneed => "When the task will be done as compared to when you planned it should be done. This is inferred from your average working speed once you make the first check.");
 % while ( my ($key, $hint) = splice @hints, 0, 2 ) {
 %   my $value = $weights->{$key};
-    <tr><th><label for="#weight-<%= $key %>"><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" id="weight-<%= $key %>" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> type="number" value="<%= $value %>"></td><td><%= $hint %></li>
+    <tr><th><label for="#weight-<%= $key %>"><%= $key %></th><td><input style="width:2.5em;" name="weight[<%= $key %>]" id="weight-<%= $key %>" <%= $value > 0 ? 'min=0' : $value < 0 ? 'max=0' : '' %> value="<%= $value %>"></td><td><%= $hint %></li>
 % }
 </table>
 </div>
@@ -134,8 +134,10 @@
 </div>
 <p>Create: <input placeholder="Name" type="text" id="extend-time-model-name">
 be a new
+<span class="btn-row">
 <button id="create-track-btn">track</button>
 <button id="add-variation-btn">variation of current track</button></p>
+</span>
 
 <div id="configure-timemodel-prototypes">
      <div class="track label" title="Track label" >The track label should describe the work situation in which it is used, e.g. the job, the shift or the project. It is displayed in the select for the time track in the task editor:
@@ -202,8 +204,10 @@ be a new
 
 </div>
 </div>
-<input type="submit" name="update" value="Update Profile">
-<input type="reset" value="Discard changes">
+<p class="btn-row">
+<button type="submit" name="update" value="1">Update Profile</button>
+<button type="reset">Discard changes</button>
+</p>
 </form> 
 
 <p>Further functions:</p>

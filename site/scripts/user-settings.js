@@ -20,6 +20,8 @@ $(function () {
     else focus = false;
 
     $("#update-settings-form").accordion({ heightStyle: "content", collapsible: true, active: focus });
+    $(".btn-row").controlgroup();
+    $("#set-weights-table input").spinner();
 
     $("#set-email").click(function () {
         var f = $('#email');

@@ -19,11 +19,12 @@ $(function () {
     $("#more-options").click(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        $(this).replaceWith("<hr><p>Use button below:</p>");
+        $(this).remove();
         $("#list-options-pane").show();
     });
 
-    new_task_icon.children("a").data('mainAction', insert_new_task_form);
+    new_task_icon.children("a").data('mainAction', insert_new_task_form)
+        .end().find("button").button();
 
     $("#settime").change(function (e) {
         ftm.nextload.now = this.time.value;
@@ -43,7 +44,7 @@ $(function () {
         $(this).closest(".icon").children("a").first().click();
     });
     
-    $("#list-opts").buttonset();
+    $("#list-opts").controlgroup();
     list_opts.each(function () {
         function update () {
             ftm.nextload[this.name] ^= this.value;
@@ -87,8 +88,10 @@ $(function () {
 
     $("#page").focus().blur(); // page to seize scrolling focus
     $('#plans').children().each(function () {
-        var plan = $(this);
-        var isOpen = plan.find(".extended-info").length;
+        var plan = $(this),
+            isOpen = plan.find(".extended-info").length,
+            openBtnState = switchOpenClass[isOpen];
+        
         plan.data('isOpen', isOpen);
         ftm.progressbar2canvas(plan.find(".progressbar"));
         if ( isOpen ) {
@@ -99,12 +102,12 @@ $(function () {
         plan.find("h2").click(function () {
             plan.toggleClass("open");
         });
-        plan.find(".task-btn-row").buttonset()
+        plan.find(".task-btn-row").controlgroup()
             .find(".save-btn").click(
                 function (e) { e.preventDefault(); return ftm.rerank() }
             ).end()
-            .find(".open-close").click(toggler.bind(plan))
-                .button("option", "icon", switchOpenClass[isOpen][0])
+             .find(".open-close").click(toggler.bind(plan)) 
+                // .button("option", "icon", switchOpenClass[isOpen][0])
                 .button("option", "label", switchOpenClass[isOpen][1])
             ;
     });
@@ -192,9 +195,9 @@ $(function () {
         else task.drop("open_since");
 
         plan.children(".task-btn-row").find(".open-close")
-            .button("option", "icon", switchOpenClass[isShown?1:0][0])
+            /* .button("option", "icon", switchOpenClass[isShown?1:0][0]) */
             .button("option", "label", switchOpenClass[isShown?1:0][1])
-            ;
+          ;
 
     };
 

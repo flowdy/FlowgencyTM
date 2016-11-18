@@ -685,8 +685,10 @@ $(function () {
     function menuCloser (e) {
         var menu = $(this).closest(".menu");
         e && e.preventDefault();
-        menu.slideUp(100, function () { menu.removeClass("visible") });
-        $("body > header").removeClass("backgr-page");
+        menu.slideUp(100, function () {
+            menu.removeClass("visible");
+            $("body > header").removeClass("backgr-page");
+        });
         menu.prev("a").off("click").click(showMenuHandler);
     }
 
