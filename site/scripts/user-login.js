@@ -3,7 +3,7 @@ $(function () {
     $(":submit, #invite-btn a").button();
 
     $("a#forgotpw").click(function () {
-         $(":input[name=confirmpw]").show();
+         $(":input[name=confirmpw]").before("<br>").show();
          $(":input[name=password]").prop("placeholder", "new password").focus();
          $(":submit").button("option", "label", "Receive confirmation token");
          $(this).remove();
@@ -12,13 +12,16 @@ $(function () {
     $("select#showcasers").selectmenu({
         width: '100%',
         change: function (e) {
-            $(":input[name=user]").val( $(this).find(":selected").val() );
+            var val = $(this).find(":selected").val(),
+                user_f = $(":input[name=user]");
+            user_f.val( val );
             $(":input[name=password]").prop("placeholder", "(Leave blank)");
-            $(":submit").css({ fontWeight: "bold" }).focus();
+            if ( val ) $(":submit").focus();
+            else user_f.focus();
         }
     });
 
     if ( $(":input[name=user]").val() )
-        $(":submit").css({ fontWeight: "bold" }).focus();
+        $(":submit").focus();
 
 });

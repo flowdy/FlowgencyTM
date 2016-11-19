@@ -40,7 +40,7 @@
 <p>There is no promise of a sufficient uptime or reliability, however, since the software is still under active development. The service may be shut down without further notice, only its entry would be removed from the list of testing services on the official site.</p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="checkwhatisftm" value="1"> I know what FlowgencyTM is</label> <label><input type="radio" name="checkwhatisftm" value="0"> You're kidding?</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="checkwhatisftm" value="1"> I know what FlowgencyTM is</label> <label><input type="radio" name="checkwhatisftm" value="0"> Got bats in the belfry?</label></p>
 % }
 
 </li>
@@ -54,7 +54,7 @@
 <h4>I use it with <em>test data</em> only</h4>
 <p>a. Accordingly the data I will enter after login is declared non-productive, which means I do not depend on it in my job in any way. Once I decide to use the tool with real data in my work, I cease using this service and either install the open-source tool locally or have it hosted by someone trustworthy and willing to accept the ethical responsibility for privacy.</p>
 
-<p>b. I try to reflect roughly how my job is really like. But I also affirm that the data of my tasks and my time model will be substantially fictitious and crafted without creative efforts, therefore worth neither privacy nor copyright. Particularly I make sure the data does not underlie foreign copyright and does not relate to real people, including myself, or facts subject to institutional or industrial secrecy (ger.: <em lang="de-DE">Es handelt sich daher weder um personenbezogene noch um anderweitig schutzwürdige Daten im Sinne deutschen Rechts</em>). Concerning that data specifically, the provider may freely publish and exchange it, licensed under <a href="http://creativecommons.org/publicdomain/zero/1.0/deed.en">CC-0</a>, e.g. as representative samples in the effort to solve software errors in cooperation with others, without the need for asking my permission in any single case.</p>
+<p>b. I try to reflect roughly how my job is really like. But I also affirm that the data of my tasks and my time model will be substantially fictitious and crafted without creative efforts, therefore worth neither privacy nor copyright. Particularly I make sure the data does not underlie foreign copyright and does not relate to real people, including myself, or facts subject to institutional or industrial secrecy (ger.: <em lang="de-DE">Es handelt sich daher weder um personenbezogene noch um anderweitig schutzwürdige Daten im Sinne deutschen Rechts</em>). Concerning that data specifically, the provider may freely publish and exchange it, licensed under <em>Creative Commons Zero</em> (CC-0), e.g. as representative samples in the effort to solve software errors in cooperation with others, without the need for asking my permission in any single case.</p>
 
 % if ( $xp > 1 ) {
 </del>
@@ -71,7 +71,7 @@
 % }
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="privacywarning" value="1"> My content will be fictitious</label> <label><input type="radio" name="privacywarning" value="0"> I want extended privacy for real data</label></p>
+<p class="decision" style="text-align:right;"><a target="_blank" href="http://creativecommons.org/publicdomain/zero/1.0/deed.en">CC-0 deed</a><label><input type="radio" name="privacywarning" value="1"> My content will be fictitious</label> <label><input type="radio" name="privacywarning" value="0"> I want extended privacy for real data</label></p>
 % }
 
 </li>
@@ -85,14 +85,14 @@
 <p>According to the disclaimer of the GNU General Public License the tool underlies, I take for granted that the tool is realized to the best of the inventor's knowledge and belief. As it is, according to the license, provided without warranty of fitness for any purpose, however, I would not hold the service provider and/or the developer(s) liable if effects of my usage of any sort turn out negative.</p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="voluntaryuse" value="1">It is my decision</label> <label><input type="radio" name="voluntaryuse" value="0"> Not really.</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="voluntaryuse" value="1">It is my decision</label> <label><input type="radio" name="voluntaryuse" value="0"> Not really.</label></p>
 % }
 </li>
 
 % if ( !$xp ) {
 <li><h4>I do not really read this</h4>
 <p>I do not quite understand but I neither care, I always ignored terms of use and will always ignore them because I think they are not legal anyway.</p>
-<p style="text-align:right;"><label><input type="radio" name="ignoreterms" value="1"> Nope.</label> <label><input type="radio" name="ignoreterms" value="0"> You're kidding?</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="ignoreterms" value="1"> Nope.</label> <label><input type="radio" name="ignoreterms" value="0"> Got bats in the belfry?</label></p>
 </li>
 % }
 
@@ -100,21 +100,21 @@
 <p>I will give feedback, at the latest when I cease using the service. If it turns out too bad, I will give it nevertheless and be ready to simply smile, should the provider / the developers not be able to handle it as equanimously as they promise to.</label></p>
 
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="promisefeedback" value="1"> I will tell him</label> <label><input type="radio" name="promisefeedback" value="0">You're kidding?</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="promisefeedback" value="1"> I will tell him</label> <label><input type="radio" name="promisefeedback" value="0">Got bats in the belfry?</label></p>
 % }
 </li>
 
 % if ( !$xp ) {
 <li><h4>I am open to paying for real use of the service by all data or money!</h4>
 <p>If the provider changes their mind to set-up a commercial service, presumably the next big(-data) thing and "for free" of course, I will be obliged to stick to it for my lifetime whatever the price may be. And if I do not agree to marriage with a squirrel to get freed in turn from prevailing foreign rule of time, then for the rest of my life I will re-read this article again and again in a cold cabin without wi-fi access and regret having accepted it. <span style="color:white">;-)</span></p>
-<p style="text-align:right;"><label><input type="radio" name="dontcheck" value="1"> I accept</label> <label><input type="radio" name="dontcheck" value="0"> You're kidding?</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="dontcheck" value="1"> I accept</label> <label><input type="radio" name="dontcheck" value="0"> Got bats in the belfry?</label></p>
 </li>
 % }
 
 <li><h4>My user account can be deleted any time</h4>
 <p>Considering their age, all user accounts are increasingly at risk of deletion. The service provider reserves the right to remove the oldest accounts on a regular basis at his sole discretion, just due to limited resources spent for this online service that is intentionally provided free of advertisement at no charge.</p>
 % if ( !$xp ) {
-<p style="text-align:right;"><label><input type="radio" name="deletion" value="1"> It is okay when my account is terminated some day</label> <label><input type="radio" name="deletion" value="0"> You're kidding?</label></p>
+<p class="decision" style="text-align:right;"><label><input type="radio" name="deletion" value="1"> It is okay when my account is terminated some day</label> <label><input type="radio" name="deletion" value="0"> Got bats in the belfry?</label></p>
 % }
 </li>
 
@@ -131,19 +131,24 @@
 <dt><label for="username">Your full name:</label></dt>
 <dd><input style="width:100%;box-sizing:border-box;" id="username" name="username" placeholder="(optional)" /></dd>
 <dt><label for="email">Mail address:</dt>
-<dd><input style="width:100%;box-sizing:border-box;" id="email" name="email" type="text"><dd>
+<dd><input style="width:100%;box-sizing:border-box;" id="email" name="email" type="text" placeholder="where to send confirmation link"><dd>
 <dt><label for="password">Your password:</dt>
 <dd><input style="width:100%;box-sizing:border-box;" name="password" type="password"></dd>
-<dt><label>Please repeat:</label></dt>
+<dt><label>Please repeat to prevent mistyping:</label></dt>
 <dd><input style="width:100%;box-sizing:border-box;" name="passw_confirm" type="password"></dd>
 </dl>
 
-<p><input type="submit" name="join" value="register"></p>
+<p style="text-align:right;"><button type="submit" name="join" value="1">Register</button></p>
 </fieldset>
 
 <div id="faq">
-<h3>Why is the registration form below not accessible?</h3> 
-<p>It will be once you prove you have read, understood and accepted the binding terms. All pairs require decision. Not all left-hand buttons are "right". Please use common sense. Re-read the terms and check your selection. </p>
+<h3>Why is the registration form not accessible?</h3> 
+<p>It will be enabled once you prove you have read, understood and accepted the binding terms above. All pairs require decision. Not all left-hand buttons are "right". Please use common sense. Re-read the terms and check your selection.</p>
+
+<h3>How about just a checkbox "Read and accept the terms" to click, leaving to the user whether to actually read them?</h3>
+
+<p>This page is admittedly supposed to be a barrier against people who take for granted that technology be a good substitute for mental practice, or have never realized the implications of that attitude. It is the same for all public FlowgencyTM demo instances registered in the official list (requirement for entry).</p>
+<p>Providers of web services and online platforms with "easy registration" used to nudge users to be lazy and merely allege having read the terms. They know that visitors would not become users if actually required to read and accept pages and pages of legalese terms that are visually hard to read by chance. Plus, as this service is non-commercial, the provider could not afford resources for millions, including particularly those who freely give up their human-being for the trojan horse of technical comfort. After all, freed from the burden of earning money with this service, we can rather afford a more precious good: to be fair and honest to others even if that may mean occasionally a user less.</p>
 </div>
 
 <br style="clear:left;">

@@ -18,17 +18,17 @@
 % }
     <input name="user" type="text" placeholder="user id or email" value="<%= param('user') %>"><br>
     <input name="password" type="password"
-        placeholder="<%= stash('showcase_username') ? "Guest, leave it blank" : "Password" %>"><br>
-    <input style="display:none;" type="password" name="confirmpw" placeholder="repeat it here"><br>
+        placeholder="<%= stash('showcase_username') ? "(No password required)" : "Password" %>"> <a id="forgotpw" href="javascript:void(0)">Forgot it?</a>
+    <input style="display:none;" type="password" name="confirmpw" placeholder="repeat it here">
 
-<br><a id="forgotpw" href="javascript:void(0)">I forgot my password</a>
+
 </div>
 
 % my $u = stash 'showcase_users';
 <div style="margin-left:40%;padding-left:1em;border-left:1px solid #00c0ff;">
 <h2>Showcase guest sessions</h2>
 % if ( $u && %$u ) {
-<p>Under a showcase user's account, you can view everything. Restricted to read-only access, you hopefully get an impression of how FlowgencyTM could be used for example.</p>
+<p>Under a showcase user's account, you can <em>view</em> everything. You cannot change or enter anything permanently, but you hopefully get an impression of how FlowgencyTM could be used for example.</p>
 <select id="showcasers">
     <option value="">– Select a showcase user –</option>
 %   while ( my ($userid, $username) = each %$u ) {
@@ -48,4 +48,4 @@
 
 <h2>Not registered, yet?</h2>
 
-<p id="invite-btn">Want to see if the concept matches your style of working? Be welcome! <a href="/user/join">Join FlowgencyTM testers</a></p>
+<p id="invite-btn">Want to see if the concept matches your style of working, but a guest session with a showcase user won't do in your eyes? Be welcome! <a href="/user/join">Create your account</a></p>

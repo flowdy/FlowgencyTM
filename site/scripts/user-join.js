@@ -1,5 +1,7 @@
 $(function () {
     var terms_accept_bitmask = [1,1,1,1,1,1,1];
+    $(".decision").controlgroup();
+    $(":submit").button({ disabled: true });
     $("#registration").prop("disabled", true);
     $('input[name=passw_confirm]').change(function (e) {
         var f = $(this);
@@ -35,10 +37,13 @@ $(function () {
 
             if ( ok ) {
                 $("#registration").prop("disabled", false);
+                $(":submit").button("enable");
                 $("#faq").remove();
             }
-            else
+            else {
                 $("#registration").prop("disabled", true);
+                $(":submit").button("disable");
+            }
         });
     });
  

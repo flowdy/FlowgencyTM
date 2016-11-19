@@ -39,39 +39,42 @@
 <pre id="mail-invite">
 Hello NAME,
 
-thank you for registering to my FlowgencyTM testing instance. Please click the following link to login for the first time:
+thank you for registering to my FlowgencyTM testing instance. Please click the following link to log in for the first time:
 
 LINK
 
-Please note that the link will expires after 1 week. If you missed it, please register anew.
+Please note that the link will expire after 1 week. If you missed it, please register anew.
 
 I hope you will like it!
 
 Kind regards
 The service provider
+
 </pre>
 <pre id="mail-reset_password">
 Hello NAME,
 
-in order to activate your new password, please click for once the following link to login with it:
+to activate your new password, please log in for once with the following link:
 
 LINK
 
-Please note that the link will expire after 1 week. By loading the login form without that token as usually, your old password is expected, of course.
+Please note that the link will expire after 1 week. When logging in without that token as usually, your old password is expected, of course.
 
 Kind regards
 The service provider
+
 </pre>
 <pre id="mail-change_email">
 Hello NAME,
 
-in order to activate the new e-mail address, please click for once the following link to login:
+to activate the new e-mail address, please log in for once with the following link:
 
 LINK
 
-Please note that the link will expire after 1 week. Without any action, your previous address remains in use, of course.
+Please note that the link will expire after 1 week. Without any action, your previous address is kept, of course.
 
 Kind regards
 The service provider
+
 </pre>
 </div>
