@@ -12,7 +12,7 @@ User interface
  * [What are the settings?](user-settings)
  * [What to enter into the fields of the Task editor?](task-editor)
  * [What is the Lazy String syntax?](lazy-string)
- * [How to understand the data on the task urgency analysis page?](urgency-analysis)
+ * [How to understand the data on the task urgency analysis page?](task-urgency-analysis)
 
 Developers
 ----------

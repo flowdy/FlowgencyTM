@@ -215,7 +215,7 @@ sub login {
     }
     elsif ( $password && $user->password_equals($password) ) {
         $trigger->(1);
-        $self->session("user_id" => $user_id);
+        $self->session("user_id" => $user_id, showcase_mode => 0 );
         $self->redirect_to("home");
     }
     else {

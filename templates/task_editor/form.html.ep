@@ -60,7 +60,7 @@
 <option value="<%= $track->[0] %>" <%= $stage->{track} eq $track->[0] ? q{selected=selected} : '' %>><%= $track->[1] %></option>
 % }
 </td><td><input class="until" type="datetime" name="until_date" value="<%= $stage->{until_date} %>"></td>
-<td style="width:4em;"><button class="add-btn">+</button><button class="drop-btn">&minus;</button></td>
+<td style="width:4em;"><button type="button" class="add-btn">+</button><button type="button" class="drop-btn">&minus;</button></td>
 </tr>
 % }
 </table>

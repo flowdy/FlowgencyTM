@@ -25,7 +25,12 @@ Variations can have names with the same restriction as for track names. You may 
 Task urgency threshold
 ----------------------
 
-<p>Unless you checked the list option "later", and if at least one of your tasks to do is open, any further closed task is listed only if the following inequation holds true for it: <code style="font-size:125%;background-color:yellow;"><var title="FlowRank score of a closed task">uₜ</var> &gt; <var title="minimum FlowRank score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum FlowRank score among open tasks">ǔₒ</var> &minus; <var title="maximum FlowRank score among listed tasks">û</var>)</code>.</p><ul><li><var>uₜ</var>: FlowRank score of a closed task, <var>ǔₒ</var>: minimum FlowRank score among open tasks, <var>û</var>: maximum FlowRank score among listed tasks,</li><li><var>c</var>: coefficient that you can adjust here.
+Unless you checked the list option "later", and if at least one of your tasks to do is open, any further closed task is listed only if the following inequation holds true for it: <code style="font-size:125%;background-color:yellow;"><var title="FlowRank score of a closed task">uₜ</var> &gt; <var title="minimum FlowRank score among open tasks">ǔₒ</var> + <var title="coefficient, configured by you, default = 0.1">c</var>⋅(<var title="minimum FlowRank score among open tasks">ǔₒ</var> &minus; <var title="maximum FlowRank score among listed tasks">û</var>)</code>. This too is to keep you focussed on the most urgent.</p>
+
+  * <var>uₜ</var>: FlowRank score of a closed task,
+  * <var>ǔₒ</var>: minimum FlowRank score among open tasks,
+  * <var>û</var>: maximum FlowRank score among listed tasks,
+  * <var>c</var>: coefficient that you can adjust here.
 
 If you put the handle to the left end (=0), closed tasks are never displayed after the least urgent open task. If you drag it to the right end (=1), the FlowRank distance between a closed task and the least urgent open task can be about as much as the distance between the least and the most urgent task.
 

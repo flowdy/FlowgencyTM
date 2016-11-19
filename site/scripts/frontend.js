@@ -605,11 +605,6 @@ function DateTimePicker (inline) {
         dialog.dialog({
             minWidth: 500,
             buttons: {
-                "Okay": function () {
-                    $(this).dialog( "close" );
-                    callback(e);
-                    $("#page").get(0).scrollTo(0,0);
-                },
                 "Cancel": function () {
                     $(this).dialog( "close" );
                 },
@@ -618,6 +613,11 @@ function DateTimePicker (inline) {
                 },
                 "Sign up": function () {
                     location.href = "/user/join";
+                },
+                "Get Error": function () {
+                    $(this).dialog( "close" );
+                    callback(e);
+                    $("#page").get(0).scrollTo(0,0);
                 }
             },
             modal: true,
@@ -664,7 +664,7 @@ $(function () {
 
     $("#showcase-note").hide();
 
-    $("#page").on('click', 'input[type=submit]', function (e) {
+    $("#page").on('click', ':submit', function (e) {
         var form = $(this).closest("form");
         e.preventDefault();
         if ( form.length && form.get(0).method.toLowerCase() == "post" )
