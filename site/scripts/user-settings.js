@@ -19,7 +19,9 @@ $(function () {
     }
     else focus = false;
 
-    $("#update-settings-form").accordion({ heightStyle: "content", collapsible: true, active: focus });
+    $("#update-settings-form > div:first-child").accordion(
+        { heightStyle: "content", collapsible: true, active: focus }
+    );
     $(".btn-row").controlgroup();
     $("#set-weights-table input").spinner();
 
@@ -530,15 +532,16 @@ $(function () {
 
     $("#add-variation-btn").click(function (e) {
         e.preventDefault();
+        e.stopImmediatePropagation();
         var id = $("#track-definitions .ui-state-active a").attr('href'), activeTab = $(id),
             variations = activeTab.find(".variations"),
-            nameInput = $(this).parent().find("input:text"),
+            nameInput = $(this).closest("p").find("input:text"),
             name = nameInput.val(), createVariationOkay;
         if ( variations.length ) {
             createVariationOkay = true;
             variations.each(function () {
                 if ( $(this).data('name') === name ) {
-                    alert("The name " + name + " is already already for another variation in current track.");
+                    alert("The name " + name + " is already used for another variation in current track.");
                     createVariationOkay = false;
                     return false;
                 }
@@ -692,7 +695,7 @@ $(function () {
 
     $("#update-settings-form").submit(function () {
        var time_model_data = {};
-       $("#configure-time-model .vtab").each(function () {
+       $("#configure-time-model + div .vtab").each(function () {
            var trackdata = $(this).data("trackdata");
            if ( trackdata === undefined ) return;
            time_model_data[ $(this).data('name') ] = trackdata;

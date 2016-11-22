@@ -21,7 +21,7 @@
   </p>
 % }
 
-<form method="POST"><div id="update-settings-form">
+<form method="POST" id="update-settings-form"><div>
 <h2 id="authentication">User <%= $user->user_id %>: Authentification</h2><div>
 <p class="info">If you run the server locally, you do not need to input anything here.</p>
 
