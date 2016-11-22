@@ -698,10 +698,9 @@ sub _handle_subtask_data_of {
 sub _normalize_task_data {
     my ($self, $data) = @_;
 
-    for my $f ( $data->{from_date} // () ) {
+    for my $f ( $data->{from_date} // (), $data->{open_since} // () ) {
         $f = q{}.( FTM::Time::Spec->parse_ts($f)->fill_in_assumptions );
     }
-    for my $o ( $data->{open_since} // () ) { $o = $o.q{} }
 
     for my $p ( $data->{priority} // () ) {
         my $num = $self->_tasks->priority_resolver->("n:$p");
