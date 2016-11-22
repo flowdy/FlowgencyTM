@@ -1,7 +1,6 @@
 use strict;
 
 package FlowgencyTM::Server::Info;
-use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 
 sub basic {

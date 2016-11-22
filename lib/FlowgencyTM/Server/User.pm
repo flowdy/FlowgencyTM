@@ -1,7 +1,6 @@
 use strict;
 
 package FlowgencyTM::Server::User;
-use FlowgencyTM;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw(from_json encode_json);
 use FTM::Error;

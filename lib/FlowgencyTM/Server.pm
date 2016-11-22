@@ -1,6 +1,5 @@
 package FlowgencyTM::Server;
-use FlowgencyTM;
-use FTM::FlowDB;
+use FTM::Error;
 use Mojolicious 6.0;
 use Mojolicious::Sessions;
 use Mojo::Base 'Mojolicious';
@@ -175,6 +174,7 @@ sub require_user_otherwise_login_or_fail {
 # cookie. To stay "RESTful", we rely on HTTP header "Authentification".
       
 sub authenticate_user {
+    eval "use FlowgencyTM" or $@ && die $@;
     my $c = shift;
 
     my ($user, my $password)
