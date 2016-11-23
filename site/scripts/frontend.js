@@ -143,7 +143,7 @@ Ranking.prototype.dynamizechecks = function (plan) {
        plan.find(":checkbox").each(function () {
            this.checked = this.defaultChecked
        });
-       submitBtns.hide();
+       submitBtns.hide().closest(".task-btn-row").controlgroup("refresh");
    });
 
    function dyn_checkline (checkline) {
@@ -167,7 +167,7 @@ Ranking.prototype.dynamizechecks = function (plan) {
            check_count = checkline.children(":checked").length;
            if ( checkline.data('done') == check_count ) check_count = null;
            ftm.check_done( plan.data('id'), checkline.data('id'), check_count );
-           submitBtns.show();
+           submitBtns.show().closest(".task-btn-row").controlgroup("refresh");
        };
    }
 
