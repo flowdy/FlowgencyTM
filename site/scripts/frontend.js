@@ -259,7 +259,10 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         e.preventDefault();
         e.stopImmediatePropagation();
         ftm.rerank();
-    })
+    });
+    te.find(".reset-btn").button().click(function (e) {
+        ftm.reset_task(taskname);
+    }).closest("div").controlgroup();
     stepSwitcher.call(steptree.select.get(0));
 };
 

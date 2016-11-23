@@ -27,7 +27,6 @@
 %     };
 <fieldset id="step-<%= $id // '_NEW_TASK_' %>-<%= $name %>" data-stepid="<%= $name %>" data-init='<%= Mojo::JSON::to_json($init) %>'>
     <legend>Edit task "<%= $id %>", <% if ( length $name ) { %>step <strong><%= $name %></strong><% } else { %>general and main step data<% } %></legend>
-<p><a href="/help/task-editor">What to enter into the fields of the Task editor?</a></p>
 <dl class="fields">
 % my $std = do { my %s; for my $f ( @TASK_FIELDS ) {
 %     $s{$f} = delete $step->{$f} // next;
@@ -109,18 +108,20 @@ Done <input type="range" min="0" max="<%= $step->{checks} %>" style="width:65%;v
 
 %   my $step_switcher_id = sprintf "steps-for-%s-tree", $id // "_NEW_TASK_";
     <div style="text-align:right;">
-    <label for="<%= $step_switcher_id %>">Switch step:</label>
-    <select id="<%= $step_switcher_id %>" name="step">
+    <select title="Step switcher" id="<%= $step_switcher_id %>" name="step">
 %   for my $step ( sort keys %$steps ) {
 %       my $label = length $step ? $step : "MAIN ($id)";
         <option value="<%= $step %>"><%= $label %></option>
 %   }
     </select>
-    <button class="save-btn">Save all changes</button></div>
+    <button class="save-btn">Save <em>all</em> changes</button>
+    <button class="reset-btn" type="reset">Reset <em>this</em> task
+    </div>
 
 %   if ( $bare_mode ) {
     <ul style="font-size:smaller;">
        <li>Fields marked with an <strong>asterisk (*)</strong> are required.</li>
+       <li><a href="/help/task-editor">What to enter into the fields of the task editor?</a></li>
     </ul>
 %   }
 %   else {
