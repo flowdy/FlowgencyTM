@@ -239,7 +239,6 @@ Ranking.prototype.progressbar2canvas = function (bar) {
 Ranking.prototype.dynamize_taskeditor = function (te) {
     var ftm = this, taskname = te.data("taskid");
     var steptree = new StepTree(taskname);
-    te.submit(function () { $("#mainicon").click(); return false; });
     te.find('fieldset').each(function () {
         var fieldset = $(this);
         var id = fieldset.data('stepid');
@@ -256,9 +255,11 @@ Ranking.prototype.dynamize_taskeditor = function (te) {
         width: "10em",
         change: stepSwitcher
     }).data("manager", steptree);
-    te.find(".save-btn").button().click(
-        function (e) { e.preventDefault(); ftm.rerank(); }
-    )
+    te.find(".save-btn").button().click(function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ftm.rerank();
+    })
     stepSwitcher.call(steptree.select.get(0));
 };
 
@@ -673,6 +674,8 @@ $(function () {
             );
         else return true;
     });
+
+    $("#page").focus().blur(); // page to seize scrolling focus
 
     function triggerMainAction (e) {
         var mainAction = $(this).data('mainAction');

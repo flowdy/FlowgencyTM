@@ -86,7 +86,6 @@ $(function () {
 
     $("input[type=datetime]").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
 
-    $("#page").focus().blur(); // page to seize scrolling focus
     $('#plans').children().each(function () {
         var plan = $(this),
             isOpen = plan.find(".extended-info").length,
@@ -103,9 +102,11 @@ $(function () {
             plan.toggleClass("open");
         });
         plan.find(".task-btn-row").controlgroup()
-            .find(".save-btn").click(
-                function (e) { e.preventDefault(); return ftm.rerank() }
-            ).end()
+            .find(".save-btn").click(function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return ftm.rerank()
+             }).end()
              .find(".open-close").click(toggler.bind(plan)) 
                 // .button("option", "icon", switchOpenClass[isOpen][0])
                 .button("option", "label", switchOpenClass[isOpen][1])
