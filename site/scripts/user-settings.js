@@ -363,9 +363,8 @@ $(function () {
             tr.data("decimal_dayseq", 0);
             if ( str === undefined ) return;
             var strp = str.split('@'),
-                otimes = strp[1].replace(/(!?)/, ""),
+                times = strp[1].replace(/^(!?)/, ""),
                 work = !RegExp.$1.length,
-                times = normalized_times(work, otimes),
                 num = wdstr_to_num(strp[0]),
                 week_row = tr.find(".wd input");
             tr.data("decimal_dayseq", num);
