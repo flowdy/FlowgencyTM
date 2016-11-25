@@ -640,7 +640,7 @@ $(function () {
                 buttons: buttons,
                 modal: true,
                 width: 500,
-                maxHeight: 400,
+                maxHeight: 600,
             });
 
             function updater (value) {

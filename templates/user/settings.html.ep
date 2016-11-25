@@ -143,7 +143,8 @@ be a new
      <div class="track label" title="Track label" >The track label should describe the work situation in which it is used, e.g. the job, the shift or the project. It is displayed in the select for the time track in the task editor:
      <p><label>Label of track: <input type="text"></label></p>
      </div>
-     <div class="track variation week_pattern" title="Pattern of week rhythm">For the track or variation, define the regular pattern of alternations between working and still time. You can differentiate intervals based on the calendar week number (ISO scheme, not US legacy), and of course the week days.<br>For the time of day part, prefer full (1/1), halfs (1/2 = :30), thirds (1/3 = :20, :40), or quaters (1/4 = :15, :45) over even smaller shares of the hour.<br>For full hours, you can omit the minute part, and even the until time part if you want to indicate a single hour, say the lunch break ("!12").
+     <div class="track variation week_pattern" title="Pattern of week rhythm">
+     Admittedly this settings dialog does not quite explain itself, yet I hope it is usable at all. Ideas to make it better are always welcome :-). Pioneers please <a target="_blank" href="/help/user-settings#configure-time-model">read this</a>.
      <input>
      </div>
      <div class="track variation inherit_mode force_inherit_mode default_inherit_mode" title="?">
