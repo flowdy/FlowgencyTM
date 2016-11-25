@@ -158,7 +158,7 @@ sub from_string {
             # respective bits in each bit vector.
             for my $hours ( split /,/, $hours // '0-23' ) {
 
-                my $is_absence = $hours =~ s{^!}{};
+                my $is_presence = $hours !~ s{^!}{};
                 $hours = '0-23' if !length($hours);
 
                 if ( $hours =~ m{ \A $hour_min_rx - $hour_min_rx \z }ixms ){
@@ -179,7 +179,7 @@ sub from_string {
 
                     DATOM: # day atom
                     for (1..$daylength) {
-                      $bitsetter->( !$is_absence, $h1 );
+                      $bitsetter->( $is_presence, $h1 );
                       $h1 = ( $h1 + 1 ) % $daylength; # These two lines differ in
                       last DATOM if $h1 == $h2;       # order from the days' loop
                     }                                 # above!
@@ -190,7 +190,7 @@ sub from_string {
                     $hours += 12 if $hours =~ s{([ap]m)$}{}i && lc($1) eq 'pm';
                     _check_hour($hours);
                     my $h = $hours % 24 * $hourdiv;
-                    $bitsetter->(!$is_absence, $h, $h+$hourdiv-1);
+                    $bitsetter->( $is_presence, $h, $h+$hourdiv-1);
                 }
 
             }
