@@ -69,13 +69,12 @@
 <h2>Get started</h2>
 
 <ol>
-<li><p>Do you have customized the <a href="/user/settings">user settings <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle"></a>? In particular, you should define your personal time model because the default non-stop 24/7 pattern is probably not quite right for you or just anyone, but does not confuse people by hiding tasks spuriously either.</p></li>
+<li><p>Customize the <a href="/user/settings#configure-time-model">time model in the user settings page <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle"></a>. There is no sane default for that individual a thing. The 24/7 work pattern is a factory setting not supposed to be "right" in this sense, just in contrary to be changed. Yet it does not confuse people by spuriously hiding and showing tasks either.</p></li>
 
 <li><p>Click the <img src="images/newtask-icon.png" alt="new task" style="height:1em;vertical-align:middle;"> icon and fill in the form. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in atomic (sub)steps. Repeat this for every task to do.</p></li>
 
-<li><p>Click the <img src="images/filter-icon.png" alt="filter icon" style="height:1em;vertical-align:middle"> icon (or the "Save all changes" button of open tasks) to submit new or changed task data  and whenever you want a fresh ranking. You are reminded when you refocus the browser tab/window and the current ranking has been generated more than an hour ago.</p></li>
+<li><p>Click the <img src="images/filter-icon.png" alt="filter icon" style="height:1em;vertical-align:middle"> icon (or the "Update all &amp; reload" button of changed open tasks) to submit new or changed task data, particularly when you have checked something as done, and also whenever you want a fresh ranking. You are reminded when you refocus the browser tab/window and the current ranking has been generated more than an hour ago.</p></li>
 
-<li><p>Check steps when done. Go to third step.</li>
 </ol>
 
 % }
