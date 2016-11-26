@@ -28,13 +28,13 @@
     <div class="icon"><a id="mainicon" href="/todo"><img src="/images/filter-icon.png"></a>
 </div>
     <div class="icon add-newtask-btn"><span style="position:relative;top:1em;color:grey;">&lArr; Click left icon to return to your to-dos.</div>
-    <div class="icon"><a href="/user/settings"><img src="/images/settings-icon.png"></a>
+    <div class="icon"><a href="/settings"><img src="/images/settings-icon.png"></a>
     <div class="menu">User settings: <img src="/images/close-btn.svg" class="close-btn" /><ul>
-        <li><a href="/user/settings#authentication">Identity and Authentification</a></li>
-        <li><a href="/user/settings#set-weights">Weights of FlowRank criteria</a></li>
-        <li><a href="/user/settings#set-priorities">Labeled priorities</a></li>
-        <li><a href="/user/settings#configure-time-model">Time model</a></li>
-        <li><a href="/user/settings#appendix">Urgency threshold</a></li>
+        <li><a href="/settings#authentication">Identity and Authentification</a></li>
+        <li><a href="/settings#set-weights">Weights of FlowRank criteria</a></li>
+        <li><a href="/settings#set-priorities">Labeled priorities</a></li>
+        <li><a href="/settings#configure-time-model">Time model</a></li>
+        <li><a href="/settings#appendix">Urgency threshold</a></li>
 %   if ( $user && $user->can_admin ) {
         <li><a href="/admin">Service administration</a></li>
 %   }
@@ -53,7 +53,7 @@
 <%= content %>
 
 % if ( $showcase_mode ) {
-<p>Please note: This is what showcase user <em><%= stash( 'user' ) && $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/user/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
+<p>Please note: This is what showcase user <em><%= stash( 'user' ) && $user->username %></em> sees in FlowgencyTM. Showcase users grant you view-only access to their account. For full experience, you can <a href="/login">login to or register your own regular account</a>. Please bear in mind that all user-generated content on this public FlowgencyTM instance is substantially fictitious, albeit more or less realistic.</p>
 <div id="showcase-note" title="Guest session under a showcase user's account">
 
 <p>You can <em>view</em> everything. For full (test-)use of FlowgencyTM, including support of permanent entry and change, you are welcome to sign up for a regular account.</p>

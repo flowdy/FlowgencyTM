@@ -69,7 +69,7 @@
 <h2>Get started</h2>
 
 <ol>
-<li><p>Customize the <a href="/user/settings#configure-time-model">time model in the user settings page <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle"></a>. There is no sane default for that individual a thing. The 24/7 work pattern is a factory setting not supposed to be "right" in this sense, just in contrary to be changed. Yet it does not confuse people by spuriously hiding and showing tasks either.</p></li>
+<li><p>Customize the <a href="/settings#configure-time-model">time model in the user settings page <img src="images/settings-icon.png" alt="" style="height:1em;vertical-align:middle"></a>. There is no sane default for that individual a thing. The 24/7 work pattern is a factory setting not supposed to be "right" in this sense, just in contrary to be changed. Yet it does not confuse people by spuriously hiding and showing tasks either.</p></li>
 
 <li><p>Click the <img src="images/newtask-icon.png" alt="new task" style="height:1em;vertical-align:middle;"> icon and fill in the form. Enter at least title, priority and due date, other fields as necessary. Structure bigger tasks in atomic (sub)steps. Repeat this for every task to do.</p></li>
 

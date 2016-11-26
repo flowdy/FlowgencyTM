@@ -68,15 +68,17 @@ sub startup {
 
   my $auth = $r->under(\&require_user_otherwise_login_or_fail);
 
-  $r->any( [qw/GET POST/] => "/user/login" )->to("user#login", retry_msg => 0 );
-  $auth->get( '/user/logout' )->to("user#logout");
-  $auth->get( '/user/terms' )->to("user#terms");
-  $auth->any( [qw/GET POST/] => '/user/delete' )->to("user#delete");
+  $r->any( [qw/GET POST/] => "/login" )->to("user#login", retry_msg => 0 );
+  $r->any( [qw/GET POST/] => '/join' )->to("user#join");
+
+  $auth->get( '/logout' )->to("user#logout");
+  $auth->get( '/terms' )->to("user#terms");
+  $auth->any( [qw/GET POST/] => '/delete-user-account' )->to("user#delete");
+  $auth->any( [qw/GET POST/] => '/settings' )->to('user#settings');
+
   my $admin = $auth->under(sub { shift->stash('user')->can_admin })->any('/admin');
   $admin->any('/')->to('admin#dash');
   $admin->get('/:action')->to(controller => 'admin');
-
-  $r->any( [qw/GET POST/] => '/user/join' )->to("user#join");
 
   # Normal route to controller
   $auth->get('/todo')->to('task_list#todos')->name('home');
@@ -103,11 +105,9 @@ sub startup {
   $auth->patch('/tasks/:name/steps/:step')->to('task_editor#handle_single');
   $auth->delete('/tasks/:name/steps/:step')->to('task_editor#purge');
 
-  $auth->any([qw/GET POST/] => '/user/settings')
-       ->to('user#settings');
-
   $auth->get('/info')->to('info#basic');
   $r->get('/help/*file' => { file => 'index' } => \&render_online_help);
+
 
 }
 
@@ -150,7 +150,7 @@ sub require_user_otherwise_login_or_fail {
     }
 
     elsif ( !$is_restapi_req && $c->req->method eq "GET" ) {
-        $c->redirect_to("/user/login");
+        $c->redirect_to("/login");
     }
 
     else {

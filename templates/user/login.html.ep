@@ -10,7 +10,7 @@
 % if ( $retry_msg ) {
     <p class="error"><%= $retry_msg %></p>
 % }
-<form method="post" action="/user/login">
+<form method="post" action="/login">
 <div style="float:left;">
 <h2 style="margin-top:0;">Regular user</h2>
 % if ( my $t = param 'token' ) {
@@ -48,4 +48,4 @@
 
 <h2>Not registered, yet?</h2>
 
-<p id="invite-btn">Want to see if the concept matches your style of working, but a guest session with a showcase user won't do in your eyes? Be welcome! <a href="/user/join">Create your account</a></p>
+<p id="invite-btn">Want to see if the concept matches your style of working, but a guest session with a showcase user won't do in your eyes? Be welcome! <a href="/join">Create your account</a></p>

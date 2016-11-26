@@ -3,7 +3,7 @@
 % my $xp = stash 'ext_privacy_defined';
 
 % if ( !$xp ) {
-<form action="/user/join" method="post">
+<form action="/join" method="post">
 
 <p><strong>When checking the terms below, beware of fake term(s).</strong> The registration form can be filled in once your selection covers all the binding ones. The terms are short and plain, but then quite different from those of other personalized sites. Anger can be avoided by having people actually read and explicitly accept them.</p>
 % }

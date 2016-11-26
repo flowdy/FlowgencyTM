@@ -41,7 +41,6 @@ along with FlowgencyTM. If not, see <a href="http://www.gnu.org/licenses/">http:
 % }
 <dt>Server running since / recently restarted at</dt>
 <dd><%= $server_started %></dd>
-<dt>Currently logged in as</dt>
 </dl>
 
 % if ( $user ) {
@@ -57,10 +56,10 @@ You are currently logged in as <%= $user->user_id %>, created <%= $user->created
 
 <h2>Actions</h2>
 
-<ul><li><a href="/user/logout">Logout</a>: Delete session cookie</li>
-<li><a href="/user/login">Change user</a>: Replace session with another user's</li>
-<li><a href="/user/delete">Good-bye</a>: Survey prior to account deletion</li>
-<li><a href="/user/terms">Terms of use</a>: Legal terms <%= $is_remote ? 'you have accepted on registration' : 'for other users if this FlowgencyTM instance were publicly available' %></li>
+<ul><li><a href="/logout">Logout</a>: Delete session cookie</li>
+<li><a href="/login">Change user</a>: Replace session with another user's</li>
+<li><a href="/delete-user-account">Good-bye</a>: Survey prior to account deletion</li>
+<li><a href="/terms">Terms of use</a>: Legal terms <%= $is_remote ? 'you have accepted on registration' : 'for other users if this FlowgencyTM instance were publicly available' %></li>
 <li><a href="/tasks">Tasks download</a>: All your tasks in JSON format, ready for importing somewhere else</li>
 </ul>
 
