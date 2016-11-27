@@ -129,8 +129,10 @@ $(function () {
         else console.log("No icon found");
     });   
 
-    $("body").click(function (e) {
-       if ( e.target.nodeName == "BODY" ) window.scroll(0,0);
+    $("html").click(function (e) {
+       if ( e.target.nodeName == "HTML" ) {
+           $("#page").get(0).scroll(0,0);
+       }
     });
 
     var reload_date = new Date(),

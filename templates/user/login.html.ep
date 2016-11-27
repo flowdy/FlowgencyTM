@@ -11,7 +11,8 @@
     <p class="error"><%= $retry_msg %></p>
 % }
 <form method="post" action="/login">
-<div style="float:left;">
+<div class="two-column">
+<div>
 <h2 style="margin-top:0;">Regular user</h2>
 % if ( my $t = param 'token' ) {
     <input type="hidden" name="token" value="<%= $t %>">
@@ -25,7 +26,7 @@
 </div>
 
 % my $u = stash 'showcase_users';
-<div style="margin-left:40%;padding-left:1em;border-left:1px solid #00c0ff;">
+<div>
 <h2>Showcase guest sessions</h2>
 % if ( $u && %$u ) {
 <p>Under a showcase user's account, you can <em>view</em> everything. You cannot change or enter anything permanently, but you hopefully get an impression of how FlowgencyTM could be used for example.</p>
@@ -43,7 +44,8 @@
 <p>This FlowgencyTM instance has no showcase users.</p>
 % }
 </div>
-<p style="text-align:center;clear:both;"><input type="submit" value="Login"></p>
+</div>
+<p class="clear" style="margin: 0.5em 0; text-align:center;"><input type="submit" value="Login"></p>
 </form>
 
 <h2>Not registered, yet?</h2>

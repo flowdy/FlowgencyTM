@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, minimum-scale=1" />
   <title>FlowgencyTM<% if (my $t = title) { %>: <%= $t %><% } %></title>
 <!--[if IE]>
   <script src="http://html5shiv.googlecode.com/
@@ -40,8 +41,8 @@
 %   }
     </ul></div>
     </div>
-    <div class="icon"><a href="/info"><img src="/images/info-icon.png"></a></div>
-    <div class="icon hosterlink"><strong>FlowgencyTM</strong> <%= $FlowgencyTM::VERSION %><br>About that tool:<br><a href="http://www.humanetasking.net">humanetasking.net</a></div>
+    <div class="icon"><a href="/info"><img src="/images/info-icon.png"></a><div class="menu"><strong>FlowgencyTM</strong> <%= $FlowgencyTM::VERSION %><br>About that tool:<br><a href="http://www.humanetasking.net">humanetasking.net</a></div></div>
+
 </nav>
 % # Multitask step by step. Balance opponent progress and urgency. Schedule working and recreational periods to get proper estimates.
   </header>
