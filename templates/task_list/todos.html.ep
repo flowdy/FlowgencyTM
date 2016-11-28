@@ -105,19 +105,22 @@
     </ul>
     <p class="nav-button"><button style="width:100%">Reload with set options</button></p></div>
     </div>
-            <a href="/task-form"><img src="/images/newtask-icon.png"></a>
-            <div class="menu"> 
-            Get form for a new task: <img class="close-btn" src="/images/close-btn.svg" /></button>
-            <textarea style="width:97%;margin-right:5px;"
-              placeholder="Experts have fields filled automatically: Input preset definition in LazyString syntax ..."
-              rows="5"></textarea>
-            <p class="nav-button"><a href="/help/lazy-string">LazyString syntax?</a> <button>New task &hellip;</button>
-              </p>
-            </div>
+    <div class="menu"> 
+    Get form for a new task: <img class="close-btn" src="/images/close-btn.svg" /></button>
+    <textarea style="width:97%;margin-right:5px;"
+      placeholder="Experts have fields filled automatically: Input preset definition in LazyString syntax ..."
+      rows="5"></textarea>
+    <p class="nav-button"><a href="/help/lazy-string">LazyString syntax?</a> <button>New task &hellip;</button>
+      </p>
+    </div>
         
 
     </div>
-    <script type="text/javascript">
-        $("#additions-to-layout > .menu").first().appendTo("#icons-bar .icon:first");
-        $("#additions-to-layout > *").appendTo($("#icons-bar .icon:nth-child(2)").empty());
-    </script> 
+
+    <script>
+    $("#additions-to-layout > .menu").each(function (i) {
+        i++;
+        $(this).appendTo("#icons-bar .icon:nth-child(" + i + ")");
+    });
+    </script>
+

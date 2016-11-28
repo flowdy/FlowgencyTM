@@ -28,7 +28,7 @@
     <nav id="icons-bar">
     <div class="icon"><a id="mainicon" href="/todo"><img src="/images/filter-icon.png"></a>
 </div>
-    <div class="icon add-newtask-btn"><span style="position:relative;top:1em;color:grey;">&lArr; Click left icon to return to your to-dos.</div>
+    <div class="icon add-newtask-btn"><a href="/todo#new"><img src="/images/newtask-icon.png"></a></div>
     <div class="icon"><a href="/settings"><img src="/images/settings-icon.png"></a>
     <div class="menu">User settings: <img src="/images/close-btn.svg" class="close-btn" /><ul>
         <li><a href="/settings#authentication">Identity and Authentification</a></li>

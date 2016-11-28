@@ -23,7 +23,8 @@ $(function () {
         $("#list-options-pane").show();
     });
 
-    new_task_icon.children("a").data('mainAction', insert_new_task_form)
+    new_task_icon.children("a").click(function (e) { e.preventDefault(); })
+        .data('mainAction', insert_new_task_form)
         .end().find("button").button();
 
     $("#settime").change(function (e) {
@@ -129,6 +130,10 @@ $(function () {
         else console.log("No icon found");
     });   
 
+    if ( window.location.hash == "#new" ) {
+        insert_new_task_form();
+    }
+
     $("html").click(function (e) {
        if ( e.target.nodeName == "HTML" ) {
            $("#page").get(0).scroll(0,0);
@@ -205,7 +210,7 @@ $(function () {
     };
 
     function insert_new_task_form (e) {
-        e.preventDefault();
+        e && e.preventDefault();
         var lazystr = $("header .add-newtask-btn textarea").val();
         console.log("Inserting new task form (lazystr: " + lazystr + ")");
         if ( lazystr ) lazystr = '&lazystr=' + encodeURIComponent(lazystr);
