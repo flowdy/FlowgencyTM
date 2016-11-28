@@ -311,18 +311,24 @@ ul.formlist li {
 @media (min-width: 641px) {
 
 .two-column {
+    width: 96%;
+    margin: 0 auto;
     overflow:hidden;
     margin-bottom:.5em;
 }
 
 .two-column div {
-    width:46%;
+    width:48%;
     float: left;
 }
 
 .two-column div + div {
     padding-left:1em;
     border-left:1px solid #00c0ff;
+}
+
+.two-column div + div > h2 {
+    margin-top: 0;
 }
 
 .clear {
