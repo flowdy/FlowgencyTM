@@ -572,7 +572,7 @@ function ObjectCacheProxy (name, obj, fields) {
 
 var __dtpCounter = 0;
 function DateTimePicker (inline) {
-    var but = $('<button title="Pick day and time with a widget">D/T?</button>'),
+    var but = $('<button type="button" title="Pick day and time with a widget">D/T?</button>'),
         input = $(this), eod = input.hasClass('until');
     if ( input.attr('id') === undefined )
         input.attr('id', 'timefield-' + (++__dtpCounter));
