@@ -96,7 +96,7 @@
         <span><input id="with-archive" type="checkbox" disabled="disabled" checked="checked" value="1"> <label for="with-archive">Include</label> <a style="margin-bottom:5px;" href="/todo?archive=1&desk=0">archive</a></span> 
         </li>
         <li><form id="settime"><label>Set time:
-        <input id="setcursortime" name="time" value="<%= param("now") %>" type="datetime"></label><br>
+        <input id="setcursortime" class="datetime" name="time" value="<%= param("now") %>" type="text"></label><br>
 % if ( !$is_remote ) {
         <input type="radio" name="keep" id="set-time-for-next" value="0"> <label="set-time-for-next">Apply to Next ranking only</label><br>
         <input type="radio" for="continuous-time-update" name="keep" value="1"> <label>Continuous update</label>

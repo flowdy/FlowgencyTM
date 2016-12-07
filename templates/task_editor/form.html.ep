@@ -18,6 +18,19 @@
 % }
 </p>
 
+% my $render_timestage_inputs = begin
+%    my $datetime_class = @_ ? 'datetime' : "";
+%    my $stage = shift // { track => stash("default_track") // "default" };
+until <input class="until <%= $datetime_class %>" type="text" name="until_date" value="<%= $stage->{until_date} %>"> on 
+<select name="track">
+<option value="">-- Select suitable timetrack --</option>
+% for my $track ( @$tracks ) {
+<option value="<%= $track->[0] %>" <%= $stage->{track} eq $track->[0] ? q{selected=selected} : '' %>><%= $track->[1] %></option>
+% }
+</select>
+<button type="button" class="add-btn">+</button><button type="button" class="drop-btn">&minus;</button>
+% };
+
 % my $render_fieldset = begin
 %     my $step = shift // {};
 %     my $name = $step->{name};
@@ -45,24 +58,17 @@
 </dd>
 <dt>Start date</dt>
 <dd>
-<p class="input"><input type="datetime" name="from_date" value="<%= $std->{from_date} %>"> (Default: now)</p>
+<p class="input"><input class="datetime" type="text" name="from_date" value="<%= $std->{from_date} %>"> (Default: now)</p>
 </dd>
 <dt>Time stages *</dt>
 <div class="input">
-<table class="time-stages">
-<tr><th>Time track</th><th>until</th></tr>
-% my $timeway = $std->{timestages} // [{ track => 'default' }];
+<span style="display:none;"><%== $render_timestage_inputs->() %></span>
+<ol class="time-stages">
+% my $timeway = $std->{timestages} // [];
 % for my $stage ( @$timeway ) {
-<tr><td><select name="track">
-<option value="">-- Select suitable timetrack --</option>
-% for my $track ( @$tracks ) {
-<option value="<%= $track->[0] %>" <%= $stage->{track} eq $track->[0] ? q{selected=selected} : '' %>><%= $track->[1] %></option>
+<li><%== $render_timestage_inputs->($stage) %></li>
 % }
-</td><td><input class="until" type="datetime" name="until_date" value="<%= $stage->{until_date} %>"></td>
-<td style="width:4em;"><button type="button" class="add-btn">+</button><button type="button" class="drop-btn">&minus;</button></td>
-</tr>
-% }
-</table>
+</ol>
 </div></dd>
 <dt>Description</dt>
 % }

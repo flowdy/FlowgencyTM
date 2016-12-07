@@ -312,14 +312,34 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     // to add: time stages, substeps
     // fieldset.find("select[name^=track]").css({ width: '20em' });
     fieldset.find(".time-stages").each(function () {
-        var table = $(this),
+        var list = $(this),
             input_selector = ":input:not([disabled],button)",
-            use_datepicker;
+            use_datepicker, newli;
+
+        list.find("select[name=track]").change(ts_updater);
+        list.find("input.datetime").each(dp_modifier);
+        list.on('click', '.add-btn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).closest("li").after( timeStage() );
+        });
+        list.on("click", '.drop-btn', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).parents("li").remove();
+            ts_updater(e);
+        });
+
+        if ( !list.children().length ) {
+            newli = timeStage();
+            list.append( newli );
+        }
+
         function used_datepicker () { use_datepicker = true; }
         function ts_updater (e) {
             if ( use_datepicker ) return;
             var stages = [];
-            table.find("tr").each(function () {
+            list.find("li").each(function () {
                 var stage = {}, i = 0;
                 $(this).find(input_selector).each(function () {
                     stage[this.name] = this.value;
@@ -329,7 +349,7 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
             });
             update({ defaultValue: {}, value: stages, name: 'timestages' });
         }
-        var dp_modifier = function () {
+        function dp_modifier () { // needed?
             $(this).datepicker( "option", "onClose", function () {
                 use_datepicker = false;
                 ts_updater();
@@ -337,25 +357,14 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
             .datepicker( "option", "onSelect", used_datepicker)
             .datepicker( "option", "onChangeMonthYear", used_datepicker)
             .change(ts_updater);
-        };
-        table.find("select[name=track]").change(ts_updater);
-        table.find("input[type=datetime]").each(dp_modifier);
-        table.on('click', '.add-btn', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var myrow = $(this).parents("tr").first(),
-                added = myrow.clone().insertAfter(myrow),
-                dtp = added.find("input");
-            // DateTimePicker(dtp);
-            dtp.removeAttr("id").each(dp_modifier).val("");
-            added.find("option:selected").removeAttr("selected");
-        });
-        table.on("click", '.drop-btn', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).parents("tr").first().remove();
-            ts_updater(e);
-        });
+        }
+        function timeStage () {
+            var added = $("<li>").append(list.prev().clone().contents());
+            DateTimePicker.apply( added.find(".until") );
+            added.find("select[name=track]").change(ts_updater);
+            dp_modifier.apply( added.find(".until") );
+            return added;
+        }
     });
 
     var remaining_fields = [
@@ -395,7 +404,7 @@ Ranking.prototype.dynamize_taskeditor_step_fieldset = function (fieldset) {
     fieldset.find('input[name=substeps]')
         .data("acceptChangeHandler")(default_change_handler);
 
-    fieldset.find("input[type=datetime]").each(function() { DateTimePicker.apply(this); });
+    fieldset.find("input.datetime").each(function() { DateTimePicker.apply(this); });
 
     remaining_fields.unshift('priority', 'checks', 'timestages', 'substeps');
     remaining_fields.forEach(function (field) {
@@ -583,11 +592,12 @@ function DateTimePicker (inline) {
         if(today[i]<10) today[i]='0'+today[i];
     
     today = today.join("-") + " " + (eod ? "23:59" : "00:00");
-    this.placeholder = '[[[[YY]YY-]MM-]DD] [HH[:MM]]';
-    this.title = 'Date format: [[[[YY]YY-]MM-]DD] or alternative german date: [DD.[MM.[[YY]YY]]], or\n    '
+    input.prop("placeholder", '[[[[YY]YY-]MM-]DD] [HH[:MM]]' );
+    input.prop("title", 'Date format: [[[[YY]YY-]MM-]DD] or alternative german date: [DD.[MM.[[YY]YY]]], or\n    '
         + '"+" or "-", Integer and one of "y" (years), "m" (months), "w" '
         + '(weeks) or "d" (days). Chainable, subsequent instances may be '
-        + 'negative, otherwise omit the plus-sign.';
+        + 'negative, otherwise omit the plus-sign.'
+    );
 
     but.click(function (e) {
         input.AnyTime_noPicker().AnyTime_picker({
