@@ -222,7 +222,6 @@ body > header h1 {
 .taskeditor .help { font-size:small; }
 .taskeditor dt { font-weight:bold; margin-top:0.5em; }
 .taskeditor textarea { font-size:initial; font-family: monospace; }
-.taskeditor .time-stages { width: 100%; }
 .taskeditor .time-stages .until { width: 7em; }
 .taskeditor .ui-selectmenu-button { vertical-align: middle; }
 .ui-widget { font-size: initial }
