@@ -162,7 +162,8 @@ sub get_ranking {
         $t = $d;
     }
     return {
-        list => \@list, timestamp => $now,
+        list => \@list,
+        timestamp => $now // FTM::Time::Spec::now(),
         tasks_count_total => $self->tasks->count,
     };
 }
