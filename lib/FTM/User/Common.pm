@@ -1085,7 +1085,7 @@ sub list {
     my ($self, %criteria) = @_;
     
     my $opts = { join => 'steps', distinct => '1' };
-    my ($desk, $tray, $drawer, $archive, now)
+    my ($desk, $tray, $drawer, $archive, $now)
         = delete @criteria{qw[ desk tray drawer archive now ]};
 
     my %force_include;
