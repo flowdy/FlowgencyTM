@@ -35,8 +35,8 @@
 <ol id="plans">
 % my ($there_are_tasks_shown, $label);
 % while ( my $task = shift @$list ) {
-%     $there_are_tasks_shown++;
 %     if ( !ref $task and $label = $task ) { $section = $info{$label}; next; }
+%     $there_are_tasks_shown++;
 %     my $details = $task->{extended_info};
 %     my $classes = join " ", $details ? 'open' : (), $task->{active} ? () : 'paused';
       <li class="<%= $classes %>" data-id="<%= $task->{name} %>" <% if ( my $ots = $task->{open_since} ) { %>data-open-since="<%= $ots %>" <% } %>id="task-<%= $task->{name} %>">
@@ -59,11 +59,33 @@
 % }
 </ol>
 
+% my $archive_xt = begin
+% my $astr = param 'archive';
+% (my $pre, $astr) = $astr > 2000 ? ('Previous year', $astr-1)
+%                  : $astr > 0    ? ('Next archive page', $astr =~ s{ ^(\d+) }{ $1+1 }xer)
+%                  : ('Change', $astr)
+%                  ;
+<span id="archive-form"><%= $pre %>:
+<input type="text" value="<%= $astr %>" style="width:3em;">
+<button type="button">go</button>
+</span>
+% end
+
 % if ( $there_are_tasks_shown ) {
-<p>Listed <%= $there_are_tasks_shown %> of <%= $tasks_count_total %> tasks at <%= $timestamp %>. Show more information about a closed task, or close an open one temporarily by clicking its title. Reload notice shows up when window is refocussed in <span id="warn-reload-in-minutes"></span> minutes or later.</p>
+<p>Listed <%= $there_are_tasks_shown %> of <%= $tasks_count_total %> tasks at <%= $timestamp %>. Show more information about a closed task, or close an open one temporarily by clicking its title. Reload notice shows up when window is refocussed in <span id="warn-reload-in-minutes"></span> minutes or later. <%= param( 'archive' ) ? $archive_xt->() : '' %></p>
 % }
 % elsif ( $tasks_count_total ) {
-<p>No tasks currently match any type you selected in <em>List tasks</em> setting in logo tab "Filter".</p>
+<p style="text-align:center;margin:30vh 0;">No to-do items match any checked type on <%= $timestamp %>.<br>
+%     if ( param 'drawer' ) {
+          Missing a to-do? Make sure you just haven't <a href="?archive=1">archived</a> it.
+%     }
+%     elsif ( param 'archive' ) {
+          <%== $archive_xt->() %>
+%     }
+%     else {
+          &gt;&gt; <a href="?drawer=3">Paused and future tasks on the drawer</a>
+%     }
+</p>
 % }
 % else {
 <h2>Get started</h2>

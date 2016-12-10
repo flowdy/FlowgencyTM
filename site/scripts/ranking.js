@@ -85,6 +85,11 @@ $(function () {
         ftm.nextload.archive = $(this).is(":checked") ? 1 : 0;
     });
 
+    $("#archive-form button").click(function (e) {
+        ftm.nextload.archive = $(this).prev().val();
+        ftm.rerank();
+    });
+
     $("input.datetime").each(function () { FlowgencyTM.DateTimePicker.apply(this); });
 
     $('#plans').children().each(function () {

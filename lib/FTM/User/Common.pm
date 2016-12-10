@@ -8,6 +8,8 @@ use Carp qw(carp croak);
 use FTM::Error;
 use Try::Tiny;
 
+my $MAX_ARCHIVED_ITEMS_PP = 100;
+
 has _time_model => (
     is => 'ro',
     isa => 'FTM::Time::Model',
@@ -1082,7 +1084,8 @@ for my $f ( keys %MAP_FIELDS ) {
 sub list {
     my ($self, %criteria) = @_;
     
-    my ($desk, $tray, $drawer, $archive, $now)
+    my $opts = { join => 'steps', distinct => '1' };
+    my ($desk, $tray, $drawer, $archive, now)
         = delete @criteria{qw[ desk tray drawer archive now ]};
 
     my %force_include;
@@ -1098,14 +1101,36 @@ sub list {
     }
     else { $drawer //= 0 }
 
-    $archive &&= ref $archive eq 'ARRAY' ? { -in => $archive }
-               : ref($archive) !~ m{^($|HASH)} ?
-                     croak( "archive: neither ARRAY nor HASH reference" )
-               : $archive eq "1" ? { -not_in => [] }
-               : $archive
-               ;
+    my @and_search = scalar ( # initialize with a single item
 
-    my @and_search = ({ archived_because => $archive });
+        !$archive
+      ? { archived_because => undef }
+
+      : ref $archive eq 'ARRAY' ? {
+            archived_because => { -in => $archive }
+        }
+
+      : ref($archive) !~ m{^($|HASH)} ?
+            croak( "archive: neither ARRAY nor HASH reference" )
+
+      : $archive =~ /^([-: \d]+)(?:\[(\d+)\])?$/ ? do {
+            my ($n1, $n2) = ($1, $2);
+            $opts->{order_by} = { -desc => ['archived_ts'] };
+            if ( ( $n1 =~ /[-: ]/ || $n1 > 2000 ) && !$n2 ) {
+                { archived_ts => { -like => "%$n1%" } }
+            }
+            else {
+                # by the way assign to certain options
+                @{$opts}{ qw/ page rows/ } =
+                    ( $n1, $n2 || $MAX_ARCHIVED_ITEMS_PP );
+                # adapt archive subquery
+                { archived_because => { -not_in => [] } }
+            }
+        }
+
+      : { archived_because => $archive }
+
+    );
 
     for my $hash ( _query( delete $criteria{query} // q{} ) ) {
         @criteria{ keys %$hash } = values %$hash;
@@ -1121,7 +1146,8 @@ sub list {
     }
 
     $now = $now ? FTM::Time::Spec->parse_ts( $now )->fill_in_assumptions
-                : FTM::Time::Spec->now;
+         :        FTM::Time::Spec->now
+         ;
 
     my $processor = $self->flowrank_processor;
     $processor->($now);
@@ -1131,7 +1157,6 @@ sub list {
     my (@on_desk, @in_tray, @upcoming, @in_archive);
 
     my %cond = ( -and => \@and_search );
-    my $opts = { join => 'steps', distinct => '1' };
 
     for my $task ( $rs->search(\%cond,$opts)->get_column('name')->all ) {
         $task = eval { $self->get($task) }
@@ -1198,15 +1223,14 @@ sub list {
         }, $task;
     }
 
+    if ( @in_archive ) { unshift @in_archive, 'archived'; }
+
     return $desk ? @on_desk : (),
            $tray ? @in_tray : (),
            @upcoming ? ('upcoming',
                    sort { $a->start_ts <=> $b->start_ts } @upcoming
                ) : (),
-           @in_archive ? ('archived',
-                   reverse sort { $a->archived_ts cmp $b->archived_ts }
-                   @in_archive
-               ) : ()
+           @in_archive
         ;
 
 }

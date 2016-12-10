@@ -21,6 +21,7 @@ sub todos {
     $args{force_include} = \@force_include;
   
     my $tasks = $self->stash('user')->get_ranking( \%args );
+    $tasks->{timestamp} //= FTM::Time::Spec->now;
   
     $self->res->headers->cache_control('max-age=1, no-cache');
     $self->render(
