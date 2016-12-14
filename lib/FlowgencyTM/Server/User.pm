@@ -9,39 +9,37 @@ use FTM::Error;
 sub settings {
     my ($self) = @_;
     my $user = $self->stash('user');
+
+    if ( $self->req->method eq 'GET' ) {
+        $self->stash( $user->dump_complex_settings, errors => {} );
+        return;
+    }
+
     my %errors;
 
     my $email = $self->param('email');
     if ( length $email ) {
          my $error;
-         my $part = 'account';
-         for ( my ($account, $provider) = split /@/, $email, 2 ) {
-             if ( !length ) {
-                 $error = $part.' part is missing';
-             }
-             elsif ( /[^\w.-]/ ) {
-                 $error = $part.' part is malformed or too esoteric';
-               # If needed someday, we could well use Regex::Common, but I mind
-               # the number of the dependencies FlowgencyTM already has got.
-             }
-             last if $error;
-         } continue { $part = '@provider' }
 
-         if ( $error ) {
-             $errors{email} = 'Invalid address: '.ucfirst($error);
-         }
-         else {
+         if ( $email =~ m{ \A ([\w.+-]+)@([\w.-]+).\w{2,} \z }xms ) {
+
              if ( $user->email ne $email ) {
                  $user->needs_to_confirm(change_email => $email)
              }
              else { 
                  $email = undef;
              }
+
+             # Only save user's name when they input email address too.
              $user->username($self->param('username'));
+         }
+         else {
+             $errors{email} = 'Invalid syntax of email address.';
          } 
     }
-    elsif ( $self->param('update') ) { $user->email($email = undef); }
-    else { $email = undef; }
+    else {
+        $user->email($email = undef);
+    }
 
     if ( my $password = $self->param('password') ) {
         if ( !$user->password_equals($self->param('old_password')) ) {
@@ -74,18 +72,18 @@ sub settings {
 
     $user->realize_settings(\%settings) if %settings;
 
-    $user->update() if $self->param('update');
+    $user->update();
 
-    if ( $self->param('update') && !%errors ) {
+    if ( %errors ) {
+        $self->stash( errors => \%errors, $user->dump_complex_settings );
+    }
+    else {
         $email ? $self->render(
                      'user/confirmation_notice',
                      msg => 'You have changed your email'
                  )
                : $self->redirect_to('home')
                ;
-    }
-    else {
-        $self->stash( errors => \%errors, $user->dump_complex_settings );
     }
     
 }
