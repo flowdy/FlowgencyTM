@@ -14,7 +14,7 @@
    height="297mm"
    id="svg2"
    inkscape:version="0.48.5 r10040"
-   sodipodi:docname="aushang.svg"
+   sodipodi:docname="betatester-wanted.svg"
    inkscape:export-filename="/tmp/aushang.png"
    inkscape:export-xdpi="118.03"
    inkscape:export-ydpi="118.03">
@@ -31,13 +31,13 @@
      inkscape:window-height="780"
      id="namedview3039"
      showgrid="false"
-     inkscape:zoom="0.41986485"
-     inkscape:cx="411.87103"
-     inkscape:cy="395.27425"
+     inkscape:zoom="3.1691169"
+     inkscape:cx="552.55876"
+     inkscape:cy="951.49665"
      inkscape:window-x="-2"
      inkscape:window-y="-3"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="flowRoot3065-3" />
   <defs
      id="defs4" />
   <metadata
@@ -123,7 +123,7 @@
        style="font-size:20px;font-style:normal;font-weight:bold;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#00c0ff;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
        xml:space="preserve"
        id="flowRoot2993-1-0"
-       transform="matrix(0.94207831,0,0,1.2203459,404.54402,-16.312697)"><flowRegion
+       transform="matrix(0.94207831,0,0,1.2203459,402.05465,-16.312697)"><flowRegion
          id="flowRegion2995-0-0"><rect
            style="font-size:20px;text-align:justify;text-anchor:start;fill:#00c0ff;fill-opacity:1"
            id="rect2997-2-0"
@@ -131,7 +131,8 @@
            x="137.14285"
            height="25.026993"
            width="123.31863" /></flowRegion><flowPara
-         id="flowPara3888-6">ask&amp;time</flowPara></flowRoot>    <flowRoot
+         id="flowPara3888-6"
+         style="font-style:italic;-inkscape-font-specification:Sans Bold Italic">ask&amp;time</flowPara></flowRoot>    <flowRoot
        style="font-size:20px;font-style:normal;font-weight:bold;text-align:justify;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#00c0ff;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
        xml:space="preserve"
        id="flowRoot2993-1-0-5"
@@ -143,9 +144,8 @@
            x="137.14285"
            height="29.530428"
            width="84.386375" /></flowRegion><flowPara
-         id="flowPara3888-6-1"><flowSpan
-           style="letter-spacing:0px"
-           id="flowSpan5525-6">anager</flowSpan></flowPara></flowRoot>    <flowRoot
+         id="flowPara3888-6-1"
+         style="font-style:italic;letter-spacing:0px;-inkscape-font-specification:Sans Bold Italic">anager</flowPara></flowRoot>    <flowRoot
        style="font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;color:#000000;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans Bold"
        xml:space="preserve"
        id="flowRoot3065"
@@ -155,20 +155,9 @@
            id="rect3069"
            y="567.06696"
            x="33.108112"
-           height="53.319801"
-           width="322.41394" /></flowRegion><flowPara
-         id="flowPara3071">FlowgencyTM</flowPara></flowRoot>    <g
-       transform="matrix(0.8150369,0,0,1.1127568,221.55271,-493.69855)"
-       style="font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;color:#000000;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans Bold"
-       id="flowRoot3065-6">
-      <path
-         style="marker:none"
-         d="m 373.74946,691.16765 0,20.8674 7.67489,0 -0.1599,-20.8674 z"
-         id="path4917"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="ccccc" />
-    </g>
-    <flowRoot
+           height="51.908001"
+           width="244.3485" /></flowRegion><flowPara
+         id="flowPara3071">Flowgency</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot7376"
        style="font-size:29.15913773px;font-style:normal;font-weight:normal;text-align:end;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:end;color:#000000;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72897846;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
@@ -180,7 +169,27 @@
            x="61.817863"
            y="196.10124"
            style="font-size:29.15913773px;font-weight:normal;text-align:end;text-anchor:end;color:#000000;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.72897846;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;-inkscape-font-specification:Sans" /></flowRegion><flowPara
-         id="flowPara7382">Hi, I'm just looking for test users of:</flowPara></flowRoot>  </g>
+         id="flowPara7382">Hi, I'm just looking for test users of:</flowPara></flowRoot>    <g
+       transform="matrix(0.8150369,0,0,1.1127568,491.30687,-398.57889)"
+       style="font-size:40px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;color:#000000;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       id="flowRoot3065-3">
+      <g
+         id="g3431"
+         transform="matrix(1,0,-0.1575893,1,91.532614,-0.35295627)">
+        <path
+           sodipodi:nodetypes="ccccccccc"
+           inkscape:connector-curvature="0"
+           id="path3427"
+           style="marker:none"
+           d="m 33.289062,577.77231 26.875,0 0,5.68359 -9.667968,0 0,43.24212 -7.037646,0 -0.481886,-43.24212 -9.6875,0 0,-5.68359" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path3429"
+           style="marker:none"
+           d="m 64.03125,577.77231 9.570312,0 6.640625,15.60547 6.679688,-15.60547 9.550781,0 0,29.16016 -7.109375,0 0,-21.32813 -6.71875,15.72266 -4.765625,0 -6.71875,-15.72266 0,21.32813 -7.128906,0 0,-29.16016" />
+      </g>
+    </g>
+  </g>
   <g
      id="g7026"
      transform="matrix(1.0495779,0,0,1.0495779,1.7941412,-127.69984)">
