@@ -1,6 +1,3 @@
-Online-Help
-===========
-
 General topics
 --------------
 

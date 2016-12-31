@@ -1,0 +1,6 @@
+% title 'Log out';
+
+<p>Your session cookie has been invalidated. You are logged out.</p>
+
+<p><a href="/login">Log in again</a></p>
+

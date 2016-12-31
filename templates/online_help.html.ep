@@ -1,0 +1,4 @@
+% title 'Online Help';
+
+% open my $fh, '<', $file;
+<%== Text::Markdown::markdown(do { local $/; <$fh> }) %>

@@ -233,11 +233,6 @@ sub logout {
 
     # $self->stash( retry_msg => 'loggedOut' );
 
-    $self->render(
-        text => '<h1>Log out</h1>'
-              . '<p>You have been logged out. Session cookie deleted.</p>'
-    )
-
 }
 
 sub delete {

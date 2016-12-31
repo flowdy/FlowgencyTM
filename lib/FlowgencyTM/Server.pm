@@ -298,10 +298,7 @@ sub render_online_help {
     binmode $fh, ':utf8';
 
     $c->stash( layout => undef ) if $c->param('bare');
-    $c->render( text => Text::Markdown::markdown(do {
-        local $/;
-        <$fh>.qq{\n\n[&larr; Back to index](/help/)}
-    }) );
+    $c->render( template => 'online_help', file => $file );
 
 }
 
