@@ -1,5 +1,9 @@
 <h1>An error occurred</h1>
 
+% my $message = stash('message') // "Something went wrong. Admin may find details in the server log.";
+% my $error = stash('error') // "Internal server error";
+% my $user_seqno = stash 'user_seqno';
+
 <pre class="error">
 <%= $message %>
 </pre>
