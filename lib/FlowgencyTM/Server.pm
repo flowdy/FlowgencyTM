@@ -177,7 +177,7 @@ sub authenticate_user {
     eval "use FlowgencyTM" or $@ && die $@;
     my $c = shift;
 
-    my ($user, my $password)
+    my ($user, $password)
         = split /:/, $c->req->url->to_abs->userinfo, 2;
 
     my $further_check;
