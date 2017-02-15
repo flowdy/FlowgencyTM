@@ -626,7 +626,7 @@ function DateTimePicker (inline) {
                     location.reload(true);
                 },
                 "Sign up": function () {
-                    location.href = "/user/join";
+                    location.href = "/join";
                 },
                 "Get Error": function () {
                     $(this).dialog( "close" );
