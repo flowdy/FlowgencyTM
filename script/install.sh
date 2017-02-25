@@ -103,7 +103,7 @@ while true; do
 done
 
 echo
-echo $PASSWORD > $TMPDIR/pw
+[ -n "$PASSWORD" ] && echo $PASSWORD > $TMPDIR/pw
 
 perl -Ilib -MFlowgencyTM <<END_OF_PERL
 
@@ -116,9 +116,13 @@ if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-Su@0-23' ) {
     });
 }
 chomp(my \$pw = do {
-    open my \$fh, '<', '$TMPDIR/pw' or die;
+    if ( open my \$fh, '<', '$TMPDIR/pw' ) {
     unlink '$TMPDIR/pw';
     local \$/ = undef;
+    }
+    else {
+        warn "Cannot open temporary file including the password."
+    }
     <\$fh>;
 });
 if ( length \$pw ) {
@@ -130,16 +134,19 @@ else {
 }
 END_OF_PERL
 
-cat > local.rc <<END_OF_CONFIG
+echo "# You may want to adapt following file ./local.rc to your needs:"
+tee local.rc <<END_OF_CONFIG
 ${AUTOLOGIN}FLOWGENCYTM_USER=$USER
 FLOWDB_SQLITE_FILE=$FLOWDB_SQLITE_FILE
 ${IS_ADMIN}FLOWGENCYTM_ADMIN=$USER # to activate new accounts
 MAX_USERS_IN_CACHE=5                  # ... if multi-user web access permitted
 MOJO_LISTEN=http://127.0.0.1:3000
-PIDFILE=/var/lock/flowgencytm.pid
+PIDFILE=server.pid
 LOG=server.log
 COMMAND=morbo    # or 'server daemon', 'server prefork'
 END_OF_CONFIG
+
+rm -r $TMPDIR
 
 echo
 echo 'Now, please issue `script/daemon start`, then load the URL that is shown.'
