@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run this install script before you run script/daemon the first time!
 
 export FLOWDB_SQLITE_FILE="${1:-flow.db}"
