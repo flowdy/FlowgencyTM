@@ -116,21 +116,19 @@ if ( length '$TIME_MODEL' && '$TIME_MODEL' ne 'Mo-Su@0-23' ) {
     });
 }
 chomp(my \$pw = do {
-    if ( open my \$fh, '<', '$TMPDIR/pw' ) {
-    unlink '$TMPDIR/pw';
-    local \$/ = undef;
+    my \$file = '$TMPDIR/pw';
+    if ( open my \$fh, '<', $file ) {
+        unlink '$TMPDIR/pw';
+        local \$/ = undef;
     }
-    else {
-        warn "Cannot open temporary file including the password."
+    elsif ( -e \$file ) {
+        warn "Cannot open temporary file \$file including the password."
     }
     <\$fh>;
 });
 if ( length \$pw ) {
    \$user->salted_password(\$pw);
    \$user->update();
-}
-else {
-   warn "Password has no length.\n"
 }
 END_OF_PERL
 
